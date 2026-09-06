@@ -20,8 +20,9 @@ import sys
 import tempfile
 from pathlib import Path
 
+from . import factories as fx
 from .base import DiaRUGATestCase
-from ..models import Atlas, AtlasEntry, AtlasPlacement, ClassDef
+from ..models import Atlas, AtlasEntry, AtlasPlacement, ClassDef, DiatomObject
 
 _ROOT = Path(__file__).resolve().parents[3]
 _PATH = _ROOT / "ops" / "import_atlas.py"
@@ -145,9 +146,11 @@ class AtlasImportTest(DiaRUGATestCase):
         self.assertEqual(AtlasEntry.objects.count(), total_e)
         self.assertEqual(AtlasPlacement.objects.count(), total_p)
         # 도감 셋(P15 2절 · 2,059) + 도판 있는 논문 넷(P20 3단계 · 218) +
-        # 크롭까지 있는 논문 여덟(P23 · 372) = 열다섯
-        self.assertEqual(Atlas.objects.count(), 15)
-        self.assertEqual(total_e, 2649)
+        # 크롭까지 있는 논문 여덟(P23 · 372) = 열다섯. **거기에 작업 이름 하나가
+        # 더 있다**(186) — 색인에서 온 것이 아니라 사람이 적는 파일이고, 도판이
+        # 없어 자리(`AtlasPlacement`)도 안 는다
+        self.assertEqual(Atlas.objects.count(), 16)
+        self.assertEqual(total_e, 2650)
 
 
 class CheckAtlasTest(DiaRUGATestCase):
@@ -187,3 +190,26 @@ class CheckAtlasTest(DiaRUGATestCase):
     def test_도감이_안_들어와_있으면_건너뛴다(self):
         Atlas.objects.all().delete()
         self.assertEqual(self.run_check(), set())
+
+    def test_작업_이름을_넣으면_그_종명이_안_걸린다(self):
+        """**속에서 멈춘 동정에 적는 이름** (186 · `atlas/working-names.json`).
+
+        `Chaetoceros spp.` 는 색인 어디에도 없는 이름이라 검사가 "도감에 없다"
+        로 센다. 개체 1,166개에 앉히면 그 경고가 1,166건이 되고, **늘 켜진
+        경고는 아무도 안 봐서 진짜 어긋난 이름을 놓치게 만든다**(140 에서
+        겪은 자리다). 그래서 이름 쪽을 도감에 세운다.
+
+        되살려서 본다 — 그 항목을 빼면 도로 걸려야 한다.
+        """
+        w = fx.make_world(slug="rs23-spp", site_code="RSPP")
+        DiatomObject.objects.create(viewpoint=w.vp, species="Chaetoceros spp.")
+        self.assertIn("개체 종명이 도감에 없다", self.run_check())
+
+        self.imp.put(doc([entry(1, "Chaetoceros spp.", "Chaetoceros",
+                                placements=[], binomial="", rank="genus_only")],
+                         key="working-names"), 90)
+        self.assertNotIn("개체 종명이 도감에 없다", self.run_check())
+
+        # 항목을 빼면 도로 걸린다 — 이 시험이 실패할 수 있는 것이어야 한다
+        AtlasEntry.objects.filter(name="Chaetoceros spp.").delete()
+        self.assertIn("개체 종명이 도감에 없다", self.run_check())

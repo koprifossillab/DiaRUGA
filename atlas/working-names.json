@@ -1,0 +1,27 @@
+{
+  "atlas": {
+    "key": "working-names",
+    "title": "작업용 이름 — 속에서 멈춘 동정에 적는 이름 (도감이 아니다)",
+    "short": "작업 이름",
+    "source": "atlas/working-names.json (손으로 적는다 — 1단계 파서가 없다)",
+    "source_sha256": "",
+    "note": "도판이 없다. 종까지 못 내리고 속에서 멈춘 개체에 적는 이름을 모아 둔다 — 색인에서 온 표제어가 아니므로 인용하지 않는다. 새 이름은 이 파일에 한 줄 더하고 다시 반입한다.",
+    "sort_order": 90
+  },
+  "entries": [
+    {
+      "seq": 1,
+      "item_no": null,
+      "name": "Chaetoceros spp.",
+      "genus": "Chaetoceros",
+      "binomial": null,
+      "rank": "genus_only",
+      "infra": null,
+      "authority": null,
+      "genus_guess": false,
+      "placements": [],
+      "extra": {"working_name": true},
+      "line": 1
+    }
+  ]
+}
