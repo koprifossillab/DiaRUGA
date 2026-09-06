@@ -205,7 +205,7 @@ class CatalogReadOnlyTest(BrowserTestCase):
         self.assertGreaterEqual(page.locator(".catcard").count(), 1,
                                 "카드가 없으면 이 시험은 아무것도 안 본다")
         for sel in (".catcard .remove", ".catcard .restore", ".catcard .pick",
-                    ".catcard .unlink", ".bulkbar"):
+                    ".catcard .unlink", ".bulkbar", ".pickall"):
             self.assertEqual(page.locator(sel).count(), 0, sel)
 
 
@@ -336,6 +336,66 @@ class CatalogBulkBrowserTest(BrowserTestCase):
         # 판정을 세우므로(P18) *없는 것*이 아니라 *빈 것*이어야 한다.
         self.assertFalse(got.get(left),
                          f"안 고른 카드에 분류가 앉았다: {got.get(left)!r}")
+
+    def test_쪽_전부_고르기가_이_쪽을_전부_고른다(self):
+        """**눌러서 되는가** (185). 배선이 죽어 있으면 3겹은 통과한다.
+
+        고른 수가 카드 수와 같아야 한다 — 하나라도 빠지면 사람은 전부 앉은
+        줄 알고 넘어가고, 빠진 개체는 종명 없이 남는다.
+        """
+        page = self.open(reverse("catalog", args=[self.w.slide.slug]) + "?frag=1")
+        cards = page.locator(".catcard")
+        n = cards.count()
+        self.assertGreaterEqual(n, 3, "카드가 셋은 있어야 이 시험이 뜻이 있다")
+        self.assertTrue(page.locator(".bulkbar").is_hidden())
+
+        page.locator(".pickall").click()
+        page.wait_for_selector(".bulkbar:not([hidden])", timeout=5000)
+        self.assertIn(f"고른 것 {n}개", page.inner_text(".bulkbar .n"))
+        self.assertEqual(page.locator(".catcard .pick:checked").count(), n)
+        # **단추가 두 방향으로 돈다** — 이제 할 일은 푸는 것이다
+        self.assertEqual(page.locator(".pickall").get_attribute("aria-pressed"),
+                         "true")
+        self.assertIn("해제", page.inner_text(".pickall"))
+
+    def test_다시_누르면_고르기가_풀린다(self):
+        page = self.open(reverse("catalog", args=[self.w.slide.slug]) + "?frag=1")
+        page.locator(".pickall").click()
+        page.wait_for_selector(".bulkbar:not([hidden])", timeout=5000)
+        page.locator(".pickall").click()
+        page.wait_for_timeout(300)
+        self.assertEqual(page.locator(".catcard .pick:checked").count(), 0)
+        self.assertTrue(page.locator(".bulkbar").is_hidden())
+        self.assertIn("전부 고르기", page.inner_text(".pickall"))
+
+    def test_반쯤_고른_채로_누르면_나머지를_채운다(self):
+        """**고른 것을 뺏지 않는다.** 반쯤 고른 상태에서 눌러 전부 풀리면
+        사람이 방금 한 일이 사라진다 — 그때 다시 누르면 되지만, 무엇이
+        골라져 있었는지는 화면에 안 남는다."""
+        page = self.open(reverse("catalog", args=[self.w.slide.slug]) + "?frag=1")
+        n = page.locator(".catcard").count()
+        page.locator(".catcard").first.locator(".pick").check()
+        page.wait_for_selector(".bulkbar:not([hidden])", timeout=5000)
+        page.locator(".pickall").click()
+        page.wait_for_timeout(300)
+        self.assertEqual(page.locator(".catcard .pick:checked").count(), n)
+
+    def test_전부_고르고_종명을_앉히면_전부에_간다(self):
+        """**이 단추가 있는 이유가 이것이다** — 203개에 같은 종명을 앉히는 일."""
+        page = self.open(reverse("catalog", args=[self.w.slide.slug]) + "?frag=1")
+        keys = [page.locator(".catcard").nth(i).get_attribute("data-key")
+                for i in range(page.locator(".catcard").count())]
+        page.locator(".pickall").click()
+        page.wait_for_selector(".bulkbar:not([hidden])", timeout=5000)
+        page.locator(".bulkbar .species").fill("Chaetoceros spp.")
+        page.locator(".bulkbar .go").click()
+        page.wait_for_timeout(2000)
+
+        got = {o.mask_key: o.diatom_object.species
+               for o in ObjectReview.objects.select_related("diatom_object")
+               if o.diatom_object_id}
+        for k in keys:
+            self.assertEqual(got.get(k), "Chaetoceros spp.", k)
 
     def test_고칠_칸을_안_채우면_말한다(self):
         """아무것도 안 하고 "저장됨" 이 뜨는 갈래를 안 만든다 (063)."""

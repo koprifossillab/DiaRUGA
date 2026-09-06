@@ -293,6 +293,19 @@ class CatalogEditScreenTest(DiaRUGATestCase):
         self.assertIn("class=\"bulkbar\"", html)
         self.assertIn("class=\"pick\"", html)
 
+    def test_쪽_전부_고르기_단추가_있고_몇_개인지_적는다(self):
+        """**고르는 수단이 체크박스뿐이면 한 쪽에 120번을 누른다** (185).
+
+        수를 함께 적는 것이 이 단추의 절반이다 — "전부" 가 거르개에 걸린 것
+        전체인지 이 쪽인지를 사람이 누르기 전에 알아야 한다. 서버의 `bulk` 가
+        한 쪽을 상한으로 두고 있어(P16 5.2) 쪽 밖은 애초에 못 간다.
+        """
+        html = self.get()
+        self.assertIn("class=\"chip pickall\"", html)
+        n = html.count("class=\"catcard")
+        self.assertGreaterEqual(n, 1, "카드가 없으면 이 시험은 아무것도 안 본다")
+        self.assertIn(f"({n})", html)
+
     def test_묶음은_푸는_단추만_있다(self):
         """**묶는 단추는 없다** (P16 3.2) — 묶을 상대가 이 화면에 없다."""
         html = self.get()
@@ -306,6 +319,9 @@ class CatalogEditScreenTest(DiaRUGATestCase):
         self.assertNotIn("class=\"danger remove\"", html)
         self.assertNotIn("class=\"bulkbar\"", html)
         self.assertNotIn("class=\"pick\"", html)
+        # 고를 것이 없는 화면에 「전부 고르기」가 있으면 눌러서 아무 일도
+        # 안 일어난다 — 이 화면이 파편 칩에서 이미 피한 자리다
+        self.assertNotIn("class=\"chip pickall\"", html)
 
     def test_지운_화면은_파편을_안_감춘다(self):
         """**지운 것의 절반을 또 감추면 "지웠는데 없다" 가 된다.**
@@ -384,7 +400,8 @@ class CatalogEditReadOnlyTest(DiaRUGATestCase):
         # **표시가 아니라 요소를 짚는다** — "풀기" 는 CSS 주석에도 있어서
         # 그것으로 세면 늘 걸린다(실패할 수 없는 시험은 없는 것보다 나쁘다).
         for mark in ("class=\"danger remove\"", "class=\"bulkbar\"",
-                     "class=\"pick\"", "class=\"badgelink unlink\""):
+                     "class=\"pick\"", "class=\"badgelink unlink\"",
+                     "class=\"chip pickall\""):
             self.assertNotIn(mark, html, mark)
 
     def test_일괄이_막힌다(self):

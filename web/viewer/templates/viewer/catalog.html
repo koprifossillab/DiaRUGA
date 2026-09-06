@@ -184,6 +184,13 @@
   .catcard .badgelink { color: var(--accent); background: none; border: none;
                         font: inherit; font-size: 11px; padding: 0; cursor: pointer; }
 
+  /* 칩 줄에 서는 단추 하나 (185). `.chip` 은 `<a>` 들의 껍데기라 배경도 글꼴도
+     안 정해 놓았다 — `<button>` 에 그대로 씌우면 브라우저 기본 단추 모양이
+     그 자리만 튄다. 눌러서 걸러지는 칩들과 나란히 서므로 모양이 같아야 한다. */
+  button.chip {
+    background: none; font: inherit; font-size: 12px; cursor: pointer;
+  }
+
   /* 일괄 띠 — 고른 것이 있을 때만 뜬다. 스크롤을 따라온다. */
   .bulkbar {
     position: sticky; top: 0; z-index: 6; margin: 0 0 10px;
@@ -336,6 +343,24 @@
   <a class="chip{% if show_gone %} on{% endif %}"
      title="사람이 오검출로 지운 개체입니다 — 여기서 되살립니다"
      href="?{% if show_gone %}{% if cls %}cls={{ cls }}&amp;{% endif %}{% if q %}q={{ q }}&amp;{% endif %}{% else %}gone=1{% if cls %}&amp;cls={{ cls }}{% endif %}{% if q %}&amp;q={{ q }}{% endif %}{% endif %}{% if show_frag %}&amp;frag=1{% endif %}">지운 것</a>
+  {% comment %}
+    **쪽 안에서만 고른다** (185). 일괄 편집은 카드마다 체크박스를 눌러 고르는
+    것뿐이라, 한 유형에 종명을 앉히려면 한 쪽 120번을 누르게 된다 — 유형
+    `chaetoceros` 개체 203개가 그 자리였다(사용자 2026-09-06).
+
+    **"전부" 가 쪽 밖을 뜻하지 않는다.** 거르개·검색이 걸린 채로 쪽을 넘어
+    고르면 **사람이 안 본 카드에 종명이 앉는다.** 서버의 `bulk` 가 한 쪽을
+    상한으로 둔 것과 같은 줄이다 (P16 5.2 — "화면에 없는 것을 고를 수는 없다").
+    그래서 몇 개를 고르는지 단추에 적는다.
+
+    **지운 것을 보는 화면에는 안 둔다** — 거기엔 일괄 띠 자체가 없다.
+  {% endcomment %}
+  {% if not readonly and not show_gone and rows %}
+    <button type="button" class="chip pickall" aria-pressed="false"
+            title="지금 이 쪽에 놓인 카드만 고릅니다 — 거르개에 걸린 다른 쪽까지 가지 않습니다">
+      <span class="t">이 쪽 전부 고르기</span> <span class="dim">({{ rows|length }})</span>
+    </button>
+  {% endif %}
   <span class="dim" style="margin-left:auto">
     {% if show_gone %}지운 개체다 — 되살리면 동정하는 쪽으로 돌아간다
     {% else %}번호 차례 · 그림이나 g번호를 누르면 그 시야로 간다{% endif %}
@@ -1128,6 +1153,28 @@
 
     function picked() { return cards.filter(function (c) { return c.picked(); }); }
 
+    // **쪽에 놓인 고르는 칸 전부.** 한 자리에서 집는다 — 아래 셋(변화 감시 ·
+    // 해제 · 쪽 전부)이 서로 다른 선택자를 쓰면 하나를 고칠 때 나머지가 조용히
+    // 어긋난다.
+    function allPicks() {
+      return Array.prototype.slice.call(
+        document.querySelectorAll(".catcard .pick"));
+    }
+
+    // **단추 하나가 두 방향으로 돈다** (185). 다 골라져 있으면 푸는 쪽이 된다 —
+    // 「전부 고르기」와 「해제」를 나란히 두면 지금 할 일이 어느 쪽인지를 사람이
+    // 매번 읽어야 하고, 그 줄에는 이미 거르개 칩이 여덟 개 서 있다.
+    var pickall = document.querySelector(".pickall");
+    var pickallText = pickall && pickall.querySelector(".t");
+
+    function pickallRefresh() {
+      if (!pickall) { return; }
+      var boxes = allPicks();
+      var all = boxes.length > 0 && boxes.every(function (p) { return p.checked; });
+      pickall.setAttribute("aria-pressed", all ? "true" : "false");
+      pickallText.textContent = all ? "이 쪽 고르기 해제" : "이 쪽 전부 고르기";
+    }
+
     function refresh() {
       var n = picked().length;
       bar.hidden = n === 0;
@@ -1135,16 +1182,27 @@
       cards.forEach(function (c) {
         c.card.classList.toggle("picked", c.picked());
       });
+      pickallRefresh();
     }
 
-    document.querySelectorAll(".catcard .pick").forEach(function (p) {
+    if (pickall) {
+      pickall.addEventListener("click", function () {
+        var boxes = allPicks();
+        // 하나라도 안 골라져 있으면 채우는 쪽이다 — 반쯤 고른 상태에서 눌렀을
+        // 때 고른 것이 사라지면 사람이 방금 한 일을 잃는다.
+        var on = boxes.some(function (p) { return !p.checked; });
+        boxes.forEach(function (p) { p.checked = on; });
+        bsay.textContent = "";
+        refresh();
+      });
+    }
+
+    allPicks().forEach(function (p) {
       p.addEventListener("change", refresh);
     });
 
     bar.querySelector(".clear").addEventListener("click", function () {
-      document.querySelectorAll(".catcard .pick").forEach(function (p) {
-        p.checked = false;
-      });
+      allPicks().forEach(function (p) { p.checked = false; });
       bsay.textContent = "";
       refresh();
     });
