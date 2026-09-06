@@ -205,11 +205,27 @@ class CheckAtlasTest(DiaRUGATestCase):
         DiatomObject.objects.create(viewpoint=w.vp, species="Chaetoceros spp.")
         self.assertIn("개체 종명이 도감에 없다", self.run_check())
 
+        # **표식은 항목에 붙는다** — `atlas/working-names.json` 과 같은 모양이다.
+        # 빠뜨리면 자리 검사에 걸린다(조용해지는 쪽이 아니라 시끄러워지는 쪽이라
+        # 안전하다)
         self.imp.put(doc([entry(1, "Chaetoceros spp.", "Chaetoceros",
-                                placements=[], binomial="", rank="genus_only")],
+                                placements=[], binomial="", rank="genus_only",
+                                extra={"working_name": True})],
                          key="working-names"), 90)
         self.assertNotIn("개체 종명이 도감에 없다", self.run_check())
+
+        # **자리 검사가 대신 켜지지 않는다** (186). 도판이 없는 항목이라
+        # 「자리가 없는 도감 항목」에 걸리면 경고 하나를 닫고 다른 하나를 연
+        # 것이 된다 — 그 안내("1단계 파서를 다시 돌린다")도 이 항목엔 틀린 말이다
+        self.assertNotIn("자리가 없는 도감 항목", self.run_check())
 
         # 항목을 빼면 도로 걸린다 — 이 시험이 실패할 수 있는 것이어야 한다
         AtlasEntry.objects.filter(name="Chaetoceros spp.").delete()
         self.assertIn("개체 종명이 도감에 없다", self.run_check())
+
+    def test_작업_이름이_아니면_자리가_없는_것이_걸린다(self):
+        """**빼는 것이 작업 이름뿐인가.** 통째로 안 세게 되면 색인이 놓친
+        표제어를 영영 못 잡는다 — 그쪽이 이 검사의 본디 일이다."""
+        self.imp.put(doc([entry(1, "Navicula nowhere", "Navicula",
+                                placements=[])], key="no-place"), 91)
+        self.assertIn("자리가 없는 도감 항목", self.run_check())

@@ -778,11 +778,29 @@ def check_atlas(slug=None):
     places = AtlasPlacement.objects.count()
     print(f"   도감 {Atlas.objects.count()} · 항목 {entries} · 자리 {places}")
 
-    # 자리가 없는 항목은 도감에서 그 항목을 열 수가 없다
-    no_place = AtlasEntry.objects.filter(placements__isnull=True)
-    report("자리가 없는 도감 항목", no_place.count(), entries,
+    # 자리가 없는 항목은 도감에서 그 항목을 열 수가 없다.
+    #
+    # **작업 이름은 뺀다** (186). 색인에서 온 표제어가 아니라 속에서 멈춘 동정에
+    # 적으려고 사람이 `atlas/working-names.json` 에 적은 이름이라 **도판이 없는
+    # 것이 맞다.** 여기서 세면 경고가 영영 켜져 있고, "1단계 파서를 다시
+    # 돌린다" 는 안내도 그 항목에는 틀린 말이다(그 파일에는 파서가 없다).
+    # **늘 켜진 경고는 아무도 안 봐서 진짜를 놓치게 만든다** (140).
+    #
+    # **id 로 뺀다.** `exclude(extra__working_name=True)` 로 쓰면 그 키가 **없는**
+    # 행까지 함께 걷어낸다 — JSON 키가 없으면 비교가 NULL 이고 `NOT NULL` 은
+    # 참이 아니라서, 자리 없는 항목을 하나도 못 세게 된다. 시험이 그 자리를 잡았다.
+    work_ids = list(AtlasEntry.objects.filter(extra__working_name=True)
+                    .values_list("id", flat=True))
+    n_work = len(work_ids)
+    no_place = (AtlasEntry.objects.filter(placements__isnull=True)
+                .exclude(id__in=work_ids))
+    report("자리가 없는 도감 항목", no_place.count(), entries - n_work,
            "1단계 파서를 다시 돌린다 (tools/parse_atlas.py)",
            [f"{e.atlas.key} #{e.seq} {e.name}" for e in no_place[:5]])
+    # **뺐다고 적는다** — 감춘 것과 없는 것은 다르다
+    if n_work:
+        print(f"   작업 이름 {n_work}건은 자리 검사에서 뺐다 "
+              f"(도판이 없는 것이 맞다 · 186)")
 
     # 쪽이 없는 자리는 도판 이미지를 짚지 못한다 (한국 도감 199건은 원래 그렇다)
     no_page = AtlasPlacement.objects.filter(pdf_page__isnull=True).count()
