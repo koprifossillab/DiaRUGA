@@ -114,8 +114,44 @@ deploy/host/dbrun.sh backup_db.py --note before-<devlog 번호>
 뿐이고, 링크를 만드는 화면은 그 검사를 통과한다**(057). `/crops/` 와
 `/detections/` 가 **v0.8.0 이후 내내 500** 이었던 것이 이 구멍으로 나왔다(086).
 
-일곱을 연다 — `/crops/` · `/detections/` · `/catalog/` · `/g/1/` ·
-`/thresholds/` · `/system-settings/` · 목록.
+**슬라이드 슬러그가 든 URL 이다** — 슬러그를 빼고 치면 404 가 뜨고, 그 404 를
+"원래 그런 자리인가" 하고 넘기면 **찾으려던 500 을 못 본다**(184).
+
+| 화면 | URL |
+|---|---|
+| 검출 표 | `/d/<슬러그>/detections/` |
+| 크롭 | `/d/<슬러그>/crops/` |
+| 개체 카탈로그 | `/d/<슬러그>/catalog/` |
+| 검토 | `/d/<슬러그>/g/<gid>/` |
+| 문턱 | `/thresholds/` (슬라이드마다는 `/d/<슬러그>/thresholds/`) |
+| 시스템 설정 | `/system-settings/` |
+| 목록 | `/` |
+
+**한 슬라이드로 끝내지 않는다 — 슬라이드마다 갈래가 다르다.** 합성본만 있는
+시야와 프레임이 있는 시야가 다른 코드를 지난다(086 · 시험 쪽에서는
+`make_world(with_stack=False)` 가 그 반대쪽이다). **URL 을 덮는 것과 갈래를
+덮는 것은 다르다** — 목록에서 슬러그를 긁어 전수로 돈다.
+
+```bash
+B=http://127.0.0.1/DiaRUGA
+curl -s $B/ | grep -o 'href="[^"]*/d/[^"]*/"' | sed 's#.*/d/##; s#/"##' \
+  | grep -v '/edit$' | sort -u > /tmp/slides.txt
+for s in $(cat /tmp/slides.txt); do
+  for p in detections crops catalog thresholds; do
+    printf '%s %s %s\n' "$s" "$p" \
+      "$(curl -s -o /dev/null -w '%{http_code}' "$B/d/$s/$p/")"
+  done
+done | grep -v ' 200$' || echo "전부 200"
+```
+
+**200 만 보고 끝내지 않는다.** 이번 판이 넣은 칸이 통째로 안 그려져도 200 은
+나온다 — 템플릿이 조건 안에서 빠지면 예외도 경고도 없다. 그 판의 커밋에서 새
+표식을 뽑아 응답에 있는지 센다(184 에서 검토 화면의 카탈로그 칸을 그렇게 봤다).
+
+```bash
+git show <커밋> -- <템플릿> | grep '^+' | grep -o 'id="[^"]*"' | sort -u
+curl -s "$B/d/<슬러그>/g/<gid>/" | grep -c 'id="catpane-'   # 0 이면 안 놓인 것이다
+```
 
 ## 9. 뒤처리 스크립트 (있으면)
 
@@ -154,7 +190,10 @@ deploy/host/testdeploy.sh v0.12.2
 ## 12. 문서를 닫는다
 
 - `HANDOFF.md` — "배포를 기다리는 판이 없다" 로, 도는 판을 새 판으로
-- `CHANGELOG.md` — 항목에서 "배포 대기" 를 뗀다
+- `CHANGELOG.md` — 항목에서 "배포 대기" 를 떼고, **날짜를 실제 배포일로
+  맞춘다.** 3단계가 태그보다 먼저 오므로 그때 적은 날짜는 **예정일이다** —
+  하루라도 미뤄지면 어긋난다(184 에서 이틀이었다). `v0.9.3` 이 뭐였는지 묻는
+  사람에게 필요한 것은 초안을 쓴 날이 아니다
 - 3.8 에 적어 둔 일회성 스크립트는 **돌렸다고 적는다**(안 적으면 다음 사람이
   또 돌린다)
 
