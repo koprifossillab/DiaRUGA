@@ -1161,6 +1161,52 @@
         document.querySelectorAll(".catcard .pick"));
     }
 
+    // **고른 것이 새로고침을 넘어 산다** (187). `base.html` 은 뒤로 와서
+    // 되살아난 화면(bfcache)을 늘 다시 받는다 — 교정·검토 표시가 옛것이면 안
+    // 되기 때문이다. 그런데 **그 새로고침이 고른 칸까지 비웠다**: 카드를 눌러
+    // 그 시야를 보고 돌아오는 것이 이 화면의 일상이라, 120개를 골라 놓고 하나를
+    // 확인하러 갔다 오면 처음부터 다시 누른다(사용자 2026-09-07).
+    //
+    // **주소가 같을 때만 되살린다.** 거르개·쪽이 달라지면 그 쪽에 없는 카드를
+    // 고른 채로 두는 셈이다 — 「화면에 없는 것을 고를 수는 없다」(P16 5.2)가
+    // 그 자리에서도 성립해야 한다.
+    //
+    // **탭 안에서만 산다** — `sessionStorage` 다. 고른 것은 지금 하고 있는
+    // 일이지 다음에 열 때까지 들고 갈 값이 아니고, 어제 고른 것이 되살아나면
+    // 사람이 안 본 카드에 종명이 앉는다.
+    var PICKMEM = "diaruga.catalog.pick";
+
+    function pickAt() { return location.pathname + location.search; }
+
+    function pickId(p) {
+      var c = p.closest(".catcard");
+      return c.dataset.gid + "/" + c.dataset.image + "/" + c.dataset.key;
+    }
+
+    // 저장·되살림 둘 다 **막혀도 그냥 넘어간다** — 비공개 창에서는 접근 자체가
+    // 예외다. 고르는 일은 계속 되어야 하고, 못 지킨 것은 다음 새로고침에
+    // 비어 있는 것으로 드러난다.
+    function savePicks() {
+      try {
+        sessionStorage.setItem(PICKMEM, JSON.stringify({
+          at: pickAt(),
+          ids: allPicks().filter(function (p) { return p.checked; }).map(pickId),
+        }));
+      } catch (e) { /* 접근이 막혔다 */ }
+    }
+
+    function restorePicks() {
+      var got = null;
+      try { got = JSON.parse(sessionStorage.getItem(PICKMEM) || "null"); }
+      catch (e) { return; }
+      if (!got || got.at !== pickAt() || !got.ids || !got.ids.length) { return; }
+      var want = {};
+      got.ids.forEach(function (id) { want[id] = true; });
+      allPicks().forEach(function (p) {
+        if (want[pickId(p)]) { p.checked = true; }
+      });
+    }
+
     // **단추 하나가 두 방향으로 돈다** (185). 다 골라져 있으면 푸는 쪽이 된다 —
     // 「전부 고르기」와 「해제」를 나란히 두면 지금 할 일이 어느 쪽인지를 사람이
     // 매번 읽어야 하고, 그 줄에는 이미 거르개 칩이 여덟 개 서 있다.
@@ -1183,6 +1229,7 @@
         c.card.classList.toggle("picked", c.picked());
       });
       pickallRefresh();
+      savePicks();
     }
 
     if (pickall) {
@@ -1287,6 +1334,9 @@
         });
     });
 
+    // **되살린 다음에 세운다** — `refresh()` 가 띠와 「쪽 전부 고르기」를
+    // 지금 고른 것에 맞춘다. 순서가 바뀌면 칸만 켜지고 띠가 안 뜬다.
+    restorePicks();
     refresh();
   }
 })();

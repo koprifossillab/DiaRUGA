@@ -406,3 +406,46 @@ class CatalogBulkBrowserTest(BrowserTestCase):
         page.wait_for_timeout(400)
         self.assertIn("고칠 칸", page.inner_text(".bulkbar .say"))
         self.assertFalse(DiatomObject.objects.exclude(label="").exists())
+
+    def test_고른_것이_새로고침을_넘어_산다(self):
+        """**이 화면의 일상이 새로고침이다** (187). 카드를 눌러 그 시야를 보고
+        돌아오면 `base.html` 이 bfcache 를 늘 다시 받는다(교정·검토 표시가
+        옛것이면 안 되므로) — 그 새로고침이 **고른 칸까지 비웠다.**
+
+        120개를 골라 놓고 하나를 확인하러 갔다 오면 처음부터 다시 누른다.
+        사용자가 "다중 선택이 계속 풀린다" 고 말한 자리다 (2026-09-07).
+        """
+        page = self.open(reverse("catalog", args=[self.w.slide.slug]) + "?frag=1")
+        cards = page.locator(".catcard")
+        self.assertGreaterEqual(cards.count(), 3, "카드가 셋은 있어야 한다")
+        cards.nth(0).locator(".pick").check()
+        cards.nth(1).locator(".pick").check()
+        page.wait_for_selector(".bulkbar:not([hidden])", timeout=5000)
+
+        page.reload(wait_until="load")
+        page.wait_for_timeout(300)
+        cards = page.locator(".catcard")
+        self.assertTrue(cards.nth(0).locator(".pick").is_checked())
+        self.assertTrue(cards.nth(1).locator(".pick").is_checked())
+        self.assertFalse(cards.nth(2).locator(".pick").is_checked(),
+                         "안 고른 것까지 골라졌다")
+        # **띠도 함께 돌아와야 한다** — 칸만 켜져 있고 띠가 없으면 `적용` 이
+        # 없어 고른 것을 쓸 수가 없다.
+        self.assertTrue(page.locator(".bulkbar").is_visible())
+        self.assertIn("2", page.inner_text(".bulkbar .n"))
+
+    def test_거르개가_다르면_되살리지_않는다(self):
+        """**화면에 없는 것을 고를 수는 없다** (P16 5.2). 거르개·쪽이 달라지면
+        그 쪽에 없는 카드를 고른 채로 두는 셈이라 되살리지 않는다.
+        """
+        page = self.open(reverse("catalog", args=[self.w.slide.slug]) + "?frag=1")
+        page.locator(".pickall").click()
+        page.wait_for_selector(".bulkbar:not([hidden])", timeout=5000)
+
+        page.goto(self.live_server_url
+                  + reverse("catalog", args=[self.w.slide.slug]))
+        page.wait_for_timeout(300)
+        picks = page.locator(".catcard .pick")
+        for i in range(picks.count()):
+            self.assertFalse(picks.nth(i).is_checked(), f"{i}번이 골라져 있다")
+        self.assertTrue(page.locator(".bulkbar").is_hidden())
