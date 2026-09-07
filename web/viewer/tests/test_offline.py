@@ -21,6 +21,7 @@ from django.urls import reverse
 
 from . import factories as fx
 from .base import DiaRUGATestCase
+from .. import data
 from ..models import RunBatch
 
 
@@ -123,6 +124,81 @@ class OfflineExportTest(DiaRUGATestCase):
     def test_카탈로그로_가는_길을_안_놓는다(self):
         html = self.html()
         self.assertNotIn("data-catalog-url", html)
+
+
+class OfflinePickPanelTest(DiaRUGATestCase):
+    """**꺼내는 자리는 일하는 화면 안이다** (사용자 2026-09-07).
+
+    검토 화면에는 검토기를, 카탈로그 화면에는 동정기를 — 범위를 고르는 일은
+    그 슬라이드를 보면서 하는 일이라, 목록에서 다시 고르게 하면 **방금 보던
+    것과 다른 것을 꺼내는 자리**가 생긴다.
+    """
+
+    @classmethod
+    def setUpTestData(cls):
+        fx.make_classes()
+        cls.w = fx.make_world(slug="rs23", n_viewpoints=3, n_candidates=2)
+        # **카탈로그는 묶음 코드가 있어야 선다** — 번호의 꼬리가 그 코드다.
+        # 없으면 그 화면이 통째로 잠기고(`blocked`), 잠긴 화면에서는 도구도
+        # 안 꺼낸다(번호 없는 카드를 들고 나가게 된다).
+        RunBatch.objects.filter(for_review=True).update(code="S1")
+        for vp in cls.w.viewpoints:
+            fx.review_done(vp)
+
+    def setUp(self):
+        super().setUp()
+        self.c = Client()
+
+    def get(self, url):
+        r = self.c.get(url)
+        self.assertEqual(r.status_code, 200, r.content[:300])
+        return r.content.decode()
+
+    def test_검토_화면에_검토기_꺼내기가_있다(self):
+        gid = self.w.viewpoints[1].idx
+        html = self.get(reverse("group", args=["rs23", gid]))
+        self.assertIn('id="offpick-review"', html)
+        self.assertIn('name="kind" value="review"', html)
+        # **지금 보고 있는 시야가 기본 범위다** — 어디를 꺼낼지는 대개 지금
+        # 보는 자리에서 정한다
+        self.assertIn(f'value="{gid}"', html)
+        self.assertIn('name="gids"', html)
+        # 해상도는 검토기에만 있다 (동정기는 크롭이라 고를 것이 없다)
+        self.assertIn('type="radio" name="px"', html)
+
+    def test_카탈로그_화면에_동정기_꺼내기가_있다(self):
+        html = self.get(reverse("catalog", args=["rs23"]))
+        self.assertIn('id="offpick-catalog"', html)
+        self.assertIn('name="kind" value="catalog"', html)
+        # **고를 수 없는 것을 내보이지 않는다** — 크롭은 원본에서 잘라 내므로
+        # 해상도를 고를 자리가 없다. 내보이면 눌러 놓고 아무 일도 안 일어난다.
+        self.assertNotIn('type="radio" name="px"', html)
+
+    # **자동 처리 중에는 안 놓는다** — 그때 꺼낸 파일로 검토해 봐야 반입이
+    # 막힌다(`save_review` 가 409 로 물린다). 헛수고를 만들지 않는다.
+    def test_처리_중에는_꺼내기가_없다(self):
+        with patch.object(data, "review_blocked", return_value="처리 중입니다"):
+            html = self.get(reverse("group", args=["rs23", self.w.vp.idx]))
+            self.assertNotIn("offpick-review", html)
+            html = self.get(reverse("catalog", args=["rs23"]))
+            self.assertNotIn("offpick-catalog", html)
+
+    # **다른 엔진을 보는 화면에도 안 놓는다** — 파일은 늘 검토 대상 묶음으로
+    # 구워지므로 지금 보고 있는 것과 다른 것이 나온다(051 이 난 자리다).
+    def test_다른_엔진_화면에는_꺼내기가_없다(self):
+        run = fx.add_other_engine(self.w.vp, label="yolo-시험")
+        html = self.get(reverse("group", args=["rs23", self.w.vp.idx])
+                        + f"?batch={run.id}")
+        self.assertIn("읽기 전용", html)
+        self.assertNotIn("offpick-review", html)
+
+    # 되돌려 넣는 것만 한 자리로 온다 — 파일이 제가 어디서 왔는지를 들고 있다
+    def test_올리는_화면에는_꺼내기_폼이_없다(self):
+        html = self.get(reverse("offline"))
+        self.assertIn("결과 올리기", html)
+        self.assertNotIn('name="kind"', html)
+        self.assertNotIn('name="gids"', html)
+        self.assertNotIn("offpick-", html)
 
 
 class OfflineFramesAndSizeTest(DiaRUGATestCase):

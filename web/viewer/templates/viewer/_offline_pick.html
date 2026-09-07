@@ -1,0 +1,143 @@
+{% load viewer_extras %}
+{% comment %}
+  오프라인 파일을 꺼내는 패널 (P25 · 사용자 2026-09-07).
+
+  **일하는 화면 안에 둔다.** 검토 화면에는 검토기를, 카탈로그 화면에는 동정기를 —
+  범위를 고르는 일은 그 슬라이드를 보면서 하는 일이라, 목록에서 다시 고르게
+  하면 방금 보던 것과 다른 것을 꺼내는 자리가 생긴다.
+
+  받는 것은 `off` 하나다 (`views.offline_pick_ctx`). 판 수·개체 수가 거기
+  실려 있어 **화면이 그 자리에서 크기를 곱해 보인다** — 다 굽고 나서 "너무
+  큽니다" 를 보는 것과, 고르면서 보는 것은 다른 일이다.
+{% endcomment %}
+<details class="offpick" id="offpick-{{ off.kind }}">
+  <summary>⤓ 오프라인 {% if off.kind == "catalog" %}동정기{% else %}검토기{% endif %} 꺼내기</summary>
+  <div class="offbody">
+    <p class="offsay">
+      고른 시야를 <b>파일 하나</b>로 굽습니다 — 사진이 그 안에 들어 있어
+      인터넷이 없어도 열립니다. 검토 대상 묶음은
+      <span class="mono">{{ off.batch_label }}</span> 입니다.
+    </p>
+
+    <form method="post" action="{% url 'offline_export' %}">
+      {% csrf_token %}
+      <input type="hidden" name="slug" value="{{ off.slug }}">
+      <input type="hidden" name="kind" value="{{ off.kind }}">
+
+      <div class="orow">
+        <label class="k" for="offg-{{ off.kind }}">시야 범위</label>
+        <input type="text" id="offg-{{ off.kind }}" name="gids"
+               value="{{ off.gids }}"
+               placeholder="비우면 전부 · 예: 0-19, 25, 31">
+        <span class="dim">이 슬라이드는 g{{ off.first }}~g{{ off.last }}
+          ({{ off.n }}개)</span>
+      </div>
+
+      {% if off.kind != "catalog" %}
+      {% comment %}
+        **해상도를 사람이 고른다.** 온라인 화면은 확대하면 원본으로 갈아
+        끼우는데(`maybeHiRes`) 오프라인은 파일에 든 것이 전부다 — areolae 를
+        보고 동정하려면 그 화소가 파일 안에 있어야 하고, 그만큼 커진다.
+      {% endcomment %}
+      <div class="orow">
+        <label class="k">해상도</label>
+        <span class="opx">
+          {% for o in off.px_opts %}
+            <label><input type="radio" name="px" value="{{ o.key }}"
+                          {% if o.on %}checked{% endif %}>
+              {{ o.label }} <span class="dim">판 한 장 ≈ {{ o.kb }} KB</span></label>
+          {% endfor %}
+        </span>
+      </div>
+      {% endif %}
+
+      <div class="orow"><label class="k">예상 크기</label>
+        <b class="oest">—</b>
+        <span class="dim">한 파일에 시야 {{ off.max_vp }}개 · {{ off.max_mb }} MB 까지</span></div>
+
+      <div class="orow">
+        <label class="k"></label>
+        <button type="submit">파일 굽기</button>
+        <a href="{% url 'offline' %}">결과 올리기 →</a>
+      </div>
+    </form>
+
+    <p class="offnote">
+      {% if off.kind == "catalog" %}
+        개체마다 <b>판 수만큼 크롭</b>이 들어갑니다 — 초점 하나만 보고는 동정을
+        못 합니다. 카드 안에서 ‹ › · 휠 · ←/→ 로 넘깁니다.
+      {% else %}
+        시야마다 <b>합성본과 프레임 전부</b>가 들어갑니다 — 초점 시리즈를 넘겨
+        보지 못하면 개체를 동정할 수 없습니다. 캐러셀이 오프라인에서도 그대로
+        돕니다.
+      {% endif %}
+      <br><b>결과 파일을 내려받아 올려야</b> DB 로 들어갑니다 — 그때 무엇이
+      바뀌는지 먼저 보여 드립니다.
+    </p>
+  </div>
+</details>
+
+<script type="application/json" id="offpx-{{ off.kind }}">{{ off.px_bytes|json_dumps }}</script>
+<script>
+(function () {
+  /* **고르는 자리에서 크기를 보인다.** 판 수는 서버가 세어 왔고(시야마다
+     합성본 + 프레임), 한 장이 몇 바이트인지는 실측값이다 — 서버가 막을 때
+     쓰는 것과 같은 숫자다(`offline.VIEW_PX`). */
+  var box = document.getElementById('offpick-{{ off.kind }}');
+  if (!box) return;
+  var PXB = JSON.parse(
+    document.getElementById('offpx-{{ off.kind }}').textContent || '{}');
+  var CROP = {{ off.crop_bytes }};
+  var KIND = '{{ off.kind }}';
+  var ALL = {{ off.n }}, SHOTS = {{ off.shots }}, CARDS = {{ off.cards }};
+  var LO = {{ off.first }}, HI = {{ off.last }};
+  var form = box.querySelector('form');
+  var gids = box.querySelector('input[name="gids"]');
+  var est = box.querySelector('.oest');
+
+  /* 범위 칸이 몇 개를 가리키나. **서버의 `parse_gids` 와 같은 규칙**이되
+     여기서는 세기만 한다 — 못 읽는 값이면 전부로 친다(막는 것은 서버다). */
+  function nSelected() {
+    var raw = (gids.value || '').replace(/\s|g/g, '');
+    if (!raw) return ALL;
+    var seen = {}, ok = true;
+    raw.split(',').forEach(function (part) {
+      if (!part) return;
+      var m = /^(\d+)-(\d+)$/.exec(part);
+      if (m) {
+        var a = Math.min(+m[1], +m[2]), b = Math.max(+m[1], +m[2]);
+        for (var i = a; i <= b; i++) if (i >= LO && i <= HI) seen[i] = 1;
+      } else if (/^\d+$/.test(part)) {
+        if (+part >= LO && +part <= HI) seen[+part] = 1;
+      } else { ok = false; }
+    });
+    var n = Object.keys(seen).length;
+    return (ok && n) ? Math.min(n, ALL) : ALL;
+  }
+
+  function px() {
+    var on = form.querySelector('input[name="px"]:checked');
+    return on ? on.value : 'full';
+  }
+
+  function paint() {
+    var n = nSelected(), perVp = SHOTS / (ALL || 1), bytes, say;
+    if (KIND === 'catalog') {
+      var nCards = Math.round(CARDS * n / (ALL || 1));
+      var nCrops = Math.round(nCards * perVp);
+      bytes = nCrops * CROP;
+      say = '개체 약 ' + nCards + '개 · 크롭 ' + nCrops + '장';
+    } else {
+      var nShots = Math.round(n * perVp);
+      bytes = nShots * (PXB[px()] || 0);
+      say = '시야 ' + n + '개 · 판 ' + nShots + '장';
+    }
+    var mb = bytes / 1024 / 1024;
+    est.textContent = '약 ' + mb.toFixed(mb >= 10 ? 0 : 1) + ' MB (' + say + ')';
+  }
+
+  form.addEventListener('input', paint);
+  form.addEventListener('change', paint);
+  paint();
+})();
+</script>

@@ -380,6 +380,13 @@
   </span>
 </div>
 
+{% comment %}
+  **오프라인 동정기를 여기서 꺼낸다** (사용자 2026-09-07). 동정하는 화면에서
+  동정 도구를 꺼낸다 — 범위를 고르는 일은 이 슬라이드를 보면서 하는 일이다.
+  자동 처리 중이면 서버가 `off` 를 안 준다(그때 꺼내 봐야 반입이 막힌다).
+{% endcomment %}
+{% if off %}{% include "viewer/_offline_pick.html" %}{% endif %}
+
 {% if not rows %}
   <div class="note">
     {% if q %}“{{ q }}” 로 찾은 개체가 없다.

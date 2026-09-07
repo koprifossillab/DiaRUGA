@@ -505,6 +505,19 @@ def group(request, slug, gid):
     # 링크가 짚어 온 개체 (118). 읽기 전용 갈래(`?batch=`)에도 그대로 얹는다 —
     # 표시는 보는 일이지 고치는 일이 아니다.
     ctx["hl"] = _highlight_arg(request)
+    # **오프라인 검토기를 여기서 꺼낸다** (사용자 2026-09-07). 지금 보고 있는
+    # 시야가 기본 범위다 — 어디를 꺼낼지는 대개 지금 보는 자리에서 정한다.
+    #
+    # **자동 처리 중에는 안 놓는다** — 그때 꺼낸 파일로 검토해 봐야 반입이
+    # 막힌다(`save_review` 가 409 로 물린다). 헛수고를 만들지 않는다.
+    #
+    # **다른 엔진을 보는 화면(`?batch=`)에도 안 놓는다.** 파일은 늘 **검토 대상
+    # 묶음**으로 구워지므로(`review_bundle`), 지금 보고 있는 것과 다른 것이
+    # 나온다 — 화면에서 고른 것과 손에 쥔 것이 다른 자리를 만들지 않는다(051).
+    slide = Slide.objects.filter(slug=slug).first()
+    ctx["off"] = (None if (slide is None or ctx.get("review_blocked")
+                           or ctx.get("readonly"))
+                  else offline_pick_ctx(slide, "review", str(gid)))
     return render(request, "viewer/group.html", ctx)
 
 
@@ -1185,6 +1198,15 @@ def catalog(request, slug):
     return render(request, "viewer/catalog.html", {
         "slug": slug,
         "label": label,
+        # **오프라인 동정기를 여기서 꺼낸다** (사용자 2026-09-07). 동정하는
+        # 화면에서 동정 도구를 꺼낸다 — 다른 화면으로 가서 슬라이드를 다시
+        # 고르게 하면 방금 보던 것과 다른 것을 꺼내는 자리가 생긴다.
+        #
+        # **자동 처리 중에는 안 놓는다** — 그때 꺼낸 파일로 동정해 봐야 반입이
+        # 막힌다.
+        "off": (None if blocked else
+                offline_pick_ctx(Slide.objects.filter(slug=slug).first(),
+                                 "catalog")),
         "rows": page,
         "batch": batch,
         "review_batch": (batch or {}).get("label", ""),
@@ -2680,6 +2702,46 @@ def save_review(request):
 # 나가고, 돌아와서 결과를 올린다. 굽는 규칙은 `viewer/offline.py` 하나뿐이다.
 
 
+def offline_pick_ctx(slide: Slide, kind: str, gids: str = "") -> dict | None:
+    """**일하는 화면 안의 꺼내기 패널**이 쓰는 것 (`_offline_pick.html`).
+
+    검토 화면에는 검토기를, 카탈로그 화면에는 동정기를 놓는다 (사용자
+    2026-09-07) — 범위를 고르는 일은 그 슬라이드를 보면서 하는 일이라, 목록에서
+    다시 고르게 하면 **방금 보던 것과 다른 것을 꺼내는 자리**가 생긴다.
+
+    판 수와 개체 수가 함께 간다. 화면이 그 자리에서 곱해 **예상 크기**를
+    보이고, 서버가 막을 때 쓰는 것과 같은 숫자다(`offline.VIEW_PX`).
+
+    시야가 하나도 없으면 `None` — 꺼낼 것이 없는 자리에 패널을 놓지 않는다.
+    """
+    ids = list(slide.viewpoints.order_by("idx").values_list("idx", "n_frames"))
+    if not ids:
+        return None
+    cards = (ObjectReview.objects
+             .filter(viewpoint__slide=slide, batch_id=data.review_batch_id(),
+                     removed=False, diatom_object__isnull=False)
+             .values("diatom_object").distinct().count())
+    return {
+        "slug": slide.slug,
+        "kind": kind,
+        "gids": gids,
+        "n": len(ids),
+        "first": ids[0][0],
+        "last": ids[-1][0],
+        # 판 수 — 시야마다 합성본 하나 + 프레임. 크기를 곱하는 재료다.
+        "shots": sum((f or 0) + 1 for _i, f in ids),
+        "cards": cards,
+        "max_vp": offline.MAX_VIEWPOINTS,
+        "max_mb": offline.MAX_BYTES // (1024 * 1024),
+        "batch_label": data.review_batch_label(),
+        "px_bytes": {k: v["bytes"] for k, v in offline.VIEW_PX.items()},
+        "px_opts": [{"key": k, "label": v["label"], "kb": v["bytes"] // 1024,
+                     "on": k == offline.VIEW_PX_DEFAULT}
+                    for k, v in offline.VIEW_PX.items()],
+        "crop_bytes": offline.BYTES_PER_CROP,
+    }
+
+
 def _offline_slides() -> list[dict]:
     """고르기 화면의 슬라이드 목록.
 
@@ -2708,10 +2770,13 @@ def _offline_slides() -> list[dict]:
 
 
 def offline_page(request, slug=""):
-    """오프라인 파일을 꺼내는 자리 (P25 5절).
+    """오프라인 결과를 **되돌려 넣는 자리** (P25 5절).
 
-    **여기서 반입도 받는다** — 꺼내는 것과 되돌리는 것은 한 흐름이라, 화면을
-    가르면 결과 파일을 든 사람이 올릴 곳을 찾아 헤맨다.
+    **꺼내는 자리는 여기가 아니다** (사용자 2026-09-07) — 검토 화면과 카탈로그
+    화면 안에 있다(`offline_pick_ctx`). 범위를 고르는 일은 그 슬라이드를
+    보면서 하는 일이고, 여기서 다시 고르게 하면 방금 보던 것과 다른 것을
+    꺼내는 자리가 생긴다. 되돌려 넣는 것만 **어느 슬라이드의 것이든 한 자리**로
+    온다 — 파일이 제가 어디서 왔는지를 들고 있기 때문이다.
     """
     return render(request, "viewer/offline.html", _offline_ctx(slug))
 

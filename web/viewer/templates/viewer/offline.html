@@ -1,105 +1,40 @@
 {% extends "viewer/base.html" %}
-{% load viewer_extras %}
 {% comment %}
-  오프라인 파일을 꺼내는 자리 (P25). **되돌려 넣는 자리도 여기다** — 두 일이 한
-  흐름이라, 화면을 가르면 결과 파일을 든 사람이 올릴 곳을 찾아 헤맨다.
+  오프라인 결과를 **되돌려 넣는 자리** (P25 5절).
+
+  **꺼내는 자리는 여기가 아니다** (사용자 2026-09-07) — 검토 화면과 카탈로그
+  화면 안에 있다(`_offline_pick.html`). 범위를 고르는 일은 그 슬라이드를 보면서
+  하는 일이고, 여기서 다시 고르게 하면 방금 보던 것과 다른 것을 꺼내는 자리가
+  생긴다.
+
+  **되돌려 넣는 것만 한 자리로 온다.** 파일이 제가 어디서 왔는지를 들고 있어
+  (`bundle`) 슬라이드를 고를 일이 없다.
 {% endcomment %}
-{% block title %}오프라인 검토·동정 — DiaRUGA{% endblock %}
-{% block subtitle %}<a href="{% url 'index' %}">데이터셋</a> / <b>오프라인</b>{% endblock %}
+{% block title %}오프라인 결과 올리기 — DiaRUGA{% endblock %}
+{% block subtitle %}<a href="{% url 'index' %}">데이터셋</a> / <b>오프라인 결과 올리기</b>{% endblock %}
 
 {% block content %}
 <style>
-  .offwrap { display: flex; flex-wrap: wrap; gap: 18px; align-items: flex-start; }
-  .offcard { flex: 1 1 420px; max-width: 620px; border: 1px solid var(--line);
+  .offcard { max-width: 620px; border: 1px solid var(--line);
              border-radius: 8px; padding: 14px 16px; background: var(--card); }
   .offcard h2 { margin: 0 0 4px; font-size: 15px; }
   .offcard p { font-size: 13px; line-height: 1.6; opacity: .85; }
-  .offcard .row { display: flex; align-items: center; gap: 8px; margin: 10px 0; }
+  .offcard .row { display: flex; align-items: center; gap: 8px; margin: 10px 0;
+                  flex-wrap: wrap; }
   .offcard label.k { width: 78px; font-size: 13px; opacity: .8; }
-  .offcard select, .offcard input[type=text], .offcard input[type=file] { flex: 1 1 auto; }
-  .offcard .kinds { display: flex; gap: 14px; flex-wrap: wrap; }
-  .offcard .kinds label { font-size: 13px; }
+  .offcard input[type=file] { flex: 1 1 auto; }
   .offerr { margin: 0 0 14px; padding: 10px 14px; border-radius: 6px;
             background: var(--err-bg); color: var(--err-fg);
-            border: 1px solid var(--err-line); font-size: 13px; }
+            border: 1px solid var(--err-line); font-size: 13px; line-height: 1.6; }
   .offnote { font-size: 12.5px; opacity: .75; margin-top: 10px; line-height: 1.6; }
 </style>
 
 {% if error %}<div class="offerr">{{ error }}</div>{% endif %}
 
-<div class="offwrap">
-<form class="offcard" method="post" action="{% url 'offline_export' %}">
-  {% csrf_token %}
-  <h2>꺼내기</h2>
-  <p>고른 시야를 <b>파일 하나</b>로 굽습니다. 사진이 그 안에 들어 있어
-     인터넷이 없어도 열립니다. 지금 검토 대상 묶음은
-     <span class="mono">{{ batch_label }}</span> 입니다.</p>
-
-  <div class="row">
-    <label class="k" for="off-slug">슬라이드</label>
-    <select id="off-slug" name="slug">
-      {% for s in slides %}
-        <option value="{{ s.slug }}" {% if s.slug == pick %}selected{% endif %}
-                data-vp="{{ s.n }}" data-shots="{{ s.shots }}"
-                data-cards="{{ s.cards }}"
-                data-first="{{ s.first }}" data-last="{{ s.last }}">
-          {{ s.name }} — 시야 {{ s.n }}개 · 판 {{ s.shots }}장 (g{{ s.first }}~g{{ s.last }})</option>
-      {% endfor %}
-    </select>
-  </div>
-
-  <div class="row">
-    <label class="k">프로그램</label>
-    <div class="kinds">
-      <label><input type="radio" name="kind" value="review" checked>
-        <b>시야 검토</b> — 검출을 지우고 되살리고 유형을 고친다</label>
-      <label><input type="radio" name="kind" value="catalog">
-        <b>개체 동정</b> — 크롭마다 종명·등급·자세를 적는다</label>
-    </div>
-  </div>
-
-  <div class="row">
-    <label class="k" for="off-gids">범위</label>
-    <input type="text" id="off-gids" name="gids" placeholder="비우면 전부 · 예: 0-19, 25, 31">
-  </div>
-
-  {% comment %}
-    **해상도를 사람이 고른다** (사용자 2026-09-07). 온라인 화면은 확대하면
-    원본으로 갈아 끼우는데(`maybeHiRes`) 오프라인은 파일에 든 것이 전부다 —
-    areolae 를 보고 동정하려면 그 화소가 파일 안에 있어야 하고, 그만큼 커진다.
-    숫자는 실측이다(`offline.VIEW_PX`).
-  {% endcomment %}
-  <div class="row" id="off-pxrow">
-    <label class="k">해상도</label>
-    <div class="kinds">
-      {% for o in px_opts %}
-        <label><input type="radio" name="px" value="{{ o.key }}"
-                      {% if o.on %}checked{% endif %}>
-          {{ o.label }} <span class="dim">판 한 장 ≈ {{ o.kb }} KB</span></label>
-      {% endfor %}
-    </div>
-  </div>
-
-  <div class="row"><label class="k">예상 크기</label>
-    <b id="off-est">—</b></div>
-
-  <button type="submit">파일 굽기</button>
-
-  <p class="offnote">
-    <b>프레임을 다 담습니다</b> — 초점 시리즈를 넘겨 보지 못하면 개체를 동정할
-    수 없습니다. 시야 하나에 판이 5~7장이고, 캐러셀과 <kbd>←</kbd>·<kbd>→</kbd>
-    가 오프라인에서도 그대로 돕니다.<br>
-    동정 쪽은 <b>개체 크롭</b>만 담고 그것도 판마다 한 장씩입니다 — 개체 하나에
-    90 KB 쯤이라 훨씬 가볍습니다.<br>
-    한 파일에 시야 <b>{{ max_vp }}개</b> · <b>{{ max_mb }} MB</b> 까지입니다.
-    넘으면 굽기 전에 막고 몇 개까지 담기는지 알려 드립니다.
-  </p>
-</form>
-
 <form class="offcard" method="post" action="{% url 'offline_import' %}"
       enctype="multipart/form-data">
   {% csrf_token %}
-  <h2>되돌려 넣기</h2>
+  <h2>결과 올리기</h2>
   <p>오프라인 화면의 <b>「결과 내려받기」</b> 가 낸 JSON 을 올립니다.
      <b>먼저 무엇이 바뀌는지 보여 드리고</b>, 고른 것만 넣습니다.</p>
 
@@ -114,87 +49,9 @@
     꺼낸 뒤에 <b>온라인에서 같은 자리를 만졌으면</b> 그 줄은 충돌로 표시되고
     기본으로 꺼져 있습니다 — 넣으면 그 판단이 사라집니다.<br>
     그 사이 <b>검출을 다시 돌렸으면</b> 그 시야는 아예 넣을 수 없습니다.
-    짚을 자리가 없어졌기 때문입니다.
+    짚을 자리가 없어졌기 때문입니다.<br>
+    <b>꺼내는 것은 검토 화면과 개체 카탈로그에서</b> 합니다 — 시야 범위를
+    거기서 골라 파일을 굽습니다.
   </p>
 </form>
-</div>
-
-<script type="application/json" id="off-px">{{ px_bytes|json_dumps }}</script>
-<script>
-(function () {
-  /* **고르는 자리에서 크기를 보인다** (사용자 2026-09-07). 다 굽고 나서
-     "너무 큽니다" 를 보는 것과, 고르면서 보는 것은 다른 일이다.
-
-     판 수는 서버가 세어 옵션에 실어 두었고(시야마다 합성본 + 프레임), 한 장이
-     몇 바이트인지는 실측값이다 — 서버가 막을 때 쓰는 것과 같은 숫자다. */
-  var PXB = JSON.parse(document.getElementById('off-px').textContent || '{}');
-  var CROP = {{ crop_bytes }};
-  var slug = document.getElementById('off-slug');
-  var gids = document.getElementById('off-gids');
-  var est = document.getElementById('off-est');
-  var pxRow = document.getElementById('off-pxrow');
-  var form = slug.form;
-
-  function kind() {
-    var on = form.querySelector('input[name="kind"]:checked');
-    return on ? on.value : 'review';
-  }
-  function px() {
-    var on = form.querySelector('input[name="px"]:checked');
-    return on ? on.value : 'full';
-  }
-
-  /* 범위 칸이 몇 개를 가리키나. **서버의 `parse_gids` 와 같은 규칙**이되,
-     여기서는 세기만 한다 — 못 읽는 값이면 전부로 친다(막는 것은 서버다). */
-  function nSelected(opt) {
-    var all = +opt.dataset.vp || 0;
-    var raw = (gids.value || '').replace(/\s|g/g, '');
-    if (!raw) return all;
-    var lo = +opt.dataset.first, hi = +opt.dataset.last, seen = {};
-    var ok = true;
-    raw.split(',').forEach(function (part) {
-      if (!part) return;
-      var m = /^(\d+)-(\d+)$/.exec(part);
-      if (m) {
-        var a = Math.min(+m[1], +m[2]), b = Math.max(+m[1], +m[2]);
-        for (var i = a; i <= b; i++) if (i >= lo && i <= hi) seen[i] = 1;
-      } else if (/^\d+$/.test(part)) {
-        if (+part >= lo && +part <= hi) seen[+part] = 1;
-      } else { ok = false; }
-    });
-    var n = Object.keys(seen).length;
-    return (ok && n) ? Math.min(n, all) : all;
-  }
-
-  function paint() {
-    var opt = slug.options[slug.selectedIndex];
-    if (!opt) return;
-    var all = +opt.dataset.vp || 1;
-    var shots = +opt.dataset.shots || 0;
-    var cards = +opt.dataset.cards || 0;
-    var n = nSelected(opt);
-    var perVp = shots / all;
-    var bytes, say;
-    if (kind() === 'catalog') {
-      var nCards = Math.round(cards * n / all);
-      var nCrops = Math.round(nCards * perVp);
-      bytes = nCrops * CROP;
-      say = '개체 약 ' + nCards + '개 · 크롭 ' + nCrops + '장';
-    } else {
-      var nShots = Math.round(n * perVp);
-      bytes = nShots * (PXB[px()] || 0);
-      say = '시야 ' + n + '개 · 판 ' + nShots + '장';
-    }
-    est.textContent = '약 ' + (bytes / 1024 / 1024).toFixed(bytes > 10485760 ? 0 : 1) +
-                      ' MB (' + say + ')';
-    /* 동정기는 크롭이라 해상도를 안 고른다 — 고를 수 없는 것을 내보이면
-       사람이 그것을 고르고 아무 일도 안 일어난 줄 안다 */
-    pxRow.hidden = (kind() === 'catalog');
-  }
-
-  form.addEventListener('input', paint);
-  form.addEventListener('change', paint);
-  paint();
-})();
-</script>
 {% endblock %}
