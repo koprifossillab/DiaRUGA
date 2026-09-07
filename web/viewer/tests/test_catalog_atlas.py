@@ -316,5 +316,9 @@ class CatalogHighlightTest(DiaRUGATestCase):
         r = self.c.get(reverse("group", args=["rs23", gid]))
         self.assertEqual(r.status_code, 200, r.content[:300])
         html = r.content.decode()
-        self.assertIn('CATALOG_URL = "/d/rs23/catalog/"', html)
+        # 주소는 **데이터 속성으로 내려간다** (P25 1단계) — 배선이
+        # `_detview_js.html` 한 벌로 갈라져 나가면서 스크립트에 박혀 있던
+        # 자리가 없어졌다. 싣는 재료는 그대로다.
+        self.assertIn('data-catalog-url="/d/rs23/catalog/"', html)
+        self.assertIn('data-cat-save-url="/d/rs23/catalog/save"', html)
         self.assertIn("이 개체 카드로", html)

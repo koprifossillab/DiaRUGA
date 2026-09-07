@@ -122,6 +122,14 @@
 <script type="application/json" id="hl-stack">{{ hl|json_dumps }}</script>
 {% endif %}
 
+{% comment %}
+  검토 화면의 배선 (P25 1단계). **여기 한 번 놓고, 조각이 `initDetView(uid)` 로
+  부른다** — 갈래가 둘이라(읽기 전용·현재 검출) 조각 쪽에 두면 어느 쪽이든
+  한 번은 렌더되지만, 오프라인 검토기는 조각을 시야마다 놓으므로 배선을 조각과
+  갈라 두어야 한다.
+{% endcomment %}
+{% include "viewer/_detview_js.html" %}
+
 {% if readonly %}
   <style>
     /* 도구를 통째로 잠근다. 사진과 마스크는 그대로 본다.
