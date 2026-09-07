@@ -13,12 +13,13 @@ from django.db.models import Count
 from django.http import (FileResponse, Http404, HttpResponse,
                          HttpResponseBadRequest, JsonResponse)
 from django.shortcuts import redirect, render
+from django.template.loader import render_to_string
 from django.urls import reverse
 from django.utils import timezone
 from django.views.decorators.http import require_POST
 
 from . import (antarctica, atlas as atlas_mod, data, korea,
-               manage_data, outcrop, regroup, thresholds as th)
+               manage_data, offline, outcrop, regroup, thresholds as th)
 from .models import (Candidate, Detection, DiatomObject,  # noqa: E501
                      Image as ImageModel,
                      Locality,
@@ -2436,6 +2437,121 @@ def _unify_members(link, resolved, label, species) -> dict:
     return {str(img.pk): dict(ent) for img, *_ in resolved}
 
 
+def parse_review_payload(payload: dict) -> dict:
+    """`/review` 의 **판 payload** 를 검사해 `data.save_review` 의 인자로 만든다.
+
+    문이 둘이라 여기 하나로 모았다 (P25 5절) — 검토 화면이 보내는 것과,
+    오프라인 파일이 돌아와 싣는 것이 같은 값이다. 검사가 두 벌이면 **한쪽만
+    통과하는 값**이 생기고, 그 값이 앉는 자리가 하필 재생성 불가한 교정이다.
+
+    받는 것은 남이 만든 자료다 — 오프라인 파일은 이 서버 밖에서 몇 날을 돌아
+    온다. 그래서 **모양을 하나하나 본다.** 못 받는 값은 `ValueError` 로
+    올린다(부르는 쪽이 400 으로 낸다).
+
+    `done` 은 여기서 안 본다 — `{"only": "done"}` 갈래가 그 값을 먼저 쓰므로
+    부르는 쪽에 남는다.
+    """
+    def keys(name):
+        v = payload.get(name) or []
+        if not isinstance(v, list):
+            raise ValueError("bad keys")
+        return sorted({str(k) for k in v if isinstance(k, (str, int))})
+
+    removed, accepted = keys("removed"), keys("accepted")
+
+    def mapping(name, clean):
+        v = payload.get(name) or {}
+        if not isinstance(v, dict):
+            raise ValueError(name)
+        out = {}
+        for k, raw in v.items():
+            k = str(k)
+            # **그린 개체의 키는 흘린다** (2026-09-03). 그 분류는 `drawn` 이
+            # 나르고, `save_review` 도 세 목록(`removed`·`accepted`·`labels`)에서
+            # 같은 키를 같은 규칙으로 흘린다 — 여기서 400 으로 물리면 **그 방어에
+            # 닿지도 못한 채** 저장 전체가 거절되고, 화면은 같은 payload 를 계속
+            # 다시 보낸다(`postReview` 가 실패를 다시 저장할 것으로 남긴다).
+            # 배포 중에 열려 있던 옛 탭이 그 키를 실어 보낸다.
+            if data.MANUAL_KEY.match(k):
+                continue
+            if not data.CAND_KEY.match(k):
+                raise ValueError(name)
+            val = clean(raw)
+            if val is not None:
+                out[k] = val
+        return dict(sorted(out.items()))
+
+    def as_label(v):
+        return str(v) if v in data.CLASSES else None
+
+    # **개체 코멘트는 안 받는다** (0036). 적는 자리를 개체 카탈로그 하나로
+    # 모았다 — 이 화면은 읽기만 한다. 옛 탭이 `notes` 를 실어 보내면 **조용히
+    # 흘린다**: 오류로 물리면 그 저장에 함께 실린 삭제·되살림까지 잃는다
+    # (`save_review` 머리말).
+    try:
+        labels = mapping("labels", as_label)
+    except ValueError:
+        raise ValueError("bad labels")
+
+    # 시야 전체에 대한 메모. 개체에 붙지 않는 이야기(촬영 상태, 판정이 애매한
+    # 이유 등)를 적을 곳이 있어야 한다.
+    #
+    # **안 실렸으면 `None` 이다** — 완료와 같은 규칙(180 B2). 지금 화면은 이것을
+    # `{"only": "note"}` 로 따로 보내고, 옛 탭만 여기 싣는다.
+    note = _note(payload["note"]) if "note" in payload else None
+    if not isinstance(payload.get("note", ""), (str, type(None))):
+        raise ValueError("bad note")
+
+    # **어느 이미지를 보고 한 교정인가** (P09 1단계). 시야 하나에 현재 검출이
+    # 여럿일 수 있으므로(합성본 하나 + 프레임마다 하나) 화면이 짚어서 보낸다.
+    #
+    # **이름이 아니라 id 다.** 프레임 이름은 슬라이드끼리 겹치고(143종) 053 이
+    # 정확히 그 자리에서 났다 — 이름은 겹쳐도 주소는 안 겹친다. 서버는 그 id 가
+    # **이 시야의 것인지** 다시 확인한다(`save_review` 안에서).
+    image_id = payload.get("image")
+    if image_id is not None:
+        try:
+            image_id = int(image_id)
+        except (TypeError, ValueError):
+            raise ValueError("bad image")
+
+    # **사람이 그린 개체** (P09 3단계). `[{key, polygon, cls}]` 이고
+    # 기하는 서버가 다시 잰다 — 클라이언트가 보낸 면적을 믿으면 브라우저마다
+    # 다른 숫자가 DB 에 앉는다(P09 5.8).
+    #
+    # **없는 것과 빈 것은 다르다.** 없으면 `None` 으로 넘겨 손대지 않고, 빈
+    # 목록이면 "그린 것이 하나도 없다" 로 받아 지운다 — 둘을 같이 다루면
+    # **그리기를 모르는 옛 탭의 저장 한 번**이 그린 개체를 전부 지운다.
+    drawn = payload.get("drawn")
+    if drawn is not None:
+        if not isinstance(drawn, list) or len(drawn) > 500:
+            raise ValueError("bad drawn")
+        clean = []
+        for it in drawn:
+            if not isinstance(it, dict):
+                raise ValueError("bad drawn item")
+            cls = as_label(it.get("cls")) or ""
+            # 코멘트는 여기서도 안 받는다 — 위 `notes` 와 같은 갈래다(0036).
+            clean.append({"key": it.get("key"), "polygon": it.get("polygon"),
+                          "cls": cls})
+        drawn = clean
+
+    # **사람이 고친 기하** (P09 4단계). `{키: 폴리곤}` 이고 **빈 폴리곤은
+    # "엔진 것으로 되돌린다"** 는 말이다. 그린 개체(`drawn`)와 달리 엔진 개체의
+    # 교정이라 묶음에 속한다 — `Candidate` 는 안 건드리고 교정 행의 `geom` 만
+    # 덮는다(P09 5.6).
+    edits = payload.get("edits")
+    if edits is not None:
+        if not isinstance(edits, dict) or len(edits) > 500:
+            raise ValueError("bad edits")
+        for v in edits.values():
+            if not isinstance(v, list):
+                raise ValueError("bad edits polygon")
+
+    return {"removed": removed, "accepted": accepted, "labels": labels,
+            "note": note, "image": image_id, "drawn": drawn, "edits": edits}
+
+
 @require_POST
 def save_review(request):
     """
@@ -2502,17 +2618,6 @@ def save_review(request):
     if blocked:
         return JsonResponse({"ok": False, "error": blocked}, status=409)
 
-    def keys(name):
-        v = payload.get(name) or []
-        if not isinstance(v, list):
-            raise ValueError(name)
-        return sorted({str(k) for k in v if isinstance(k, (str, int))})
-
-    try:
-        removed, accepted = keys("removed"), keys("accepted")
-    except ValueError:
-        return HttpResponseBadRequest("bad keys")
-
     # 검토 완료 표시. 교정이 하나도 없어도(고칠 것이 없어서) 켜질 수 있으므로
     # 삭제·복구 목록과 독립적으로 저장한다.
     #
@@ -2545,94 +2650,16 @@ def save_review(request):
             return HttpResponseBadRequest("bad note")
         return JsonResponse({"ok": True, **data.save_note(vp, _note(raw))})
 
-    def mapping(name, clean):
-        v = payload.get(name) or {}
-        if not isinstance(v, dict):
-            raise ValueError(name)
-        out = {}
-        for k, raw in v.items():
-            k = str(k)
-            # **그린 개체의 키는 흘린다** (2026-09-03). 그 분류는 `drawn` 이
-            # 나르고, `save_review` 도 세 목록(`removed`·`accepted`·`labels`)에서
-            # 같은 키를 같은 규칙으로 흘린다 — 여기서 400 으로 물리면 **그 방어에
-            # 닿지도 못한 채** 저장 전체가 거절되고, 화면은 같은 payload 를 계속
-            # 다시 보낸다(`postReview` 가 실패를 다시 저장할 것으로 남긴다).
-            # 배포 중에 열려 있던 옛 탭이 그 키를 실어 보낸다.
-            if data.MANUAL_KEY.match(k):
-                continue
-            if not data.CAND_KEY.match(k):
-                raise ValueError(name)
-            val = clean(raw)
-            if val is not None:
-                out[k] = val
-        return dict(sorted(out.items()))
-
-    def as_label(v):
-        return str(v) if v in data.CLASSES else None
-
-    # **개체 코멘트는 안 받는다** (0036). 적는 자리를 개체 카탈로그 하나로
-    # 모았다 — 이 화면은 읽기만 한다. 옛 탭이 `notes` 를 실어 보내면 **조용히
-    # 흘린다**: 오류로 물리면 그 저장에 함께 실린 삭제·되살림까지 잃는다
-    # (`save_review` 머리말).
+    # **검사는 문 하나로 모았다** (P25 5절). 화면이 보내는 것과 오프라인
+    # 파일이 되돌려 싣는 것이 같은 값이라, 검사가 갈리면 **한쪽만 통과하는 값**이
+    # 생긴다 — 그 값이 앉는 자리가 하필 재생성 불가한 교정이다.
     try:
-        labels = mapping("labels", as_label)
-    except ValueError:
-        return HttpResponseBadRequest("bad labels")
-
-    # 시야 전체에 대한 메모. 개체에 붙지 않는 이야기(촬영 상태, 판정이 애매한
-    # 이유 등)를 적을 곳이 있어야 한다.
-    #
-    # **안 실렸으면 `None` 이다** — 완료와 같은 규칙(180 B2). 지금 화면은 이것을
-    # `{"only": "note"}` 로 따로 보내고, 옛 탭만 여기 싣는다.
-    note = _note(payload["note"]) if "note" in payload else None
-    if not isinstance(payload.get("note", ""), (str, type(None))):
-        return HttpResponseBadRequest("bad note")
-
-    # **어느 이미지를 보고 한 교정인가** (P09 1단계). 시야 하나에 현재 검출이
-    # 여럿일 수 있으므로(합성본 하나 + 프레임마다 하나) 화면이 짚어서 보낸다.
-    #
-    # **이름이 아니라 id 다.** 프레임 이름은 슬라이드끼리 겹치고(143종) 053 이
-    # 정확히 그 자리에서 났다 — 이름은 겹쳐도 주소는 안 겹친다. 서버는 그 id 가
-    # **이 시야의 것인지** 다시 확인한다(`save_review` 안에서).
-    image_id = payload.get("image")
-    if image_id is not None:
-        try:
-            image_id = int(image_id)
-        except (TypeError, ValueError):
-            return HttpResponseBadRequest("bad image")
-
-    # **사람이 그린 개체** (P09 3단계). `[{key, polygon, cls}]` 이고
-    # 기하는 서버가 다시 잰다 — 클라이언트가 보낸 면적을 믿으면 브라우저마다
-    # 다른 숫자가 DB 에 앉는다(P09 5.8).
-    #
-    # **없는 것과 빈 것은 다르다.** 없으면 `None` 으로 넘겨 손대지 않고, 빈
-    # 목록이면 "그린 것이 하나도 없다" 로 받아 지운다 — 둘을 같이 다루면
-    # **그리기를 모르는 옛 탭의 저장 한 번**이 그린 개체를 전부 지운다.
-    drawn = payload.get("drawn")
-    if drawn is not None:
-        if not isinstance(drawn, list) or len(drawn) > 500:
-            return HttpResponseBadRequest("bad drawn")
-        clean = []
-        for it in drawn:
-            if not isinstance(it, dict):
-                return HttpResponseBadRequest("bad drawn item")
-            cls = as_label(it.get("cls")) or ""
-            # 코멘트는 여기서도 안 받는다 — 위 `notes` 와 같은 갈래다(0036).
-            clean.append({"key": it.get("key"), "polygon": it.get("polygon"),
-                          "cls": cls})
-        drawn = clean
-
-    # **사람이 고친 기하** (P09 4단계). `{키: 폴리곤}` 이고 **빈 폴리곤은
-    # "엔진 것으로 되돌린다"** 는 말이다. 그린 개체(`drawn`)와 달리 엔진 개체의
-    # 교정이라 묶음에 속한다 — `Candidate` 는 안 건드리고 교정 행의 `geom` 만
-    # 덮는다(P09 5.6).
-    edits = payload.get("edits")
-    if edits is not None:
-        if not isinstance(edits, dict) or len(edits) > 500:
-            return HttpResponseBadRequest("bad edits")
-        for v in edits.values():
-            if not isinstance(v, list):
-                return HttpResponseBadRequest("bad edits polygon")
+        f = parse_review_payload(payload)
+    except ValueError as e:
+        return HttpResponseBadRequest(str(e))
+    removed, accepted = f["removed"], f["accepted"]
+    labels, note, image_id = f["labels"], f["note"], f["image"]
+    drawn, edits = f["drawn"], f["edits"]
 
     try:
         saved = data.save_review(vp, done=done, note=note, removed=removed,
@@ -2645,6 +2672,173 @@ def save_review(request):
     if saved is None:
         return HttpResponseBadRequest("unknown stem")
     return JsonResponse({"ok": True, "done": done, "note": bool(note), **saved})
+
+
+# --- 오프라인 검토기·동정기 (P25) --------------------------------------------
+#
+# 현장·이동 중에는 서버에 못 붙는다. 화면 하나를 **파일 하나로 구워** 들고
+# 나가고, 돌아와서 결과를 올린다. 굽는 규칙은 `viewer/offline.py` 하나뿐이다.
+
+
+def _offline_slides() -> list[dict]:
+    """고르기 화면의 슬라이드 목록. **시야 번호의 범위까지 적는다** —
+    범위를 손으로 적는 칸이 있는데 무엇을 적을 수 있는지 화면이 말해야 한다."""
+    rows = []
+    for sl in Slide.objects.order_by("name"):
+        ids = list(sl.viewpoints.order_by("idx").values_list("idx", flat=True))
+        if not ids:
+            continue
+        rows.append({"slug": sl.slug, "name": sl.name, "n": len(ids),
+                     "first": ids[0], "last": ids[-1]})
+    return rows
+
+
+def offline_page(request, slug=""):
+    """오프라인 파일을 꺼내는 자리 (P25 5절).
+
+    **여기서 반입도 받는다** — 꺼내는 것과 되돌리는 것은 한 흐름이라, 화면을
+    가르면 결과 파일을 든 사람이 올릴 곳을 찾아 헤맨다.
+    """
+    return render(request, "viewer/offline.html", {
+        "slides": _offline_slides(),
+        "pick": slug,
+        "max_vp": offline.MAX_VIEWPOINTS,
+        "batch_label": data.review_batch_label(),
+    })
+
+
+def _offline_fail(request, why: str, pick: str = ""):
+    """고르기 화면으로 돌려보내며 **왜 안 됐는지 적는다.**
+
+    빈 파일을 내려보내지 않는다 — 받은 사람은 열어 보고서야 알게 되고, 그때는
+    이미 현장이다.
+    """
+    return render(request, "viewer/offline.html", {
+        "slides": _offline_slides(), "pick": pick,
+        "max_vp": offline.MAX_VIEWPOINTS,
+        "batch_label": data.review_batch_label(),
+        "error": why}, status=400)
+
+
+@require_POST
+def offline_export(request):
+    """번들 하나를 굽어 **파일로 내려보낸다.**
+
+    프로그램이 둘이다 (사용자 방침 2026-09-07).
+
+    | `kind` | 무엇을 | 그림 |
+    |---|---|---|
+    | `review` | 시야의 검출을 검토한다 | 시야마다 합성본 한 장 |
+    | `catalog` | 개체를 동정한다 | 개체마다 세운 크롭 |
+    """
+    slug = (request.POST.get("slug") or "").strip()
+    kind = (request.POST.get("kind") or "review").strip()
+    slide = Slide.objects.filter(slug=slug).first()
+    if slide is None:
+        return _offline_fail(request, "슬라이드를 고르십시오.")
+    if kind not in ("review", "catalog"):
+        return _offline_fail(request, "모르는 프로그램입니다.", slug)
+
+    ids = list(slide.viewpoints.order_by("idx").values_list("idx", flat=True))
+    try:
+        gids = offline.parse_gids(request.POST.get("gids") or "", ids)
+    except ValueError as e:
+        return _offline_fail(request, str(e), slug)
+    if not gids:
+        return _offline_fail(request, "이 슬라이드에는 시야가 없습니다.", slug)
+    if len(gids) > offline.MAX_VIEWPOINTS:
+        return _offline_fail(
+            request,
+            f"시야 {len(gids)}개는 한 파일에 담기에 많습니다 "
+            f"(최대 {offline.MAX_VIEWPOINTS}개). 범위를 나눠 두 번 꺼내십시오.",
+            slug)
+
+    # **검토 대상 묶음이 없으면 굽지 않는다.** 그 위에서 한 교정은 반입 때
+    # 거절되므로(`offline.check`), 현장에 나가서 하는 일이 헛수고가 된다.
+    if data.review_batch_id() is None:
+        return _offline_fail(request, "검토 대상 묶음이 정해져 있지 않습니다 — "
+                                      "시스템 설정에서 먼저 고르십시오.", slug)
+
+    b = (offline.catalog_bundle(slug, gids) if kind == "catalog"
+         else offline.review_bundle(slug, gids))
+    items = b["cards"] if kind == "catalog" else b["views"]
+    if not items:
+        why = " · ".join(f'g{s["gid"]} {s["why"]}' for s in b["skipped"][:5])
+        return _offline_fail(request, "꺼낼 것이 없습니다. " + why, slug)
+
+    ctx = {
+        "head": b["head"],
+        "skipped": b["skipped"],
+        "slug": slug,
+        # **오프라인 표시.** `base.html` 이 이것으로 나가는 링크를 걷고,
+        # 조각들이 사진 주소 대신 빈 자리를 낸다.
+        "offline": 1,
+        "blank_px": offline.BLANK_PX,
+        # 화면 전체에 얹히는 워터마크. `Test Server` 와 같은 자리·같은 이유다 —
+        # 이 화면을 운영으로 알고 검토하면 그 교정이 아무 데도 안 남는다.
+        "env_label": "오프라인 사본",
+        "species_seen": data.species_seen(),
+        "grades": DiatomObject.GRADE,
+        "poses": DiatomObject.POSE,
+    }
+    if kind == "catalog":
+        ctx["cards"] = b["cards"]
+        tpl = "viewer/offline_catalog.html"
+    else:
+        ctx["views"] = b["views"]
+        tpl = "viewer/offline_review.html"
+
+    html = render_to_string(tpl, ctx, request=request)
+    resp = HttpResponse(html, content_type="text/html; charset=utf-8")
+    # **파일 이름은 ASCII 로 둔다** — 메일·USB 를 건너다니는 파일이라 한글
+    # 이름이 깨지는 자리가 많다. 무엇인지는 파일을 열면 머리줄에 적혀 있다.
+    name = (f"DiaRUGA-{kind}-{slug}-g{gids[0]}-g{gids[-1]}-"
+            f"{timezone.localtime():%Y%m%d}.html")
+    resp["Content-Disposition"] = f'attachment; filename="{name}"'
+    return resp
+
+
+@require_POST
+def offline_import(request):
+    """오프라인 결과를 되돌려 넣는다 (P25 4·5절). **두 걸음이다.**
+
+    첫 POST 는 **무엇이 바뀌는지 보여 주기만** 하고, `apply=1` 이 실린 두 번째
+    POST 만 쓴다 — `split_group` 과 같은 모양이고 같은 이유다: `/review` 는 그
+    판의 교정을 통째로 갈아치우므로 한 번의 눌림으로 끝나면 안 된다.
+
+    **두 번째 걸음이 지문을 다시 잰다** (`offline.apply_plan`). 미리보기와 적용
+    사이에 누가 온라인에서 그 시야를 검토할 수 있다.
+    """
+    if "file" in request.FILES:
+        up = request.FILES["file"]
+        if up.size > 12 * 1024 * 1024:
+            return _offline_fail(request, "결과 파일이 너무 큽니다 — 오프라인 "
+                                          "화면이 낸 JSON 이 맞는지 보십시오.")
+        raw = up.read()
+    else:
+        # 두 번째 걸음. 미리보기 화면이 첫 걸음의 파일을 그대로 들고 있다 —
+        # **파일을 다시 고르게 하지 않는다**(그 사이 사람이 다른 파일을 고르면
+        # 화면이 보여 준 것과 다른 것이 들어간다).
+        raw = (request.POST.get("payload") or "").encode("utf-8")
+    if not raw.strip():
+        return _offline_fail(request, "결과 파일을 고르십시오.")
+
+    try:
+        res = offline.read_result(raw)
+    except ValueError as e:
+        return _offline_fail(request, str(e))
+
+    ctx = {"res_json": json.dumps(res, ensure_ascii=False),
+           "batch_label": data.review_batch_label()}
+    if request.POST.get("apply") == "1":
+        r = offline.apply_plan(res, set(request.POST.getlist("pick")))
+        ctx.update(r)
+        ctx["plan"] = offline.plan(res)      # 적용 뒤의 모습을 다시 잰다
+        ctx["applied"] = True
+        return render(request, "viewer/offline_import.html", ctx)
+
+    ctx["plan"] = offline.plan(res)
+    return render(request, "viewer/offline_import.html", ctx)
 
 
 # /healthz 가 "자료가 있다" 고 볼 테이블. 없으면 이 뷰어는 볼 것이 없는 상태다.

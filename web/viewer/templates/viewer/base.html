@@ -1876,8 +1876,14 @@
   달리 적히지 않는다. 화면을 못 보는 사람에게도 같이 가야 한다.
 {% endcomment %}
 {% if env_label %}<div class="envwm"><span>{{ env_label }}</span></div>{% endif %}
+{% comment %}
+  **오프라인 파일에서는 나가는 링크를 안 놓는다** (P25 3.1). 로고·Atlas·톱니는
+  전부 서버의 화면으로 가는 길이라 파일 하나만 들고 나가면 갈 곳이 없다 —
+  눌러도 아무 일도 안 일어나는 자리를 남기지 않는다(063 계열). 대신 그 파일이
+  무엇인지는 `env_label` 워터마크가 화면 전체에 적는다.
+{% endcomment %}
 <header>
-  <h1><a href="{% url 'index' %}">{% include "viewer/_logo.html" %}<span class="wordmark">DiaRUGA</span></a>{% if image_tag %}<span class="ver" title="지금 떠 있는 뷰어 이미지의 판">{{ image_tag }}</span>{% endif %}</h1>
+  <h1>{% if offline %}{% include "viewer/_logo.html" %}<span class="wordmark">DiaRUGA</span>{% else %}<a href="{% url 'index' %}">{% include "viewer/_logo.html" %}<span class="wordmark">DiaRUGA</span></a>{% endif %}{% if image_tag %}<span class="ver" title="지금 떠 있는 뷰어 이미지의 판">{{ image_tag }}</span>{% endif %}</h1>
   <span class="sub">{% block subtitle %}{% endblock %}</span>
   <nav>{% block nav %}{% endblock %}</nav>
   {% comment %}
@@ -1904,6 +1910,7 @@
     그래서 머리줄에 두고 **모든 화면에서 같은 자리**에 있다. 톱니 왼쪽이다 —
     설정은 늘 오른쪽 끝이라는 자리를 안 뺏는다.
   {% endcomment %}
+  {% if not offline %}
   <a class="atlaslink" href="{% url 'atlas' %}" title="Atlas">Atlas</a>
   <a class="gearlink" href="{% url 'system_settings' %}" title="시스템 설정" aria-label="시스템 설정">
     {% comment %}
@@ -1914,6 +1921,7 @@
       <path d="M-2.18 -11.19 L2.18 -11.19 L2.12 -7.92 L4.1 -7.1 L6.37 -9.45 L9.45 -6.37 L7.1 -4.1 L7.92 -2.12 L11.19 -2.18 L11.19 2.18 L7.92 2.12 L7.1 4.1 L9.45 6.37 L6.37 9.45 L4.1 7.1 L2.12 7.92 L2.18 11.19 L-2.18 11.19 L-2.12 7.92 L-4.1 7.1 L-6.37 9.45 L-9.45 6.37 L-7.1 4.1 L-7.92 2.12 L-11.19 2.18 L-11.19 -2.18 L-7.92 -2.12 L-7.1 -4.1 L-9.45 -6.37 L-6.37 -9.45 L-4.1 -7.1 L-2.12 -7.92 Z M0 -3.9 A3.9 3.9 0 1 0 0 3.9 A3.9 3.9 0 1 0 0 -3.9 Z"/>
     </svg>
   </a>
+  {% endif %}
 </header>
 <main>{% block content %}{% endblock %}</main>
 <script>

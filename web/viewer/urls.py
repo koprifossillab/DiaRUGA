@@ -61,6 +61,14 @@ urlpatterns = [
     # 항목에 조용히 저장된다.** 본문으로 받으면 그 갈래가 아예 없다.
     path("loc/<str:site_code>/<str:core_code>/series/points",
          views.core_points_edit, name="core_points_edit"),
+    # 오프라인 검토기·동정기 (P25). **꺼내는 자리와 되돌리는 자리가 하나다** —
+    # 결과 파일을 든 사람이 올릴 곳을 찾아 헤매지 않게.
+    path("offline/", views.offline_page, name="offline"),
+    path("offline/export", views.offline_export, name="offline_export"),
+    # 되돌려 넣기. **POST 전용이고 두 걸음이다** — `apply=1` 이 실린 두 번째
+    # POST 만 실제로 쓴다 (`split_group` 과 같은 모양).
+    path("offline/import", views.offline_import, name="offline_import"),
+    path("d/<slug:slug>/offline/", views.offline_page, name="offline_slide"),
     path("d/<slug:slug>/", views.dataset, name="dataset"),
     path("d/<slug:slug>/edit/", views.dataset_edit, name="dataset_edit"),
     # 시야 전체를 검토/미검토로. **POST 전용이다** — 주소를 누르는 것만으로

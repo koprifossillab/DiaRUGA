@@ -83,7 +83,13 @@
      {% endcomment %}
      data-image="{{ image_id|default_if_none:'' }}">
   <div class="canvas" id="canvas-{{ uid }}">
-    <img id="img-{{ uid }}" src="{% thumb base 1600 %}" alt="{{ title }}" draggable="false">
+    {% comment %}
+      **오프라인은 빈 자리로 두고 화면이 붙인다** (P25) — 사진이 파일 안에
+      base64 로 실려 있다. `src=""` 로 두면 브라우저가 **이 파일 자신을** 다시
+      받아 오므로(빈 문자열은 현재 주소다) 자리 채우개를 하나 넣는다.
+    {% endcomment %}
+    <img id="img-{{ uid }}" src="{% if offline %}{{ blank_px }}{% else %}{% thumb base 1600 %}{% endif %}"
+         alt="{{ title }}" draggable="false">
     <svg class="masks" id="masks-{{ uid }}"
          viewBox="0 0 {{ det.size.0 }} {{ det.size.1 }}" preserveAspectRatio="none"></svg>
   </div>
@@ -343,8 +349,12 @@
   배선은 `_detview_js.html` 이 들고 있다 (P25 1단계). **부르는 자리는 스크립트가
   있던 그 자리다** — 아래로 옮기면 그때는 없던 요소(개체 목록 표)를 잡게 되어
   갈래가 조용히 바뀐다.
+
+  **오프라인은 미룬다**(`defer_init`). 파일 하나에 시야가 서른이라 전부 그리면
+  열리는 데 몇 초가 걸리고, 보지도 않을 시야의 마스크를 그린다 — 그쪽 껍데기가
+  판을 열 때 부른다.
 {% endcomment %}
-<script>initDetView("{{ uid }}");</script>
+{% if not defer_init %}<script>initDetView("{{ uid }}");</script>{% endif %}
 {% endif %}
 
 <section data-pane="list" id="pane-list-{{ uid }}" hidden>
