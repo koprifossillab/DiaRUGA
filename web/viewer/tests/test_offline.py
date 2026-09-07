@@ -14,6 +14,7 @@
 """
 import json
 import re
+from unittest.mock import patch
 
 from django.test import Client
 from django.urls import reverse
@@ -102,8 +103,12 @@ class OfflineExportTest(DiaRUGATestCase):
                          RunBatch.objects.get(for_review=True).id)
         self.assertEqual(len(head["views"]), 3)
         for v in head["views"]:
-            self.assertTrue(v["state"], "state 지문이 없다")
-            self.assertTrue(v["keys"], "keys 지문이 없다")
+            # **판마다 하나씩** — 교정이 `(이미지, 묶음)` 에 붙기 때문이다
+            self.assertTrue(v["fps"], "판별 지문이 없다")
+            for f in v["fps"]:
+                self.assertTrue(f["image"])
+                self.assertTrue(f["state"], "state 지문이 없다")
+                self.assertTrue(f["keys"], "keys 지문이 없다")
 
     # **검토 화면 그대로를 쓴다** (P25 1절) — 배선이 실려 있고, 그리기는
     # 껍데기가 판을 열 때 부른다(`defer_init`).
@@ -120,6 +125,109 @@ class OfflineExportTest(DiaRUGATestCase):
         self.assertNotIn("data-catalog-url", html)
 
 
+class OfflineFramesAndSizeTest(DiaRUGATestCase):
+    """프레임을 다 담는가, 그리고 **크기를 미리 아는가** (사용자 2026-09-07)."""
+
+    @classmethod
+    def setUpTestData(cls):
+        fx.make_classes()
+        cls.w = fx.make_world(slug="rs23", n_viewpoints=2, n_frames=4,
+                              n_candidates=2)
+
+    def setUp(self):
+        super().setUp()
+        self.c = Client()
+
+    def test_시야마다_합성본과_프레임이_다_담긴다(self):
+        from .. import offline
+        b = offline.review_bundle("rs23", [0, 1])
+        for v in b["views"]:
+            self.assertEqual(v["n_shots"], 5,
+                             "합성본 하나 + 프레임 넷이 아니다")
+            self.assertEqual(len(v["frames"]), 4)
+            rels = {i["rel"] for i in v["imgs"]}
+            self.assertEqual(len(rels), 5, "같은 사진을 두 번 담았다")
+
+    def test_해상도를_고르면_담기는_사진이_달라진다(self):
+        from .. import offline
+        big = offline.review_bundle("rs23", [0], px="full")["n_bytes"]
+        small = offline.review_bundle("rs23", [0], px="1600")["n_bytes"]
+        # 픽스처 사진은 640px 이라 줄일 것이 없다 — **바이트가 아니라 폭이
+        # 갈리는지**를 본다(실물에서 갈리는 것은 3겹이 볼 수 있는 자리가 아니다).
+        self.assertEqual(offline.VIEW_PX["1600"]["w"], 1600)
+        self.assertGreater(offline.VIEW_PX["full"]["w"], 2752)
+        self.assertGreaterEqual(big, small)
+
+    def test_크기를_굽기_전에_잰다(self):
+        from .. import offline
+        from ..models import Slide
+        slide = Slide.objects.get(slug="rs23")
+        est = offline.estimate(slide, [0, 1], "review", "full")
+        self.assertEqual(est["n_views"], 2)
+        self.assertEqual(est["n_shots"], 10, "판 수를 잘못 셌다")
+        self.assertEqual(est["bytes"], 10 * offline.VIEW_PX["full"]["bytes"])
+
+    def test_너무_크면_굽기_전에_막는다(self):
+        """**다 굽고 나서 막지 않는다** — 그 시간이 통째로 버려진다."""
+        from .. import offline
+        with patch.object(offline, "MAX_BYTES", 1000):
+            r = self.c.post(reverse("offline_export"),
+                            {"slug": "rs23", "kind": "review", "gids": ""})
+        self.assertEqual(r.status_code, 400)
+        html = r.content.decode()
+        self.assertIn("MB", html)
+        self.assertIn("시야", html)
+
+
+class OfflineCatalogExportTest(DiaRUGATestCase):
+    """동정기 — **개체마다 크롭 한 장.** 시야 사진은 안 싣는다."""
+
+    @classmethod
+    def setUpTestData(cls):
+        fx.make_classes()
+        cls.w = fx.make_world(slug="rs23", n_viewpoints=2, n_candidates=2)
+        # **카드는 개체 단위다** (P18) — 판정이 없는 후보에는 카드가 없다.
+        for vp in cls.w.viewpoints:
+            fx.review_done(vp)
+
+    def setUp(self):
+        super().setUp()
+        self.c = Client()
+
+    def html(self, gids=""):
+        r = self.c.post(reverse("offline_export"),
+                        {"slug": "rs23", "kind": "catalog", "gids": gids})
+        self.assertEqual(r.status_code, 200, r.content[:400])
+        return r.content.decode()
+
+    def test_카드가_실리고_바깥을_안_부른다(self):
+        html = self.html()
+        self.assertIn('class="ocard"', html)
+        for bad in ('src="/', 'href="/', 'src="http', 'href="http'):
+            self.assertNotIn(bad, html, f"동정기가 서버를 부른다: {bad}")
+        self.assertIn('type="text/b64"', html)
+
+    # **검토 화면의 배선을 안 들인다** — 마스크도 확대도 없는 화면에 3,900줄을
+    # 실을 이유가 없다. 파일 크기가 그만큼 커지고, 안 쓰는 배선이 도는 것을
+    # 아무도 안 본다.
+    def test_검토_배선을_안_싣는다(self):
+        self.assertNotIn("window.initDetView", self.html())
+
+    def test_카드마다_지문이_실린다(self):
+        html = self.html()
+        head = json.loads(re.search(r'id="off-head">(.*?)</script>',
+                                    html, re.S).group(1))
+        self.assertEqual(head["kind"], "catalog")
+        self.assertTrue(head["cards"], "카드가 하나도 없다")
+        for c in head["cards"]:
+            self.assertTrue(c["fp"], "카드 지문이 없다")
+
+    def test_고른_시야의_카드만_실린다(self):
+        head = json.loads(re.search(r'id="off-head">(.*?)</script>',
+                                    self.html(gids="0"), re.S).group(1))
+        self.assertEqual({c["gid"] for c in head["cards"]}, {0})
+
+
 class OfflineFingerprintTest(DiaRUGATestCase):
     """지문이 **무엇에 반응하나.** 너무 둔하면 남의 교정을 덮어쓰고,
     너무 예민하면 아무것도 반입이 안 된다."""
@@ -133,6 +241,7 @@ class OfflineFingerprintTest(DiaRUGATestCase):
         from .. import data, offline
         det = data.group_detail("rs23", self.w.vp.idx)["base_det"]
         return offline.state_fp(det), offline.keys_fp(det)
+
 
     def test_아무것도_안_바뀌면_같다(self):
         self.assertEqual(self.fp(), self.fp())

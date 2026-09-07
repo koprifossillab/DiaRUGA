@@ -50,7 +50,8 @@ class RenderAllPagesTest(DiaRUGATestCase):
     # --- 인자 없는 화면 ----------------------------------------------------
 
     def test_인자_없는_화면들이_그려진다(self):
-        for name in ("index", "system_settings", "thresholds_all"):
+        for name in ("index", "system_settings", "thresholds_all",
+                     "offline"):
             with self.subTest(name=name):
                 self.get(reverse(name))
 
@@ -65,7 +66,7 @@ class RenderAllPagesTest(DiaRUGATestCase):
     def test_슬라이드_화면들이_전부_그려진다(self):
         for slide in Slide.objects.all():
             for name in ("dataset", "dataset_edit", "detections", "crops",
-                         "thresholds", "api_dataset"):
+                         "thresholds", "api_dataset", "offline_slide"):
                 with self.subTest(slug=slide.slug, name=name):
                     self.get(reverse(name, args=[slide.slug]))
 

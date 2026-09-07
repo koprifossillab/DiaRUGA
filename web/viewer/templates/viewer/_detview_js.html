@@ -2351,9 +2351,15 @@ window.initDetView = function (uid) {
     return null;
   }
 
-  // 묶기가 성립하는 화면인가 — 판이 둘 이상이어야 묶을 상대가 있다
+  // 묶기가 성립하는 화면인가 — 판이 둘 이상이어야 묶을 상대가 있다.
+  //
+  // **오프라인 파일에서는 성립하지 않는다** (P25 3.3). 묶기는 서버가 개체를
+  // 세우고 대표를 다시 뽑는 일이라 기록으로 미룰 수 없다 — 저장을 막는 것으로
+  // 끝내지 않고 **메뉴에서 뺀다**: 화면에 있으면 사람이 누르고, 누르면 된 줄
+  // 안다(051 이 그 자리다).
   function canLink() {
-    return !readOnly && shotDets && Object.keys(shotDets).length > 1;
+    return !readOnly && !env.offline &&
+           shotDets && Object.keys(shotDets).length > 1;
   }
 
   // **앉힐 판이 몇 곳인가** (P19). 검출이 있는 판에서 지금 판과 **이미 이 개체의
@@ -2943,7 +2949,12 @@ window.initDetView = function (uid) {
         // **사람이 그린 마스크에는 안 낸다** — 그쪽은 저장할 때
         // `_spread_drawn` 이 이미 번지게 한다. 두 문이 같은 일을 하면 규칙이
         // 둘이 된다.
-        var spTargets = cands[one].manual ? [] : spreadTargets(keyOf(cands[one]));
+        //
+        // **오프라인 파일에는 안 낸다** (P25 3.3) — 묶기와 같은 이유다:
+        // 서버가 다른 판에 행을 만들고 대표를 다시 뽑는 일이라 기록으로
+        // 미룰 수 없다.
+        var spTargets = (cands[one].manual || env.offline)
+                        ? [] : spreadTargets(keyOf(cands[one]));
         if (spTargets.length) {
           items.push({ label: '⧸ 다른 판에도 앉히기 (' + spTargets.length + ')',
                        run: function () { spreadOne(one); } });

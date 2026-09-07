@@ -2681,15 +2681,29 @@ def save_review(request):
 
 
 def _offline_slides() -> list[dict]:
-    """고르기 화면의 슬라이드 목록. **시야 번호의 범위까지 적는다** —
-    범위를 손으로 적는 칸이 있는데 무엇을 적을 수 있는지 화면이 말해야 한다."""
+    """고르기 화면의 슬라이드 목록.
+
+    **시야 번호의 범위와 판 수까지 적는다.** 범위를 손으로 적는 칸이 있는데
+    무엇을 적을 수 있는지 화면이 말해야 하고, **파일이 얼마나 커질지**는 판
+    수(시야마다 합성본 + 프레임)가 정한다 — 화면이 그 자리에서 곱해 보인다.
+    """
+    # 개체 수는 따로 센다 — 같은 질의에 조인을 더 걸면 위의 합계가 부풀어
+    # 오른다(다대일 조인이 행을 늘린다).
+    cards = dict(ObjectReview.objects
+                 .filter(batch_id=data.review_batch_id(), removed=False,
+                         diatom_object__isnull=False)
+                 .values_list("viewpoint__slide_id")
+                 .annotate(n=Count("diatom_object", distinct=True)))
     rows = []
     for sl in Slide.objects.order_by("name"):
-        ids = list(sl.viewpoints.order_by("idx").values_list("idx", flat=True))
+        ids = list(sl.viewpoints.order_by("idx")
+                   .values_list("idx", "n_frames"))
         if not ids:
             continue
+        n_shots = sum((f or 0) + 1 for _i, f in ids)
         rows.append({"slug": sl.slug, "name": sl.name, "n": len(ids),
-                     "first": ids[0], "last": ids[-1]})
+                     "first": ids[0][0], "last": ids[-1][0],
+                     "shots": n_shots, "cards": cards.get(sl.pk, 0)})
     return rows
 
 
@@ -2699,12 +2713,27 @@ def offline_page(request, slug=""):
     **여기서 반입도 받는다** — 꺼내는 것과 되돌리는 것은 한 흐름이라, 화면을
     가르면 결과 파일을 든 사람이 올릴 곳을 찾아 헤맨다.
     """
-    return render(request, "viewer/offline.html", {
+    return render(request, "viewer/offline.html", _offline_ctx(slug))
+
+
+def _offline_ctx(pick: str = "", **more) -> dict:
+    """고르기 화면이 늘 쓰는 것. **크기를 재는 재료가 함께 간다.**"""
+    ctx = {
         "slides": _offline_slides(),
-        "pick": slug,
+        "pick": pick,
         "max_vp": offline.MAX_VIEWPOINTS,
+        "max_mb": offline.MAX_BYTES // (1024 * 1024),
         "batch_label": data.review_batch_label(),
-    })
+        # 화면이 그 자리에서 곱해 보이는 실측값 (`offline.VIEW_PX`).
+        "px_bytes": {k: v["bytes"] for k, v in offline.VIEW_PX.items()},
+        "px_opts": [{"key": k, "label": v["label"],
+                     "kb": v["bytes"] // 1024,
+                     "on": k == offline.VIEW_PX_DEFAULT}
+                    for k, v in offline.VIEW_PX.items()],
+        "crop_bytes": offline.BYTES_PER_CROP,
+    }
+    ctx.update(more)
+    return ctx
 
 
 def _offline_fail(request, why: str, pick: str = ""):
@@ -2713,11 +2742,8 @@ def _offline_fail(request, why: str, pick: str = ""):
     빈 파일을 내려보내지 않는다 — 받은 사람은 열어 보고서야 알게 되고, 그때는
     이미 현장이다.
     """
-    return render(request, "viewer/offline.html", {
-        "slides": _offline_slides(), "pick": pick,
-        "max_vp": offline.MAX_VIEWPOINTS,
-        "batch_label": data.review_batch_label(),
-        "error": why}, status=400)
+    return render(request, "viewer/offline.html", _offline_ctx(pick, error=why),
+                  status=400)
 
 
 @require_POST
@@ -2753,6 +2779,23 @@ def offline_export(request):
             f"(최대 {offline.MAX_VIEWPOINTS}개). 범위를 나눠 두 번 꺼내십시오.",
             slug)
 
+    px = (request.POST.get("px") or offline.VIEW_PX_DEFAULT).strip()
+    if px not in offline.VIEW_PX:
+        return _offline_fail(request, "모르는 해상도입니다.", slug)
+
+    # **크기를 굽기 전에 잰다** (사용자 2026-09-07). 다 굽고 나서 "너무 큽니다"
+    # 라고 하면 그 시간이 통째로 버려지고, 넘겨 보내면 현장에서 안 열린다.
+    est = offline.estimate(slide, gids, kind, px)
+    if est["bytes"] > offline.MAX_BYTES:
+        mb = est["bytes"] / 1024 / 1024
+        fits = max(1, int(len(gids) * offline.MAX_BYTES / est["bytes"]))
+        return _offline_fail(
+            request,
+            f"이 범위는 약 {mb:.0f} MB 입니다 — 한 파일에 담을 수 있는 "
+            f"{offline.MAX_BYTES // 1024 // 1024} MB 를 넘습니다. "
+            f"같은 해상도라면 시야 {fits}개쯤이 들어갑니다 — 범위를 나누거나 "
+            "해상도를 낮추십시오.", slug)
+
     # **검토 대상 묶음이 없으면 굽지 않는다.** 그 위에서 한 교정은 반입 때
     # 거절되므로(`offline.check`), 현장에 나가서 하는 일이 헛수고가 된다.
     if data.review_batch_id() is None:
@@ -2760,7 +2803,7 @@ def offline_export(request):
                                       "시스템 설정에서 먼저 고르십시오.", slug)
 
     b = (offline.catalog_bundle(slug, gids) if kind == "catalog"
-         else offline.review_bundle(slug, gids))
+         else offline.review_bundle(slug, gids, px))
     items = b["cards"] if kind == "catalog" else b["views"]
     if not items:
         why = " · ".join(f'g{s["gid"]} {s["why"]}' for s in b["skipped"][:5])
@@ -2781,11 +2824,17 @@ def offline_export(request):
         "grades": DiatomObject.GRADE,
         "poses": DiatomObject.POSE,
     }
+    # **파일이 제 크기를 안다.** 받은 사람이 "이게 왜 이렇게 큰가" 를 물을
+    # 자리가 여기 하나뿐이고, 다음에 범위를 어떻게 자를지도 이 숫자로 정한다.
+    ctx["size_mb"] = round(b["n_bytes"] / 1024 / 1024, 1)
     if kind == "catalog":
         ctx["cards"] = b["cards"]
+        ctx["n_shots"] = sum(len(c["shots"]) for c in b["cards"])
         tpl = "viewer/offline_catalog.html"
     else:
         ctx["views"] = b["views"]
+        ctx["n_shots"] = sum(v["n_shots"] for v in b["views"])
+        ctx["px_label"] = offline.VIEW_PX[px]["label"]
         tpl = "viewer/offline_review.html"
 
     html = render_to_string(tpl, ctx, request=request)

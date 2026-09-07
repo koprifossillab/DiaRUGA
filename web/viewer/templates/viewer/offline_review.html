@@ -16,7 +16,9 @@
 {% endcomment %}
 {% block title %}오프라인 검토 — {{ head.label }}{% endblock %}
 {% block subtitle %}오프라인 검토기 · <b>{{ head.label }}</b> ·
-  시야 {{ views|length }}개 · <span class="mono">{{ head.batch_label }}</span> ·
+  시야 {{ views|length }}개 · 판 {{ n_shots }}장 · {{ size_mb }} MB ·
+  <span class="mono">{{ px_label }}</span> ·
+  <span class="mono">{{ head.batch_label }}</span> ·
   {{ head.made_at }} 에 꺼냄{% endblock %}
 
 {% block content %}
@@ -44,15 +46,7 @@
   .spread .scrop .bgcrop { position: absolute; inset: 0; background-repeat: no-repeat; }
 </style>
 
-<div class="offbar">
-  <span class="offsay">이 파일에서 한 검토는 <b>결과를 내려받아 뷰어에 올려야</b>
-    DB 로 들어갑니다.</span>
-  <span class="grow"></span>
-  <label class="offsay">검토자
-    <input type="text" class="who" id="off-who" maxlength="40" placeholder="이름(선택)"></label>
-  <span class="offsay" id="off-state"></span>
-  <button type="button" class="get" id="off-get">결과 내려받기</button>
-</div>
+{% include "viewer/_offline_shell.html" %}
 
 {% if skipped %}
 <div class="offskip">꺼내지 못한 시야 {{ skipped|length }}개 —
@@ -66,8 +60,6 @@
             title="{{ v.tag }} · 개체 {{ v.n }}개">g{{ v.gid }}</button>
   {% endfor %}
 </div>
-
-<script type="application/json" id="off-head">{{ head|json_dumps }}</script>
 
 {% comment %}
   **환경을 먼저 세운다.** `_detview_js.html` 은 이미 있으면 손대지 않는다 —
@@ -93,6 +85,11 @@ window.DiaRUGA = { env: {
     var img = document.getElementById('img-' + uid);
     var dv = document.getElementById('dv-' + uid);
     if (!img || !dv || !img.src) return span;
+    /* **다른 판의 크롭을 청할 수 있다** (묶음 팝업 · P11). 그때는 그 판의
+       그림을 쓴다 — 지금 열린 판으로 그리면 **다른 초점면의 화소를 그 개체라고
+       보여준다.** 판마다 크기가 같으므로 배율은 화면의 것을 그대로 쓴다. */
+    var src = (rel && window.OFFLINE.relurl
+               ? window.OFFLINE.relurl(uid, rel) : '') || img.src;
     /* 화면의 사진은 원본을 줄인 것이다 — 마스크 좌표는 원본 기준이라 그
        배율을 먼저 맞춘다. 아직 안 실렸으면(naturalWidth 0) 1 로 둔다. */
     var natW = img.naturalWidth || 0, natH = img.naturalHeight || 0;
@@ -103,7 +100,7 @@ window.DiaRUGA = { env: {
       var d = total - size;
       return (d <= 0 ? 0 : (100 * a / d)) + '%';
     }
-    span.style.backgroundImage = 'url("' + img.src + '")';
+    span.style.backgroundImage = 'url("' + src + '")';
     span.style.backgroundSize = (100 * natW / bw) + '% ' + (100 * natH / bh) + '%';
     span.style.backgroundPosition = pos(bx, natW, bw) + ' ' + pos(by, natH, bh);
     return span;
@@ -115,157 +112,97 @@ window.DiaRUGA = { env: {
 
 {% for v in views %}
   {% comment %}
-    사진 — base64 그대로다. base64 의 글자에는 `<` 가 없으므로 `</script>` 로
-    태그를 끊는 갈래가 아예 없다. `data:` 접두를 안 붙이는 이유는
-    `offline.thumb_b64` 머리말에 있다.
+    사진 — **판마다 한 장씩** 이고 base64 그대로다(사용자 2026-09-07: 프레임을
+    다 담아야 한다 — 초점 시리즈를 못 넘기면 동정이 안 된다). base64 의 글자에는
+    `<` 가 없으므로 `</script>` 로 태그를 끊는 갈래가 아예 없다. `data:` 접두를
+    안 붙이는 이유는 `offline.thumb_b64` 머리말에 있다.
+
+    **어느 판인지는 `data-rel` 로 짚는다** — 차례로 맞추면 빠진 프레임 하나에
+    전부 어긋난다.
   {% endcomment %}
-  <script type="text/b64" id="b64-{{ v.uid }}">{{ v.b64 }}</script>
+  {% for im in v.imgs %}
+    <script type="text/b64" class="offimg" data-uid="{{ v.uid }}"
+            data-rel="{{ im.rel }}">{{ im.b64 }}</script>
+  {% endfor %}
+  {% if v.shot_dets %}
+    {% comment %}
+      캐러셀이 판을 바꿀 때 갈아 끼울 것 — **교정 상태와 저장 대상까지**
+      (P09 1단계). 검토 화면(`group.html`)이 놓는 자리와 같은 이름이어야 한다.
+    {% endcomment %}
+    <script type="application/json" id="shotdet-{{ v.uid }}">{{ v.shot_dets|json_dumps }}</script>
+    <script type="application/json" id="links-{{ v.uid }}">{{ v.links|json_dumps }}</script>
+  {% endif %}
   <section class="vpsec" id="sec-{{ v.uid }}" hidden>
-    {% include "viewer/_detection.html" with det=v.det base=v.rel uid=v.uid title="검출결과 검토" shot=v.name image_id=v.image id=v.gid stack=v.stack prev_id=v.prev_id next_id=v.next_id prev_url=v.prev_url next_url=v.next_url defer_init=1 %}
+    {% include "viewer/_detection.html" with det=v.det base=v.rel uid=v.uid title="검출결과 검토" shot=v.name image_id=v.image id=v.gid stack=v.stack frames=v.frames prev_id=v.prev_id next_id=v.next_id prev_url=v.prev_url next_url=v.next_url defer_init=1 %}
   </section>
 {% endfor %}
 
 <script>
-window.OFFLINE = (function () {
-  var HEAD = JSON.parse(document.getElementById('off-head').textContent || '{}');
-  /* 번들마다 자기 자리에 쌓는다 — `file://` 의 localStorage 는 그 기계의 모든
-     로컬 파일이 함께 쓰는 자리라, 열쇠를 안 가르면 다른 파일의 검토와 섞인다. */
-  var KEY = 'diaruga.offline.' + (HEAD.id || 'x');
+(function () {
+  /* 검토기 몫의 껍데기 — **무엇을 그리고 어떻게 넘나드는가.** 기록·내려받기는
+     `_offline_shell.html` 이 한다(동정기와 똑같아야 하는 것들이다). */
   var listEl = document.getElementById('off-list');
-  var stateEl = document.getElementById('off-state');
-  var getBtn = document.getElementById('off-get');
-  var whoEl = document.getElementById('off-who');
   var inited = {};
 
-  function blank() { return { review: {}, done: {}, note: {}, catalog: {}, by: '' }; }
-  var EDITS = blank(), stored = true, saved = true;
-  try {
-    var was = JSON.parse(localStorage.getItem(KEY) || 'null');
-    if (was && was.review) { EDITS = was; saved = !!was.saved; }
-  } catch (e) { stored = false; }
-  whoEl.value = EDITS.by || '';
-
-  function keep() {
-    EDITS.by = whoEl.value || '';
-    EDITS.saved = saved;
-    try { localStorage.setItem(KEY, JSON.stringify(EDITS)); }
-    catch (e) { stored = false; }
-    paint();
-  }
-
-  function nEdits() {
-    return Object.keys(EDITS.review).length + Object.keys(EDITS.done).length +
-           Object.keys(EDITS.note).length + Object.keys(EDITS.catalog).length;
-  }
-
-  /* 그 시야에 카탈로그 편집이 있는가 — 열쇠가 `gid|image|key` 다 */
-  function catTouched(gid) {
-    return Object.keys(EDITS.catalog).some(function (k) {
-      return k.split('|')[0] === String(gid);
-    });
-  }
-
-  function paint() {
-    var n = nEdits();
-    var say = n ? ('바뀐 것 ' + n + '건') : '아직 바꾼 것이 없습니다';
-    if (n && !saved) say += ' · 내려받지 않음';
-    if (!stored) say += ' · 이 브라우저는 기억하지 못합니다 — 자주 내려받으십시오';
-    stateEl.textContent = say;
-    getBtn.classList.toggle('dirty', !!n && !saved);
-    Array.prototype.forEach.call(listEl.children, function (b) {
-      var gid = b.dataset.gid;
-      var done = (gid in EDITS.done) ? EDITS.done[gid] : (b.dataset.done === '1');
-      b.classList.toggle('done', !!done);
-      b.classList.toggle('edited', !!(EDITS.review[gid] || catTouched(gid)));
-    });
-  }
-
-  function reply(j, status) {
-    var code = status || 200;
-    return Promise.resolve({
-      ok: code < 400, status: code,
-      json: function () { return Promise.resolve(j); }
-    });
-  }
-
-  /* 후보 하나를 꺼내 온다 — 카탈로그 저장의 답을 지어낼 때 쓴다.
-     **꺼낸 시점의 값이다**(화면이 고친 것이 아니다). 개체 번호처럼 서버만
-     아는 것을 화면이 스스로 지어내지 않게 하려는 것이다. */
-  function candOf(gid, key) {
+  /* 카탈로그 저장의 답에 채울 원래 값 — **꺼낸 시점의 것이다**(화면이 고친
+     값이 아니다). 개체 번호처럼 서버만 아는 것을 화면이 지어내지 않게 한다. */
+  window.OFFLINE.lookup = function (gid, key) {
     var out = null;
     ['cand', 'gone'].forEach(function (which) {
       var el = document.getElementById(which + '-vp' + gid);
       if (!el || out) return;
       try {
         JSON.parse(el.textContent || '[]').forEach(function (c) {
-          if (!out && (c.key === key)) out = c;
+          if (!out && c.key === key) out = c;
         });
       } catch (e) {}
     });
     return out;
-  }
+  };
 
-  function record(kind, body) {
-    var gid = String(body.gid);
-    if (kind === 'review') {
-      if (body.only === 'done') {
-        EDITS.done[gid] = !!body.done;
-      } else if (body.only === 'note') {
-        EDITS.note[gid] = body.note || '';
-      } else {
-        /* **판 하나에 한 줄이다.** 같은 시야를 열 번 만지면 열 줄이 쌓이는데,
-           그러면 미리보기가 무엇이 바뀌는지 말해 주지 못한다 — 마지막 것이
-           곧 화면의 상태이고, 화면은 늘 전체를 보낸다. */
-        EDITS.review[gid] = {
-          gid: body.gid, image: body.image, stem: body.stem, slug: body.slug,
-          removed: body.removed || [], accepted: body.accepted || [],
-          labels: body.labels || {}, drawn: body.drawn || [],
-          edits: body.edits || {}
-        };
-      }
-      saved = false;
-      keep();
-      return reply({ ok: true });
-    }
-    if (kind === 'catalog') {
-      var k = [body.gid, body.image, body.key].join('|');
-      var was = EDITS.catalog[k] || {};
-      EDITS.catalog[k] = {
-        gid: body.gid, image: body.image, key: body.key,
-        species: body.species !== undefined ? body.species : was.species,
-        grade: body.grade !== undefined ? body.grade : was.grade,
-        pose: body.pose !== undefined ? body.pose : was.pose,
-        note: body.note !== undefined ? body.note : was.note
-      };
-      saved = false;
-      keep();
-      /* 화면은 **응답으로 자기를 맞춘다**(`catApply`). 서버가 없으니 보낸 값을
-         그대로 돌려주되, 개체 번호처럼 **여기서 지어낼 수 없는 것은 원래 값**을
-         돌려준다 — 없으면 없는 대로 둔다(반입할 때 붙는다). */
-      var c = candOf(body.gid, body.key) || {};
-      var e = EDITS.catalog[k];
-      return reply({ ok: true, kept: true,
-                     species: e.species || '', note: e.note || '',
-                     grade: e.grade || '', pose: e.pose || '',
-                     obj_id: c.obj_id || null, catalog_no: c.catalog_no || '' });
-    }
-    /* `/spread`·`/link` 는 이 파일에 도구가 없다 (P25 3.3). 그래도 닿으면
-       **그렇게 말한다** — 조용히 성공으로 답하면 사람은 앉힌 줄 안다. */
-    return reply({ ok: false,
-                   error: '오프라인 파일에서는 판을 건너다니는 일을 할 수 없습니다' }, 409);
-  }
+  /* 시야 목록의 표시 — 검토 완료(✓)와 바뀐 것 */
+  window.OFFLINE.onpaint(function (EDITS) {
+    /* 바뀐 시야 — **판이 여럿이라 열쇠가 `시야|판` 이다.** 앞토막만 본다. */
+    var touched = {};
+    [EDITS.catalog, EDITS.review].forEach(function (m) {
+      Object.keys(m).forEach(function (k) { touched[k.split('|')[0]] = true; });
+    });
+    Array.prototype.forEach.call(listEl.children, function (b) {
+      var gid = b.dataset.gid;
+      var done = (gid in EDITS.done) ? EDITS.done[gid] : (b.dataset.done === '1');
+      b.classList.toggle('done', !!done);
+      b.classList.toggle('edited', !!touched[gid]);
+    });
+  });
 
   /* --- 사진 붙이기 -------------------------------------------------------
-     base64 를 Blob 으로 바꿔 짧은 주소 하나를 만든다. `data:` URI 를 그대로
-     쓰면 같은 400 KB 짜리 글자가 요소 셋에 앉고 디코드도 그만큼 된다. */
-  function urlOf(uid) {
-    var el = document.getElementById('b64-' + uid);
-    if (!el) return '';
-    var raw = atob((el.textContent || '').replace(/\s+/g, ''));
-    var buf = new Uint8Array(raw.length);
-    for (var i = 0; i < raw.length; i++) buf[i] = raw.charCodeAt(i);
-    return URL.createObjectURL(new Blob([buf], { type: 'image/jpeg' }));
+     base64 를 Blob 으로 바꿔 짧은 주소를 만든다. `data:` URI 를 그대로 쓰면
+     같은 글자가 `<img src>` 와 캐러셀 속성 셋에 앉고 디코드도 그만큼 된다.
+
+     **판을 열 때 그 시야의 것만 푼다.** 시야 서른에 판이 백여 장이라 한꺼번에
+     풀면 열리는 데 몇 초가 걸리고, 보지도 않을 판을 푼다. */
+  var URLS = {};                       // uid → { rel: blob 주소 }
+
+  function urlsOf(uid) {
+    if (URLS[uid]) return URLS[uid];
+    var map = {};
+    var list = document.querySelectorAll(
+      'script.offimg[data-uid="' + uid + '"]');
+    Array.prototype.forEach.call(list, function (el) {
+      var raw = atob((el.textContent || '').replace(/\s+/g, ''));
+      var buf = new Uint8Array(raw.length);
+      for (var i = 0; i < raw.length; i++) buf[i] = raw.charCodeAt(i);
+      map[el.dataset.rel] = URL.createObjectURL(
+        new Blob([buf], { type: 'image/jpeg' }));
+    });
+    URLS[uid] = map;
+    return map;
   }
+
+  /* 크롭이 다른 판의 그림을 청할 때(묶음 팝업 · P11) 쓴다 */
+  window.OFFLINE.relurl = function (uid, rel) {
+    return (URLS[uid] || {})[rel] || '';
+  };
 
   function show(gid) {
     var uid = 'vp' + gid;
@@ -278,34 +215,38 @@ window.OFFLINE = (function () {
       b.classList.toggle('on', b.dataset.gid === String(gid));
     });
     if (!inited[uid]) {
-      var url = urlOf(uid);
+      var map = urlsOf(uid);
+      /* 캐러셀의 판마다 제 그림을 붙인다 — **`data-rel` 로 짚는다.**
+         `data-view`(띄울 그림)와 `data-full`(확대할 때 갈아 끼울 그림)이
+         같은 주소다: 파일에 든 것이 그 하나뿐이라 갈아 끼울 더 큰 그림이 없다.
+         해상도는 꺼낼 때 사람이 골랐다(`VIEW_PX`). */
+      Array.prototype.forEach.call(sec.querySelectorAll('.strip .shot'),
+        function (shot) {
+          var u = map[shot.dataset.rel];
+          if (!u) return;
+          shot.dataset.view = u;
+          shot.dataset.full = u;
+          var th = shot.querySelector('img');
+          if (th) th.src = u;
+        });
       var img = document.getElementById('img-' + uid);
-      if (img && url) img.src = url;
-      var shot = sec.querySelector('.strip .shot');
-      if (shot && url) {
-        shot.dataset.view = url;
-        shot.dataset.full = url;
-        var th = shot.querySelector('img');
-        if (th) th.src = url;
-      }
+      var base = sec.querySelector('.strip .shot[data-current="1"]');
+      var first = map[(base || {}).dataset ? base.dataset.rel : ''] ||
+                  map[Object.keys(map)[0]];
+      if (img && first) img.src = first;
       inited[uid] = true;
       /* **사진을 붙인 뒤에 부른다** — 배선이 열릴 때의 `src` 를 "지금 확정된
          판" 으로 기억한다(`committedSrc`). 빈 자리 채우개를 기억하면 캐러셀을
          한 번 스칠 때마다 그 그림으로 돌아간다. */
       initDetView(uid);
     }
-    paint();
+    window.OFFLINE.paint();
   }
 
   function gidFromHash() {
     /* `#g3` · `#g3?shot=last` — 뒤쪽은 캐러셀이 붙이는 것이라 여기서는 뗀다 */
     var m = /^#g(\d+)/.exec(location.hash || '');
     return m ? +m[1] : null;
-  }
-
-  function first() {
-    var b = listEl.children[0];
-    return b ? +b.dataset.gid : null;
   }
 
   window.addEventListener('hashchange', function () {
@@ -317,54 +258,9 @@ window.OFFLINE = (function () {
     b.addEventListener('click', function () { location.hash = 'g' + b.dataset.gid; });
   });
 
-  /* --- 결과 내려받기 ------------------------------------------------------ */
-  function result() {
-    function vals(o) { return Object.keys(o).map(function (k) { return o[k]; }); }
-    return {
-      diaruga_offline: 1,
-      kind: 'review',
-      bundle: HEAD,
-      saved_at: new Date().toISOString(),
-      by: whoEl.value || '',
-      review: vals(EDITS.review),
-      done: Object.keys(EDITS.done).map(function (g) {
-        return { gid: +g, done: EDITS.done[g] };
-      }),
-      note: Object.keys(EDITS.note).map(function (g) {
-        return { gid: +g, note: EDITS.note[g] };
-      }),
-      catalog: vals(EDITS.catalog)
-    };
-  }
-
-  getBtn.addEventListener('click', function () {
-    var blob = new Blob([JSON.stringify(result(), null, 1)],
-                        { type: 'application/json' });
-    var a = document.createElement('a');
-    a.href = URL.createObjectURL(blob);
-    a.download = 'DiaRUGA-offline-' + (HEAD.slug || 'slide') + '-' +
-                 (HEAD.id || '') + '.json';
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    saved = true;
-    keep();
-  });
-
-  whoEl.addEventListener('change', keep);
-
-  /* **안 내려받고 닫으려 하면 묻는다.** 이 파일의 검토는 사람이 현미경을 보며
-     한 것이라 재생성 불가다 — 조용히 잃는 자리를 남기지 않는다. */
-  window.addEventListener('beforeunload', function (e) {
-    if (saved || !nEdits()) return;
-    e.preventDefault();
-    e.returnValue = '';
-    return '';
-  });
-
   var start = gidFromHash();
-  show(start === null ? first() : start);
-  return { record: record };
+  var first = listEl.children[0];
+  show(start === null ? (first ? +first.dataset.gid : null) : start);
 })();
 </script>
 {% endblock %}

@@ -41,6 +41,11 @@
       목적어가 이미 옆에 있다.
     {% endcomment %}
     <a href="{% url 'dataset_edit' slug %}">슬라이드 정보 편집</a>
+    {% comment %}
+      오프라인으로 꺼내는 길 (P25). **슬라이드를 고른 채로 간다** — 목록에서
+      다시 고르게 하면 방금 보던 것과 다른 것을 꺼내는 자리가 생긴다.
+    {% endcomment %}
+    <a href="{% url 'offline_slide' slug %}">오프라인으로 꺼내기</a>
   </span>
 </div>
 <p class="dim mono" style="font-size:12px; margin-bottom:2px">

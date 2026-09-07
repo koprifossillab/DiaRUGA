@@ -60,6 +60,11 @@ class OfflineImportTest(DiaRUGATestCase):
                    "slug": "rs23", "removed": list(removed), "accepted": [],
                    "labels": {}, "drawn": [], "edits": {}}
 
+    def token(self, e):
+        """그 줄을 고르는 열쇠. **판까지 들어간다** — 시야 하나에 판이 여럿이고
+        교정도 판마다다."""
+        return f'review:{e["gid"]}:{e["image"]}'
+
     def preview(self, res):
         up = SimpleUploadedFile("r.json",
                                 json.dumps(res).encode("utf-8"),
@@ -89,7 +94,7 @@ class OfflineImportTest(DiaRUGATestCase):
                          "미리보기가 DB 를 고쳤다")
 
         # 두 번째 걸음
-        self.apply(res, [f"review:{self.gid}"])
+        self.apply(res, [self.token(e)])
         self.assertTrue(
             ObjectReview.objects.filter(mask_key=key, removed=True).exists(),
             "지운 것이 안 들어갔다")
@@ -107,11 +112,39 @@ class OfflineImportTest(DiaRUGATestCase):
         fx.add_review(self.w.vp, key, image=self.bundle()["views"][0]["image"],
                       removed=True)
         b, e = self.review_edit(removed=[])
-        self.apply(self.result(head=b["head"], review=[e]),
-                   [f"review:{self.gid}"])
+        self.apply(self.result(head=b["head"], review=[e]), [self.token(e)])
         self.assertFalse(
             ObjectReview.objects.filter(mask_key=key, removed=True).exists(),
             "되살림이 안 들어갔다")
+
+    def test_판마다_따로_들어간다(self):
+        """**시야 하나에 판이 여럿이고 교정도 판마다다** (P09 1단계).
+
+        한 줄이 다른 판의 것을 밀어내면 안 된다 — `/review` 는 그
+        `(이미지, 묶음)` 의 교정을 통째로 갈아치우므로, 판을 잘못 짚으면
+        **보고 있지도 않던 판의 판단이 사라진다.**
+        """
+        fx.add_frame_detections(self.w.vp)
+        b = self.bundle()
+        v = next(x for x in b["views"] if x["gid"] == self.gid)
+        by_image = {f["image"]: f for f in v["fps"]}
+        self.assertGreater(len(by_image), 1, "판이 하나뿐이라 시험이 못 선다")
+
+        rows = []
+        for image in by_image:
+            det = offline.dets_by_image(data.group_detail("rs23", self.gid))[image]
+            key = data.cand_key(det["candidates"][0])
+            rows.append({"gid": self.gid, "image": image, "slug": "rs23",
+                         "stem": v["det"]["stem"], "removed": [key],
+                         "accepted": [], "labels": {}, "drawn": [], "edits": {}})
+        res = self.result(head=b["head"], review=rows)
+        self.apply(res, [self.token(r) for r in rows])
+        for r in rows:
+            self.assertTrue(
+                ObjectReview.objects.filter(image_id=r["image"],
+                                            mask_key=r["removed"][0],
+                                            removed=True).exists(),
+                f'판 {r["image"]} 의 교정이 안 들어갔다')
 
     def test_검토_완료가_들어간다(self):
         b = self.bundle()
@@ -141,7 +174,7 @@ class OfflineImportTest(DiaRUGATestCase):
             "안 골랐는데 남의 교정이 사라졌다")
 
         # 골라서 넣으면 그때는 들어간다 (덮어쓴다)
-        self.apply(res, [f"review:{self.gid}"])
+        self.apply(res, [self.token(e)])
         self.assertFalse(
             ObjectReview.objects.filter(mask_key=key1, removed=True).exists())
 
@@ -157,8 +190,7 @@ class OfflineImportTest(DiaRUGATestCase):
         self.assertIn("검출이 다시 돌았습니다", html)
 
         # **골라도 안 들어간다** — 사람이 고를 수 있는 일이 아니다
-        self.apply(self.result(head=b["head"], review=[e]),
-                   [f"review:{self.gid}"])
+        self.apply(self.result(head=b["head"], review=[e]), [self.token(e)])
         self.assertFalse(ObjectReview.objects.filter(removed=True).exists())
 
     def test_묶음이_다르면_통째로_멈춘다(self):
@@ -167,6 +199,38 @@ class OfflineImportTest(DiaRUGATestCase):
         html = self.preview(self.result(head=head, review=[e])).content.decode()
         self.assertIn("넣을 수 없습니다", html)
         self.assertIn("묶음", html)
+
+    # --- 파일의 판 (P25 "파일의 판") ---------------------------------------
+    #
+    # 오프라인 파일은 밖에서 몇 주를 돈다. 그동안 뷰어는 몇 판 올라가고,
+    # **돌아온 파일을 그때의 뷰어가 못 읽으면 현장에서 한 일이 없어진다.**
+
+    def test_더_새_판의_파일은_거절한다(self):
+        """모르는 칸을 흘려 넣으면 **일부만 들어간 상태**가 된다 — 사람은
+        들어간 줄 안다. 그래서 받지 않고 무엇을 하라고 적는다."""
+        b, e = self.review_edit(removed=[self.keys()[0]])
+        head = dict(b["head"], fmt=offline.FORMAT + 1)
+        r = self.c.post(reverse("offline_import"),
+                        {"payload": json.dumps(self.result(head=head, review=[e]))})
+        self.assertEqual(r.status_code, 400)
+        self.assertIn("뷰어를 올린", r.content.decode())
+
+    def test_판이_안_적힌_파일은_첫_판으로_읽는다(self):
+        """그 칸이 없던 때에 구운 파일이 밖에 있을 수 있다."""
+        key = self.keys()[0]
+        b, e = self.review_edit(removed=[key])
+        head = {k: v for k, v in b["head"].items() if k != "fmt"}
+        res = self.result(head=head, review=[e])
+        self.assertIn("지우기 +1", self.preview(res).content.decode())
+        self.apply(res, [self.token(e)])
+        self.assertTrue(
+            ObjectReview.objects.filter(mask_key=key, removed=True).exists())
+
+    def test_어느_뷰어가_구웠는지_적힌다(self):
+        """형식이 그대로인데 **값의 뜻**이 달라지는 일이 있다 (057)."""
+        b = self.bundle()
+        self.assertIn("fmt", b["head"])
+        self.assertIn("viewer", b["head"])
 
     def test_모르는_파일은_거절한다(self):
         up = SimpleUploadedFile("r.json", b"{}",

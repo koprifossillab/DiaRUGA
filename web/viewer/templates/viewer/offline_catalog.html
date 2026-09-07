@@ -1,0 +1,288 @@
+{% extends "viewer/base.html" %}
+{% load viewer_extras %}
+{% comment %}
+  오프라인 동정기 (P25 3.2). **개체마다 카드 하나**, 거기에 종명을 적는다.
+
+  검토기와 달리 시야 사진을 안 싣는다 — 동정은 개체를 보고 하는 일이고,
+  그림이 크롭이면 같은 파일에 개체 수백 개가 들어간다.
+
+  **저장 문이 좁다.** 카탈로그의 문(`/catalog/save`)과 같은 모양으로 기록하고,
+  반입도 개체 하나 단위로 짚는다 — `/review` 처럼 범위를 갈아치우지 않으므로
+  017·027·053 계열의 사고가 구조적으로 안 생긴다.
+
+  **검토 화면의 배선(`_detview_js.html`)을 안 들인다.** 여기는 마스크도 확대도
+  없다 — 안 쓰는 3,900줄을 파일마다 싣지 않는다.
+{% endcomment %}
+{% block title %}오프라인 동정 — {{ head.label }}{% endblock %}
+{% block subtitle %}오프라인 동정기 · <b>{{ head.label }}</b> ·
+  개체 {{ cards|length }}개 · 크롭 {{ n_shots }}장 · {{ size_mb }} MB ·
+  <span class="mono">{{ head.batch_label }}</span> ·
+  {{ head.made_at }} 에 꺼냄{% endblock %}
+
+{% block content %}
+<style>
+  .offbar { position: sticky; top: 0; z-index: 40; display: flex; align-items: center;
+            gap: 12px; flex-wrap: wrap; padding: 8px 10px; margin: 0 0 10px;
+            border: 1px solid var(--line); border-radius: 6px; background: var(--card); }
+  .offbar .grow { flex: 1 1 auto; }
+  .offbar button.get { font-weight: 600; padding: 6px 14px; }
+  .offbar button.get.dirty { background: var(--warn-bg); color: var(--warn-fg);
+                             border-color: var(--warn-fg); }
+  .offbar .who { width: 130px; }
+  .offsay { font-size: 12.5px; opacity: .85; }
+  .offsay b { color: var(--warn-fg); }
+  .offskip { font-size: 12.5px; margin: 0 0 10px; padding: 8px 10px;
+             border-radius: 6px; background: var(--warn-bg); color: var(--warn-fg); }
+  .ofilter { display: flex; gap: 10px; align-items: center; flex-wrap: wrap;
+             margin: 0 0 12px; font-size: 13px; }
+  .ofilter input[type=text] { width: 220px; }
+  .ocards { display: grid; gap: 12px;
+            grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); }
+  .ocard { border: 1px solid var(--line); border-radius: 8px; padding: 8px;
+           background: var(--card); display: flex; flex-direction: column; gap: 5px; }
+  .ocard.named { border-color: var(--ok-line); }
+  .ocard.edited { border-color: var(--warn-fg); }
+  .ocrop { background: #000; border-radius: 4px; overflow: hidden;
+           display: flex; align-items: center; justify-content: center;
+           height: 190px; }
+  .ocrop { position: relative; outline: none; }
+  .ocrop:focus { box-shadow: 0 0 0 2px var(--accent) inset; }
+  .ocrop img { max-width: 100%; max-height: 190px; display: block; }
+  .ofocus { position: absolute; left: 0; right: 0; bottom: 0; display: flex;
+            align-items: center; justify-content: space-between; gap: 4px;
+            padding: 2px 4px; font-size: 11px;
+            background: rgba(0,0,0,.45); color: #fff; }
+  .ofocus button { padding: 0 6px; font-size: 13px; line-height: 1.2; }
+  .olabel { font-family: ui-monospace, monospace; }
+  .ono { font-family: ui-monospace, monospace; font-size: 12px; opacity: .8;
+         display: flex; justify-content: space-between; gap: 6px; }
+  .ocard input[type=text], .ocard select, .ocard textarea { width: 100%;
+         font-size: 12.5px; }
+  .ocard .gp { display: flex; gap: 6px; }
+  .ocard .gp select { width: 50%; }
+  .ostate { font-size: 11.5px; min-height: 14px; opacity: .75; }
+</style>
+
+{% include "viewer/_offline_shell.html" %}
+
+{% if skipped %}
+<div class="offskip">꺼내지 못한 개체 {{ skipped|length }}개 —
+  {% for s in skipped %}{{ s.why }}{% if not forloop.last %} · {% endif %}{% endfor %}
+</div>
+{% endif %}
+
+<div class="ofilter">
+  <label>찾기 <input type="text" id="off-q" placeholder="번호 · 종명"></label>
+  <label><input type="checkbox" id="off-todo"> 종명이 빈 것만</label>
+  <span class="offsay" id="off-prog"></span>
+</div>
+
+<datalist id="off-species">
+  {% for s in species_seen %}<option value="{{ s }}">{% endfor %}
+</datalist>
+
+<div class="ocards" id="off-cards">
+  {% for c in cards %}
+  <div class="ocard" data-gid="{{ c.gid }}" data-image="{{ c.image }}"
+       data-key="{{ c.key }}" data-no="{{ c.no }}" data-cls="{{ c.cls }}">
+    {% comment %}
+      **판마다 크롭 한 장** (사용자 2026-09-07). 초점 하나만 보고는 동정을 못
+      한다 — 한 판에서 흐린 것이 다른 판에서 드러나고, 그 넘겨 보기가 동정의
+      방법이다. 자르는 자리와 회전이 판마다 같아 개체가 제자리에 있다.
+
+      그림은 파일 안에 base64 로 있고, 화면이 **볼 때 푼다** — 개체 300개 ×
+      판 6장을 한꺼번에 풀면 열리는 데 한참 걸린다.
+    {% endcomment %}
+    <div class="ocrop" tabindex="0" data-i="{{ c.start }}">
+      <img alt="{{ c.no }}">
+      <div class="ofocus">
+        <button type="button" data-d="-1" title="이전 초점 (←)">‹</button>
+        <span class="olabel"></span>
+        <button type="button" data-d="1" title="다음 초점 (→)">›</button>
+      </div>
+    </div>
+    {% for sh in c.shots %}
+      <script type="text/b64" class="ocropimg"
+              data-card="{{ forloop.parentloop.counter0 }}" data-i="{{ forloop.counter0 }}"
+              data-name="{{ sh.name }}" data-sharp="{% if sh.sharp %}1{% endif %}">{{ sh.b64 }}</script>
+    {% endfor %}
+    <div class="ono"><span>{{ c.no }}</span>
+      <span class="dim">{% if c.major_um %}{{ c.major_um|floatformat:1 }} µm{% endif %}</span></div>
+    <input type="text" class="sp" list="off-species" maxlength="120"
+           placeholder="종명" value="{{ c.species }}">
+    <select class="cls"><option value="">유형 —</option></select>
+    <div class="gp">
+      <select class="grade" title="A 동정키도 완형도 잘 드러난다 · B 완형이나 형태가 덜 드러난다 · C 완형도 동정키도 잘 안 드러난다">
+        <option value="">등급 —</option>
+        {% for k, text in grades %}<option value="{{ k }}" title="{{ text }}"
+          {% if c.grade == k %}selected{% endif %}>{{ k }}</option>{% endfor %}
+      </select>
+      <select class="pose">
+        <option value="">자세 —</option>
+        {% for k, text in poses %}<option value="{{ k }}"
+          {% if c.pose == k %}selected{% endif %}>{{ text }}</option>{% endfor %}
+      </select>
+    </div>
+    <textarea class="note" rows="2" maxlength="500"
+              placeholder="이 규조각을 두고 하는 말">{{ c.note }}</textarea>
+    <div class="ostate"></div>
+  </div>
+  {% endfor %}
+</div>
+
+<script type="application/json" id="off-cls">{% class_json %}</script>
+
+<script>
+(function () {
+  var CLS = JSON.parse(document.getElementById('off-cls').textContent || '[]');
+  var wrap = document.getElementById('off-cards');
+  var cards = Array.prototype.slice.call(wrap.querySelectorAll('.ocard'));
+  var qEl = document.getElementById('off-q');
+  var todoEl = document.getElementById('off-todo');
+  var progEl = document.getElementById('off-prog');
+
+  /* --- 초점 넘기기 -------------------------------------------------------
+     판마다 크롭 한 장이고, **볼 때 푼다.** base64 → Blob → 짧은 주소. */
+  var SHOTS = {};          // 카드 번호 → [{el, name, sharp, url}]
+  Array.prototype.forEach.call(document.querySelectorAll('script.ocropimg'),
+    function (el) {
+      var k = el.dataset.card;
+      (SHOTS[k] = SHOTS[k] || [])[+el.dataset.i] = {
+        el: el, name: el.dataset.name, sharp: el.dataset.sharp === '1', url: ''
+      };
+    });
+
+  function urlOf(shot) {
+    if (shot.url) return shot.url;
+    var raw = atob((shot.el.textContent || '').replace(/\s+/g, ''));
+    var buf = new Uint8Array(raw.length);
+    for (var j = 0; j < raw.length; j++) buf[j] = raw.charCodeAt(j);
+    shot.url = URL.createObjectURL(new Blob([buf], { type: 'image/jpeg' }));
+    return shot.url;
+  }
+
+  function focus(card, i, k) {
+    var list = SHOTS[k] || [];
+    if (!list.length) return;
+    i = (i + list.length) % list.length;
+    card.querySelector('.ocrop').dataset.i = i;
+    card.querySelector('.ocrop img').src = urlOf(list[i]);
+    card.querySelector('.olabel').textContent =
+      list[i].name + (list[i].sharp ? ' ★' : '') +
+      ' (' + (i + 1) + '/' + list.length + ')';
+  }
+
+  cards.forEach(function (card, k) {
+    var box = card.querySelector('.ocrop');
+    focus(card, +box.dataset.i || 0, String(k));
+    card.querySelectorAll('.ofocus button').forEach(function (b) {
+      b.addEventListener('click', function (e) {
+        e.preventDefault();
+        focus(card, (+box.dataset.i || 0) + (+b.dataset.d), String(k));
+      });
+    });
+    /* 그림 위에서 휠·화살표로 넘긴다 — 초점을 훑는 일은 손이 자주 가는
+       자리라 단추만 두면 느리다. **글자 칸에서는 안 듣는다**(거기 화살표는
+       커서다) — 그림 상자에 포커스가 있을 때만이다. */
+    box.addEventListener('wheel', function (e) {
+      e.preventDefault();
+      focus(card, (+box.dataset.i || 0) + (e.deltaY > 0 ? 1 : -1), String(k));
+    }, { passive: false });
+    box.addEventListener('keydown', function (e) {
+      if (e.key !== 'ArrowLeft' && e.key !== 'ArrowRight') return;
+      e.preventDefault();
+      focus(card, (+box.dataset.i || 0) + (e.key === 'ArrowRight' ? 1 : -1),
+            String(k));
+    });
+  });
+
+  /* 유형 목록은 **서버가 준 정의로 짠다** — 화면에 손으로 적으면 분류를 더할
+     때 여기만 옛 목록으로 남는다 (038 이 그 자리다). */
+  var COUNTED = {};
+  cards.forEach(function (card) {
+    var sel = card.querySelector('.cls');
+    CLS.forEach(function (c) {
+      var o = document.createElement('option');
+      o.value = c.key;
+      o.textContent = c.label;
+      sel.appendChild(o);
+      COUNTED[c.key] = !!c.counted;
+    });
+    sel.value = card.dataset.cls || '';
+  });
+
+  /* **등급·자세는 완형에만 매긴다** (`check_grade_pose`). 파편으로 지정된
+     개체에는 그 줄이 아예 안 뜬다 — 카탈로그 카드와 같은 규칙이고, 서버가
+     다시 검사한다. 여기서 안 감추면 **적어 놓고 반입에서 거절당한다.** */
+  function gp(card) {
+    var cls = card.querySelector('.cls').value;
+    var frag = !!cls && !COUNTED[cls];
+    card.querySelector('.gp').hidden = frag;
+    if (frag) {
+      card.querySelector('.grade').value = '';
+      card.querySelector('.pose').value = '';
+    }
+  }
+
+  function say(card, text) { card.querySelector('.ostate').textContent = text; }
+
+  var timers = {};
+  function push(card, now) {
+    var id = card.dataset.gid + '|' + card.dataset.key;
+    clearTimeout(timers[id]);
+    var run = function () {
+      window.OFFLINE.record('catalog', {
+        gid: +card.dataset.gid, image: +card.dataset.image,
+        key: card.dataset.key,
+        species: card.querySelector('.sp').value,
+        cls: card.querySelector('.cls').value,
+        grade: card.querySelector('.grade').value,
+        pose: card.querySelector('.pose').value,
+        note: card.querySelector('.note').value
+      });
+      say(card, '적었습니다 — 결과를 내려받아야 DB 로 갑니다');
+      paint();
+    };
+    /* 치는 중에는 조금 기다렸다 — 글자마다 기록을 다시 쓰면 화면이 무거워진다.
+       고르는 것(셀렉트)은 곧바로 남긴다. */
+    if (now) run(); else timers[id] = setTimeout(run, 400);
+  }
+
+  cards.forEach(function (card) {
+    gp(card);
+    card.querySelector('.sp').addEventListener('input', function () { push(card); });
+    card.querySelector('.note').addEventListener('input', function () { push(card); });
+    ['.cls', '.grade', '.pose'].forEach(function (sel) {
+      card.querySelector(sel).addEventListener('change', function () {
+        if (sel === '.cls') gp(card);
+        push(card, true);
+      });
+    });
+  });
+
+  function paint() {
+    var named = 0, shown = 0;
+    var q = (qEl.value || '').trim().toLowerCase();
+    var todo = todoEl.checked;
+    var edited = window.OFFLINE.edits.catalog;
+    cards.forEach(function (card) {
+      var sp = card.querySelector('.sp').value.trim();
+      if (sp) named++;
+      var hit = !q || (card.dataset.no + ' ' + sp).toLowerCase().indexOf(q) >= 0;
+      var pass = hit && (!todo || !sp);
+      card.hidden = !pass;
+      if (pass) shown++;
+      card.classList.toggle('named', !!sp);
+      card.classList.toggle('edited',
+        !!edited[[card.dataset.gid, card.dataset.image, card.dataset.key].join('|')]);
+    });
+    progEl.textContent = '종명 적은 것 ' + named + ' / ' + cards.length +
+      (shown === cards.length ? '' : ' · 보이는 것 ' + shown);
+  }
+
+  qEl.addEventListener('input', paint);
+  todoEl.addEventListener('change', paint);
+  window.OFFLINE.onpaint(paint);
+})();
+</script>
+{% endblock %}

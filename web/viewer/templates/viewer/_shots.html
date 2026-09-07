@@ -18,6 +18,11 @@
     글자를 속성 셋에 벌여 놓으면 파일이 세 배가 된다.
   {% endcomment %}
   <button type="button" class="shot{% if stack.focused_rel == base %} on{% endif %}"
+          {% comment %}
+            **어느 사진인가.** 오프라인 파일이 그림을 붙일 때 이 값으로 짚는다 —
+            판이 여럿이라 차례로 맞추면 빠진 프레임 하나에 전부 어긋난다.
+          {% endcomment %}
+          data-rel="{{ stack.focused_rel }}"
           {% if offline %}data-view="" data-full=""{% else %}data-view="{% thumb stack.focused_rel 1600 %}"
           data-full="{% full stack.focused_rel %}"{% endif %}
           data-title="합성본"
@@ -32,8 +37,9 @@
 
 {% for f in frames %}{% if f.exists %}
   <button type="button" class="shot{% if f.is_sharpest %} best{% endif %}{% if f.rel == base %} on{% endif %}"
-          data-view="{% thumb f.rel 1600 %}"
-          data-full="{% full f.rel %}"
+          data-rel="{{ f.rel }}"
+          {% if offline %}data-view="" data-full=""{% else %}data-view="{% thumb f.rel 1600 %}"
+          data-full="{% full f.rel %}"{% endif %}
           data-title="{{ f.name }}"
           {% comment %}
             탭 이름에 쓸 짧은 이름. 캡션과 같은 규칙으로 `Snap-` 을 뗀다 —
@@ -49,7 +55,7 @@
           {% endcomment %}
           data-detkey="{{ f.name }}"
           {% if f.rel == base %}data-current="1"{% endif %}>
-    <img loading="lazy" src="{% thumb f.rel 220 %}" alt="{{ f.name }}">
+    <img loading="lazy" {% if not offline %}src="{% thumb f.rel 220 %}"{% endif %} alt="{{ f.name }}">
     <span class="cap">{{ f.name|cut:"Snap-" }}{% if f.is_sharpest %} ★{% endif %}</span>
     <span class="bar"><i style="width:{{ f.sharp_pct }}%"></i></span>
   </button>
