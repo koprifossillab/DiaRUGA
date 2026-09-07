@@ -282,11 +282,12 @@ window.initDetView = function (uid) {
     // 배율을 모르면 눈금을 그리지 않는다 — 틀린 스케일바는 없느니만 못하다.
     if (!umPerImgPx) { sb.style.display = 'none'; return; }
     // 레이아웃 전이면 폭이 0 이라 잴 수 없다. 이미지 load 때 다시 부른다.
-    if (!view.clientWidth) return;
-    // 화면에 그려진 이미지의 폭(CSS px). canvas 가 view 폭을 꽉 채우고 k 배 확대된다.
-    var shownW = view.clientWidth * k;
+    var vw0 = canvasBox().w;
+    if (!vw0) return;
+    // 화면에 그려진 이미지의 폭(CSS px). canvas 가 그 폭을 꽉 채우고 k 배 확대된다.
+    var shownW = vw0 * k;
     var umPerScreenPx = umPerImgPx * W / shownW;
-    var target = Math.max(70, Math.min(170, view.clientWidth * 0.16));
+    var target = Math.max(70, Math.min(170, vw0 * 0.16));
     var nice = niceLength(umPerScreenPx * target);
     sbBar.style.width = Math.round(nice / umPerScreenPx) + 'px';
     sbLabel.textContent = fmtUm(nice);
@@ -298,8 +299,9 @@ window.initDetView = function (uid) {
   // 하면 "지금 원본을 다 보고 있는가" 를 알 수 없다 — 원본 2752 px 을 1460 px
   // 폭에 맞춰 놓은 것이라 실제로는 53% 다. 100% = 원본 1화소가 화면 1화소.
   function zoomPct() {
-    if (!view.clientWidth || !W) return null;
-    return 100 * view.clientWidth * k / W;
+    var vw0 = canvasBox().w;
+    if (!vw0 || !W) return null;
+    return 100 * vw0 * k / W;
   }
 
   function applyTransform() {
@@ -318,7 +320,9 @@ window.initDetView = function (uid) {
   }
   function clampPan() {
     // 이미지가 화면 밖으로 완전히 빠져나가지 않게 한다.
-    var vw = view.clientWidth, vh = view.clientHeight;
+    // **재는 것은 사진의 상자다**(`toImage` 와 같은 이유 · 192).
+    var vb = canvasBox();
+    var vw = vb.w, vh = vb.h;
     var min = Math.min(vw, vh) * 0.2;
     tx = Math.min(vw - min, Math.max(min - vw * k, tx));
     ty = Math.min(vh - min, Math.max(min - vh * k, ty));
@@ -337,6 +341,88 @@ window.initDetView = function (uid) {
     applyTransform();
     maybeHiRes();
   }, { passive: false });
+
+  // --- 손가락 (192 · 모바일) -------------------------------------------------
+  //
+  // 데스크탑의 조작은 **마우스에만 있는 것**을 쓴다 — 휠 확대, 우클릭 드래그
+  // 이동, 우클릭 메뉴, hover 말풍선. 손가락에는 그중 아무것도 없다.
+  //
+  // **한 손가락은 이동, 두 손가락은 확대.** 사진을 보는 화면에서 한 손가락
+  // 끌기는 이동이 자연스럽고, 범위 선택은 그 자리를 내준다 — 손가락에는
+  // Shift 가 없어 어차피 하나씩 눌러 고른다.
+  //
+  // **탭은 가로채지 않는다.** 브라우저가 탭을 마우스 이벤트로 바꿔 주므로
+  // 선택·되살리기·펼침이 그대로 돈다 — `preventDefault` 를 부르는 것은
+  // **이동·확대로 판정한 다음**뿐이다. 여기서 손대면 그 갈래를 전부 다시
+  // 적어야 하고, 두 벌이 되면 조용히 어긋난다.
+  var touch = null, byTouch = false;
+
+  function tgap(t) {
+    var dx = t[0].clientX - t[1].clientX, dy = t[0].clientY - t[1].clientY;
+    return Math.sqrt(dx * dx + dy * dy) || 1;
+  }
+
+  view.addEventListener('touchstart', function (e) {
+    byTouch = true;
+    // 그리기·고치기는 탭으로 점을 찍는 일이라 손대지 않는다
+    if (drawing || editing) { touch = null; return; }
+    if (e.touches.length >= 2) {
+      var t = [e.touches[0], e.touches[1]];
+      var r = view.getBoundingClientRect();
+      touch = { mode: 'pinch', gap: tgap(t), k0: k, tx0: tx, ty0: ty,
+                cx: (t[0].clientX + t[1].clientX) / 2 - r.left,
+                cy: (t[0].clientY + t[1].clientY) / 2 - r.top };
+      e.preventDefault();
+    } else {
+      touch = { mode: 'maybe', sx: e.touches[0].clientX,
+                sy: e.touches[0].clientY, tx0: tx, ty0: ty };
+    }
+  }, { passive: false });
+
+  view.addEventListener('touchmove', function (e) {
+    if (!touch) return;
+    if (touch.mode === 'pinch') {
+      if (e.touches.length < 2) return;
+      var t = [e.touches[0], e.touches[1]];
+      // 휠 확대와 **같은 규칙**이다 — 두 손가락 사이의 점이 제자리에 있게
+      // 평행이동을 보정한다. 상한도 같은 12배다(값을 여기 또 적지 않는다).
+      var nk = Math.min(12, Math.max(1, touch.k0 * (tgap(t) / touch.gap)));
+      tx = touch.cx - (touch.cx - touch.tx0) * nk / touch.k0;
+      ty = touch.cy - (touch.cy - touch.ty0) * nk / touch.k0;
+      k = nk;
+      if (k === 1) { tx = 0; ty = 0; } else { clampPan(); }
+      applyTransform();
+      maybeHiRes();
+      e.preventDefault();
+      return;
+    }
+    if (e.touches.length !== 1) return;
+    var f = e.touches[0];
+    var dx = f.clientX - touch.sx, dy = f.clientY - touch.sy;
+    // **8px 까지는 탭이다.** 손가락은 가만히 있어도 몇 px 흔들린다 — 그것을
+    // 이동으로 읽으면 개체를 고를 수가 없다.
+    if (touch.mode === 'maybe' && Math.abs(dx) + Math.abs(dy) > 8) {
+      touch.mode = 'pan';
+      hideTip();
+    }
+    if (touch.mode === 'pan') {
+      tx = touch.tx0 + dx; ty = touch.ty0 + dy;
+      clampPan();
+      applyTransform();
+      // 여기서부터 탭이 아니다 — 브라우저가 클릭으로 바꾸지 못하게 막는다
+      e.preventDefault();
+    }
+  }, { passive: false });
+
+  view.addEventListener('touchend', function () { touch = null; });
+  view.addEventListener('touchcancel', function () { touch = null; });
+  // **무엇으로 눌렀는지는 포인터가 말한다.** 같은 기계에 둘 다 있을 수 있어
+  // (태블릿 + 마우스) 한 번 정해 두면 안 된다 — 누를 때마다 다시 본다.
+  // `mousedown` 으로는 못 가른다: 손가락이 만드는 대체 이벤트가 그것과 같은
+  // 모양이라 그때도 "마우스" 로 읽힌다.
+  view.addEventListener('pointerdown', function (e) {
+    if (e.pointerType) byTouch = (e.pointerType !== 'mouse');
+  }, true);
 
   window.addEventListener('resize', applyTransform);
   // 스크립트가 도는 시점에는 아직 폭이 잡히지 않았을 수 있다. 배율 표시도
@@ -692,7 +778,7 @@ window.initDetView = function (uid) {
     // 지금 띄운 이미지의 실제 화소보다 넓게 그려지기 시작하면 늘려 보고 있는
     // 것이다. naturalWidth 로 재므로 축소본 폭(1600)을 코드에 박지 않는다.
     var nat = imgEl.naturalWidth || 0;
-    if (!nat || view.clientWidth * k <= nat) return;
+    if (!nat || canvasBox().w * k <= nat) return;
     var s = shots[current];
     if (!s || !s.dataset.full) return;
     hires = true;
@@ -911,10 +997,31 @@ window.initDetView = function (uid) {
 
   // --- 좌표 변환 -----------------------------------------------------------
   // 화면 좌표 -> 이미지 픽셀 좌표. 확대/이동이 걸려 있어도 맞는다.
+  // **사진의 상자는 `.canvas` 다 — `.detview` 가 아니다** (192).
+  //
+  // 지금까지 둘이 같아서 바깥 상자로 재고 있었는데, 좁은 화면에서는 도구·레이어
+  // 줄이 사진 위가 아니라 **흐름 안**으로 들어온다(손가락 크기로 키우면 사진의
+  // 3분의 1을 덮는다). 그러면 `.detview` 는 그만큼 크고 위쪽이 밀려서, 바깥
+  // 상자로 재는 좌표가 통째로 어긋난다 — 개체를 눌러도 아무것도 안 골라진다.
+  //
+  // `offsetLeft/Width` 는 **변환 전 배치값**이다. `getBoundingClientRect` 는
+  // 확대·이동이 얹힌 상자를 주므로 여기서는 못 쓴다(그 변환을 우리가 다시
+  // 나누고 있다).
+  // **`clientLeft` 는 테두리 두께다.** `offsetLeft` 는 자리를 잡아 준 상자의
+  // *패딩 상자* 기준이고 `getBoundingClientRect` 는 *테두리 상자* 를 주므로,
+  // 둘을 이으려면 그 두께를 더해야 한다 — 안 더하면 1px 씩 어긋난다.
+  function canvasBox() {
+    return { ox: view.clientLeft + canvas.offsetLeft,
+             oy: view.clientTop + canvas.offsetTop,
+             w: canvas.offsetWidth || view.clientWidth || 1,
+             h: canvas.offsetHeight || view.clientHeight || 1 };
+  }
+
   function toImage(e) {
     var r = view.getBoundingClientRect();
-    var fx = ((e.clientX - r.left) - tx) / (k * r.width);
-    var fy = ((e.clientY - r.top) - ty) / (k * r.height);
+    var b = canvasBox();
+    var fx = ((e.clientX - r.left - b.ox) - tx) / (k * b.w);
+    var fy = ((e.clientY - r.top - b.oy) - ty) / (k * b.h);
     return { x: fx * W, y: fy * H, fx: fx, fy: fy };
   }
 
@@ -3473,7 +3580,16 @@ window.initDetView = function (uid) {
   // --- 마우스: 선택 / 범위선택 / 이동 / 삭제 -------------------------------
   var down = null, mode = null;
 
-  view.addEventListener('contextmenu', function (e) { e.preventDefault(); });
+  view.addEventListener('contextmenu', function (e) {
+    e.preventDefault();
+    // **길게 누르면 여기로 온다** (192 · 모바일). 마우스 우클릭은 `mouseup` 이
+    // 메뉴를 내므로 **손가락일 때만** 여기서 낸다 — 안 가르면 마우스에서 두 번
+    // 열린다. 그리기·고치기 중에는 안 낸다(그 조작이 먼저다).
+    if (!byTouch || drawing || editing) return;
+    var pt = toImage(e);
+    openMenu(e, { x: pt.x, y: pt.y, fx: pt.fx, fy: pt.fy,
+                  shift: false, btn: 2, target: topHitAt(pt) });
+  });
 
   // 점을 더블클릭하면 뺀다. **3점 아래로는 못 뺀다** — 도형이 아니게 된다.
   view.addEventListener('dblclick', function (e) {
@@ -3831,9 +3947,13 @@ window.initDetView = function (uid) {
     // `canvas` 는 변환 전 자리다(`offset*`) — `getBoundingClientRect` 는 지금
     // 배율이 이미 곱해져 있어 이 계산에 못 쓴다. `transform-origin: 0 0` 이라
     // 화면좌표 = 이동 + 캔버스좌표 × 배율 이다.
-    var vw = view.clientWidth, vh = view.clientHeight;
-    var cw = canvas.offsetWidth, ch = canvas.offsetHeight;
-    if (!vw || !vh || !cw || !ch) return;
+    // **재는 것은 사진의 상자다** (192) — 좁은 화면에서는 도구·레이어 줄이
+    // `.detview` 안 흐름에 들어와 바깥 상자가 사진보다 크다. 그 상자로 재면
+    // 개체가 화면 가운데가 아니라 **도구까지 포함한 가운데**로 온다.
+    var vb = canvasBox();
+    var vw = vb.w, vh = vb.h;
+    var cw = vw, ch = vh;
+    if (!vw || !vh) return;
 
     // **개체가 화면의 절반쯤을 차지하게 한다.** 꽉 채우면 개체만 남아 "무엇
     // 옆에 있는 것인가" 가 안 읽힌다 — 검토는 주위를 함께 보는 일이다.

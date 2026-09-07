@@ -304,7 +304,17 @@
   <span id="selinfo-{{ uid }}" class="dim">선택 없음</span>
   <span id="savestate-{{ uid }}" class="hint"></span>
 </div>
-<p class="dim" style="font-size:11.5px;margin:2px 2px 0">
+{% comment %}
+  **조작 안내가 둘이다** (192). 마우스에만 있는 것을 손가락에게 적어 두면
+  화면이 거짓말을 한다 — 휠도 우클릭도 없는 자리에서 "휠 = 확대" 를 읽는다.
+  어느 쪽을 낼지는 CSS 가 정한다(`@media (hover: none)`): 기기가 무엇인지는
+  브라우저가 알고, 우리가 짐작하면 태블릿+마우스 같은 자리에서 틀린다.
+{% endcomment %}
+<p class="dim touchhint" style="font-size:12px;margin:2px 2px 0">
+  <b>두 손가락 = 확대</b> · 한 손가락 끌기 = 이동 · <b>탭 = 선택</b> ·
+  <b>길게 누르기 = 메뉴</b>(삭제·유형·되살리기) · 빈 곳 탭 = 그 자리의 탈락 후보 펼쳐 보기
+</p>
+<p class="dim mousehint" style="font-size:11.5px;margin:2px 2px 0">
   휠 = 확대 · 우클릭 드래그 = 이동 · <b>클릭 = 선택 (겹친 자리는 다시 클릭하면 다음 것)</b> · Shift+클릭 = 추가/해제 ·
   드래그 = 범위 선택 · <b>선택 위에서 우클릭 = 오검출 삭제</b> ·
   <b>빈 곳 클릭 = 그 자리의 탈락 후보 펼쳐 보기</b>
@@ -329,7 +339,7 @@
   분류가 하나도 없어도 이 줄은 놓인다 — 삭제 키는 분류와 무관하다.
 {% endcomment %}
 {% hotkey_groups as hk %}
-<p class="dim keyhint" id="keyhint-{{ uid }}" style="font-size:11.5px;margin:2px 2px 0">
+<p class="dim keyhint mousehint" id="keyhint-{{ uid }}" style="font-size:11.5px;margin:2px 2px 0">
   <b>단축키</b> — 개체를 고르고
   <kbd>Space</kbd>&nbsp;<span title="오검출로 삭제 · 지운 것을 고르고 다시 누르면 되살립니다">삭제</span>{% if hk.groups %} ·
   {% for h in hk.groups %}<kbd>{{ h.hotkey|upper }}</kbd>&nbsp;{% for c in h.classes %}{% if not forloop.first %} → {% endif %}<span title="{{ c.label }}">{{ c.short }}</span>{% endfor %}{% if not forloop.last %} · {% endif %}{% endfor %}{% if hk.cycles %}

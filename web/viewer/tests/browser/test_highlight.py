@@ -84,8 +84,22 @@ class HighlightBrowserTest(BrowserTestCase):
         return b["x"] + b["width"] / 2, b["y"] + b["height"] / 2
 
     def view_center(self):
-        b = self.page.query_selector("#dv-stack").bounding_box()
-        return b["x"] + b["width"] / 2, b["y"] + b["height"] / 2
+        """**사진이 놓인 자리의 한가운데** — `.detview` 의 한가운데가 아니다.
+
+        좁은 창(여기가 620px 이다)에서는 도구·레이어 줄이 사진 위가 아니라
+        `.detview` 안 **흐름**으로 들어온다(192) — 바깥 상자로 재면 사진의
+        가운데가 아니라 도구까지 포함한 가운데를 재게 된다. 화면 코드가
+        `canvasBox()` 로 재는 것과 같은 상자다.
+        """
+        b = self.page.evaluate("""() => {
+          const v = document.getElementById('dv-stack');
+          const c = document.getElementById('canvas-stack');
+          const r = v.getBoundingClientRect();
+          return {x: r.left + v.clientLeft + c.offsetLeft,
+                  y: r.top + v.clientTop + c.offsetTop,
+                  w: c.offsetWidth, h: c.offsetHeight};
+        }""")
+        return b["x"] + b["w"] / 2, b["y"] + b["h"] / 2
 
     # --- 표시가 붙는다 ------------------------------------------------------
 
@@ -161,7 +175,7 @@ class HighlightBrowserTest(BrowserTestCase):
         # 화면 크기의 5% 만큼 느슨하게 본다.
         cx, cy = self.hl_center()
         vx, vy = self.view_center()
-        box = page.query_selector("#dv-stack").bounding_box()
+        box = page.query_selector("#canvas-stack").bounding_box()
         self.assertLess(abs(cx - vx), box["width"] * 0.05, "가로로 안 맞았다")
         self.assertLess(abs(cy - vy), box["height"] * 0.05, "세로로 안 맞았다")
 
