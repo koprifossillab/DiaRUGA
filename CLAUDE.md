@@ -286,8 +286,8 @@ docker compose run --rm pipeline python pipeline/segment_diatoms.py --slide <slu
 **자동 시험이 있다 — 고치고 나면 이것부터 돌린다** (P08 · 064).
 
 ```bash
-python web/manage.py test viewer --exclude-tag browser   # 858개 · 15초
-python web/manage.py test viewer                         # 1,050개 (브라우저 192개 포함, 392초)
+python web/manage.py test viewer --exclude-tag browser   # 895개 · 16초
+python web/manage.py test viewer                         # 1,110개 (브라우저 215개 포함, 412초)
 ```
 
 호스트 venv 로 돈다 — `dbrun.sh` 를 안 거친다. 규약이 막으려는 "같은 파일을 두
