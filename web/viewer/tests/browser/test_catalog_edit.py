@@ -449,3 +449,57 @@ class CatalogBulkBrowserTest(BrowserTestCase):
         for i in range(picks.count()):
             self.assertFalse(picks.nth(i).is_checked(), f"{i}번이 골라져 있다")
         self.assertTrue(page.locator(".bulkbar").is_hidden())
+
+    def test_고르는_중에는_카드를_눌러_고른다(self):
+        """**고르는 중에는 카드가 통째로 고르는 자리다** (188, 사용자 2026-09-07).
+
+        카드 하나가 440px 인데 고르는 칸은 왼쪽 위 13px 이라, 여럿을 고르는
+        동안 손이 자꾸 그림(→ 시야로 이동)이나 칸(→ 편집)에 떨어진다.
+        시야로 넘어가면 고른 것을 잃고, 칸에 떨어지면 **그 개체에만** 값이
+        앉아 일괄과 어긋난다.
+        """
+        page = self.open(reverse("catalog", args=[self.w.slide.slug]) + "?frag=1")
+        cards = page.locator(".catcard")
+        self.assertGreaterEqual(cards.count(), 3, "카드가 셋은 있어야 한다")
+        was = page.url
+        cards.nth(0).locator(".pick").check()
+        page.wait_for_selector(".bulkbar:not([hidden])", timeout=5000)
+
+        # 그림을 눌러도 시야로 안 간다 — 고르는 것으로 받는다.
+        # **`force` 로 누른다** — 그림은 `pointer-events: none` 이라 플레이라이트가
+        # 「누를 수 있는 자리」로 안 치는데, 사람이 누르는 것은 그 좌표이고
+        # 클릭은 그 자리에 놓인 카드가 받는다. 그 자리를 그대로 누른다.
+        cards.nth(1).locator(".pic").click(force=True)
+        page.wait_for_timeout(200)
+        self.assertEqual(page.url, was, "고르는 중에 시야로 넘어갔다")
+        self.assertTrue(cards.nth(1).locator(".pick").is_checked())
+
+        # 편집칸 자리를 눌러도 같다.
+        cards.nth(2).locator(".fld").click(position={"x": 5, "y": 5}, force=True)
+        page.wait_for_timeout(200)
+        self.assertTrue(cards.nth(2).locator(".pick").is_checked())
+        self.assertIn("3", page.inner_text(".bulkbar .n"))
+
+        # 다시 누르면 풀린다 — 잘못 고른 것을 그 자리에서 되돌린다.
+        cards.nth(2).locator(".fld").click(position={"x": 5, "y": 5}, force=True)
+        page.wait_for_timeout(200)
+        self.assertFalse(cards.nth(2).locator(".pick").is_checked())
+
+    def test_고르는_중에는_칸을_못_친다(self):
+        """**잠그는 것으로 끝나지 않는다** (051) — 풀리기도 해야 한다.
+        「고르기 해제」 뒤에 못 치면 사람이 화면이 죽은 줄로 읽는다.
+        """
+        page = self.open(reverse("catalog", args=[self.w.slide.slug]) + "?frag=1")
+        card = page.locator(".catcard").first
+        self.assertTrue(card.locator(".species").is_enabled())
+
+        card.locator(".pick").check()
+        page.wait_for_selector(".bulkbar:not([hidden])", timeout=5000)
+        self.assertTrue(card.locator(".species").is_disabled(),
+                        "고르는 중인데 종명 칸이 살아 있다")
+        self.assertTrue(card.locator(".cls").is_disabled())
+
+        page.locator(".bulkbar .clear").click()
+        page.wait_for_timeout(200)
+        self.assertTrue(card.locator(".species").is_enabled(),
+                        "고르기를 풀었는데 칸이 안 돌아왔다")

@@ -166,6 +166,19 @@
   .catcard .pick { position: absolute; left: 5px; top: 5px; z-index: 2;
                    margin: 0; cursor: pointer; }
   .catcard.picked { border-color: var(--accent); }
+  /* **고르는 중에는 카드가 통째로 고르는 자리다** (188). 카드는 440px 인데
+     고르는 칸은 왼쪽 위 13px 이라, 여럿을 고르는 동안 손이 자꾸 그림(→ 시야로
+     이동)이나 편집칸(→ 그 개체에만 앉는 값)에 떨어진다.
+
+     **마우스만 막는 자리다** — 클릭이 카드에 닿아 고르는 것이 된다. 키보드로
+     오는 길(링크·단추에 포커스를 두고 Enter)은 스크립트가 막는다. 한쪽만
+     막으면 나머지가 조용히 열려 있다 (051).
+
+     고르는 칸은 `.catcard` 의 직계라 이 규칙 밖이다 — 그것까지 막으면 고르기를
+     시작한 자리에서 풀 수가 없다. */
+  body.picking .catcard { cursor: pointer; }
+  body.picking .catcard .pic,
+  body.picking .catcard .fld { pointer-events: none; }
   /* 지운 카드는 **표시로만** 다르다. 색을 박지 않는다 — 테마가 둘이라
      `#fff…` 을 박으면 어두운 쪽에서 덩어리가 된다 (107). */
   .catcard.gone .pic img { opacity: .5; }
@@ -410,6 +423,8 @@
   </select>
   <button type="button" class="go">고른 것에 적용</button>
   <button type="button" class="clear badgelink">고르기 해제</button>
+  {# **잠근 것을 글자로 적는다** (188) — 눌러도 안 열리는 화면은 고장으로 읽힌다. #}
+  <span class="dim pickhint">카드를 누르면 골라진다 · 편집과 시야로 가는 길은 「고르기 해제」 뒤에</span>
   <span class="say"></span>
 </div>
 {% endif %}
@@ -852,6 +867,15 @@
       pose: card.querySelector(".pose"),
     };
     var gprow = card.querySelector(".row.gp");
+    // **잠그는 까닭이 둘이다** (188) — 지워서(`lock`)와 고르는 중이라서
+    // (`pickLock`). 한 칸에 담으면 고르기를 푸는 순간 **지운 카드의 칸이 다시
+    // 쳐지는 상태**가 된다 — 거기 적은 것은 아무 데도 안 남는다(051 과 같은 줄).
+    var goneOff = false, pickOff = false;
+
+    function applyLock() {
+      var off = goneOff || pickOff;
+      Object.keys(fields).forEach(function (k) { fields[k].disabled = off; });
+    }
     // 마지막으로 **서버가 안다고 확인된** 값. 200 이 곧 "그렇게 저장됐다" 는
     // 뜻은 아니라서, 보낸 것이 아니라 돌아온 것을 여기 적는다.
     var known = {};
@@ -1020,9 +1044,14 @@
       // 종명을 적을 수 있고, 그 저장은 지운 것을 되살리지도 않는다 — 사람이
       // 적은 것이 어디에도 안 보이는 상태가 된다 (051 과 같은 갈래다).
       lock: function (on) {
-        Object.keys(fields).forEach(function (k) { fields[k].disabled = on; });
+        goneOff = on;
+        applyLock();
         card.classList.toggle("gone", on);
       },
+      // **고르는 중에는 칸을 잠근다** (188). 마우스는 CSS 가 막지만 키보드는
+      // 여기서 막힌다 — 탭으로 칸에 들어가 치는 길이 남아 있으면, 일괄로 앉힐
+      // 참인 값이 그 개체에만 먼저 앉는다.
+      pickLock: function (on) { pickOff = on; applyLock(); },
     });
   });
 
@@ -1225,12 +1254,42 @@
       var n = picked().length;
       bar.hidden = n === 0;
       bn.textContent = "고른 것 " + n + "개";
+      // **고르는 중인지가 화면 전체의 상태다** (188). 카드마다가 아니라
+      // `body` 에 둔다 — CSS 가 카드 안쪽을 한 규칙으로 뚫고, 아래 클릭
+      // 가로채기도 같은 값을 본다.
+      document.body.classList.toggle("picking", n > 0);
       cards.forEach(function (c) {
         c.card.classList.toggle("picked", c.picked());
+        c.pickLock(n > 0);
       });
       pickallRefresh();
       savePicks();
     }
+
+    // **누른 자리를 고르기로 받는다** (188 · 사용자 2026-09-07).
+    //
+    // **잡는 단계가 내려가는 쪽(capture)이다.** 카드 안에는 이미 도판 미리보기·
+    // 지우기·묶음 풀기가 각자 클릭을 듣고 있어, 올라오는 쪽에서 잡으면 그들이
+    // 먼저 돈다 — 고르는 중에 「지운다」가 눌리면 되돌릴 것이 늘어난다.
+    //
+    // **키보드로 오는 클릭도 여기서 막힌다.** 링크·단추에 포커스를 두고 Enter 를
+    // 치면 그 요소가 그대로 대상이라 `pointer-events` 가 못 막는다 — 마우스는
+    // CSS, 키보드는 여기다.
+    document.addEventListener("click", function (e) {
+      if (!document.body.classList.contains("picking")) { return; }
+      if (!e.target.closest) { return; }
+      var card = e.target.closest(".catcard");
+      if (!card) { return; }
+      // 고르는 칸 자체는 브라우저에 맡긴다 — 여기서 또 뒤집으면 두 번 뒤집혀
+      // **누르는데 아무 일도 안 일어난다.**
+      if (e.target.closest(".pick")) { return; }
+      e.preventDefault();
+      e.stopPropagation();
+      var p = card.querySelector(".pick");
+      if (!p) { return; }
+      p.checked = !p.checked;
+      refresh();
+    }, true);
 
     if (pickall) {
       pickall.addEventListener("click", function () {
