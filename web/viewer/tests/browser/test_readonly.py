@@ -60,9 +60,16 @@ class ReadOnlyScreenTest(BrowserTestCase):
     def test_도구와_완료줄이_안_보인다(self):
         """**`getComputedStyle` 로 확인한다.** `.detview .tools` 가
         `display: flex` 로 특이도에서 이겨, 감춘 줄 알고 계속 내보인 적이 있다
-        (051). 요소가 있느냐가 아니라 **실제로 그려지느냐**를 본다."""
+        (051). 요소가 있느냐가 아니라 **실제로 그려지느냐**를 본다.
+
+        **`.drawtool` 이 목록에 있는 이유** (194): 마스크 그리기가 `.tools`
+        상자 밖(사진 오른쪽 위)으로 나갔다. 감추는 규칙에 그 이름을 안 적으면
+        검토 대상이 아닌 묶음에서 마스크를 그릴 수 있게 된다 — 저장은 막혀
+        있으니 **한 시야를 헛검토하고 새로고침 한 번에 잃는다.** 도구를 옮길
+        때마다 이 목록이 함께 늘어야 한다.
+        """
         page = self.open_ro()
-        for sel in (".tools", ".donebar"):
+        for sel in (".tools", ".drawtool", ".donebar"):
             for el in page.query_selector_all(sel):
                 with self.subTest(sel=sel):
                     self.assertFalse(el.is_visible(),

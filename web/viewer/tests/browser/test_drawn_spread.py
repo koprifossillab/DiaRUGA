@@ -52,7 +52,7 @@ class DrawnSpreadOnScreenTest(BrowserTestCase):
 
     def draw_one(self):
         """합성본 판에 마스크 하나를 그리고 저장까지 기다린다."""
-        self.page.click('#tools-stack button[data-act="draw"]')
+        self.page.click('#dv-stack button[data-act="draw"]')
         self.page.wait_for_timeout(150)
         for x, y in PTS:
             self.click_image(x, y)
@@ -99,7 +99,7 @@ class DrawnSpreadOnScreenTest(BrowserTestCase):
         쓴다 — 뜻이 같은 것을 두 가지로 그리면 사람이 둘을 다른 일로 읽는다.
         """
         page = self.open_review()
-        page.click('#tools-stack button[data-act="draw"]')
+        page.click('#dv-stack button[data-act="draw"]')
         page.wait_for_timeout(150)
         for x, y in PTS:
             self.click_image(x, y)

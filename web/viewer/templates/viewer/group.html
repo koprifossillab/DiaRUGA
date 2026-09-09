@@ -73,7 +73,8 @@
      `.detview` 를 붙여야 먹는다 — base.html 이 세 가지 모두 `display: flex` 로
      잡고 있어 특이도에서 진다. 화면은 "도구만 잠가 두었습니다" 라고 적으면서
      실제로는 도구가 그대로 보이고 있었다 (051). */
-  .detview .tools, .detview .donebar, .detview .layers { display: none; }
+  .detview .tools, .detview .drawtool,
+  .detview .donebar, .detview .layers { display: none; }
   /* 개체가 없으니 "개체 목록" 탭과 후보 수 표시도 의미가 없다.
      엔진 고르기(.engpick)는 남긴다 — 다른 엔진에는 검출이 있을 수 있다 */
   .dettabs [data-pane="list"], .dettabs .tabmeta { display: none; }
@@ -139,7 +140,10 @@
        `.detview` 를 붙여야 한다. base.html 이 `.detview .tools { display: flex }`
        로 잡고 있어서 `.tools` 만 적으면 특이도에서 져 아무 일도 안 일어난다 —
        `/engine/` 이 그렇게 도구를 감춘 줄 알고 계속 내보이고 있었다. */
-    .detview .tools, .detview .donebar { display: none; }
+    /* **`.drawtool` 을 빠뜨리면 안 된다** (194). 연필이 `.tools` 밖으로
+       나갔으므로 여기 안 적으면 읽기 전용 화면에서 마스크를 그릴 수 있다 —
+       051 이 정확히 그 자리다(저장만 잠그고 화면은 되는 것처럼 보였다). */
+    .detview .tools, .detview .drawtool, .detview .donebar { display: none; }
   </style>
   {% comment %}
     이 표식이 있으면 `_detection.html` 이 저장을 아예 보내지 않고, 사진 가운데

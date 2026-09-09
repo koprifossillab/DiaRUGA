@@ -1,0 +1,27 @@
+{% comment %}
+  오프라인 프로그램의 **마침 상자** (194 · 사용자 2026-09-07).
+
+  > *"결과 내려 받는 버튼은 검토를 다 마치고 단 한번만 쓰게 될텐데, 맨 위에
+  > 두는 것은 나쁜 ui 구성이야."*
+
+  그래서 **페이지 맨 아래**에 둔다 — 다 하고 나서 닿는 자리다. 맨 위에는
+  알리는 한 줄만 남고(`_offline_shell.html`), 안 내려받은 것이 있으면 그 줄이
+  여기로 데려온다(`#off-done`).
+
+  검토자 이름도 여기 있다. **한 번 적고 마는 칸**이라 늘 보일 자리를 차지할
+  것이 아니고, 적는 때가 곧 내려받는 때다. 반입 미리보기가 이 이름을 적는다
+  (`offline_import.html` 의 「검토자」).
+
+  배선은 껍데기가 한다 — 이 조각은 마크업만이다. 열쇠는 `id` 셋이다
+  (`off-done`·`off-who`·`off-get`).
+{% endcomment %}
+<div class="offdone" id="off-done">
+  <div class="dhead">다 하셨으면 — 결과를 내려받아 뷰어에 올리십시오</div>
+  <label class="offsay">검토자
+    <input type="text" class="who" id="off-who" maxlength="40"
+           placeholder="이름(선택)"></label>
+  <button type="button" class="get" id="off-get">결과 내려받기</button>
+  <span class="offsay offstate"></span>
+  <p class="offsay">뷰어의 <b>결과 올리기</b> 화면에 이 파일을 올리면 무엇이
+    바뀌는지 먼저 보여 드립니다 — 거기서 확인한 뒤에 들어갑니다.</p>
+</div>

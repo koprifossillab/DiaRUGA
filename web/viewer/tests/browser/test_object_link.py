@@ -154,7 +154,7 @@ class ObjectLinkBrowserTest(BrowserTestCase):
         page.route("**/review", wreck)
 
         # 빈 자리에 마스크를 그린다 (draw 도구 → 점 셋 → 첫 점으로 닫기)
-        page.click('#tools-stack button[data-act="draw"]')
+        page.click('#dv-stack button[data-act="draw"]')
         page.wait_for_timeout(150)
         for x, y in ((400, 300), (470, 300), (470, 360)):
             self.click_image(x, y)

@@ -91,7 +91,9 @@ window.initDetView = function (uid) {
         con = document.getElementById('con-' + uid),
         briv = document.getElementById('brival-' + uid),
         conv = document.getElementById('conval-' + uid),
-        rst = document.getElementById('adjreset-' + uid);
+        rst = document.getElementById('adjreset-' + uid),
+        box = document.getElementById('adjbox-' + uid),
+        now = document.getElementById('adjnow-' + uid);
     if (!bri || !con) return;
     var KEY = 'diaruga.imgadjust';
 
@@ -109,6 +111,12 @@ window.initDetView = function (uid) {
       conv.textContent = c + '%';
       // 100·100 이면 표식을 지운다 — 켜져 있는지 한눈에 보여야 한다
       rst.classList.toggle('on', b !== 100 || c !== 100);
+      // **접혀 있을 때 켜진 것을 말하는 자리가 여기뿐이다** (194). 폰에서는
+      // 이 판이 접힌 채로 시작하므로, 값을 요약에 적지 않으면 사진이 왜
+      // 어두운지 화면 어디에도 안 적힌다.
+      if (now) {
+        now.textContent = (b === 100 && c === 100) ? '' : (b + '% · ' + c + '%');
+      }
       if (save) {
         try { localStorage.setItem(KEY, JSON.stringify({ b: b, c: c })); }
         catch (e) { /* 사생활 모드 등 — 조정은 그대로 되고 기억만 안 된다 */ }
@@ -118,6 +126,13 @@ window.initDetView = function (uid) {
     bri.value = was[0];
     con.value = was[1];
     apply(false);
+    // **폰에서는 접고 시작한다** (194 · 사용자). 기기가 무엇인지는 브라우저가
+    // 안다 — 우리가 짐작하면 태블릿에 마우스를 붙인 자리에서 틀린다(192).
+    // 좁은 화면 규칙과 **같은 폭**을 본다(`base.html` 의 820px).
+    if (box && window.matchMedia &&
+        window.matchMedia('(max-width: 820px)').matches) {
+      box.open = false;
+    }
     bri.addEventListener('input', function () { apply(true); });
     con.addEventListener('input', function () { apply(true); });
     rst.addEventListener('click', function () {
@@ -3375,7 +3390,10 @@ window.initDetView = function (uid) {
   // 눌린 채로 남아 "켜져 있는 줄 알고" 사진을 누르게 된다 — 그러면 선택이
   // 되고, 켠 줄 알았던 사람은 왜 안 그려지는지 모른다.
   function syncDrawBtn() {
-    var b = tools && tools.querySelector('button[data-act="draw"]');
+    // **`.detview` 안에서 찾는다** (194). 연필은 `#tools-` 밖(사진 오른쪽 위)
+    // 으로 나갔고, 상자를 짚어 찾으면 여기가 조용히 아무 일도 안 하게 된다 —
+    // 그러면 Esc 로 끄고도 단추가 눌린 채 남는다(위 주석이 막으려던 그것이다).
+    var b = view && view.querySelector('button[data-act="draw"]');
     if (b) b.classList.toggle('on', !!(drawing || editing));
   }
 
@@ -3758,15 +3776,18 @@ window.initDetView = function (uid) {
 
   // --- 버튼 (사진 위 오버레이) ---------------------------------------------
   var tools = document.getElementById('tools-' + uid);
+  // **연필은 따로 산다** (194) — 사진 오른쪽 위. 배선은 한 벌이고 자리만 둘이다.
+  var drawTool = document.getElementById('drawtool-' + uid);
   var doneBar = document.getElementById('donebar-' + uid);
 
   // 사진 위에 있으므로 캔버스가 이 클릭을 확대·선택·이동으로 받으면 안 된다.
   ['wheel', 'mousedown', 'contextmenu'].forEach(function (ev) {
-    tools.addEventListener(ev, function (e) { e.stopPropagation(); });
-    if (doneBar) doneBar.addEventListener(ev, function (e) { e.stopPropagation(); });
+    [tools, drawTool, doneBar].forEach(function (el) {
+      if (el) el.addEventListener(ev, function (e) { e.stopPropagation(); });
+    });
   });
 
-  tools.addEventListener('click', function (e) {
+  function onTool(e) {
     var act = e.target.dataset && e.target.dataset.act;
     if (!act) return;
     // 전파를 끊었으니 열려 있던 메뉴·펼침은 직접 닫는다.
@@ -3793,7 +3814,10 @@ window.initDetView = function (uid) {
       // 되살린 개체를 목록에서 빼려면 서버 상태를 다시 받아야 한다.
       setTimeout(function () { location.reload(); }, 500);
     }
-  });
+  }
+
+  tools.addEventListener('click', onTool);
+  if (drawTool) drawTool.addEventListener('click', onTool);
 
   // --- 검토 완료 -----------------------------------------------------------
   // 교정이 하나도 없어도 켤 수 있어야 한다 — 고칠 것이 없는 시야와 아직 보지

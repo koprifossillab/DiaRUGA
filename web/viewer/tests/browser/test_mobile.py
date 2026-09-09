@@ -235,3 +235,124 @@ class MobileOfflineFileTest(MobileTestCase):
         self.assertTrue(page.eval_on_selector(
             ".ocard .ocrop img", "el => el.complete && el.naturalWidth > 0"),
             "크롭이 안 실렸다")
+
+
+class MobileChromeTest(MobileTestCase):
+    """**껍데기**가 폰에서 자리를 안 뺏는가 (194).
+
+    192 가 손댄 것은 화면의 *몸통*이었다. 그 둘레의 띠·단추·섬네일은 데스크탑
+    값 그대로여서, 폰 한 화면(412×915)에서 사진이 294px 밖에 안 됐다.
+
+    여기서 되살려서 잡는 것은 **자리를 도로 뺏는 갈래**다 — 붙박이 띠가
+    돌아오거나, 접기로 한 판이 펴진 채로 서거나, 섬네일이 다시 커지는 것.
+    """
+
+    def test_화면_조정이_폰에서는_접혀_있다(self):
+        page = self.review()
+        box = page.query_selector("#adjbox-stack")
+        self.assertIsNotNone(box, "화면 조정 판이 없다")
+        self.assertFalse(box.get_property("open").json_value(),
+                         "폰인데 밝기·대비 판이 펴진 채로 선다")
+        # 접혀 있어도 **다시 펼 수 있어야 한다** — 접는 것과 감추는 것은 다르다
+        summary = page.query_selector("#adjbox-stack > summary")
+        self.assertTrue(summary.is_visible(), "접었는데 펼 자리가 없다")
+        summary.click()
+        page.wait_for_timeout(150)
+        self.assertTrue(page.query_selector("#bri-stack").is_visible(),
+                        "펴도 슬라이더가 안 나온다")
+
+    def test_켜져_있으면_접혀_있어도_적힌다(self):
+        """조정이 걸린 채로 접히면 **사진이 왜 어두운지 화면 어디에도 안
+        적힌다** — 그러면 사람은 사진을 의심한다."""
+        page = self.review()
+        page.eval_on_selector(
+            "#bri-stack",
+            "el => { el.value = 60; el.dispatchEvent(new Event('input')); }")
+        page.wait_for_timeout(150)
+        self.assertIn("60%", page.text_content("#adjnow-stack"),
+                      "접힌 요약에 켜진 값이 안 적힌다")
+
+    def test_판_섬네일이_폰에서_작아진다(self):
+        """사용자: *"시야 섬네일이 너무 커"*. 128px 은 데스크탑 값이다."""
+        page = self.review()
+        shot = page.query_selector(".strip .shot")
+        if shot is None:
+            self.skipTest("이 픽스처에는 캐러셀이 없다")
+        self.assertLess(shot.bounding_box()["width"], 100,
+                        "폰인데 판 섬네일이 데스크탑 크기 그대로다")
+
+    def test_접은_도구가_눌러야_나오고_실제로_돈다(self):
+        """**감추는 것이 아니라 접는 것이다** — 눌러서 나온 단추가 돌아야
+        한다. `<details>` 안으로 들어가면서 배선(`#tools-` 위임)이 끊기면
+        예외도 경고도 없이 아무 일도 안 일어난다."""
+        page = self.review()
+        more = page.query_selector("#tools-stack .moretools")
+        self.assertIsNotNone(more, "접은 도구 판이 없다")
+        allbtn = page.query_selector('#tools-stack button[data-act="all"]')
+        self.assertFalse(allbtn.is_visible(), "접기로 한 도구가 그냥 보인다")
+        page.click("#tools-stack .moretools > summary")
+        page.wait_for_timeout(150)
+        self.assertTrue(allbtn.is_visible(), "펴도 도구가 안 나온다")
+        allbtn.click()
+        page.wait_for_timeout(200)
+        self.assertGreater(len(page.query_selector_all("#masks-stack .sel")), 0,
+                           "「전체 선택」이 눌렸는데 아무것도 안 골라졌다")
+
+
+class MobileOfflineChromeTest(MobileOfflineFileTest):
+    """오프라인 파일의 띠 — **알리는 곳과 하는 곳이 갈렸다** (194)."""
+
+    def test_내려받기가_맨_위에_없다(self):
+        """사용자: *"결과 내려 받는 버튼은 검토를 다 마치고 단 한번만 쓰게
+        될텐데, 맨 위에 두는 것은 나쁜 ui 구성이야."*
+
+        붙박이 띠가 폰에서 117px 을 늘 먹고 있었다 — 192 가 머리줄을 내려
+        사진에 내준 자리를 그대로 도로 가져갔다.
+        """
+        page = self.bake()
+        bar = page.query_selector(".offbar")
+        self.assertIsNotNone(bar, "알리는 줄이 없다")
+        self.assertNotEqual(
+            page.eval_on_selector(".offbar", "el => getComputedStyle(el).position"),
+            "sticky", "맨 위 띠가 다시 붙박이가 됐다")
+        self.assertLess(bar.bounding_box()["height"], 60,
+                        "알리는 줄이 한 줄이 아니다")
+        self.assertEqual(
+            page.eval_on_selector(
+                "#off-get", "el => !!el.closest('.offbar')"),
+            False, "내려받기 단추가 아직 맨 위 띠 안에 있다")
+        self.assertTrue(
+            page.eval_on_selector("#off-get", "el => !!el.closest('#off-done')"),
+            "내려받기 단추가 마침 상자 안에 없다")
+
+    def test_바꾸면_아래로_데려가는_길이_뜬다(self):
+        """단추를 아래로 내렸으면 **길을 놓아야 한다** — 끝내고 나서 못 찾는
+        자리를 남기지 않는다. 그리고 그 길이 **주소의 시야 번호를 지우면 안
+        된다**(새로고침하면 첫 시야로 돌아간다)."""
+        page = self.bake()
+        jump = page.query_selector("#off-jump")
+        self.assertFalse(jump.is_visible(), "바꾼 것이 없는데 길이 떠 있다")
+        page.evaluate("location.hash = 'g0'")
+        page.wait_for_timeout(200)
+        self.click_image(70, 70, uid="vp0")
+        page.keyboard.press("Space")
+        page.wait_for_timeout(900)
+        self.assertTrue(jump.is_visible(), "안 내려받았는데 길이 안 뜬다")
+        jump.click()
+        page.wait_for_timeout(400)
+        self.assertTrue(page.query_selector("#off-done").is_visible(),
+                        "눌렀는데 마침 상자로 안 갔다")
+        self.assertIn("g0", page.evaluate("location.hash"),
+                      "아래로 가면서 보던 시야가 주소에서 지워졌다")
+
+    def test_시야_목록이_한_줄로_구른다(self):
+        """60개가 격자로 서면 화면의 절반이다. **가로로 미는 것은 이 상자
+        안이지 페이지가 아니다.**"""
+        page = self.bake()
+        self.assertEqual(
+            page.eval_on_selector(".vplist", "el => getComputedStyle(el).flexWrap"),
+            "nowrap", "시야 목록이 아직 격자다")
+        btn = page.query_selector(".vplist button")
+        self.assertGreaterEqual(btn.bounding_box()["height"], 30,
+                                "시야 단추가 손끝보다 작다")
+        self.assertLessEqual(self.over(), 1, "페이지가 가로로 밀린다")

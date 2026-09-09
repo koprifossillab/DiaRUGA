@@ -147,17 +147,47 @@
   </div>
 
   {% comment %}
+    **마스크 그리기는 홀로 사진 오른쪽 위에 둔다** (194 · 사용자 2026-09-07).
+    검토하는 동안 손이 자주 가는 것은 이것 하나이고, 나머지와 한 줄에 섞여
+    있으면 폰에서 두 줄짜리 단추 무리에 묻힌다. 글자를 떼고 연필만 남긴다 —
+    표적이 커지고 사진을 덜 가린다.
+
+    **`#tools-` 상자 밖으로 나갔다.** 도구 배선이 그 상자에 위임돼 있으므로
+    `_detview_js.html` 이 두 자리를 함께 듣고, 눌린 표시(`syncDrawBtn`)도
+    `.detview` 안에서 찾는다 — 한쪽만 고치면 **켜 놓고 잊는 실수**를 막으려고
+    둔 그 표시가 조용히 안 붙는다.
+  {% endcomment %}
+  <div class="drawtool" id="drawtool-{{ uid }}">
+    <button type="button" data-act="draw" title="마스크 그리기 (D)"
+            aria-label="마스크 그리기">✎</button>
+  </div>
+
+  {% comment %}
     교정 도구는 사진 위에 얹는다. 스케일바와 마찬가지로 canvas 가 아니라
     detview 의 자식이라 확대·이동 변환을 받지 않고 늘 같은 자리에 있다.
+
+    **넷은 접어 두었다** (194 · 사용자 2026-09-07: "전체선택, 해제, 배율초기화,
+    삭제분 숨기기 이런건 뭐 큰 의미 없으니"). 검토 한 시야를 보는 동안 한 번도
+    안 누르는 것들이라 늘 펼쳐 두면 자리만 먹는다 — 폰에서는 그 자리가 사진이다.
+    **감추는 것이 아니라 접는 것이다**: `⋯` 이 늘 보이고 한 번 누르면 넷이 다
+    나온다(051 이 말하는 "화면에서 아예 빼는 것" 은 할 수 없을 때 하는 일이고,
+    이것들은 할 수 있다).
+
+    펼친 판은 `position: absolute` 다 — 펼칠 때 아래 것들이 밀리면 방금 보던
+    자리를 잃는다.
   {% endcomment %}
   <div class="tools" id="tools-{{ uid }}">
-    <button type="button" data-act="all">전체 선택</button>
-    <button type="button" data-act="none">해제</button>
-    <button type="button" data-act="reset">배율 초기화</button>
-    <button type="button" data-act="ghosts">삭제분 숨기기</button>
-    <button type="button" data-act="draw">✎ 마스크 그리기</button>
     <button type="button" data-act="undo">↶ 실행취소</button>
     <button type="button" class="danger" data-act="clear">검토 전체 초기화</button>
+    <details class="moretools">
+      <summary title="그 밖의 도구">⋯</summary>
+      <div class="morebox">
+        <button type="button" data-act="all">전체 선택</button>
+        <button type="button" data-act="none">해제</button>
+        <button type="button" data-act="reset">배율 초기화</button>
+        <button type="button" data-act="ghosts">삭제분 숨기기</button>
+      </div>
+    </details>
   </div>
 
   {% comment %}
@@ -189,15 +219,29 @@
     계측·판정은 서버가 원본으로 한다. 값은 브라우저에만 남겨(`localStorage`)
     시야를 옮겨도 따라온다. 슬라이드 하나를 훑는 동안 한 번만 맞추면 된다.
   {% endcomment %}
-  <div class="nhead adjhead">화면 조정
-    <button type="button" class="adjreset" id="adjreset-{{ uid }}"
-            title="밝기·대비를 100% 로">되돌리기</button></div>
-  <div class="adj" id="adj-{{ uid }}">
-    <label>밝기 <span class="dim" id="brival-{{ uid }}">100%</span>
-      <input type="range" id="bri-{{ uid }}" min="20" max="250" step="5" value="100"></label>
-    <label>대비 <span class="dim" id="conval-{{ uid }}">100%</span>
-      <input type="range" id="con-{{ uid }}" min="20" max="250" step="5" value="100"></label>
-  </div>
+  {% comment %}
+    **폰에서는 접고 시작한다** (194 · 사용자 2026-09-07). 밝기·대비는 슬라이드
+    하나를 훑는 동안 한 번 맞추고 마는 것인데, 좁은 화면에서는 이 두 줄이
+    사진과 판 캐러셀 사이를 가른다. 접힌 채로 여는지 아닌지는
+    `_detview_js.html` 이 **화면 폭을 보고** 정한다 — 짐작하면 태블릿에서
+    틀린다(192 와 같은 줄).
+
+    **접혀 있어도 켜져 있으면 보인다** — 요약에 값을 적는다(`adjnow`).
+    조정이 걸린 채로 접히면 사진이 왜 어두운지 화면 어디에도 안 적히게 되고,
+    그러면 사람은 사진을 의심한다.
+  {% endcomment %}
+  <details class="adjbox" id="adjbox-{{ uid }}" open>
+    <summary class="nhead adjhead">화면 조정<span class="adjnow"
+             id="adjnow-{{ uid }}"></span></summary>
+    <div class="adj" id="adj-{{ uid }}">
+      <label>밝기 <span class="dim" id="brival-{{ uid }}">100%</span>
+        <input type="range" id="bri-{{ uid }}" min="20" max="250" step="5" value="100"></label>
+      <label>대비 <span class="dim" id="conval-{{ uid }}">100%</span>
+        <input type="range" id="con-{{ uid }}" min="20" max="250" step="5" value="100"></label>
+      <button type="button" class="adjreset" id="adjreset-{{ uid }}"
+              title="밝기·대비를 100% 로">되돌리기</button>
+    </div>
+  </details>
 
   {% comment %}
     **개체 카탈로그** (183 · 사용자 2026-09-04). 여기 있던 「이 시야」 메모 상자를

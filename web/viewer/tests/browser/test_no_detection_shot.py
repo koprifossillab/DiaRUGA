@@ -76,7 +76,7 @@ class NoDetectionShotTest(BrowserTestCase):
                       .inner_text())
 
         # 거기서 마스크를 그린다 — 예전에는 이 저장이 합성본으로 갔다
-        page.click('#tools-stack button[data-act="draw"]')
+        page.click('#dv-stack button[data-act="draw"]')
         page.wait_for_timeout(150)
         for x, y in PTS:
             self.click_image(x, y)

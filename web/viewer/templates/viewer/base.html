@@ -1156,7 +1156,21 @@
   .notes .adjreset:hover { color: inherit; border-color: var(--accent); }
   /* 켜져 있으면 눈에 띄어야 한다 — 원본과 다르게 보고 있다는 표시다 */
   .notes .adjreset.on { color: var(--accent); border-color: var(--accent); }
+  /* 접었다 편다 (194). 폰에서는 접힌 채로 시작한다 — `_detview_js.html` 이
+     화면 폭을 보고 정한다. 요약에 지금 값이 적히므로 접혀 있어도 켜진 것을
+     안다(`.adjnow`). */
+  .notes .adjbox { flex: 0 0 auto; }
+  .notes .adjbox > summary { list-style: none; cursor: pointer; }
+  .notes .adjbox > summary::-webkit-details-marker { display: none; }
+  .notes .adjbox > summary::after {
+    content: '▾'; margin-left: auto; font-size: 10px; opacity: .55;
+  }
+  .notes .adjbox:not([open]) > summary::after { content: '▸'; }
+  .notes .adjnow { font-weight: 400; font-size: 11px; color: var(--accent); }
   .notes .adj { flex: 0 0 auto; margin-bottom: 11px; }
+  /* 되돌리기가 머리줄에서 판 안으로 내려왔다 (194) — `margin-left:auto` 는
+     그때 flex 머리줄의 것이라 여기서는 뜻이 없다 */
+  .notes .adj .adjreset { margin-left: 0; margin-top: 3px; }
   .notes .adj label {
     display: block; font-size: 11.5px; color: var(--dim); margin-bottom: 5px;
   }
@@ -1430,6 +1444,32 @@
   }
   .detview .tools button:hover { border-color: var(--accent); color: var(--accent); }
   .detview .tools button.danger:hover { border-color: #ff6b6b; color: #ff8a8a; }
+  /* 접어 둔 넷 (194). `⋯` 은 늘 보이고, 펼친 판은 흐름 밖이라 아래가 안 밀린다 */
+  .detview .tools .moretools { position: relative; }
+  .detview .tools .moretools > summary {
+    list-style: none; cursor: pointer;
+    font: inherit; font-size: 11.5px; padding: 4px 11px;
+    background: rgba(0,0,0,.62); color: #fff;
+    border: 1px solid rgba(255,255,255,.22); border-radius: 6px;
+  }
+  .detview .tools .moretools > summary::-webkit-details-marker { display: none; }
+  .detview .tools .moretools > summary:hover { border-color: var(--accent); color: var(--accent); }
+  .detview .tools .moretools[open] > summary { border-color: var(--accent); color: var(--accent); }
+  .detview .tools .morebox {
+    position: absolute; left: 0; top: calc(100% + 4px); z-index: 6;
+    display: flex; flex-direction: column; align-items: flex-start; gap: 4px;
+  }
+  /* --- 마스크 그리기 (사진 우상단) --- (194)
+     검토하는 동안 손이 자주 가는 유일한 도구라 홀로 세운다. 레이어 토글이
+     같은 모서리에 있어 그만큼 왼쪽으로 물러난다(아래 `.layers`). */
+  .detview .drawtool { position: absolute; right: 8px; top: 8px; z-index: 6; }
+  .detview .drawtool button {
+    font: inherit; font-size: 16px; line-height: 1; padding: 7px 11px;
+    cursor: pointer; background: rgba(0,0,0,.62); color: #fff;
+    border: 1px solid rgba(255,255,255,.22); border-radius: 6px;
+  }
+  .detview .drawtool button:hover { border-color: var(--accent); color: var(--accent); }
+  .detview .drawtool button.on { border-color: var(--accent); color: var(--accent); }
 
   /* --- 검토 완료 (사진 하단 가운데) --- */
   .detview .donebar {
@@ -1454,7 +1494,8 @@
      끄더라도 .box 요소는 남긴다 — 클릭 판정을 bbox 가 하므로 지우면 선택이 죽는다.
      테두리만 투명하게 만들고, 선택·hover 표시는 남겨 조작감을 유지한다. */
   .detview .layers {
-    position: absolute; right: 8px; top: 8px; z-index: 5;
+    /* 연필(`.drawtool`)이 모서리를 쓴다 — 그만큼 물러난다 (194) */
+    position: absolute; right: 54px; top: 8px; z-index: 5;
     display: flex; gap: 11px; padding: 5px 10px; border-radius: 7px;
     background: rgba(0,0,0,.62); line-height: 1.2; cursor: default;
   }
@@ -1857,6 +1898,41 @@
   .offbody .orow input[type=text] { flex: 1 1 220px; min-width: 160px; }
   .offbody .opx { display: flex; gap: 12px; flex-wrap: wrap; font-size: 13px; }
   .offbody .oest { font-size: 14px; }
+  /* --- 오프라인 프로그램의 껍데기 (P25 · 194) ---------------------------
+     검토기와 동정기가 같은 조각을 쓴다(`_offline_shell.html` ·
+     `_offline_done.html`). **규칙은 여기 한 곳이다** — 두 템플릿에 같은 것을
+     따로 적어 두었더니 그 `<style>` 이 이 파일보다 뒤에 놓여, 아래 좁은 화면
+     규칙이 같은 특이도로 늘 졌다(순서가 정한다).
+
+     **자리가 둘이다** (사용자 2026-09-07): 맨 위는 *알리는* 한 줄이고 맨
+     아래가 *하는* 곳이다. 내려받기는 검토를 다 마치고 한 번 쓰는 단추라
+     화면 위에 붙박아 두지 않는다 — 그 자리는 사진이 쓴다(192 가 머리줄을
+     내린 것과 같은 줄). 안 내려받은 것이 있으면 위의 줄이 아래로 데려간다. */
+  .offbar { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap;
+            margin: 0 0 12px; }
+  .offsay { font-size: 12.5px; opacity: .85; }
+  .offsay b { color: var(--warn-fg); }
+  .offbar .offstate { opacity: 1; }
+  .offjump { font-size: 12.5px; font-weight: 600; color: var(--warn-fg);
+             text-decoration: none; border-bottom: 1px solid currentColor; }
+  .offdone { margin: 22px 0 10px; padding: 14px; border-radius: 8px;
+             border: 1px solid var(--line); background: var(--card);
+             display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+  .offdone .dhead { width: 100%; font-size: 13px; font-weight: 650; }
+  .offdone > p { width: 100%; margin: 2px 0 0; }
+  .offdone .who { width: 150px; }
+  .offdone button.get { font-weight: 600; font-size: 14px; padding: 9px 18px; }
+  /* 안 내려받은 것이 있으면 단추가 그렇게 말한다 */
+  .offdone button.get.dirty { background: var(--warn-bg); color: var(--warn-fg);
+                              border-color: var(--warn-fg); }
+  .vplist { display: flex; flex-wrap: wrap; gap: 4px; margin: 0 0 12px; }
+  .vplist button { font-size: 12px; padding: 3px 8px; border-radius: 4px;
+                   font-family: ui-monospace, monospace; }
+  .vplist button.on { outline: 2px solid var(--accent); }
+  .vplist button.done::after { content: " ✓"; opacity: .7; }
+  .vplist button.edited { border-color: var(--warn-fg); color: var(--warn-fg); }
+  .offskip { font-size: 12.5px; margin: 0 0 10px; padding: 8px 10px;
+             border-radius: 6px; background: var(--warn-bg); color: var(--warn-fg); }
 
   /* --- 좁은 화면 — 태블릿·폰 (192) --------------------------------------
      **손가락과 폭 둘 다 문제다.** 이 화면들은 데스크탑에만 있는 것을 쓰고
@@ -1905,6 +1981,29 @@
     .cat { grid-template-columns: 1fr; }
     .catcard { grid-template-columns: 120px 1fr; }
     .offbody .orow .k { width: auto; }
+
+    /* --- 판 캐러셀 (194 · 사용자: "시야 섬네일이 너무 커") ---
+       128px 은 데스크탑에서 네댓 장이 한눈에 드는 값이다. 폰에서는 두 장 반이
+       들면서 세로로 140px 을 먹는데, **초점을 고르는 데는 이만큼이면 된다** —
+       판을 자세히 보는 것은 골라서 큰 사진으로 하는 일이다. */
+    .strip .shot { width: 84px; }
+    .strip .shot .cap { padding: 3px 6px 1px; font-size: 10px; }
+    .strip .shot .bar { margin: auto 6px 6px; }
+
+    /* 화면 조정은 접힌 채로 시작한다(`_detview_js.html`). 접힌 줄이 손끝에
+       걸려야 다시 펼 수 있다 */
+    .notes .adjbox > summary { padding: 8px 0; }
+
+    /* --- 오프라인 프로그램 (194) ---
+       시야 목록은 **한 줄로 굴린다** — 60개가 격자로 서면 화면의 절반을 먹는다.
+       단추는 손끝 크기로 키운다(192 가 도구 줄에 한 것과 같은 줄).
+       **가로로 미는 것은 이 상자 안이다** — 페이지가 밀리면 안 된다. */
+    .vplist { flex-wrap: nowrap; overflow-x: auto; gap: 6px;
+              padding-bottom: 4px; scrollbar-width: thin; }
+    .vplist button { flex: 0 0 auto; font-size: 13px; padding: 9px 12px; }
+    .offdone { flex-direction: column; align-items: stretch; }
+    .offdone .who { width: 100%; }
+    .offdone button.get { padding: 13px 18px; }
   }
 
 </style>

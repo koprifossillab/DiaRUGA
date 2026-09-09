@@ -12,16 +12,33 @@
 
   **한 표적에 한 줄이다.** 같은 시야를 열 번 만지면 열 줄이 쌓이는데, 그러면
   미리보기가 무엇이 바뀌는지 말해 주지 못한다 — 마지막 것이 곧 화면의 상태다.
+
+  ## 자리가 둘이다 — 알리는 곳과 하는 곳 (194)
+
+  **내려받기는 검토를 다 마치고 한 번 쓴다**(사용자 2026-09-07). 한 번 쓰는
+  단추를 화면 맨 위 붙박이에 두면 폰에서 117px 을 늘 먹는데, 그 자리는 사진이
+  써야 한다(192 가 머리줄을 내린 것과 같은 줄).
+
+  그래서 갈랐다.
+
+  | | 무엇 | 어디 |
+  |---|---|---|
+  | 알린다 | 바뀐 것 몇 건 · 아직 안 내려받았다 | 맨 위 **한 줄** |
+  | 한다 | 검토자 이름 · 결과 내려받기 | 맨 아래 `_offline_done.html` |
+
+  **안 내려받은 것이 있으면 위의 줄이 아래로 데려간다** — 끝내고 나서 단추를
+  못 찾는 자리를 남기지 않는다.
+
+  마크업이 위아래로 갈렸으므로 **배선은 `DOMContentLoaded` 를 기다린다.**
+  `window.OFFLINE` 자체는 곧바로 세운다 — 프로그램의 스크립트가 파싱 도중에
+  `record` 를 물고 간다.
 {% endcomment %}
-<div class="offbar">
+<p class="offbar">
   <span class="offsay">여기서 한 것은 <b>결과를 내려받아 뷰어에 올려야</b>
     DB 로 들어갑니다.</span>
-  <span class="grow"></span>
-  <label class="offsay">검토자
-    <input type="text" class="who" id="off-who" maxlength="40" placeholder="이름(선택)"></label>
-  <span class="offsay" id="off-state"></span>
-  <button type="button" class="get" id="off-get">결과 내려받기</button>
-</div>
+  <span class="offsay offstate" id="off-state"></span>
+  <a class="offjump" id="off-jump" href="#off-done" hidden>↓ 결과 내려받기</a>
+</p>
 
 <script type="application/json" id="off-head">{{ head|json_dumps }}</script>
 
@@ -31,10 +48,12 @@ window.OFFLINE = (function () {
   /* 번들마다 자기 자리에 쌓는다 — `file://` 의 localStorage 는 그 기계의 모든
      로컬 파일이 함께 쓰는 자리라, 열쇠를 안 가르면 다른 파일의 검토와 섞인다. */
   var KEY = 'diaruga.offline.' + (HEAD.id || 'x');
-  var stateEl = document.getElementById('off-state');
-  var getBtn = document.getElementById('off-get');
-  var whoEl = document.getElementById('off-who');
   var painters = [];
+  /* **요소는 나중에 잡는다** (194). 마크업이 맨 위(알리는 줄)와 맨 아래(마침
+     상자)로 갈렸고 이 스크립트는 파싱 도중에 돈다 — 아래쪽은 아직 없다.
+     `window.OFFLINE` 자체는 지금 세워야 한다: 프로그램의 스크립트가 파싱
+     중에 `record` 를 물고 간다. */
+  var stateEls = [], getBtn = null, whoEl = null, jumpEl = null;
 
   function blank() { return { review: {}, done: {}, note: {}, catalog: {}, by: '' }; }
   var EDITS = blank(), stored = true, saved = true;
@@ -42,10 +61,11 @@ window.OFFLINE = (function () {
     var was = JSON.parse(localStorage.getItem(KEY) || 'null');
     if (was && was.catalog) { EDITS = was; saved = !!was.saved; }
   } catch (e) { stored = false; }
-  whoEl.value = EDITS.by || '';
+
+  function who() { return whoEl ? (whoEl.value || '') : (EDITS.by || ''); }
 
   function keep() {
-    EDITS.by = whoEl.value || '';
+    EDITS.by = who();
     EDITS.saved = saved;
     try { localStorage.setItem(KEY, JSON.stringify(EDITS)); }
     catch (e) { stored = false; }
@@ -65,8 +85,11 @@ window.OFFLINE = (function () {
        막아 둔 설정. 그때는 그렇다고 적는다: 사람이 하루를 검토하고 새로고침
        한 번에 잃는 자리다. */
     if (!stored) say += ' · 이 브라우저는 기억하지 못합니다 — 자주 내려받으십시오';
-    stateEl.textContent = say;
-    getBtn.classList.toggle('dirty', !!n && !saved);
+    stateEls.forEach(function (el) { el.textContent = say; });
+    if (getBtn) getBtn.classList.toggle('dirty', !!n && !saved);
+    /* **안 내려받은 것이 있을 때만 아래로 데려가는 길을 낸다** (194).
+       단추는 맨 아래에 있고, 늘 떠 있는 링크는 그냥 글자가 된다. */
+    if (jumpEl) jumpEl.hidden = !(n && !saved);
     painters.forEach(function (fn) { fn(EDITS); });
   }
 
@@ -140,7 +163,7 @@ window.OFFLINE = (function () {
       kind: HEAD.kind || 'review',
       bundle: HEAD,
       saved_at: new Date().toISOString(),
-      by: whoEl.value || '',
+      by: who(),
       review: vals(EDITS.review),
       done: Object.keys(EDITS.done).map(function (g) {
         return { gid: +g, done: EDITS.done[g] };
@@ -152,7 +175,7 @@ window.OFFLINE = (function () {
     };
   }
 
-  getBtn.addEventListener('click', function () {
+  function download() {
     var blob = new Blob([JSON.stringify(result(), null, 1)],
                         { type: 'application/json' });
     var a = document.createElement('a');
@@ -164,9 +187,39 @@ window.OFFLINE = (function () {
     document.body.removeChild(a);
     saved = true;
     keep();
-  });
+  }
 
-  whoEl.addEventListener('change', keep);
+  /* 위아래 두 자리를 한 번에 잡는다. 상태는 **여러 곳에 같은 글자로** 뜨므로
+     클래스로 모은다 — 한 곳만 고치면 다른 곳이 옛 숫자를 들고 있게 된다. */
+  function wire() {
+    stateEls = Array.prototype.slice.call(
+      document.querySelectorAll('.offstate'));
+    getBtn = document.getElementById('off-get');
+    whoEl = document.getElementById('off-who');
+    jumpEl = document.getElementById('off-jump');
+    if (whoEl) {
+      whoEl.value = EDITS.by || '';
+      whoEl.addEventListener('change', keep);
+    }
+    if (getBtn) getBtn.addEventListener('click', download);
+    /* **해시를 건드리지 않고 데려간다.** 검토기는 `#g<번호>` 로 어느 시야를
+       보는지를 주소에 적어 두므로, 앵커로 뛰면 그것이 지워져 새로고침했을 때
+       첫 시야로 돌아간다 — 폰에서 새로고침은 드문 일이 아니다. */
+    if (jumpEl) {
+      jumpEl.addEventListener('click', function (e) {
+        var box = document.getElementById('off-done');
+        if (!box) return;
+        e.preventDefault();
+        box.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      });
+    }
+    paint();
+  }
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', wire);
+  } else {
+    wire();
+  }
 
   /* **안 내려받고 닫으려 하면 묻는다.** 이 파일의 판단은 사람이 현미경을 보며
      한 것이라 재생성 불가다 — 조용히 잃는 자리를 남기지 않는다. */

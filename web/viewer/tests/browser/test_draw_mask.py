@@ -33,7 +33,7 @@ class DrawMaskTest(BrowserTestCase):
         return self.open(reverse("group", args=[self.w.slug, self.w.vp.idx]))
 
     def start(self):
-        self.page.click('#tools-stack button[data-act="draw"]')
+        self.page.click('#dv-stack button[data-act="draw"]')
         self.page.wait_for_timeout(150)
 
     def put(self, pts=None):
