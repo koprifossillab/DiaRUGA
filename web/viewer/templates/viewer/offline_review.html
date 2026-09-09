@@ -191,6 +191,193 @@ window.DiaRUGA = { env: {
     return (URLS[uid] || {})[rel] || '';
   };
 
+  /* --- 새로고침해도 적어 둔 것이 화면에 남는다 (195) -----------------------
+
+     기록은 `localStorage` 에 있는데 **그것을 화면에 되살리는 코드가 없었다.**
+     목록의 ✓ 와 테두리만 바뀌고, 마스크·분류·종명은 구울 때 박아 둔 값 그대로다.
+
+     **폰에서 훨씬 잘 터진다** — 큰 문서를 문 탭을 브라우저가 수시로 버린다.
+     돌아오면 지운 마스크가 살아 있고 적어 둔 종명이 빈 칸으로 보이는데, 그
+     자리에서 다시 검토해 저장하면 **아까 한 것이 그 판에서 밀려난다**(기록은
+     한 표적에 한 줄이라 마지막 것이 곧 상태다).
+
+     **구운 자료를 고쳐 놓고 배선을 부른다.** `initDetView` 안으로 들어가
+     상태를 만지지 않는다 — 그 파일은 온라인 화면과 함께 쓰는 것이고, 교정을
+     읽는 규칙이 두 벌이 되면 조용히 어긋난다(189 가 배선을 하나로 모은 이유).
+     여기서 하는 일은 **서버가 다시 그렸다면 그렸을 모양**으로 맞추는 것이다
+     (`data._apply_review` 와 같은 규칙).
+
+     **판마다 따로다.** 기록의 열쇠가 `시야|판` 이라 처음 열리는 판(태그 넷)과
+     캐러셀이 갈아 끼울 판들(`shotdet-`)을 각각 제 기록으로 맞춘다. */
+  function ekey(c) {
+    if (c.key) return c.key;
+    var b = c.bbox_xywh || [0, 0, 0, 0];
+    return b.map(function (v) { return Math.round(v); }).join('_');
+  }
+
+  function boxOf(poly) {
+    var xs = [], ys = [];
+    for (var i = 0; i + 1 < poly.length; i += 2) { xs.push(poly[i]); ys.push(poly[i + 1]); }
+    if (!xs.length) return [0, 0, 1, 1];
+    var x0 = Math.floor(Math.min.apply(null, xs));
+    var y0 = Math.floor(Math.min.apply(null, ys));
+    var x1 = Math.ceil(Math.max.apply(null, xs));
+    var y1 = Math.ceil(Math.max.apply(null, ys));
+    return [x0, y0, Math.max(1, x1 - x0), Math.max(1, y1 - y0)];
+  }
+
+  function jsonOf(id, dflt) {
+    var el = document.getElementById(id);
+    if (!el) return dflt;
+    try { return JSON.parse(el.textContent || 'null') || dflt; }
+    catch (e) { return dflt; }
+  }
+
+  function putJson(id, v) {
+    var el = document.getElementById(id);
+    if (el) el.textContent = JSON.stringify(v);
+  }
+
+  /* 판 하나에 그 판의 기록을 얹는다. `bag` 은 `stateOf` 가 읽는 이름 그대로다
+     (`candidates`·`gone`·`rejected`·`accepted`·`labels`). */
+  function redoShot(bag, e, cm) {
+    var gone0 = bag.gone || [];
+    var pool = (bag.candidates || []).concat(gone0);
+    var rej = (bag.rejected || []).slice();
+    var rm = {};
+    if (e) {
+      (e.removed || []).forEach(function (k) { rm[k] = 1; });
+      var ac = {};
+      (e.accepted || []).forEach(function (k) { ac[k] = 1; });
+      /* **그린 개체는 기록이 전부다.** 구운 것에서 걷고 기록의 것을 넣는다 —
+         지운 그림은 `drawn` 에 없다(그것이 지웠다는 말이다 · P09 5.10). */
+      pool = pool.filter(function (c) { return c.source !== 'manual'; });
+      /* 탈락분에서 되살린 것을 통과분 쪽으로. 화면의 되살리기와 **같은 모양**을
+         만든다 — `from_reject` 가 없으면 되살린 것이 다음 저장에 안 실린다. */
+      rej = rej.filter(function (c) {
+        var k = ekey(c);
+        if (!ac[k]) return true;
+        pool.push(Object.assign({}, c, { manual: true, from_reject: true,
+                                         id: pool.length }));
+        return false;
+      });
+      /* 되살렸다가 되돌린 것은 탈락분으로 돌아간다 — 구울 때 통과분에 있었고
+         이제 기록의 `accepted` 에 없는 것이 그것이다. */
+      pool = pool.filter(function (c) {
+        var k = ekey(c);
+        if (!c.from_reject || ac[k] || rm[k]) return true;
+        rej.push(c);
+        return false;
+      });
+      /* **사람이 고친 기하가 엔진 것을 덮는다** (P09 4단계). 빈 배열은
+         "엔진 것으로 되돌린다" 는 말이라 표시만 걷는다. */
+      var ge = e.edits || {};
+      pool.forEach(function (c) {
+        var g = ge[ekey(c)];
+        if (!g) return;
+        if (g.length) {
+          var b = boxOf(g);
+          c.polygon = g.slice();
+          c.bbox_xywh = b;
+          c.center_xy = [b[0] + (b[2] >> 1), b[1] + (b[3] >> 1)];
+          c.geom_edited = true;
+        } else {
+          delete c.geom_edited;
+        }
+      });
+      (e.drawn || []).forEach(function (d) {
+        if (!d || !d.key) return;
+        var poly = d.polygon || [], b = boxOf(poly);
+        /* **그리기가 만드는 것과 같은 모양이어야 한다** (`drawFinish`) —
+           `source: 'manual'` 이라야 `isManual` 갈래를 타서 `drawn` 으로 실려
+           나가고 엔진 개체의 `labels` 지도에 안 섞인다. */
+        pool.push({ key: d.key, source: 'manual', orphan: true,
+                    polygon: poly.slice(), bbox_xywh: b,
+                    center_xy: [b[0] + (b[2] >> 1), b[1] + (b[3] >> 1)],
+                    cls: d.cls || null, id: pool.length });
+      });
+      /* 분류는 엔진 개체의 것만 지도로 간다 — 손그림은 위에서 제 `cls` 를
+         들고 왔다(`applyCls` 와 같은 가름). */
+      var lab = e.labels || {};
+      pool.forEach(function (c) {
+        if (c.source === 'manual') return;
+        var v = lab[ekey(c)];
+        if (!v) return;
+        if (c.cls !== v) c.cls_auto = c.cls;
+        c.cls = v;
+        c.cls_user = true;
+      });
+      bag.labels = JSON.parse(JSON.stringify(lab));
+      bag.accepted = Object.keys(ac);
+    } else {
+      gone0.forEach(function (c) { rm[ekey(c)] = 1; });
+    }
+    /* 동정은 좁은 문으로 따로 온다(`/catalog/save`) — 개체에 사는 값이라
+       판 payload 에 안 실린다(0035·0036). 그래서 여기서 따로 얹는다. */
+    pool.concat(rej).forEach(function (c) {
+      var v = (cm || {})[ekey(c)];
+      if (!v) return;
+      if (v.species !== undefined) c.species = v.species || '';
+      if (v.grade !== undefined) c.grade = v.grade || '';
+      if (v.pose !== undefined) c.pose = v.pose || '';
+      if (v.note !== undefined) c.note = v.note || '';
+    });
+    var kept = [], gone = [];
+    pool.forEach(function (c) {
+      if (rm[ekey(c)]) { c.removed = true; gone.push(c); }
+      else { delete c.removed; kept.push(c); }
+    });
+    bag.candidates = kept;
+    bag.gone = gone;
+    bag.rejected = rej;
+    return bag;
+  }
+
+  /* 이 시야에 기록이 있으면 구운 자료를 그것으로 맞춘다. **판을 처음 열 때
+     한 번만이다** — 이미 열린 판의 상태는 화면이 들고 있다. */
+  function applyEdits(gid) {
+    var E = window.OFFLINE.edits;
+    var mine = {}, cat = {}, any = false;
+    Object.keys(E.review).forEach(function (k) {
+      var p = k.split('|');
+      if (p[0] !== String(gid)) return;
+      mine[p[1] || ''] = E.review[k];
+      any = true;
+    });
+    Object.keys(E.catalog).forEach(function (k) {
+      var p = k.split('|');
+      if (p[0] !== String(gid)) return;
+      var im = p[1] || '';
+      (cat[im] = cat[im] || {})[p[2]] = E.catalog[k];
+      any = true;
+    });
+    if (!any) return;
+    var uid = 'vp' + gid;
+    var view = document.getElementById('dv-' + uid);
+    if (!view) return;
+    var base = view.dataset.image || '';
+    var bag = redoShot({
+      candidates: jsonOf('cand-' + uid, []),
+      gone: jsonOf('gone-' + uid, []),
+      rejected: jsonOf('rej-' + uid, []),
+      accepted: jsonOf('acc-' + uid, []),
+      labels: jsonOf('lab-' + uid, {})
+    }, mine[base], cat[base]);
+    putJson('cand-' + uid, bag.candidates);
+    putJson('gone-' + uid, bag.gone);
+    putJson('rej-' + uid, bag.rejected);
+    putJson('acc-' + uid, bag.accepted);
+    putJson('lab-' + uid, bag.labels);
+
+    var sd = jsonOf('shotdet-' + uid, null);
+    if (!sd) return;
+    Object.keys(sd).forEach(function (k) {
+      var im = sd[k].image == null ? '' : String(sd[k].image);
+      redoShot(sd[k], mine[im], cat[im]);
+    });
+    putJson('shotdet-' + uid, sd);
+  }
+
   function show(gid) {
     var uid = 'vp' + gid;
     var sec = document.getElementById('sec-' + uid);
@@ -222,6 +409,9 @@ window.DiaRUGA = { env: {
                   map[Object.keys(map)[0]];
       if (img && first) img.src = first;
       inited[uid] = true;
+      /* **배선을 부르기 전에 기록을 얹는다** (195) — `initDetView` 는 구운
+         태그를 읽어 상태를 세운다. 뒤에 고치면 화면은 옛 값으로 이미 섰다. */
+      applyEdits(gid);
       /* **사진을 붙인 뒤에 부른다** — 배선이 열릴 때의 `src` 를 "지금 확정된
          판" 으로 기억한다(`committedSrc`). 빈 자리 채우개를 기억하면 캐러셀을
          한 번 스칠 때마다 그 그림으로 돌아간다. */

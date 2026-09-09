@@ -152,6 +152,29 @@
   var todoEl = document.getElementById('off-todo');
   var progEl = document.getElementById('off-prog');
 
+  /* --- 새로고침해도 적어 둔 것이 카드에 남는다 (195) -----------------------
+
+     기록은 `localStorage` 에 있는데 **그것을 카드에 되살리는 코드가 없었다.**
+     칸의 값은 구울 때 박아 둔 `value`·`dataset` 그대로라, 탭이 버려졌다
+     돌아오면 적어 둔 종명이 빈 칸으로 보인다. 그 자리에서 다시 적어 저장하면
+     **아까 한 것이 밀려난다** — 기록은 개체 하나에 한 줄이다.
+
+     **유형은 `dataset` 에 되돌린다.** 아래에서 `select` 를 짤 때 그 값을
+     읽으므로(`sel.value = card.dataset.cls`), 칸에 직접 넣으면 목록을 짜면서
+     지워진다. 등급·자세를 감추는 `gp()` 도 이 뒤에 돈다. */
+  (function () {
+    var E = window.OFFLINE.edits.catalog;
+    cards.forEach(function (card) {
+      var v = E[[card.dataset.gid, card.dataset.image, card.dataset.key].join('|')];
+      if (!v) return;
+      if (v.species !== undefined) card.querySelector('.sp').value = v.species || '';
+      if (v.cls !== undefined) card.dataset.cls = v.cls || '';
+      if (v.grade !== undefined) card.querySelector('.grade').value = v.grade || '';
+      if (v.pose !== undefined) card.querySelector('.pose').value = v.pose || '';
+      if (v.note !== undefined) card.querySelector('.note').value = v.note || '';
+    });
+  })();
+
   /* --- 초점 넘기기 -------------------------------------------------------
      판마다 크롭 한 장이고, **볼 때 푼다.** base64 → Blob → 짧은 주소. */
   var SHOTS = {};          // 카드 번호 → [{el, name, sharp, url}]
