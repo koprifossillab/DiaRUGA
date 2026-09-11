@@ -31,6 +31,18 @@
                placeholder="비우면 전부 · 예: 0-19, 25, 31">
         <span class="dim">이 슬라이드는 g{{ off.first }}~g{{ off.last }}
           ({{ off.n }}개)</span>
+        {% comment %}
+          양식은 `offline.parse_gids` 가 읽는 그대로다 — 쉼표로 가르고, 조각은
+          숫자 하나이거나 `시작-끝`(양 끝 포함). `g` 는 붙여도 된다(화면의
+          번호를 그대로 붙여 넣는 일이 잦다). 사용자 2026-09-11: placeholder
+          의 예만으로는 양식을 몰랐다.
+        {% endcomment %}
+        <span class="ohint">쉼표로 가릅니다 — 숫자 하나(<span class="mono">25</span>)
+          또는 <span class="mono">시작-끝</span>(양 끝 포함,
+          <span class="mono">0-19</span>). <span class="mono">g3</span> 처럼
+          적어도 됩니다. 비우면 전부.{% if off.n > off.max_vp %}
+          이 슬라이드는 {{ off.n }}개라 한 파일({{ off.max_vp }}개)에 다 안
+          들어갑니다 — 범위를 나눠 두 번 굽습니다.{% endif %}</span>
       </div>
 
       {% if off.kind != "catalog" %}

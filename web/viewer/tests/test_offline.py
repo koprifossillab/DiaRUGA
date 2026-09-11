@@ -165,6 +165,19 @@ class OfflinePickPanelTest(DiaRUGATestCase):
         self.assertIn('name="gids"', html)
         # 해상도는 검토기에만 있다 (동정기는 크롭이라 고를 것이 없다)
         self.assertIn('type="radio" name="px"', html)
+        # **양식은 입력란 옆에 적혀 있다** (사용자 2026-09-11 — placeholder 의
+        # 예만으로는 몰랐다). 시야 3개는 상한 안이라 나눠 구우라는 말은 없다
+        self.assertIn('class="ohint"', html)
+        self.assertIn("양 끝 포함", html)
+        self.assertNotIn("두 번 굽습니다", html)
+
+    def test_상한을_넘는_슬라이드는_나눠_구우라고_적는다(self):
+        from unittest import mock
+        gid = self.w.viewpoints[0].idx
+        with mock.patch("viewer.offline.MAX_VIEWPOINTS", 2):
+            html = self.get(reverse("group", args=["rs23", gid]))
+        self.assertIn("한 파일(2개)에 다 안", html)
+        self.assertIn("두 번 굽습니다", html)
 
     def test_카탈로그_화면에_동정기_꺼내기가_있다(self):
         html = self.get(reverse("catalog", args=["rs23"]))

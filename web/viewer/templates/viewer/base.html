@@ -1896,6 +1896,9 @@
                    flex-wrap: wrap; }
   .offbody .orow .k { width: 66px; font-size: 13px; opacity: .8; flex: 0 0 auto; }
   .offbody .orow input[type=text] { flex: 1 1 220px; min-width: 160px; }
+  /* 입력란 아래 한 줄 — 이름표 폭(66px + gap)만큼 들여 입력란과 왼쪽을 맞춘다 */
+  .offbody .orow .ohint { flex: 1 0 100%; margin-left: 74px; font-size: 12px;
+                          line-height: 1.5; opacity: .7; }
   .offbody .opx { display: flex; gap: 12px; flex-wrap: wrap; font-size: 13px; }
   .offbody .oest { font-size: 14px; }
   /* --- 오프라인 프로그램의 껍데기 (P25 · 194) ---------------------------
@@ -1981,6 +1984,7 @@
     .cat { grid-template-columns: 1fr; }
     .catcard { grid-template-columns: 120px 1fr; }
     .offbody .orow .k { width: auto; }
+    .offbody .orow .ohint { margin-left: 0; }
 
     /* --- 판 캐러셀 (194 · 사용자: "시야 섬네일이 너무 커") ---
        128px 은 데스크탑에서 네댓 장이 한눈에 드는 값이다. 폰에서는 두 장 반이
