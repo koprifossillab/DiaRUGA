@@ -21,13 +21,20 @@
 
 ## 자료가 어디서 오나
 
-    atlas/*.json                     색인 셋 (저장소 · `tools/parse_atlas.py` 산물)
+    atlas/*.json                     색인 (저장소 · `tools/parse_atlas.py` 산물)
+    atlas/occurrence/*.json          출현 기록 (P20 · `tools/parse_occurrence.py`)
+    taxon_names.json                 학명 유효성 판정 (P24 · `tools/parse_taxon_names.py`)
     /data3/DiaRUGA/atlas/            쪽 PNG (`tools/render_atlas_pages.py` 산물)
     …/names/worms/worms_master_*.tsv 학명 대조표 (WoRMS·AlgaeBase)
 
-**DB 를 안 본다.** 셋 다 파일이고, 운영 DB 를 여는 것은 그 자체가 함정이다
-(CLAUDE.md · 132). 색인 JSON 은 `ops/import_atlas.py` 가 DB 에 넣는 것과 같은
-파일이라 화면에 뜨는 것과 같은 자료다.
+**DB 를 안 본다.** 전부 파일이고, 운영 DB 를 여는 것은 그 자체가 함정이다
+(CLAUDE.md · 132). 색인·출현·판정 JSON 은 `ops/import_*.py` 가 DB 에 넣는
+것과 같은 파일이라 화면에 뜨는 것과 같은 자료다.
+
+**뷰어가 항목에 붙여 내는 것은 오프라인도 다 낸다** (사용자 2026-09-15 —
+v1.2.0). v1.1.0 은 색인만 실어 **이명 판정(P24)과 출현 기록(P20)이 빠져
+있었다** — 같은 항목이 서버에서는 "이명 · 현재 통용 학명 …" 을 달고 나오는데
+꾸러미에서는 안 달려 있어 두 화면이 다른 말을 했다. 권역(196)도 같이 간다.
 
 사용:
 
@@ -169,6 +176,48 @@ def read_indexes(paths: list[Path], have=None) -> tuple[list[dict], list[dict], 
     return books, entries, hashes, missing
 
 
+def read_taxa(path: Path) -> dict:
+    """학명 유효성 판정 → {이명법: {status, valid_name, note}} (P24).
+
+    **전부 싣는다** — 화면이 이명만 내는 것은 뷰어(`data.atlas_search`)와
+    같은 규칙이고, 그 판단은 화면 몫이다. 유효·미확인도 들고 있어야 "판정이
+    없다" 와 "유효다" 를 가를 수 있다. 2천 행이라 가볍다.
+    """
+    if not path.exists():
+        return {}
+    rows = json.loads(path.read_text(encoding="utf-8"))
+    return {r["binomial"]: {"status": r.get("status") or "",
+                            "valid_name": r.get("valid_name") or "",
+                            "note": r.get("note") or ""}
+            for r in rows if r.get("binomial")}
+
+
+def read_occurrences(paths: list[Path]) -> dict:
+    """출현 기록 → {이명법: [{region, authors, year, note}]} (P20).
+
+    뷰어 `_occurrences_by_binomial` 과 같은 모양·같은 차례(지역 → 연도).
+    `Reference` 를 따로 안 만든다 — 화면이 쓰는 것은 저자·연도뿐이다.
+    """
+    out: dict[str, list] = {}
+    for p in sorted(paths):
+        doc = json.loads(p.read_text(encoding="utf-8"))
+        if "occurrences" not in doc:
+            continue
+        for o in doc["occurrences"]:
+            b = o.get("binomial") or ""
+            if not b:
+                continue
+            out.setdefault(b, []).append({
+                "region": o.get("region") or o.get("region_raw") or "",
+                "authors": o.get("ref") or "",
+                "year": o.get("year") or "",
+                "note": o.get("note") or "",
+            })
+    for rows in out.values():
+        rows.sort(key=lambda r: (r["region"], str(r["year"])))
+    return out
+
+
 def read_names(tsv: Path) -> dict:
     """학명 대조표 → {cols, rows}. **칸을 안 고른다** — 오프라인에서 되물을 곳이
     없으니 표를 통째로 들고 간다."""
@@ -273,6 +322,10 @@ def main() -> int:
                     help="구워 둔 쪽 PNG 의 뿌리")
     ap.add_argument("--index-dir", default=str(REPO / "atlas"),
                     help="색인 JSON (atlas/*.json)")
+    ap.add_argument("--taxa", default=str(REPO / "taxon_names.json"),
+                    help="학명 유효성 판정 JSON (P24)")
+    ap.add_argument("--occurrence-dir", default=str(REPO / "atlas" / "occurrence"),
+                    help="출현 기록 JSON (P20)")
     ap.add_argument("--names", default="", help="학명 대조표 TSV (없으면 최신을 찾는다)")
     ap.add_argument("--names-dir", default="/nfs/temp-share/DiaRUGA/Diadiction/names/worms")
     ap.add_argument("--quality", type=int, default=80, help="쪽 JPEG 품질")
@@ -311,6 +364,16 @@ def main() -> int:
     if missing and not args.no_images:
         print(f"  색인이 짚는데 꾸러미에 없는 쪽 {missing}자리 — 번호만 남기고"
               f" 링크를 안 낸다")
+
+    # 2-2) 이명 판정 · 출현 기록 — 뷰어가 항목에 붙여 내는 둘 (v1.2.0)
+    taxa_path = Path(args.taxa)
+    taxa = read_taxa(taxa_path)
+    if not taxa:
+        print(f"학명 유효성 판정이 없다: {taxa_path} — 이명 표시가 빈다", file=sys.stderr)
+    occ_paths = sorted(Path(args.occurrence_dir).glob("*.json"))
+    occ = read_occurrences(occ_paths)
+    print(f"이명 판정 {len(taxa)}건 (이명 {sum(1 for t in taxa.values() if t['status'] == 'synonym')})"
+          f" · 출현 기록 {sum(len(v) for v in occ.values())}건 / 종 {len(occ)}")
 
     # 3) 학명 대조표
     names_path = Path(args.names) if args.names else None
@@ -371,8 +434,13 @@ def main() -> int:
         "images": bool(dia_books), "page_count": page_count,
         "dpi": 300, "quality": args.quality,
         "names_source": names_src,
-        "atlases": [{k: b[k] for k in ("key", "title", "short", "note", "count")}
+        # 권역 (196) — 뷰어와 같은 표(`atlas.AREAS`·`AREA_OF`). 모르는 도감은
+        # 빈 문자열이고 화면이 "권역 미정" 으로 따로 세운다
+        "areas": [{"code": c, "label": l} for c, l in atlas_mod.AREAS],
+        "atlases": [{**{k: b[k] for k in ("key", "title", "short", "note", "count")},
+                     "area": atlas_mod.area_of(b["key"])}
                     for b in books],
+        "taxa": len(taxa), "occurrences": sum(len(v) for v in occ.values()),
     }
 
     # 5) 이미지
@@ -388,13 +456,16 @@ def main() -> int:
     js = (ASSETS / "app.js").read_text(encoding="utf-8")
     data_dir = pkg / "data"
     data_dir.mkdir(exist_ok=True)
-    for name, var, obj in (("meta.js", "DIA_META", meta),
-                           ("books.js", "DIA_BOOKS", dia_books),
-                           ("entries.js", "DIA_ENTRIES", entries),
-                           ("names.js", "DIA_NAMES", names)):
+    data_files = (("meta.js", "DIA_META", meta),
+                  ("books.js", "DIA_BOOKS", dia_books),
+                  ("entries.js", "DIA_ENTRIES", entries),
+                  ("taxa.js", "DIA_TAXA", taxa),
+                  ("occurrence.js", "DIA_OCC", occ),
+                  ("names.js", "DIA_NAMES", names))
+    for name, var, obj in data_files:
         (data_dir / name).write_text(js_var(var, obj), encoding="utf-8")
     data_html = "\n".join(f'<script src="data/{n}"></script>'
-                          for n in ("meta.js", "books.js", "entries.js", "names.js"))
+                          for n, _, _ in data_files)
     (pkg / "index.html").write_text(
         render_html(f"Diadiction 도감 — 오프라인 v{args.version}", css, js, data_html),
         encoding="utf-8")
@@ -405,7 +476,8 @@ def main() -> int:
         tmeta = dict(meta, images=False, page_count=0)
         inline = "<script>\n" + "".join(
             js_var(v, o) for v, o in (("DIA_META", tmeta), ("DIA_BOOKS", {}),
-                                      ("DIA_ENTRIES", entries), ("DIA_NAMES", names))
+                                      ("DIA_ENTRIES", entries), ("DIA_TAXA", taxa),
+                                      ("DIA_OCC", occ), ("DIA_NAMES", names))
         ) + "</script>"
         single.write_text(
             render_html(f"Diadiction 도감 색인 (글자만) v{args.version}", css, js, inline),
@@ -423,6 +495,8 @@ def main() -> int:
         "pages": page_count, "files": len(files), "bytes": total_bytes,
         "missing_placements": missing,
         "index_sha256": idx_hashes,
+        "taxa_sha256": sha256(taxa_path) if taxa_path.exists() else "",
+        "occurrence_sha256": {p.name: sha256(p) for p in occ_paths},
         "names_source": names_src,
         "names_sha256": sha256(names_path) if names_path and names_path.exists() else "",
         "git": git_head(),
@@ -468,12 +542,16 @@ def readme(meta, books, dia_books, names_src) -> str:
     for b in books:
         lines.append(f"  · {b['title']} — 항목 {b['count']}개")
     lines += [
+        f"  · 학명 유효성 판정 {meta.get('taxa', 0)}건 (AlgaeBase — 이명이면 현재 통용 학명을 함께 낸다)",
+        f"  · 출현 기록 {meta.get('occurrences', 0)}건 (도감·논문의 분포 문장을 지역 × 문헌으로 가른 것)",
         f"  · 학명 대조표 {names_src} (WoRMS·AlgaeBase 대조)",
         f"  · 도판 {meta['page_count']}쪽 · 300 dpi JPEG (품질 {meta['quality']})"
         if meta["images"] else "  · 도판 없음 (글자만)",
         "",
         "화면",
-        "  색인 검색  학명·속으로 찾는다. 결과의 '해설 p.N' · '도판 p.N' 을 누르면 그 쪽이 열린다",
+        "  색인 검색  학명·속으로 찾는다 (치면 이름을 권한다). 권역(한국·남극·전역)·도감·속으로 거른다.",
+        "             결과의 '해설 p.N' · '도판 p.N' 을 누르면 그 쪽이 열린다.",
+        "             현재 통용 학명으로 찾아도 옛 이름(이명)으로 실린 항목이 걸린다.",
         "  종 검색    학명 대조표. 유효명·저자·과·목 어느 칸으로도 찾는다",
         "  쪽 보기    ← → 넘기기 · g 격자 · s 한 장/두 쪽 · 휠 확대 · 끌어서 옮기기",
         "",

@@ -93,3 +93,8 @@ python tools/build_offline_atlas.py --version 1.0.0 --no-images # 글자만
   링크마다 디스크를 안 짚는다). 번호는 남긴다: 안 실린 것과 색인이 안 적은
   것은 다른 말이다
 - 다시 돌리면 **이미 구운 쪽은 건너뛴다**(`--force` 로만 다시 굽는다)
+- **뷰어가 항목에 붙여 내는 것은 오프라인도 다 낸다** (v1.2.0 · devlog 196).
+  이명 판정(`taxon_names.json` · P24)과 출현 기록(`atlas/occurrence/*.json` ·
+  P20)을 `data/taxa.js`·`data/occurrence.js` 로 싣고, 현재 통용 학명으로
+  찾아도 이명 항목이 걸린다. 권역(한국·남극·전역)·속 목록·자동완성도 뷰어와
+  같다 — **권역 표는 `web/viewer/atlas.py` 의 `AREA_OF` 하나뿐이다**

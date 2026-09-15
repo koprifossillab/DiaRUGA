@@ -5,8 +5,9 @@
  * `data/*.js` 가 전역에 값을 놓는 모양이다. 웹서버 없이 열리는 것이 이
  * 꾸러미의 존재 이유라 여기서 물러설 수 없다.
  *
- * 규칙은 뷰어에서 그대로 가져왔다 — 검색 셋(표제어·이명법·속) · 한 판 50줄 ·
- * 격자 60칸 · 펼침의 좌우 판정. **굽는 쪽(`tools/build_offline_atlas.py`)이
+ * 규칙은 뷰어에서 그대로 가져왔다 — 검색 셋(표제어·이명법·속) · 이명의 현재
+ * 학명으로도 찾기(P24) · 권역(한국·남극·전역, 196) · 속 고르는 목록 · 자동완성 ·
+ * 한 판 50줄 · 격자 60칸 · 펼침의 좌우 판정. **굽는 쪽(`tools/build_offline_atlas.py`)이
  * 이미지 경로를 미리 만들어 준다**: 이름 규칙은 `web/viewer/atlas.py` 하나뿐이고
  * 화면이 다시 만들지 않는다.
  */
@@ -17,6 +18,10 @@
   var BOOKS = window.DIA_BOOKS || {};
   var ENTRIES = window.DIA_ENTRIES || [];
   var NAMES = window.DIA_NAMES || { cols: [], rows: [] };
+  // 이명 판정(P24) · 출현 기록(P20) — 뷰어가 항목에 붙여 내는 둘 (v1.2.0)
+  var TAXA = window.DIA_TAXA || {};
+  var OCC = window.DIA_OCC || {};
+  var SUGGEST_MAX = 20;  // 자동완성 (뷰어 `atlas_suggest` 와 같은 수)
   var PER = 50;        // 검색 한 판 (뷰어 `ATLAS_PER_PAGE`)
   var GRID = 60;       // 격자 한 판 (뷰어 `atlas.PER_PAGE`)
   var app, preview, previewImg, previewCap;
@@ -82,10 +87,33 @@
     return a._s < b._s ? -1 : a._s > b._s ? 1 : (a.name < b.name ? -1 : 1);
   });
 
+  // **현재 통용 학명 → 옛 이름(이명)들** (뷰어 `_synonym_binomials`). 도감·논문은
+  // 옛 표기를 그대로 쓰므로 지금 학명으로 찾으면 못 걸린다 — 검색어를 옛
+  // 이름으로도 넓혀야 한다. 정확 일치(대소문자만 눕힌다)다.
+  var SYN = {};
+  Object.keys(TAXA).forEach(function (b) {
+    var t = TAXA[b];
+    if (t.status !== 'synonym' || !t.valid_name) return;
+    var k = fold(t.valid_name);
+    (SYN[k] = SYN[k] || []).push(b);
+  });
+
   function atlasMeta(key) {
     var list = META.atlases || [];
     for (var i = 0; i < list.length; i++) if (list[i].key === key) return list[i];
-    return { key: key, short: key, title: key };
+    return { key: key, short: key, title: key, area: '' };
+  }
+
+  var AREAS = META.areas || [];
+  function areaLabel(code) {
+    for (var i = 0; i < AREAS.length; i++) if (AREAS[i].code === code) return AREAS[i].label;
+    return '';
+  }
+  // 권역 안의 도감인가. **도감이 권역보다 좁다** — 도감을 골랐으면 권역은 안 본다.
+  function inScope(e, akey, area) {
+    if (akey) return e.atlas === akey;
+    if (area) return atlasMeta(e.atlas).area === area;
+    return true;
   }
 
   function bookOf(code) { return BOOKS[code] || null; }
@@ -135,72 +163,96 @@
 
   function viewSearch(p) {
     var q = (p.q || '').trim(), akey = p.atlas || '', genus = p.genus || '';
+    var area = p.area || '';
     var off = Math.max(0, num(p.off, 0));
+    // **권역은 검색이 아니라 보는 자리다** — 권역만 고른 채로는 카드가 좁혀질 뿐이다
     var searched = !!(q || akey || genus);
     var fq = fold(q), fg = fold(genus);
+    var syn = SYN[fq] || [];
+    var areaKnown = !area || !!areaLabel(area);
+
+    function matchQ(e) {
+      if (!fq) return true;
+      return e._f.indexOf(fq) >= 0 || syn.indexOf(e.binomial) >= 0;
+    }
 
     var hits = ENTRIES.filter(function (e) {
-      if (akey && e.atlas !== akey) return false;
+      if (!inScope(e, akey, area)) return false;
       if (fg && fold(e.genus) !== fg) return false;
-      if (fq && e._f.indexOf(fq) < 0) return false;
-      return true;
+      return matchQ(e);
     });
 
+    // 도감 칩의 수 — 도감 거르개를 뺀 나머지 조건으로 센다
     var counts = {};
     ENTRIES.forEach(function (e) {
-      if (fq && e._f.indexOf(fq) < 0) return;
+      if (!matchQ(e)) return;
       if (fg && fold(e.genus) !== fg) return;
       counts[e.atlas] = (counts[e.atlas] || 0) + 1;
     });
+    // 속 목록 — 거르개(도감·권역) 안의 것 전부, 이름순 (뷰어 `atlas_genera`)
+    var gc = {};
+    ENTRIES.forEach(function (e) {
+      if (e.genus && inScope(e, akey, area)) gc[e.genus] = (gc[e.genus] || 0) + 1;
+    });
+    var genera = Object.keys(gc).sort();
 
     var h = [];
+    // **자동완성은 datalist 다** (뷰어 196 과 같은 모양). 두 글자부터, 거르개
+    // 안의 이름만 — 밖의 이름을 권하면 골라도 결과가 빈다.
     h.push('<form class="q" id="qform">'
-      + '<input name="q" id="qinput" value="' + esc(q) + '" autofocus'
+      + '<input name="q" id="qinput" value="' + esc(q) + '" autofocus autocomplete="off"'
+      + ' list="qsuggest"'
       + ' placeholder="학명·속으로 찾는다 (예: Melosira ambigua · Navicula)"'
       + ' aria-label="학명 검색">'
+      + '<datalist id="qsuggest"></datalist>'
+      + '<select id="qgenus" aria-label="속으로 거른다" title="속으로 거른다 — 고르면 바로 찾는다">'
+      + '<option value="">속 전체</option>');
+    genera.forEach(function (g) {
+      h.push('<option value="' + esc(g) + '"' + (fold(g) === fg && fg ? ' selected' : '')
+        + '>' + esc(g) + ' (' + gc[g] + ')</option>');
+    });
+    h.push('</select>'
       + '<button type="submit">찾는다</button>'
-      + (searched ? '<a class="chip" href="#/">지운다</a>' : '') + '</form>');
+      + (searched ? '<a class="chip" href="#/' + qs({ area: area }) + '">지운다</a>' : '')
+      + '</form>');
+
+    // **권역이 먼저, 도감이 그 안이다.** 권역 칩은 도감을 떼고 도감 칩은 권역을
+    // 들고 간다. "전체" 와 "전역" 이 닮아 권역 쪽은 "모든 권역" 이라 적는다.
+    h.push('<div class="chips"><span class="dim">권역</span>');
+    h.push('<a class="chip' + (area ? '' : ' on') + '" href="#/'
+      + qs({ q: q, genus: genus }) + '">모든 권역</a>');
+    AREAS.forEach(function (a) {
+      h.push('<a class="chip' + (area === a.code ? ' on' : '') + '" href="#/'
+        + qs({ q: q, genus: genus, area: a.code }) + '">' + esc(a.label) + '</a>');
+    });
+    h.push('</div>');
+    if (!areaKnown) {
+      h.push('<p class="warn">모르는 권역입니다: <code>' + esc(area)
+        + '</code> — 아무것도 안 걸립니다. 위에서 고르세요.</p>');
+    }
 
     h.push('<div class="chips"><span class="dim">도감</span>');
     h.push('<a class="chip' + (akey ? '' : ' on') + '" href="#/'
-      + qs({ q: q, genus: genus }) + '">전체</a>');
+      + qs({ q: q, genus: genus, area: area }) + '">전체</a>');
     (META.atlases || []).forEach(function (a) {
+      // 권역을 골랐으면 그 권역의 도감만 — 밖의 도감을 고르면 권역이 조용히 풀린다
+      if (area && !akey && a.area !== area) return;
       h.push('<a class="chip' + (akey === a.key ? ' on' : '') + '" title="' + esc(a.title)
-        + '" href="#/' + qs({ q: q, atlas: a.key, genus: genus }) + '">'
+        + '" href="#/' + qs({ q: q, atlas: a.key, genus: genus, area: area }) + '">'
         + esc(a.short) + ' <span class="dim">' + (counts[a.key] || 0) + '</span></a>');
     });
     h.push('</div>');
 
-    if (genus) {
-      h.push('<div class="chips"><span class="dim">속</span>'
-        + '<span class="chip on">' + esc(genus) + '</span>'
-        + '<a class="chip" title="속으로 거르는 것만 뺀다" href="#/'
-        + qs({ q: q, atlas: akey }) + '">속 거르개를 뺀다</a></div>');
-    } else if (searched) {
-      // 결과 안의 속을 많은 순으로. 좁혀 들어갈 문이다.
-      var gc = {};
-      hits.forEach(function (e) { if (e.genus) gc[e.genus] = (gc[e.genus] || 0) + 1; });
-      var gs = Object.keys(gc).sort(function (a, b) { return gc[b] - gc[a] || (a < b ? -1 : 1); });
-      if (gs.length > 1) {
-        h.push('<div class="chips"><span class="dim">속</span>');
-        gs.slice(0, 24).forEach(function (g) {
-          h.push('<a class="chip" href="#/' + qs({ q: q, atlas: akey, genus: g }) + '">'
-            + esc(g) + ' <span class="dim">' + gc[g] + '</span></a>');
-        });
-        h.push('</div>');
-      }
-    }
-
     if (!searched) {
-      h.push(bookCards());
+      h.push(bookCards(area));
       app.innerHTML = h.join('');
-      wireSearchForm(akey, genus);
+      wireSearchForm(akey, genus, area);
       return;
     }
 
     off = Math.min(off, Math.max(0, hits.length - 1));
     var rows = hits.slice(off, off + PER);
-    var pager = pagerHtml(hits.length, off, rows.length, q, akey, genus);
+    var pager = pagerHtml(hits.length, off, rows.length, q, akey, genus, area);
     h.push(pager);
     if (!rows.length) {
       h.push('<p class="warn">찾은 것이 없습니다. <b>도감에 없는 것</b>일 수도, '
@@ -211,30 +263,64 @@
     rows.forEach(function (e) { h.push(entryHtml(e)); });
     h.push(pager);
     app.innerHTML = h.join('');
-    wireSearchForm(akey, genus);
+    wireSearchForm(akey, genus, area);
     bindPreview(app);
   }
 
-  function wireSearchForm(akey, genus) {
+  function wireSearchForm(akey, genus, area) {
     var f = document.getElementById('qform');
     if (!f) return;
-    f.addEventListener('submit', function (e) {
-      e.preventDefault();
-      go('/', { q: document.getElementById('qinput').value.trim(), atlas: akey, genus: genus });
+    var inp = document.getElementById('qinput');
+    var sel = document.getElementById('qgenus');
+    var dl = document.getElementById('qsuggest');
+    function submit(g) {
+      go('/', { q: inp.value.trim(), atlas: akey, genus: g, area: area });
+    }
+    f.addEventListener('submit', function (e) { e.preventDefault(); submit(sel.value); });
+    // 속을 고르면 바로 간다 — 목록은 거르개라 "찾는다" 를 한 번 더 누르게 하지 않는다
+    sel.addEventListener('change', function () { submit(sel.value); });
+
+    // 자동완성 — 거르개 안의 이명법(`binomial`)만. 빈 것은 도감이 속까지만
+    // 내려갔거나 못 읽는 표기라(뷰어 119) 값으로 권하지 않는다.
+    var last = '';
+    inp.addEventListener('input', function () {
+      var v = inp.value.trim(), fv = fold(v);
+      if (v.length < 2 || v === last) return;
+      last = v;
+      var seen = {}, out = [];
+      for (var i = 0; i < ENTRIES.length && out.length < SUGGEST_MAX; i++) {
+        var e = ENTRIES[i];
+        if (!e.binomial || !inScope(e, akey, area)) continue;
+        if (e._f.indexOf(fv) < 0) continue;
+        var k = fold(e.binomial);
+        if (seen[k]) { seen[k].atlases[e.atlas] = 1; continue; }
+        seen[k] = { value: e.binomial, atlases: {}, guess: !!e.genus_guess };
+        seen[k].atlases[e.atlas] = 1;
+        out.push(seen[k]);
+      }
+      dl.textContent = '';
+      out.forEach(function (row) {
+        var o = document.createElement('option');
+        o.value = row.value;
+        // **"확정" 이라고 말하지 않는다** (뷰어 119). 표시가 있는 쪽만 말한다.
+        o.label = Object.keys(row.atlases).map(function (k) { return atlasMeta(k).short; })
+          .join(' · ') + (row.guess ? ' · 속명 추정' : '');
+        dl.appendChild(o);
+      });
     });
   }
 
-  function pagerHtml(total, off, shown, q, akey, genus) {
+  function pagerHtml(total, off, shown, q, akey, genus, area) {
     var h = ['<div class="pager"><span class="dim">' + total + '건'];
     if (total) h.push(' 중 ' + (off + 1) + '~' + (off + shown));
     if (genus) h.push(' · 속 <b>' + esc(genus) + '</b>');
     h.push('</span>');
     if (off > 0) {
-      h.push('<a class="chip" href="#/' + qs({ q: q, atlas: akey, genus: genus,
+      h.push('<a class="chip" href="#/' + qs({ q: q, atlas: akey, genus: genus, area: area,
         off: Math.max(0, off - PER) }) + '">← 앞</a>');
     }
     if (off + PER < total) {
-      h.push('<a class="chip" href="#/' + qs({ q: q, atlas: akey, genus: genus,
+      h.push('<a class="chip" href="#/' + qs({ q: q, atlas: akey, genus: genus, area: area,
         off: off + PER }) + '">뒤 →</a>');
     }
     return h.join('') + '</div>';
@@ -279,6 +365,28 @@
       });
       h.push('</div>');
     }
+    // 학명 유효성 (P24) — 사람이 AlgaeBase 를 열어 확인한 이명 판정. **이명일
+    // 때만 낸다** — 유효·미확인은 낼 것이 없다(뷰어 `atlas_search` 와 같은 규칙).
+    var t = e.binomial ? TAXA[e.binomial] : null;
+    if (t && t.status === 'synonym') {
+      h.push('<div class="entryextra taxon">'
+        + '<span class="chip warnchip" title="AlgaeBase 확인 — 이 표기는 이명이다">이명</span> '
+        + '현재 통용 학명 <a href="#/' + qs({ q: t.valid_name }) + '"><i>' + esc(t.valid_name)
+        + '</i></a>'
+        + (t.note ? ' <span class="pnote">' + esc(t.note) + '</span>' : '') + '</div>');
+    }
+    // 출현 기록 (P20) — 도감의 "분포" 문장이 낳은 종 × 지역 × 문헌. 위의
+    // `분포`(원문 그대로)와 다른 자리라 나란히 낸다.
+    var occ = e.binomial ? (OCC[e.binomial] || []) : [];
+    if (occ.length) {
+      h.push('<div class="entryextra occurrences"><span class="dim">출현</span> ');
+      h.push(occ.map(function (o) {
+        return '<span class="occ">' + esc(o.region) + ' <span class="dim">(' + esc(o.authors)
+          + ', ' + esc(o.year) + ')</span>'
+          + (o.note ? ' <span class="pnote">' + esc(o.note) + '</span>' : '') + '</span>';
+      }).join(' · '));
+      h.push('</div>');
+    }
     return h.join('') + '</div>';
   }
 
@@ -302,27 +410,42 @@
 
   /* ── 도감 카드·격자 ────────────────────────────────────────── */
 
-  function bookCards() {
+  // 도감 카드 — **권역별로 묶는다** (뷰어 196). 권역을 모르는 도감은 "권역
+  // 미정" 으로 따로 선다 — "전역" 에 뭉개면 새 도감이 조용히 거기 앉는다.
+  function bookCards(area) {
     if (!META.images) {
       return '<p class="note">이 꾸러미는 <b>글자만</b> 담았습니다 — 도판 이미지는 없습니다.</p>';
     }
     var h = ['<h1>도감</h1>'];
-    (META.atlases || []).forEach(function (a) {
-      var b = bookOf(a.key);
-      if (!b) return;
-      h.push('<div class="bookrow"><div class="cover">'
-        + (b.cover ? '<img src="' + esc(b.cover) + '" alt="">' : '')
-        + '</div><div class="body"><h2>' + esc(a.title) + '</h2>'
-        + '<div class="dim">' + esc(a.short) + ' · 항목 ' + a.count + '개 · 쪽 '
-        + b.rendered + '</div>'
-        + (a.note ? '<div class="note">' + mdlite(a.note) + '</div>' : '')
-        + '<div class="vols">');
-      b.volumes.forEach(function (v) {
-        h.push('<a class="chip" href="#/book/' + esc(b.code) + '/' + esc(v.code) + '">'
-          + esc(v.label) + ' <span class="dim">' + v.pages.length + '쪽</span></a>');
+    var groups = AREAS.filter(function (a) { return !area || a.code === area; })
+      .map(function (a) { return { code: a.code, label: a.label }; });
+    if (!area) groups.push({ code: '', label: '권역 미정' });
+    var any = false;
+    groups.forEach(function (g) {
+      var mine = (META.atlases || []).filter(function (a) {
+        return (a.area || '') === g.code && bookOf(a.key);
       });
-      h.push('</div></div></div>');
+      if (!mine.length) return;
+      any = true;
+      h.push('<h2 class="areahead">' + esc(g.label) + ' <span class="dim">' + mine.length
+        + '권</span></h2>');
+      mine.forEach(function (a) {
+        var b = bookOf(a.key);
+        h.push('<div class="bookrow"><div class="cover">'
+          + (b.cover ? '<img src="' + esc(b.cover) + '" alt="">' : '')
+          + '</div><div class="body"><h2>' + esc(a.title) + '</h2>'
+          + '<div class="dim">' + esc(a.short) + ' · 항목 ' + a.count + '개 · 쪽 '
+          + b.rendered + '</div>'
+          + (a.note ? '<div class="note">' + mdlite(a.note) + '</div>' : '')
+          + '<div class="vols">');
+        b.volumes.forEach(function (v) {
+          h.push('<a class="chip" href="#/book/' + esc(b.code) + '/' + esc(v.code) + '">'
+            + esc(v.label) + ' <span class="dim">' + v.pages.length + '쪽</span></a>');
+        });
+        h.push('</div></div></div>');
+      });
     });
+    if (!any) h.push('<p class="warn">이 권역에 도감이 없습니다.</p>');
     return h.join('');
   }
 
@@ -602,6 +725,10 @@
       : '이 꾸러미에는 없다 (글자만)') + '</dd>');
     h.push('<dt>학명 대조표</dt><dd>' + NAMES.rows.length + '건 · 출처 '
       + esc(META.names_source || '') + '</dd>');
+    h.push('<dt>이명 판정 · 출현</dt><dd>학명 유효성 판정 ' + (META.taxa || 0)
+      + '건 (AlgaeBase) · 출현 기록 ' + (META.occurrences || 0) + '건.'
+      + ' 색인 결과의 항목마다 이명이면 <b>현재 통용 학명</b>을, 분포 문장이 있으면'
+      + ' <b>출현</b>(지역 × 문헌)을 함께 낸다 — 서버의 도감 화면과 같다.</dd>');
     h.push('<dt>인용</dt><dd>색인은 OCR 산물이라 <b>표제어를 그대로 인용하지 않는다</b>.'
       + ' 원문 표기가 필요하면 도판 쪽을 열어 눈으로 확인한다.</dd>');
     h.push('<dt>단축키</dt><dd>쪽 보기에서 <kbd>←</kbd> <kbd>→</kbd> 넘기기 ·'

@@ -53,7 +53,13 @@ h2 { font-size: 1.05rem; margin: 0 0 6px; }
            border: 1px solid var(--line); border-radius: 6px; background: var(--panel); }
 .chips { display: flex; flex-wrap: wrap; gap: 6px; align-items: center;
          margin-bottom: 10px; }
+.q select { padding: 8px 10px; font-size: .95rem; max-width: 14em; color: inherit;
+            border: 1px solid var(--line); border-radius: 6px; background: var(--panel); }
 .pager { display: flex; gap: 8px; margin: 12px 0; align-items: center; }
+/* 권역 묶음 */
+.areahead { margin: 22px 0 10px; font-size: 1.05rem; border-bottom: 1px solid var(--line);
+            padding-bottom: 6px; }
+.areahead .dim { font-size: .82rem; font-weight: normal; }
 
 .entry { border-bottom: 1px solid var(--line); padding: 9px 2px; }
 .ename { display: flex; flex-wrap: wrap; gap: 7px; align-items: baseline; }
