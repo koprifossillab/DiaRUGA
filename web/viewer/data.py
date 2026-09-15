@@ -5004,15 +5004,33 @@ def atlas_list() -> list[dict]:
             for a in Atlas.objects.order_by("sort_order", "key")]
 
 
-def atlas_genera(atlas_key: str = "") -> list[dict]:
-    """속 목록 — 많은 순. 거르는 칩으로 쓴다."""
+def _atlas_scope(qs, atlas_key: str = "", area: str = ""):
+    """도감·권역 거르개 — `atlas_search`·`atlas_genera`·`atlas_suggest` 가 같은
+    것을 쓴다 (196). **도감이 권역보다 좁다** — 도감을 골랐으면 권역은 그
+    도감이 이미 말하는 것이라 안 본다. 권역만 골랐으면 그 권역의 도감
+    코드로 거른다(`atlas.area_keys`). 모르는 권역이면 코드가 하나도 없어
+    결과가 빈다 — 조용히 전체를 내면 거르개가 죽은 것을 아무도 모른다.
+    """
+    from . import atlas as atlas_mod
+    if atlas_key:
+        return qs.filter(atlas__key=atlas_key)
+    if area:
+        return qs.filter(atlas__key__in=atlas_mod.area_keys(area))
+    return qs
+
+
+def atlas_genera(atlas_key: str = "", area: str = "") -> list[dict]:
+    """속 목록 — **이름순, 전부.** 고르는 목록(`<select>`)으로 쓴다 (196).
+
+    칩으로 늘어놓을 때는 많은 순 예순 개였다 — 목록으로 바뀌면서 찾는 법이
+    달라졌다: 눈으로 훑는 것이 아니라 **이름으로 짚어 가므로** 이름순이어야
+    하고, 예순 개에서 자르면 드문 속이 목록에서 사라져 "도감에 없다" 로
+    읽힌다. 2천 행에 속은 300 이 안 되니 전부 실어도 가볍다.
+    """
     from django.db.models import Count
     from .models import AtlasEntry
-    qs = AtlasEntry.objects.exclude(genus="")
-    if atlas_key:
-        qs = qs.filter(atlas__key=atlas_key)
-    return list(qs.values("genus").annotate(n=Count("id"))
-                .order_by("-n", "genus")[:60])
+    qs = _atlas_scope(AtlasEntry.objects.exclude(genus=""), atlas_key, area)
+    return list(qs.values("genus").annotate(n=Count("id")).order_by("genus"))
 
 
 def _placement_dict(p) -> dict:
@@ -5126,7 +5144,7 @@ def _synonym_binomials(q: str) -> set[str]:
 
 
 def atlas_search(q: str = "", atlas_key: str = "", genus: str = "",
-                 offset: int = 0) -> dict:
+                 offset: int = 0, area: str = "") -> dict:
     """도감 항목 검색.
 
     **찾는 것은 셋이다** — 표제어(`name`, 저자까지 붙어 있다) · 이명법
@@ -5156,8 +5174,7 @@ def atlas_search(q: str = "", atlas_key: str = "", genus: str = "",
         if syn:
             cond |= Q(binomial__in=syn)
         qs = qs.filter(cond)
-    if atlas_key:
-        qs = qs.filter(atlas__key=atlas_key)
+    qs = _atlas_scope(qs, atlas_key, area)
     if genus:
         qs = qs.filter(genus__iexact=genus)
 
@@ -5188,7 +5205,7 @@ def atlas_search(q: str = "", atlas_key: str = "", genus: str = "",
                       else None),
         })
     return {
-        "q": q, "atlas_key": atlas_key, "genus": genus,
+        "q": q, "atlas_key": atlas_key, "genus": genus, "area": area,
         "total": total, "offset": offset, "per_page": ATLAS_PER_PAGE,
         "rows": rows,
         "shown_from": offset + 1 if rows else 0,
@@ -5255,7 +5272,8 @@ def _atlas_name_rows(entries) -> list[dict]:
     return out
 
 
-def atlas_suggest(q: str = "", limit: int = 20) -> list[dict]:
+def atlas_suggest(q: str = "", limit: int = 20, atlas_key: str = "",
+                  area: str = "") -> list[dict]:
     """종명 칸의 자동완성 — **도감에 실린 이름**을 준다 (149).
 
     `species_seen()` 과 짝이다. 그쪽은 이미 적은 종명을 주므로 **처음 적는
@@ -5270,11 +5288,15 @@ def atlas_suggest(q: str = "", limit: int = 20) -> list[dict]:
     주소는 화면이 `plate_rel` 로 만든다.
 
     두 글자부터 찾는다. 한 글자로는 2천 행의 절반이 걸려 목록이 뜻을 잃는다.
+
+    도감 화면의 검색창도 이것을 쓴다 (196). 그쪽은 도감·권역으로 걸러 놓고
+    치므로 **거르개 밖의 이름을 권하면 안 된다** — 골라도 결과가 빈다.
+    `atlas_key`·`area` 는 `atlas_search` 와 같은 거르개다.
     """
     q = (q or "").strip()
     if len(q) < 2:
         return []
-    qs = (_atlas_entry_qs()
+    qs = (_atlas_scope(_atlas_entry_qs(), atlas_key, area)
           .exclude(binomial="")
           .filter(Q(binomial__icontains=q) | Q(name__icontains=q))
           .order_by("binomial", "atlas__sort_order", "seq"))

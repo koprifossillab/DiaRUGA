@@ -46,6 +46,56 @@ EXT = ".png"
 # 격자 한 판. 카탈로그(`CATALOG_PER_PAGE`)와 같은 성격이다.
 PER_PAGE = 60
 
+# ── 권역 (196) ───────────────────────────────────────────────────
+#
+# 도감 열다섯이 한 줄로 서면 어느 것이 남극이고 어느 것이 한국인지 이름을
+# 읽어야 안다. **권역은 자료가 아니라 사람의 판단이라** 파일(`atlases.json`)
+# 에도 DB(`Atlas`)에도 없고 여기 못 박는다 — `views._BOOK_ATLAS_CODES` 와 같은
+# 성격이다. 다만 저쪽과 달리 **세 자리가 같은 값을 써야 한다**(도감 화면 ·
+# `data.atlas_search` 의 거르개 · 오프라인 꾸러미 `tools/build_offline_atlas.py`)
+# 라 뷰가 아니라 이 모듈에 둔다 — `vol_code` 를 한 자리에 모은 것과 같은 이유.
+#
+# 값은 `Site.area` 의 말(한국 · 남극)을 그대로 쓴다. 한국 도감(담수조류)과
+# 노두 논문(연일층군·갈말)이 들어 있어 "근해" 라고는 못 부른다.
+# **`global` 은 어느 권역에도 안 매인 것**이다 — Schmidt(세계 도감) ·
+# Akiba & Yanagisawa(북태평양 DSDP 대비 기준종).
+AREAS = (
+    ("korea", "한국"),
+    ("antarctic", "남극"),
+    ("global", "전역"),
+)
+AREA_LABEL = dict(AREAS)
+AREA_OF = {
+    "korean": "korea",
+    "schmidt": "global",
+    "east-antarctic": "antarctic",
+    "1936-skvortzov": "korea",          # 함남 안변 (신제3기)
+    "1975-lee-pohang": "korea",
+    "1985-akiba-yanagisawa": "global",  # DSDP Leg 87 · 북서태평양 기준종
+    "1986-lee-sekorea": "korea",
+    "1991-lee-yeonil": "korea",
+    "1992-lee-galmal": "korea",
+    "1993-bae-southsea": "korea",
+    "1993-lee-chaetoceros": "korea",    # 연일층군
+    "1994-lee-namyangman": "korea",
+    "1996-lee-bransfield": "antarctic",
+    "2001-park-bransfield": "antarctic",
+    "2017-yun-ulleung": "korea",
+}
+
+
+def area_of(code: str) -> str:
+    """도감 코드 → 권역 코드. **모르면 빈 문자열이다** — `global` 로 뭉개면
+    새 도감이 조용히 "전역" 에 앉는다. 화면은 빈 것을 "권역 미정" 으로 따로
+    세워 눈에 띄게 한다."""
+    return AREA_OF.get(code or "", "")
+
+
+def area_keys(area: str) -> list[str]:
+    """그 권역에 든 도감 코드. 모르는 권역이면 빈 목록 — 거르개가 그 값을
+    받으면 결과가 비어 **없는 권역으로 걸렀다는 것이 화면에 드러난다.**"""
+    return [k for k, a in AREA_OF.items() if a == area]
+
 
 def _root() -> Path:
     """PNG 가 놓인 자리. **`DATA_ROOT` 아래여야 한다** — `/img` 가 거기만 연다."""
@@ -173,6 +223,7 @@ def atlases() -> list[dict]:
         out.append({
             "code": code,
             "label": entry.get("label") or code,
+            "area": area_of(code),
             "volumes": vlist,
             "pages": total,
             "rendered": have,

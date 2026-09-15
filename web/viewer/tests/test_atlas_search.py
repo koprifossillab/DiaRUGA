@@ -89,6 +89,13 @@ class AtlasSearchTests(DiaRUGATestCase):
     def get(self, **q):
         return self.c.get(reverse("atlas"), q).content.decode()
 
+    @staticmethod
+    def body(html):
+        """`<script>` 를 뺀 것. 자동완성 스크립트(196)가 "속명 추정" 같은 문구를
+        글자로 들고 있어, 화면에 **떴는지**를 볼 때는 그것을 빼고 본다."""
+        import re
+        return re.sub(r"<script>.*?</script>", "", html, flags=re.S)
+
     # 1) 지금 철자로 찾는데 표제어는 옛 표기다 — 이명법을 안 걸면 못 찾는다
     def test_matches_binomial_when_headword_differs(self):
         html = self.get(q="Skeletonema costatum")
@@ -110,9 +117,9 @@ class AtlasSearchTests(DiaRUGATestCase):
 
     # 4) `genus_guess` 는 있는 쪽만 말한다. "확정" 이라는 말을 안 쓴다
     def test_genus_guess_marked_but_never_confirmed(self):
-        html = self.get(q="Navicula abrupta")
+        html = self.body(self.get(q="Navicula abrupta"))
         self.assertIn("속명 추정", html)
-        plain = self.get(q="Sceletonema")
+        plain = self.body(self.get(q="Sceletonema"))
         self.assertNotIn("속명 추정", plain)
         for word in ("확정", "확인됨"):
             self.assertNotIn(word, plain, f"'{word}' 라고 말하면 안 된다 (119)")
@@ -157,17 +164,27 @@ class AtlasSearchTests(DiaRUGATestCase):
         self.assertIn("atlas=schmidt&amp;genus=Navicula", html)
         self.assertIn("q=Navicula&amp;atlas=schmidt", html)
 
-    # 10) 속만 따로 뺄 수 있다
+    # 10) 속만 따로 뺄 수 있다 — 고르는 목록의 "속 전체" 가 그 문이다 (196)
     def test_genus_can_be_cleared_alone(self):
-        """예전에는 "지운다" 뿐이라 속을 빼려면 **검색어까지 같이 날아갔다.**"""
-        html = self.get(q="Navicula", genus="Navicula")
-        self.assertIn("속 거르개를 뺀다", html)
-        # 속을 뺀 주소에 검색어가 남아 있어야 한다
+        """예전에는 "지운다" 뿐이라 속을 빼려면 **검색어까지 같이 날아갔다.**
+        지금은 속이 검색 폼 안의 `<select>` 라 "속 전체" 를 고르면 같은 폼이
+        `q` 를 들고 간다. **폼에 같은 `name` 이 둘이면 Django 는 뒤엣것을
+        집는다**(CLAUDE.md) — `genus` 칸이 하나뿐인지도 본다."""
         import re
-        m = re.search(r'href="([^"]*)"[^>]*title="속으로 거르는 것만 뺀다"', html)
-        self.assertIsNotNone(m, "속만 빼는 문이 없다")
-        self.assertIn("q=Navicula", m.group(1))
-        self.assertNotIn("genus=", m.group(1))
+        html = self.body(self.get(q="Navicula", genus="Navicula"))
+        form = re.search(r'<form class="atlasq".*?</form>', html, re.S).group(0)
+        self.assertEqual(form.count('name="genus"'), 1, "genus 칸이 둘이다")
+        self.assertIn('<option value="" data-en="All genera">속 전체</option>', form)
+        self.assertIn('<option value="Navicula" selected>', form)
+        self.assertIn('name="q" value="Navicula"', form)
+
+    # 10-2) 속 목록은 전부, 이름순이다 — 잘라 내면 드문 속이 "없는 것" 이 된다
+    def test_genus_list_is_complete_and_sorted(self):
+        from viewer import data
+        names = [g["genus"] for g in data.atlas_genera()]
+        self.assertEqual(names, sorted(names))
+        self.assertEqual(set(names), {"Sceletonema", "Navicula", "Synedra",
+                                      "Actinocyclus"})
 
     # 11) 미리보기가 짚을 자리가 내려간다 — **디스크를 안 짚는다**
     def test_preview_rel_without_touching_disk(self):
