@@ -1590,31 +1590,43 @@ def atlas_index(request):
     q = (request.GET.get("q") or "").strip()
     atlas_key = (request.GET.get("atlas") or "").strip()
     genus = (request.GET.get("genus") or "").strip()
+    area = (request.GET.get("area") or "").strip()
     try:
         offset = max(0, int(request.GET.get("offset", 0)))
     except ValueError:
         offset = 0
 
     plates = atlas_mod.atlases()
+    # **권역은 검색이 아니라 보는 자리다** (196). 권역만 고른 채로는 카드
+    # 목록이 그 권역으로 좁혀질 뿐 결과 화면으로 안 넘어간다 — 사람이 청한
+    # 것이 "한국·남극·전역으로 구분해서 보는 것" 이다.
     searched = bool(q or atlas_key or genus)
+    books = data.atlas_list()
+    if area and not atlas_key:
+        # 도감 칩도 그 권역 것만. 권역 밖의 도감을 고르면 권역이 조용히
+        # 풀리는데, 애초에 안 보이면 그 갈래가 없다.
+        keys = set(atlas_mod.area_keys(area))
+        books = [b for b in books if b["key"] in keys]
     ctx = {
         "atlases": plates,
-        # 목록이 늘면서(15) 다권 도감과 논문 도판집이 한 줄 무게로 섞여
-        # 지저분해졌다 — 화면에서만 둘로 가른다(위 `_BOOK_ATLAS_CODES`).
-        "book_atlases": [a for a in plates if a["code"] in _BOOK_ATLAS_CODES],
-        "paper_atlases": [a for a in plates if a["code"] not in _BOOK_ATLAS_CODES],
+        "area": area,
+        "area_label": atlas_mod.AREA_LABEL.get(area, ""),
+        # 모르는 권역이면 아무것도 안 걸린다. 조용히 전체를 내면 거르개가
+        # 죽은 것을 모른다 — 화면이 말한다.
+        "area_unknown": bool(area) and area not in atlas_mod.AREA_LABEL,
+        "area_groups": _atlas_area_groups(plates, area),
         # 굽는 중일 수 있다. **몇 쪽 중 몇 쪽인지 화면이 말한다** — 안 말하면
         # 덜 구운 상태를 "원본이 그만큼" 으로 읽는다.
         "partial": [a for a in plates if a["partial"]],
-        "books": data.atlas_list(),
+        "books": books,
         "searched": searched,
-        "genera": data.atlas_genera(atlas_key),
+        "genera": data.atlas_genera(atlas_key, area),
     }
     if searched:
-        ctx.update(data.atlas_search(q, atlas_key, genus, offset))
+        ctx.update(data.atlas_search(q, atlas_key, genus, offset, area=area))
         base = reverse("atlas")
         keep = {k: v for k, v in (("q", q), ("atlas", atlas_key),
-                                  ("genus", genus)) if v}
+                                  ("genus", genus), ("area", area)) if v}
         for name, off in (("prev_url", ctx["prev_offset"]),
                           ("next_url", ctx["next_offset"])):
             ctx[name] = (f"{base}?{urlencode({**keep, 'offset': off})}"
@@ -1627,12 +1639,37 @@ def atlas_index(request):
         ctx["q"] = q
         ctx["atlas_key"] = atlas_key
         ctx["genus"] = genus
-    # **거르개 주소는 화면이 아니라 여기서 만든다** (141). 셋(`q`·`atlas`·
-    # `genus`)이 서로 살아남아야 하는데 템플릿에서 이어 붙이면 자리마다 빠뜨리는
-    # 것이 달라진다 — 실제로 도감 칩이 `genus` 를 떨어뜨리고 있었다. 거른 것을
-    # **하나씩 지울 수 있어야** 한다: 지금은 속을 빼려면 검색어까지 지워야 한다.
-    ctx.update(_atlas_chips(q, atlas_key, genus, ctx["books"], ctx["genera"]))
+    # **거르개 주소는 화면이 아니라 여기서 만든다** (141). 넷(`q`·`atlas`·
+    # `genus`·`area`)이 서로 살아남아야 하는데 템플릿에서 이어 붙이면 자리마다
+    # 빠뜨리는 것이 달라진다 — 실제로 도감 칩이 `genus` 를 떨어뜨리고 있었다.
+    # 거른 것을 **하나씩 지울 수 있어야** 한다.
+    ctx.update(_atlas_chips(q, atlas_key, genus, area, ctx["books"]))
     return render(request, "viewer/atlas.html", ctx)
+
+
+def _atlas_area_groups(plates, area=""):
+    """도감 카드를 권역별로 (196). `[{code, label, books, papers}]` — 권역
+    차례는 `atlas.AREAS` 다. **권역을 모르는 도감은 "권역 미정" 으로 따로
+    선다** — `global` 에 뭉개면 새 도감이 조용히 "전역" 에 앉는다(`area_of`
+    머리말). 안에서는 다권 도감과 논문 도판집을 계속 가른다(08-31,
+    `_BOOK_ATLAS_CODES`). 빈 권역은 안 낸다 — 빈 제목이 서면 "도감이 없다"
+    로 읽힌다.
+    """
+    want = [(code, label) for code, label in atlas_mod.AREAS
+            if not area or code == area]
+    if not area:
+        want.append(("", "권역 미정"))
+    out = []
+    for code, label in want:
+        mine = [a for a in plates if a["area"] == code]
+        if not mine:
+            continue
+        out.append({
+            "code": code, "label": label,
+            "books": [a for a in mine if a["code"] in _BOOK_ATLAS_CODES],
+            "papers": [a for a in mine if a["code"] not in _BOOK_ATLAS_CODES],
+        })
+    return out
 
 
 def atlas_suggest(request):
@@ -1646,30 +1683,42 @@ def atlas_suggest(request):
     오류로 내면 화면이 "고장" 을 적을 자리를 만들어야 한다 — 도감 색인이
     아직 절반인 지금은 안 걸리는 이름이 흔하다.
     """
-    rows = data.atlas_suggest(request.GET.get("q") or "", limit=20)
+    # 도감 화면의 검색창은 거르개(도감·권역) 안의 이름만 받는다 (196) —
+    # 거르개 밖의 이름을 권하면 골라도 결과가 빈다
+    rows = data.atlas_suggest(request.GET.get("q") or "", limit=20,
+                              atlas_key=(request.GET.get("atlas") or "").strip(),
+                              area=(request.GET.get("area") or "").strip())
     return JsonResponse({"rows": rows})
 
 
-def _atlas_chips(q, atlas_key, genus, books, genera):
-    """도감·속 칩의 주소. **`offset` 은 안 들고 간다** — 거르개가 바뀌면
+def _atlas_chips(q, atlas_key, genus, area, books):
+    """도감·권역 칩의 주소. **`offset` 은 안 들고 간다** — 거르개가 바뀌면
     결과 수가 달라져 옛 페이지 번호가 빈 화면이 된다.
+
+    **권역 칩은 도감을 뗀다.** 도감이 권역보다 좁아 둘을 함께 들고 가면
+    한국 도감을 고른 채 남극을 누르는 갈래가 생기는데, 그때 화면은 남극이
+    켜져 있고 결과는 한국 도감이다. 도감 칩은 권역을 들고 간다 — 그 권역
+    안의 도감만 칩으로 보이니 어긋날 일이 없다(`atlas_index`).
+
+    속은 칩이 아니라 폼의 고르는 목록이라(196) 여기 주소가 없다 — 폼이 `q`·
+    `atlas`·`area` 를 숨은 칸으로 들고 가서 같은 것이 살아남는다.
     """
     base = reverse("atlas")
 
     def url(**over):
-        keep = {"q": q, "atlas": atlas_key, "genus": genus}
+        keep = {"q": q, "atlas": atlas_key, "genus": genus, "area": area}
         keep.update(over)
         keep = {k: v for k, v in keep.items() if v}
         return f"{base}?{urlencode(keep)}" if keep else base
 
     return {
         "atlas_all_url": url(atlas=""),
-        "genus_clear_url": url(genus=""),
+        "area_all_url": url(area="", atlas=""),
+        "area_chips": [{"code": code, "label": label,
+                        "url": url(area=code, atlas=""), "on": area == code}
+                       for code, label in atlas_mod.AREAS],
         "book_chips": [{**b, "url": url(atlas=b["key"]),
                         "on": atlas_key == b["key"]} for b in books],
-        "genus_chips": [{**g, "url": url(genus=g["genus"], atlas=atlas_key),
-                         "on": genus.lower() == g["genus"].lower()}
-                        for g in genera],
     }
 
 

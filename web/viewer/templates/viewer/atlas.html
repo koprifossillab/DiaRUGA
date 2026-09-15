@@ -58,7 +58,7 @@
   /* 논문 도판집(13건, 08-31). 다권 도감(korean·schmidt) 과 같은 무게의
      `.atlasrow` 로 세우면 표지 없는 발췌본이 줄만 잡아먹는다 — 작은
      그리드로 접어 한 화면에 들어오게 한다. */
-  .paperhead { margin: 26px 0 10px; font-size: .95rem; }
+  .papergrid { margin-top: 10px; }
   .papergrid { display: grid; gap: 10px;
                grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); }
   .papercard { display: block; border: 1px solid var(--line); border-radius: 6px;
@@ -71,25 +71,112 @@
                          border: none; font-size: .72rem; }
   .papercard .label { font-size: .84rem; line-height: 1.3; }
   .papercard .dim { font-size: .78rem; }
+  /* 권역 묶음 (196) */
+  .areahead { margin: 26px 0 10px; font-size: 1.05rem; display: flex; gap: 10px;
+              align-items: baseline; border-bottom: 1px solid var(--line);
+              padding-bottom: 6px; }
+  .areahead .dim { font-size: .82rem; font-weight: normal; }
+  /* 속 고르는 목록 (196) — 입력칸과 같은 높이·테두리 */
+  .atlasq select { padding: 8px 10px; font-size: .95rem; max-width: 14em;
+                   border: 1px solid var(--line); border-radius: 6px;
+                   background: var(--panel); color: inherit; }
 </style>
 
 {% comment %}
   **검색이 먼저다.** 찾으러 온 사람에게 목록을 먼저 보이면 한 번 더 눌러야 한다.
 {% endcomment %}
-<form class="atlasq" method="get" action="{% url 'atlas' %}">
+{% comment %}
+  **자동완성은 `datalist` 다** (196). 카탈로그의 종명 칸(149)과 같은 문
+  (`api/atlas/suggest`)에 묻고 같은 모양으로 붙인다 — 목록 UI 를 따로 짜면
+  두 화면이 다르게 굴러간다. 두 글자부터 묻고, 거르개(도감·권역)를 함께
+  보내 **거르개 밖의 이름을 권하지 않는다**.
+
+  **속은 칩이 아니라 고르는 목록이다** (사용자 2026-09-15). 칩 스물넷을
+  늘어놓으면 드문 속은 목록에서 사라지고 화면만 길어진다 — 목록은 전부
+  들고 이름순이라 짚어 갈 수 있다. 고르면 바로 간다(`onchange`) — JS 가
+  없어도 "찾는다" 가 같은 폼을 보낸다. `q`·`atlas`·`area` 가 같은 폼에
+  있어 속을 바꿔도 나머지가 살아남는다.
+{% endcomment %}
+<form class="atlasq" method="get" action="{% url 'atlas' %}" id="atlasq">
   <input name="q" value="{{ q }}" placeholder="학명·속으로 찾는다 (예: Melosira ambigua · Navicula)"
          data-en-placeholder="Search by name or genus (e.g. Melosira ambigua · Navicula)"
-         autofocus aria-label="학명 검색" data-en-aria-label="Search by scientific name">
+         autofocus aria-label="학명 검색" data-en-aria-label="Search by scientific name"
+         list="atlas-suggest" autocomplete="off" id="atlas-q">
+  <datalist id="atlas-suggest"></datalist>
   {% if atlas_key %}<input type="hidden" name="atlas" value="{{ atlas_key }}">{% endif %}
+  {% if area %}<input type="hidden" name="area" value="{{ area }}">{% endif %}
+  <select name="genus" aria-label="속으로 거른다" data-en-aria-label="Filter by genus"
+          title="속으로 거른다 — 고르면 바로 찾는다" data-en-title="Filter by genus — applies on change"
+          onchange="this.form.submit()">
+    <option value="" data-en="All genera">속 전체</option>
+    {% for g in genera %}
+      <option value="{{ g.genus }}"{% if g.genus|lower == genus|lower and genus %} selected{% endif %}>{{ g.genus }} ({{ g.n }})</option>
+    {% endfor %}
+  </select>
   <button type="submit" data-en="Search">찾는다</button>
-  {% if searched %}<a class="chip" href="{% url 'atlas' %}" data-en="Clear">지운다</a>{% endif %}
+  {% if searched %}<a class="chip" href="{% url 'atlas' %}{% if area %}?area={{ area }}{% endif %}" data-en="Clear">지운다</a>{% endif %}
 </form>
+<script>
+(function () {
+  // 자동완성 (196). `catalog.html` 의 `suggest()` 와 같은 문·같은 문턱이다.
+  var SUGGEST = "{% url 'atlas_suggest' %}";
+  var SCOPE = {atlas: "{{ atlas_key|escapejs }}", area: "{{ area|escapejs }}"};
+  var inp = document.getElementById('atlas-q');
+  var dl = document.getElementById('atlas-suggest');
+  if (!inp || !dl) return;
+  var timer = null, last = '';
+  function ask() {
+    var q = inp.value.trim();
+    // 두 글자부터 — 서버도 같은 문턱이라 여기서 안 막으면 그 요청이 헛간다
+    if (q.length < 2 || q === last) return;
+    last = q;
+    var url = SUGGEST + '?q=' + encodeURIComponent(q)
+            + (SCOPE.atlas ? '&atlas=' + encodeURIComponent(SCOPE.atlas) : '')
+            + (SCOPE.area ? '&area=' + encodeURIComponent(SCOPE.area) : '');
+    fetch(url, {credentials: 'same-origin'})
+      .then(function (r) { return r.json(); })
+      .then(function (j) {
+        // 답이 늦게 와서 지금 친 글자와 어긋나면 버린다 — 옛 목록이 덮는다
+        if (inp.value.trim() !== q) return;
+        dl.textContent = '';
+        ((j && j.rows) || []).forEach(function (row) {
+          var o = document.createElement('option');
+          o.value = row.value;
+          // **"확정" 이라고 말하지 않는다** (119). 표시가 있는 쪽만 말한다.
+          o.label = row.atlases.join(' · ') + (row.genus_guess ? ' · 속명 추정' : '');
+          dl.appendChild(o);
+        });
+      })
+      .catch(function () { /* 자동완성은 거드는 것이라 조용히 지나간다 */ });
+  }
+  inp.addEventListener('input', function () {
+    if (timer) clearTimeout(timer);
+    timer = setTimeout(ask, 160);
+  });
+})();
+</script>
 
 {% comment %}
   **거르개 주소는 뷰가 만든다** (`_atlas_chips` · 141). 셋(`q`·`atlas`·`genus`)이
   서로 살아남아야 하는데 여기서 이어 붙이면 자리마다 빠뜨리는 것이 달라진다 —
   실제로 도감 칩이 속을 떨어뜨리고 있었다.
 {% endcomment %}
+{% comment %}
+  **권역이 먼저, 도감이 그 안이다** (196). 권역 칩은 도감을 떼고 도감 칩은
+  권역을 들고 간다 — 주소는 뷰(`_atlas_chips`)가 만든다. "전체" 와 "전역" 이
+  닮아 권역 쪽은 "모든 권역" 이라 적는다.
+{% endcomment %}
+<div class="atlaschips">
+  <span class="dim" data-en="Area">권역</span>
+  <a class="chip{% if not area %} on{% endif %}" href="{{ area_all_url }}" data-en="All areas">모든 권역</a>
+  {% for c in area_chips %}
+    <a class="chip{% if c.on %} on{% endif %}" href="{{ c.url }}">{{ c.label }}</a>
+  {% endfor %}
+</div>
+{% if area_unknown %}
+  <p class="warn"><span data-en="Unknown area code: ">모르는 권역입니다: </span><code>{{ area }}</code>
+    <span data-en=" — nothing is filtered. Pick one above.">— 아무것도 안 걸립니다. 위에서 고르세요.</span></p>
+{% endif %}
 <div class="atlaschips">
   <span class="dim" data-en="Atlas">도감</span>
   <a class="chip{% if not atlas_key %} on{% endif %}" href="{{ atlas_all_url }}" data-en="All">전체</a>
@@ -98,20 +185,6 @@
        title="{{ b.title }}">{{ b.short }} <span class="dim">{{ b.count }}</span></a>
   {% endfor %}
 </div>
-
-{% if genus %}
-  {% comment %}
-    **걸린 속을 하나만 뺄 수 있어야 한다.** 예전에는 "지운다" 뿐이라 속을
-    빼려면 검색어까지 같이 날아갔다 — 좁혀 놓고 넓히려던 사람이 처음부터
-    다시 친다.
-  {% endcomment %}
-  <div class="atlaschips">
-    <span class="dim" data-en="Genus">속</span>
-    <span class="chip on">{{ genus }}</span>
-    <a class="chip" href="{{ genus_clear_url }}" title="속으로 거르는 것만 뺀다"
-       data-en-title="Clear genus filter only" data-en="Clear genus filter">속 거르개를 뺀다</a>
-  </div>
-{% endif %}
 
 {% if searched %}
   {% comment %}
@@ -344,14 +417,6 @@
   })();
   </script>
 {% else %}
-  <div class="atlaschips">
-    <span class="dim" data-en="Genus">속</span>
-    {% for g in genus_chips|slice:":24" %}
-      <a class="chip{% if g.on %} on{% endif %}" href="{{ g.url }}">{{ g.genus }}
-        <span class="dim">{{ g.n }}</span></a>
-    {% endfor %}
-  </div>
-
   <h2 class="platehead" data-en="Plates">도판</h2>
 {% endif %}
 
@@ -367,58 +432,66 @@
 
 {% if not searched %}
   {% comment %}
-    **다권 도감(korean·schmidt)과 논문 도판집을 가른다** (08-31). 열다섯
-    건이 전부 같은 `.atlasrow` 무게로 줄을 서면, 표지·권 없이 도판만 뗀
-    논문 열셋이 진짜 도감 둘을 밀어낸다. 가르는 기준은 파일이나 DB 에
-    없는 사람의 판단이라 `views.atlas_index` 의 `_BOOK_ATLAS_CODES` 에
-    못 박아 뒀다 — 여기서는 이미 갈라 받은 두 목록을 그대로 편다.
+    **권역별로 묶는다** (196). 안에서는 다권 도감(korean·schmidt)과 논문
+    도판집을 계속 가른다(08-31) — 열다섯 건이 전부 같은 `.atlasrow` 무게로
+    줄을 서면 표지·권 없이 도판만 뗀 논문 열셋이 진짜 도감 둘을 밀어낸다.
+    권역도 책/논문도 파일·DB 에 없는 사람의 판단이라 코드에 못 박혀 있다
+    (`atlas.AREA_OF` · `views._BOOK_ATLAS_CODES`) — 여기서는 갈라 받은
+    것을 그대로 편다. 권역을 골랐으면 그 묶음 하나만 온다.
   {% endcomment %}
-  {% for a in book_atlases %}
-    <div class="atlasrow">
-      <div class="cover">
-        {% if a.cover_rel %}
-          <a href="{% url 'atlas_volume' a.code a.volumes.0.code %}">
-            <img loading="lazy" src="{% thumb a.cover_rel 300 %}" alt="{{ a.label }} 표지">
-          </a>
-        {% else %}<div class="nocover" data-en="Not rendered yet">아직 안 떴다</div>{% endif %}
-      </div>
-      <div class="body">
-        <h2>{{ a.label }}</h2>
-        <div class="dim">{{ a.rendered }}쪽{% if a.partial %} / 원본 {{ a.pages }}쪽{% endif %}</div>
-        <div class="vols">
-          {% for v in a.volumes %}
-            <a class="chip" href="{% url 'atlas_volume' a.code v.code %}">{{ v.label }}
-              <span class="dim">{{ v.rendered }}쪽</span></a>
-          {% endfor %}
+  {% for grp in area_groups %}
+    <h2 class="areahead">{{ grp.label }}
+      <span class="dim">{% if grp.books %}{{ grp.books|length }}권{% endif %}{% if grp.books and grp.papers %} · {% endif %}{% if grp.papers %}논문 {{ grp.papers|length }}편{% endif %}</span></h2>
+    {% for a in grp.books %}
+      <div class="atlasrow">
+        <div class="cover">
+          {% if a.cover_rel %}
+            <a href="{% url 'atlas_volume' a.code a.volumes.0.code %}">
+              <img loading="lazy" src="{% thumb a.cover_rel 300 %}" alt="{{ a.label }} 표지">
+            </a>
+          {% else %}<div class="nocover" data-en="Not rendered yet">아직 안 떴다</div>{% endif %}
+        </div>
+        <div class="body">
+          <h2>{{ a.label }}</h2>
+          <div class="dim">{{ a.rendered }}쪽{% if a.partial %} / 원본 {{ a.pages }}쪽{% endif %}</div>
+          <div class="vols">
+            {% for v in a.volumes %}
+              <a class="chip" href="{% url 'atlas_volume' a.code v.code %}">{{ v.label }}
+                <span class="dim">{{ v.rendered }}쪽</span></a>
+            {% endfor %}
+          </div>
         </div>
       </div>
-    </div>
+    {% endfor %}
+    {% if grp.papers %}
+      <div class="papergrid">
+        {% for a in grp.papers %}
+          <a class="papercard" href="{% url 'atlas_volume' a.code a.volumes.0.code %}">
+            <div class="cover">
+              {% if a.cover_rel %}
+                <img loading="lazy" src="{% thumb a.cover_rel 200 %}" alt="{{ a.label }} 표지">
+              {% else %}<div class="nocover" data-en="Not rendered yet">아직 안 떴다</div>{% endif %}
+            </div>
+            <div class="label">{{ a.label }}</div>
+            <div class="dim">{{ a.rendered }}쪽{% if a.partial %} / 원본 {{ a.pages }}쪽{% endif %}</div>
+          </a>
+        {% endfor %}
+      </div>
+    {% endif %}
   {% empty %}
     {% comment %}
       **"없다" 와 "아직 안 구웠다" 는 다른 말이다** (P15 §8.4 와 같은 줄).
-      빈 화면을 내면 사람이 도감이 없다고 읽는다.
+      빈 화면을 내면 사람이 도감이 없다고 읽는다. 권역을 골라서 빈 것이면
+      그렇게 말한다.
     {% endcomment %}
+    {% if area %}
+      <p class="warn"><span data-en="No atlas in this area.">이 권역에 도감이 없습니다.</span></p>
+    {% else %}
     <p class="warn"><span data-en="No plates have been rendered yet.">도판이 아직 하나도 안 떠 있습니다.</span>
       <span data-en="Run ">호스트에서 </span><code>python tools/render_atlas_pages.py</code><span
       data-en=" on the host to generate them (the container can't see the original PDFs on the NAS share).">를 돌리면 생깁니다
       (원본 PDF 는 NAS 공유에 있고 컨테이너는 그것을 못 봅니다).</span></p>
+    {% endif %}
   {% endfor %}
-
-  {% if paper_atlases %}
-    <h2 class="paperhead" data-en="Paper plate collections">논문 도판집</h2>
-    <div class="papergrid">
-      {% for a in paper_atlases %}
-        <a class="papercard" href="{% url 'atlas_volume' a.code a.volumes.0.code %}">
-          <div class="cover">
-            {% if a.cover_rel %}
-              <img loading="lazy" src="{% thumb a.cover_rel 200 %}" alt="{{ a.label }} 표지">
-            {% else %}<div class="nocover" data-en="Not rendered yet">아직 안 떴다</div>{% endif %}
-          </div>
-          <div class="label">{{ a.label }}</div>
-          <div class="dim">{{ a.rendered }}쪽{% if a.partial %} / 원본 {{ a.pages }}쪽{% endif %}</div>
-        </a>
-      {% endfor %}
-    </div>
-  {% endif %}
 {% endif %}
 {% endblock %}
