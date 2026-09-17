@@ -23,6 +23,37 @@
 
 ## 뷰어
 
+### `v0.27.0` — 09-17 (마이그레이션 `0044` · 더하기만)
+
+**새 슬라이드가 들어오면 KPDC 에서 코어 메타데이터를 긁어 지점에 얹는다**
+([197](devlog/20260917_197_kpdc-core-metadata.md))
+
+폴더 이름으로 방금 만든 지점은 코드뿐이라 좌표·수심·채취일이 비어 있었다 —
+뷰어의 코어 10개가 전부 KPDC(극지 데이터 센터)에 공개 항목으로 있어 거기서
+읽어 온다. 폴러가 그룹핑 직후 `fetch_kpdc.py --slide` 를 부른다.
+
+- **빈 칸만 채운다** — `lat`·`lon`·`water_depth_m`·`collected_at`·`collect_kind`.
+  사람이 넣은 값은 안 덮는다(`WAP13-GC47` 은 DB 와 KPDC 좌표가 실제로 다르다).
+  다각형 좌표·기간 범위 채취일은 짐작해서 안 채운다
+- **`Locality.kpdc_id`·`kpdc_meta`** — Entry ID 와 페이지에 노출된 것 전부
+  (제목·요약·담당자·과제·첨부 목록·판 이력). 지점 카드에 DOI 링크·길이·
+  첨부 줄(`받아 둠 · 요청 필요`)이 뜬다
+- **`Download` 인 첨부는 받아 둔다** (`/data3/DiaRUGA/coredata/kpdc/<지점>/`).
+  대개 "Request required" 라 목록만 적힌다. 받았다고 반입되는 것은 아니다 —
+  매핑표를 적고 P17 로 넣는다. `GC03-C1` 의 규조 각 원소 농도 xlsx 를 그렇게
+  운영에 넣었다(항목 72 · 점 2,016 · 추출기에 `depth_prefix`)
+- 실패해도 폴러는 안 멈춘다. 사내 DNS 가 호스트를 몰라 IP 로 붙는다
+  (`DIARUGA_KPDC_IP`)
+- **배포 뒤 `dbrun.sh fetch_kpdc.py --missing`** 으로 빈 지점 7개를 채운다
+
+**파이프라인이 DB 를 만지기 전에 스키마를 대조하고, 검출 저장이 죽으면 남긴
+것을 거둔다** ([198](devlog/20260917_198_pipeline-schema-drift.md)) — 저장소
+쪽(`pipeline/schema_guard.py` · `save_detection` 의 거두기 · `migrate/
+prune_failed_runs.py` · 시험 9개). 운영은 파이프라인 `v0.5.3` 으로 09-17 에
+이미 손봤다(아래 파이프라인 절).
+
+시험 `test_kpdc.py` 13개 · `test_core_profiles` 1개 · 198 의 9개.
+
 ### `v0.26.0` — 09-15 (마이그레이션 없음)
 
 **도감 화면을 권역으로 가르고, 속을 목록으로, 검색창에 자동완성을 단다**
