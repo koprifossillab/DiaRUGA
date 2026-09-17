@@ -30,8 +30,8 @@
 
 **첨부는 하나만 빼고 전부 "Request required"** 다 — 코어 사진·X-ray·물성
 xlsx(함수율·TC·TN·TIC·대자율, RS23 은 Opal·XRF 까지)·연대 pdf. 로그인과 공개
-요청을 거쳐야 받는다. `GC03-C1` 의 xlsx 하나만 `Download` 다. 받는 것은 이번
-범위 밖이고, 받으면 P17 절차(`ops/import_coredata.py`)로 반입한다.
+요청을 거쳐야 받는다. `GC03-C1` 의 xlsx 하나만 `Download` 다 — **그것은
+받는다** (7절). 요청이 필요한 것은 목록만 적어 둔다.
 
 **DB 와 어긋난 것 하나** — `WAP13-GC47` 의 좌표가 DB(`-65.3676, -64.455`, 사람이
 넣은 것)와 KPDC(`-65.6128, -64.7584`)가 다르다. KPDC 쪽은 코어 항목이 아니라
@@ -102,15 +102,14 @@ SNI·Host 헤더는 이름으로 준다** (`http.client.HTTPSConnection` 을 한
 판을 올린 **뒤에** 스크립트를 `/srv` 로 민다 — 먼저 밀면 칼럼이 없어 폴러
 로그에 실패 줄만 쌓인다.
 
-**파이프라인 이미지도 같이 굽는다.** `0044` 는 더하기뿐이라 옛 이미지의
-INSERT 는 그대로 돌지만, 같은 날 옆 세션이 넣은 `schema_guard`(198)가
-**마이그레이션 장부와 이미지가 다르면 파이프라인을 세운다** — 09-15 에 옛
-`models.py` 로 검출 저장이 4,200번 실패한 사고의 답이라 예외를 두지 않는다.
-뷰어만 올리면 다음 새 슬라이드의 검출이 안 돈다.
+**파이프라인 이미지는 안 굽는다.** `0044` 는 더하기뿐이라 옛 이미지의 모델은
+그 칼럼을 모르고(SELECT 도 안 한다) INSERT 는 `db_default` 가 받는다. 같은 날
+옆 세션이 넣은 `schema_guard`(198)도 **이미지의 모델이 아는 칼럼·테이블이 DB
+에 있는가**를 보지 마이그레이션 번호를 대조하지 않는다 — 칼럼을 걷거나
+옮기는 판만 파이프라인을 같이 굽는다(그때는 guard 가 세운다).
 
 ```bash
 /srv/DiaRUGA/bin/deploy.sh v0.27.0            # 0044 가 붙는다
-# 파이프라인 이미지를 같은 커밋으로 굽고 .env 의 PIPELINE_TAG 를 올린다 (198)
 deploy/host/sync_to_srv.sh                    # poll_nas.sh
 deploy/host/dbsync.sh fetch_kpdc.py
 deploy/host/dbrun.sh  fetch_kpdc.py --missing --dry-run
@@ -132,4 +131,48 @@ deploy/host/dbrun.sh  fetch_kpdc.py --missing # 빈 지점 7개를 채운다
   그룹 쓰기가 없어(140 3절) 사람마다 되고 안 되고가 갈리고, 백업이 안 나른다
 - **매분 `--missing` 을 도는 것** — 컨테이너 하나가 더 뜬다. 새 슬라이드가
   드문 일이라 그때 한 번이면 되고, 남은 것은 손으로
-- **첨부 받기** — 하나 빼고 전부 요청이 필요하다. 받으면 P17 로 간다
+- **요청이 필요한 첨부까지 받는 것** — 로그인·공개 요청이 필요하다. 받으면
+  `Download` 인 것과 같은 자리에 두고 P17 로 간다
+
+## 7. 내려받을 수 있는 것은 받는다 — `GC03-C1` 을 P17 로 반입했다
+
+사용자가 이어서 청했다 — "Download 되는 xlsx 도 받아서 P17 로 반입해 줘.
+다운 되는 것은 다운 받는다고도 적고."
+
+**화면의 「Download」 버튼이 하는 것을 그대로 한다.** 첨부 행의
+`data-file-id` 로 `POST /rawdata/<id>/` 에 용도(`purpose`)를 실으면 302 로
+일회용 주소가 오고 그것을 GET 하면 파일이다. 쿠키도 로그인도 없다. 두 번
+헛짚었다:
+
+- **Referer 가 항목 페이지가 아니면 POST 자체가 500** 이다
+- **302 를 POST 로 따라가면 400** 이다 — `curl -X POST -L` 이 그렇게 한다
+  (`-X` 가 리다이렉트에도 메서드를 강제한다). 헤드리스 브라우저로 실제
+  흐름을 잡아 보고 나서야 알았다. `_request()` 는 리다이렉트를 **GET 으로**
+  따라간다
+
+`fetch_kpdc.py` 가 `Download` 인 첨부를 `<DATA_ROOT>/coredata/kpdc/<지역>-
+<지점>/` 에 받고 `kpdc_meta.files[].saved` 에 자리를 적는다(`--no-download`
+로 끈다). 이미 같은 크기로 있으면 다시 안 받는다. **첨부 하나를 못 받아도
+메타데이터는 저장한다.** 지점 카드의 첨부 줄이 `첨부 14개 · 받아 둠 1 ·
+요청 필요 13` 처럼 갈린다.
+
+**받았다고 반입되는 것은 아니다.** 어느 열이 무엇이고 깊이 단위가 무엇인지는
+P17 의 규칙대로 사람이 `coredata/mapping.toml` 에 적는다. `GC03-C1` 은 이렇게
+갔다:
+
+- xlsx 는 논문 *Incorporation of Multi-elements into Diatom Frustules in the
+  Scotia Sea* 의 자료 — **규조 각 속 원소 농도**(µg/kg) 71개 + 연대(ka).
+  시트 하나, 깊이 칸이 `GC03-C1 14` 꼴이라 추출기에 `depth_prefix` 를
+  더했다(적힌 접두사만 뗀다 — 아무 글자나 벗기면 `LOD` 줄이 숫자로 읽힌다).
+  3행 `LOD` 는 깊이 칸이 비어 저절로 빠진다. 음수는 LOD 아래 — 원본 그대로
+- 원본은 NAS `coredata/` 에 같은 이름으로 복사했다(P17 의 원본 자리).
+  중간 CSV 는 `/data3/DiaRUGA/tmp/coredata/`(전체)와 `tmp/coredata-gc03/`
+  (이번 반입분)
+- 사본 DB 로 먼저 돌려 화면(`/loc/GC03/C1/`)이 200 인 것을 보고, 운영에는
+  `backup_db.py --note before-gc03-coredata` 를 뜬 뒤 `dbrun.sh
+  import_coredata.py --dir /data3/DiaRUGA/tmp/coredata-gc03` — **항목 72 ·
+  점 2,016** · `check_db` OK · 화면 200 (09-17 15:07)
+
+**`kpdc_id`·`kpdc_meta` 는 아직 운영에 없다** — `0044` 가 든 판을 배포한 뒤
+`fetch_kpdc.py --missing` 이 채운다(5절). 그때 `GC03-C1` 의 xlsx 를 다시
+받는다 — 같은 크기라 파일은 그대로고 `saved` 만 적힌다.

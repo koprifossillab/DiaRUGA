@@ -15,6 +15,12 @@
 `viewer/kpdc.py` 머리말. `--force` 도 그 규칙 안에서 다시 긁는 것이다(KPDC 쪽
 항목이 갱신됐을 때 `kpdc_meta` 를 새로 받는 용도).
 
+**내려받을 수 있는 첨부는 받아 둔다.** 대개 "Request required"(로그인·공개
+요청)라 목록만 적히지만, `Download` 인 것은 `<DATA_ROOT>/coredata/kpdc/<지역>-
+<지점>/` 에 받고 `kpdc_meta.files[].saved` 에 자리를 적는다(`--no-download`
+로 끈다). **받았다고 반입되는 것은 아니다** — 어느 열이 무엇인지는 사람이
+`coredata/mapping.toml` 에 적고 P17 절차로 넣는다.
+
 `dbtool` 문으로 돈다 — 뷰어 이미지라 Django 가 있고 torch 가 없다.
 """
 import argparse
@@ -32,6 +38,8 @@ sys.path.insert(0, str(APP / "web"))
 sys.path.append(str(APP))
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "diarugaweb.settings")
 django.setup()
+
+from django.conf import settings                                    # noqa: E402
 
 from viewer import kpdc                                             # noqa: E402
 from viewer.models import Locality, Slide                           # noqa: E402
@@ -78,7 +86,12 @@ def main():
     ap.add_argument("--force", action="store_true",
                     help="이미 kpdc_id 가 있어도 다시 긁는다")
     ap.add_argument("--dry-run", action="store_true", help="쓰지 않는다")
+    ap.add_argument("--no-download", action="store_true",
+                    help="Download 상태인 첨부를 받지 않는다")
+    ap.add_argument("--save-dir", default=None,
+                    help="첨부를 받아 둘 자리 (기본 <DATA_ROOT>/coredata/kpdc)")
     args = ap.parse_args()
+    save_root = Path(args.save_dir or settings.DATA_ROOT / "coredata" / "kpdc")
 
     n_ok = n_skip = n_none = n_fail = 0
     for loc in _targets(args):
@@ -97,10 +110,20 @@ def main():
             print(f"  {name}: KPDC 에 항목이 없다")
             n_none += 1
             continue
+        got = []
+        n_dl = sum(1 for f in meta["files"] if f.get("status") == "Download")
+        if n_dl and not args.no_download and not args.dry_run:
+            try:
+                got = kpdc.save_downloads(meta, save_root / name)
+            except (kpdc.KpdcError, OSError) as e:
+                # 메타데이터는 이미 손에 있다 — 첨부 하나 때문에 버리지 않는다
+                print(f"  {name}: 첨부를 못 받았다 — {e}")
         changed = kpdc.apply(loc, meta)
         filled = [c for c in changed if not c.startswith("kpdc_")]
         print(f"  {name}: {meta['entry_id']} · {meta['title']}"
               f" · 첨부 {len(meta['files'])}개"
+              + (f" (내려받을 수 있는 것 {n_dl})" if n_dl else "")
+              + (f" · 받음 {', '.join(got)}" if got else "")
               + (f" · 채움 {', '.join(filled)}" if filled else " · 채울 빈 칸 없음")
               + (" (dry-run)" if args.dry_run else ""))
         if not args.dry_run:

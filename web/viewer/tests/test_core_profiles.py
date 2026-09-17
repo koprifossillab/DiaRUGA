@@ -262,6 +262,16 @@ class ExtractTest(DiaRUGATestCase):
             "columns": [[2, "v", "V", ""]]})
         self.assertEqual(got["v"], {0: 1.0, 20: 3.0})
 
+    def test_깊이_접두사는_적힌_것만_뗀다(self):
+        """KPDC 의 `GC03-C1` xlsx 가 깊이 칸에 `GC03-C1 14` 를 든다 (197). `LOD`
+        같은 머리 줄은 접두사가 아니라 숫자로 안 읽힌다."""
+        ws = _FakeSheet([("Core & Depth", "v"), (None, 20), ("LOD", 5),
+                         ("GC03-C1 0", 1.0), ("GC03-C1 14", 2.0), ("X 30", 3.0)])
+        got = self.mod.read_block(ws, {
+            "sheet": "S", "header_row": 1, "depth_col": 1, "depth_unit": "cm",
+            "depth_prefix": "GC03-C1 ", "columns": [[2, "v", "V", ""]]})
+        self.assertEqual(got["v"], {0: 1.0, 140: 2.0})
+
     def test_같은_깊이_같은_값은_한_번만_들어간다(self):
         """`RS14-GC04` 의 `MS` 가 221~260 cm 40점을 값까지 똑같이 겹쳐 들고 있다."""
         ws = _FakeSheet([("깊이", "값"), (0, 1.0), (1, 2.0), (0, 1.0)])

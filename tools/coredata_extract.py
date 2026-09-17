@@ -67,11 +67,18 @@ def read_block(ws, blk: dict) -> dict[str, dict[int, float]]:
     같은 머리글을 반복해서 이름으로 짚으면 뒤엣것이 앞엣것을 덮는다.
     """
     dcol, dunit = blk["depth_col"], blk["depth_unit"]
+    # 깊이 칸이 `GC03-C1 14` 처럼 코어 이름을 앞에 달고 있는 파일이 있다
+    # (KPDC 의 `GC03-C1`, 197). **적힌 접두사만 뗀다** — 아무 글자나 벗기면
+    # `LOD`·`Unit` 같은 머리 줄이 숫자로 읽힐 수 있다.
+    prefix = blk.get("depth_prefix", "")
     cols = [(int(c[0]), c[1]) for c in blk["columns"]]
     out: dict[str, dict[int, float]] = {k: {} for _, k in cols}
     same, clash = 0, []
     for row in ws.iter_rows(min_row=blk["header_row"] + 1, values_only=True):
-        depth = _num(row[dcol - 1]) if len(row) >= dcol else None
+        raw = row[dcol - 1] if len(row) >= dcol else None
+        if prefix and isinstance(raw, str):
+            raw = raw[len(prefix):] if raw.startswith(prefix) else None
+        depth = _num(raw)
         if depth is None:
             continue
         mm = _to_mm(depth, dunit)

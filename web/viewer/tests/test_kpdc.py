@@ -56,7 +56,7 @@ class ParseTest(DiaRUGATestCase):
         self.assertEqual(d["files"][0], {
             "category": "Rawdata", "name": "RS21-GC02_(0-119).jpg",
             "description": "Core photograph", "bytes": 2284489,
-            "status": "Request required"})
+            "status": "Request required", "file_id": ""})
         self.assertTrue(all(f["status"] == "Request required" for f in d["files"]))
         self.assertEqual([v["version"] for v in d["versions"]], [5, 4, 3, 2, 1])
         # 지도 레이어 목록도 <dl> 이라 걸러야 한다
@@ -87,6 +87,63 @@ class ParseTest(DiaRUGATestCase):
         self.assertEqual(kpdc.pick_hit(hits, "rs21-gc03b")["entry_id"],
                          "KOPRI-KPDC-00001835")
         self.assertIsNone(kpdc.pick_hit(hits, "AM22-GC10B"))
+
+
+_DL_ROW = """
+<tr class="files file selectable" data-file-id="913b08bc-add9-442d-affa-c677e4b69fee">
+  <td class="file-category">Analysis Data</td>
+  <td><span class="file-name">Downcore element concnetration_GC03-C1.xlsx</span></td>
+  <td class="file-description"></td>
+  <td class="file-size"><span class="file-size" title="51008">51.01 Kb</span></td>
+  <td class="file-status">Download</td>
+</tr>
+"""
+
+
+class DownloadTest(DiaRUGATestCase):
+    """`Download` 인 첨부만 받고, 받은 자리를 meta 에 적는다. 네트워크는 흉내
+    낸다 — `download()` 를 갈아 끼운다."""
+
+    def test_file_id_only_on_downloadable(self):
+        d = kpdc.parse_detail(_PAGE.replace("<tbody>", "<tbody>" + _DL_ROW, 1))
+        self.assertEqual(len(d["files"]), 14)
+        self.assertEqual(d["files"][0]["status"], "Download")
+        self.assertEqual(d["files"][0]["file_id"],
+                         "913b08bc-add9-442d-affa-c677e4b69fee")
+        self.assertTrue(all(f["file_id"] == "" for f in d["files"][1:]))
+
+    def test_save_downloads(self):
+        import tempfile
+        from unittest import mock
+        d = kpdc.parse_detail(_PAGE.replace("<tbody>", "<tbody>" + _DL_ROW, 1))
+        d["path"] = "/search/af2e48a7-17da-4735-82ae-59856a45b4b7"
+        calls = []
+
+        def fake(file_id, referer, *, purpose="x", timeout=0):
+            calls.append((file_id, referer))
+            return "Downcore element concnetration_GC03-C1.xlsx", b"x" * 51008
+
+        with tempfile.TemporaryDirectory() as td, \
+                mock.patch.object(kpdc, "download", fake):
+            got = kpdc.save_downloads(d, td)
+            self.assertEqual(got, ["Downcore element concnetration_GC03-C1.xlsx"])
+            # Request required 는 안 부른다 · Referer 는 항목 페이지다
+            self.assertEqual(calls, [("913b08bc-add9-442d-affa-c677e4b69fee",
+                                      "/search/af2e48a7-17da-4735-82ae-59856a45b4b7")])
+            self.assertTrue(d["files"][0]["saved"].endswith("GC03-C1.xlsx"))
+            self.assertNotIn("saved", d["files"][1])
+            # 같은 크기로 이미 있으면 다시 안 받는다
+            got2 = kpdc.save_downloads(d, td)
+            self.assertEqual(got2, [])
+            self.assertEqual(len(calls), 1)
+        self.assertEqual(kpdc.files_note(d), "첨부 14개 · 받아 둠 1 · 요청 필요 13")
+
+    def test_files_note(self):
+        self.assertEqual(kpdc.files_note(None), "")
+        d = kpdc.parse_detail(_PAGE)
+        self.assertEqual(kpdc.files_note(d), "첨부 13개 · 요청 필요 13")
+        d = kpdc.parse_detail(_PAGE.replace("<tbody>", "<tbody>" + _DL_ROW, 1))
+        self.assertEqual(kpdc.files_note(d), "첨부 14개 · 내려받을 수 있음 1 · 요청 필요 13")
 
 
 class ApplyTest(DiaRUGATestCase):
@@ -206,5 +263,5 @@ class PageTest(DiaRUGATestCase):
         r = self.client.get(url)
         body = r.content.decode()
         self.assertIn('href="https://doi.org/10.22663/KOPRI-KPDC-00001836"', body)
-        self.assertIn("첨부 13개", body)
+        self.assertIn("첨부 13개 · 요청 필요 13", body)
         self.assertIn("길이 2.17 m", body)

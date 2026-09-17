@@ -19,9 +19,11 @@
 
 ## 페이지에 노출된 것만 읽는다
 
-첨부 파일(코어 사진·X-ray·물성 xlsx)은 전부 "Request required" 라 로그인과
-공개 요청을 거쳐야 받는다 — 여기서는 **목록만** 적어 둔다(무엇이 몇 개
-있는지). 받은 것을 반입하는 것은 P17 절차(`ops/import_coredata.py`)다.
+첨부 파일(코어 사진·X-ray·물성 xlsx)은 거의 다 "Request required" 라 로그인과
+공개 요청을 거쳐야 받는다 — 그것은 **목록만** 적어 둔다(무엇이 몇 개 있는지).
+`Download` 인 것은 `save_downloads()` 가 받아 둔다(`GC03-C1` 의 xlsx 하나가
+그렇다). **받았다고 반입되는 것은 아니다** — 어느 열이 무엇인지는 사람이
+`coredata/mapping.toml` 에 적고 P17 절차(`ops/import_coredata.py`)로 넣는다.
 
 ## 사내 DNS 가 이 호스트를 모른다
 
@@ -92,38 +94,75 @@ def fetch(path: str, *, timeout: int = TIMEOUT, retries: int = 1) -> str:
     `--missing` 에 남는 것보다 싸다."""
     for attempt in range(retries + 1):
         try:
-            return _fetch(path, timeout=timeout)
+            _, _, body = _request("GET", path, timeout=timeout)
+            return body.decode("utf-8", "replace")
         except KpdcError as e:
             if attempt >= retries or "timed out" not in str(e):
                 raise
     raise AssertionError("unreachable")
 
 
-def _fetch(path: str, *, timeout: int, _hops: int = 0) -> str:
+def download(file_id: str, referer_path: str, *, purpose: str = "DiaRUGA",
+             timeout: int = 120) -> tuple[str, bytes]:
+    """상태가 `Download` 인 첨부 하나를 받는다 → (파일 이름, 내용).
+
+    화면의 「Download」 버튼이 하는 것을 그대로 한다 — `POST /rawdata/<id>/` 에
+    용도(`purpose`)를 실으면 302 로 일회용 주소를 주고 그것을 GET 하면 파일이다.
+    **Referer 가 항목 페이지가 아니면 500** 이고, **302 를 POST 로 따라가면
+    400** 이다(curl `-X POST -L` 이 그렇게 한다 — 실측). 쿠키·로그인은 없다.
+    """
+    body = urllib.parse.urlencode({"purpose": purpose}).encode()
+    hdr = {"Referer": f"https://{HOST}{referer_path}",
+           "Content-Type": "application/x-www-form-urlencoded"}
+    _, headers, data = _request("POST", f"/rawdata/{file_id}/", body=body,
+                                headers=hdr, timeout=timeout)
+    cd = headers.get("Content-Disposition") or ""
+    m = re.search(r"filename\*=UTF-?8''([^;]+)", cd, re.I)
+    name = urllib.parse.unquote(m.group(1)) if m else ""
+    if not name:
+        m = re.search(r'filename="?([^";]+)', cd)
+        name = m.group(1) if m else ""
+    if not name or data[:6] == b"<html>" or data.lstrip()[:9].lower() == b"<!doctype":
+        raise KpdcError(f"첨부가 아니라 HTML 이 왔다: /rawdata/{file_id}/")
+    return name, data
+
+
+def _connect(timeout: int):
     ctx = ssl.create_default_context()
     if _resolves(HOST):
-        conn = http.client.HTTPSConnection(HOST, timeout=timeout, context=ctx)
-    else:
-        conn = _Conn(FALLBACK_IP, HOST, timeout=timeout, context=ctx)
+        return http.client.HTTPSConnection(HOST, timeout=timeout, context=ctx)
+    return _Conn(FALLBACK_IP, HOST, timeout=timeout, context=ctx)
+
+
+def _request(method: str, path: str, *, body: bytes | None = None,
+             headers: dict | None = None, timeout: int = TIMEOUT,
+             _hops: int = 0) -> tuple[int, dict, bytes]:
+    """한 번의 요청. 리다이렉트는 **GET 으로** 따라간다 — 브라우저가 그렇게
+    하고 KPDC 의 내려받기 주소가 그것을 전제한다."""
+    conn = _connect(timeout)
     try:
-        conn.request("GET", path, headers={"Host": HOST,
-                                           "User-Agent": "DiaRUGA/kpdc"})
+        h = {"Host": HOST, "User-Agent": "DiaRUGA/kpdc"}
+        h.update(headers or {})
+        conn.request(method, path, body=body, headers=h)
         r = conn.getresponse()
-        body = r.read()
+        data = r.read()
+        hdrs = {k: v for k, v in r.getheaders()}
         if r.status in (301, 302, 303, 307, 308):
             loc = r.getheader("Location") or ""
             u = urllib.parse.urlsplit(loc)
             if _hops >= 3 or (u.netloc and u.netloc != HOST):
                 raise KpdcError(f"redirect 를 못 따라간다: {loc}")
             nxt = urllib.parse.urlunsplit(("", "", u.path, u.query, ""))
-            return _fetch(nxt, timeout=timeout, _hops=_hops + 1)
+            keep = {k: v for k, v in (headers or {}).items() if k == "Referer"}
+            return _request("GET", nxt, headers=keep, timeout=timeout,
+                            _hops=_hops + 1)
         if r.status != 200:
             raise KpdcError(f"HTTP {r.status} {path}")
     except (OSError, http.client.HTTPException) as e:
         raise KpdcError(f"{HOST} 에 닿지 못했다: {e}") from e
     finally:
         conn.close()
-    return body.decode("utf-8", "replace")
+    return r.status, hdrs, data
 
 
 # ── 파서 ──────────────────────────────────────────────────────────────────
@@ -198,8 +237,9 @@ def parse_detail(page: str) -> dict:
         if d["coverage"] == "POINT" and len(d["points"]) == 1:
             d["lat"], d["lon"] = d["points"][0]
 
-    for m in re.finditer(r'<tr class="files[^"]*"[^>]*>(.*?)</tr>', page, re.S):
-        row = m.group(1)
+    for m in re.finditer(r'<tr class="files[^"]*"([^>]*)>(.*?)</tr>', page, re.S):
+        attrs, row = m.group(1), m.group(2)
+        fid = re.search(r'data-file-id="([0-9a-f-]{36})"', attrs)
         cat = re.search(r'class="file-category">(.*?)</td>', row, re.S)
         name = re.search(r'class="file-name">(.*?)</span>', row, re.S)
         desc = re.search(r'class="file-description">(.*?)</td>', row, re.S)
@@ -210,7 +250,9 @@ def parse_detail(page: str) -> dict:
             "name": _text(name.group(1)) if name else "",
             "description": _text(desc.group(1)) if desc else "",
             "bytes": int(size.group(1)) if size else None,
-            "status": _text(status.group(1)) if status else ""})
+            "status": _text(status.group(1)) if status else "",
+            # 내려받을 수 있는 것(`Download`)만 id 가 붙어 있다
+            "file_id": fid.group(1) if fid else ""})
 
     m = re.search(r'<span class="count">([\d,]+)</span>\s*Views', page)
     if m:
@@ -254,10 +296,39 @@ def scrape(core: str) -> dict | None:
         return None
     d = parse_detail(fetch(hit["path"]))
     d["url"] = f"https://{HOST}{hit['path']}"
+    d["path"] = hit["path"]
     d["hits"] = [{"entry_id": h["entry_id"], "title": h["title"]} for h in hits]
     d["fetched_at"] = dt.datetime.now(dt.timezone.utc).isoformat(timespec="seconds")
     d.pop("points", None)
     return d
+
+
+def save_downloads(meta: dict, dest_dir, *, purpose: str = "DiaRUGA") -> list[str]:
+    """`Download` 상태인 첨부를 `dest_dir` 에 받아 두고 `meta["files"][i]["saved"]`
+    에 자리를 적는다. 받은 파일 이름을 돌려준다.
+
+    **이미 같은 크기로 있으면 다시 안 받는다.** "Request required" 는 건드리지
+    않는다 — 로그인·공개 요청이 필요한 것이라 여기서 할 수 없다.
+    """
+    from pathlib import Path
+    dest = Path(dest_dir)
+    got = []
+    for f in meta.get("files", []):
+        if f.get("status") != "Download" or not f.get("file_id"):
+            continue
+        name = (f.get("name") or "").replace("/", "_")
+        target = dest / name if name else None
+        if target and target.exists() and f.get("bytes") and target.stat().st_size == f["bytes"]:
+            f["saved"] = str(target)
+            continue
+        fname, data = download(f["file_id"], meta["path"], purpose=purpose)
+        target = dest / fname.replace("/", "_")
+        dest.mkdir(parents=True, exist_ok=True)
+        target.write_bytes(data)
+        f["saved"] = str(target)
+        f["saved_at"] = dt.datetime.now(dt.timezone.utc).isoformat(timespec="seconds")
+        got.append(target.name)
+    return got
 
 
 # ── 지점에 얹기 ───────────────────────────────────────────────────────────
@@ -292,6 +363,25 @@ def apply(loc, meta: dict) -> list[str]:
     loc.kpdc_meta = meta
     changed.append("kpdc_meta")
     return changed
+
+
+def files_note(meta: dict | None) -> str:
+    """지점 카드에 적는 첨부 한 줄 — `첨부 13개 · 요청 필요 13` ·
+    `첨부 1개 · 받아 둠 1`."""
+    files = (meta or {}).get("files") or []
+    if not files:
+        return ""
+    saved = sum(1 for f in files if f.get("saved"))
+    dl = sum(1 for f in files if f.get("status") == "Download")
+    req = sum(1 for f in files if f.get("status") == "Request required")
+    parts = [f"첨부 {len(files)}개"]
+    if saved:
+        parts.append(f"받아 둠 {saved}")
+    elif dl:
+        parts.append(f"내려받을 수 있음 {dl}")
+    if req:
+        parts.append(f"요청 필요 {req}")
+    return " · ".join(parts)
 
 
 def doi_url(entry_id: str) -> str:

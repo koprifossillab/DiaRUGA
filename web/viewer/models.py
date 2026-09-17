@@ -13,7 +13,7 @@
 """
 from django.db import models
 
-from .kpdc import doi_url as kpdc_doi_url
+from .kpdc import doi_url as kpdc_doi_url, files_note as kpdc_files_note
 
 # 폴더 이름 규칙은 `naming.py` 하나뿐이다 — 뷰어·파이프라인·마이그레이션이 같은
 # 것을 본다. 예전에는 `group_focus_series` 와 `import_json` 에 두 벌이 있었다.
@@ -245,6 +245,10 @@ class Locality(models.Model):
         """DOI 로 간다 — KPDC 페이지로 넘어간다. 검색 페이지 주소는 uuid 라
         `kpdc_meta["url"]` 에만 둔다."""
         return kpdc_doi_url(self.kpdc_id)
+
+    @property
+    def kpdc_files_note(self) -> str:
+        return kpdc_files_note(self.kpdc_meta)
 
 
 class Sample(models.Model):

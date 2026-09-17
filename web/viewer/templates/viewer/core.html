@@ -333,7 +333,7 @@
         <span>채취일</span><span>{{ core.collected_at|default:"—" }}</span>
         {% if core.kpdc_id %}
         <span>KPDC</span><span><a href="{{ core.kpdc_url }}" target="_blank" rel="noopener">{{ core.kpdc_id }}</a>
-          {% with m=core.kpdc_meta %}{% if m %}<span class="dim">· {{ m.title }}{% if m.core_length_m %} · 길이 {{ m.core_length_m }} m{% endif %}{% if m.files %} · 첨부 {{ m.files|length }}개 (요청 필요){% endif %}</span>{% endif %}{% endwith %}</span>
+          {% with m=core.kpdc_meta %}{% if m %}<span class="dim">· {{ m.title }}{% if m.core_length_m %} · 길이 {{ m.core_length_m }} m{% endif %}{% if core.kpdc_files_note %} · {{ core.kpdc_files_note }}{% endif %}</span>{% endif %}{% endwith %}</span>
         {% endif %}
         {% if core.note %}<span>메모</span><span>{{ core.note }}</span>{% endif %}
       </div>

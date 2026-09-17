@@ -2,8 +2,8 @@
 #
 # 지점에 KPDC 항목 칸 둘을 더한다 (197). 더하기만 하고 자료 이동이 없다 —
 # `kpdc_id` 는 `db_default=""` 라 옛 파이프라인 이미지의 INSERT 도 그대로 돈다.
-# 그래도 파이프라인 이미지는 같이 굽는다 — `schema_guard`(198)가 장부가 다르면
-# 세운다.
+# `schema_guard`(198)도 더한 칼럼은 안 잡는다 — 파이프라인 이미지를 같이
+# 굽지 않아도 된다.
 
 from django.db import migrations, models
 
