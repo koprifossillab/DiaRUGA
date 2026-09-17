@@ -331,6 +331,10 @@
         <span>위도 / 경도</span><span class="mono">{% if core.lat is not None and core.lon is not None %}{{ core.lat|floatformat:4 }} / {{ core.lon|floatformat:4 }}{% else %}—{% endif %}</span>
         <span>수심</span><span>{% if core.water_depth_m %}{{ core.water_depth_m|floatformat:"-1" }} m{% else %}—{% endif %}</span>
         <span>채취일</span><span>{{ core.collected_at|default:"—" }}</span>
+        {% if core.kpdc_id %}
+        <span>KPDC</span><span><a href="{{ core.kpdc_url }}" target="_blank" rel="noopener">{{ core.kpdc_id }}</a>
+          {% with m=core.kpdc_meta %}{% if m %}<span class="dim">· {{ m.title }}{% if m.core_length_m %} · 길이 {{ m.core_length_m }} m{% endif %}{% if m.files %} · 첨부 {{ m.files|length }}개 (요청 필요){% endif %}</span>{% endif %}{% endwith %}</span>
+        {% endif %}
         {% if core.note %}<span>메모</span><span>{{ core.note }}</span>{% endif %}
       </div>
     </section>

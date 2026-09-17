@@ -175,7 +175,8 @@ deploy/host/dbrun.sh  refilter.py --round-texture-min 2000
 ```
 
 지금 `/srv/DiaRUGA/scripts` 에 있는 것: `ops/check_db.py` · `ops/backup_db.py` ·
-`ops/db_sentinel.py` · `pipeline/judge.py` · `ops/batch_runs.py` · `ops/prune_detections.py`.
+`ops/db_sentinel.py` · `pipeline/judge.py` · `ops/batch_runs.py` · `ops/prune_detections.py` ·
+`ops/fetch_kpdc.py`(197 배포 뒤).
 없는 것을 부르면 `dbrun.sh` 가 **무엇을 옮기라고 알려 준다.**
 
 **예외가 하나 있다 — 백업 cron 은 호스트 venv 로 돈다.** 규약이 막으려는 두 사고

@@ -161,6 +161,16 @@ echo "$TODO" | while IFS=$'\t' read -r slug state image_dir; do
             say "$slug: 그룹핑 실패"
             continue
         fi
+        # 지점의 메타데이터를 KPDC 에서 긁는다 (197). 그룹핑이 폴더 이름으로
+        # 지점을 만든 직후라 좌표·수심·채취일이 비어 있다 — 같은 코어의 공개
+        # 항목에서 **빈 칸만** 채운다. 이미 긁은 지점이면 안에서 건너뛴다.
+        #
+        # **실패해도 폴러를 멈추지 않는다.** 바깥 서버라 사내망 사정에 매이고,
+        # 항목이 아직 등록 전일 수도 있다 — 반입이 서는 조건이 아니다. 못 긁은
+        # 것은 `dbrun.sh fetch_kpdc.py --missing` 으로 나중에 다시 돈다.
+        if ! rundb "$T_SCAN" fetch_kpdc.py --slide "$slug" >>"$LOG" 2>&1; then
+            say "$slug: KPDC 메타데이터를 못 긁었다 — fetch_kpdc.py --missing 으로 다시"
+        fi
     fi
 
     # 합성·검출은 이미 끝난 시야를 스스로 건너뛴다

@@ -13,6 +13,8 @@
 """
 from django.db import models
 
+from .kpdc import doi_url as kpdc_doi_url
+
 # 폴더 이름 규칙은 `naming.py` 하나뿐이다 — 뷰어·파이프라인·마이그레이션이 같은
 # 것을 본다. 예전에는 `group_focus_series` 와 `import_json` 에 두 벌이 있었다.
 from .naming import base_name as _base_name
@@ -216,6 +218,14 @@ class Locality(models.Model):
     water_depth_m = models.FloatField(null=True, blank=True)
     collected_at = models.DateField(null=True, blank=True)
     note = models.TextField(blank=True)
+    # KPDC(극지 데이터 센터)의 항목. `viewer/kpdc.py` 가 채운다 (197) —
+    # `KOPRI-KPDC-00001836` 같은 Entry ID 이고 DOI 는 `10.22663/<id>` 로 나온다.
+    # **위의 좌표·수심·채취일은 그 페이지에서 빈 칸만 채워지고**, 이 둘은
+    # 긁을 때마다 갈아치운다. 페이지에 노출된 것 전부(제목·요약·담당자·
+    # 첨부 파일 목록…)가 `kpdc_meta` 에 든다. 파이프라인 이미지의 INSERT 에
+    # 이 칼럼이 없어도 되게 `db_default` 를 준다.
+    kpdc_id = models.CharField(max_length=32, blank=True, db_default="")
+    kpdc_meta = models.JSONField(null=True, blank=True)
 
     class Meta:
         verbose_name = "지점"
@@ -229,6 +239,12 @@ class Locality(models.Model):
     @property
     def is_outcrop(self) -> bool:
         return self.kind == "outcrop"
+
+    @property
+    def kpdc_url(self) -> str:
+        """DOI 로 간다 — KPDC 페이지로 넘어간다. 검색 페이지 주소는 uuid 라
+        `kpdc_meta["url"]` 에만 둔다."""
+        return kpdc_doi_url(self.kpdc_id)
 
 
 class Sample(models.Model):

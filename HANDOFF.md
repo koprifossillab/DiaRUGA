@@ -13,7 +13,14 @@
 NAS 의 `DiatomPhotos/`).
 
 **브랜치** main · 도는 판 `v0.26.0` (파이프라인 `v0.5.2`) — **배포를 기다리는
-판이 없다.** 09-15 19:49 에 `v0.26.0` 을 내보냈다(**도감 화면을
+것이 하나 있다**: `work/20260917-sclee` 의 **KPDC 코어 메타데이터 자동 반입**
+([197](devlog/20260917_197_kpdc-core-metadata.md) · 마이그레이션 `0044` —
+더하기만이라 옛 파이프라인 이미지의 INSERT 는 그대로 돌지만, **198 의
+`schema_guard` 가 마이그레이션 장부가 다르면 파이프라인을 세우므로 이 판은
+파이프라인 이미지도 같이 굽는다**). 새 슬라이드가 들어오면
+폴러가 그룹핑 직후 KPDC 에서 그 코어의 좌표·수심·채취일을 **빈 칸만** 채운다.
+`main` 에 병합해 판을 낸 **뒤에** `dbsync.sh fetch_kpdc.py` 와
+`dbrun.sh fetch_kpdc.py --missing` 을 돌린다(3.8절). 09-15 19:49 에 `v0.26.0` 을 내보냈다(**도감 화면을
 권역(한국·남극·전역)으로 가르고, 속을 고르는 목록으로, 검색창에 자동완성을
 단다** · 마이그레이션 없음 ·
 [196](devlog/20260915_196_atlas-area-genus-suggest.md) · 권역 표는
@@ -391,10 +398,21 @@ NAS 공유(`N:\DiaRUGA\outcrop` = `/nfs/temp-share/DiaRUGA/outcrop`)에 이름�
 ### 파이프라인 (전부 DB)
 
 ```
-scan_nas → ingest_nas → group_focus_series → focus_stack --slide → segment_diatoms --slide
+scan_nas → ingest_nas → group_focus_series → (fetch_kpdc --slide) → focus_stack --slide → segment_diatoms --slide
 ```
 
-이 흐름을 `deploy/poll_nas.sh` 가 1분마다 돌린다. **GPU 를 쓰는 작업은 한 번에
+이 흐름을 `deploy/poll_nas.sh` 가 1분마다 돌린다.
+
+**그룹핑 직후 KPDC 에서 지점 메타데이터를 긁는다** (197 · `ops/fetch_kpdc.py`,
+dbtool 문). 폴더 이름으로 방금 만든 지점은 코드뿐이라 좌표·수심·채취일이
+비어 있다 — 같은 코어의 KPDC 공개 항목(뷰어의 코어 10개 전부 있다)에서
+**빈 칸만** 채우고 `kpdc_id`·`kpdc_meta`(페이지에 노출된 것 전부, 첨부
+목록까지)를 남긴다. **사람이 넣은 값은 안 덮는다** — `WAP13-GC47` 은 DB 와
+KPDC 좌표가 실제로 다르다. 실패해도 폴러는 안 멈춘다(항목이 항차 뒤 반년쯤
+지나 등록되기도 한다) — 남은 것은 `dbrun.sh fetch_kpdc.py --missing`.
+**첨부(코어 사진·X-ray·물성 xlsx)는 못 받는다** — "Request required" 라
+로그인·공개 요청이 필요하다. 받으면 P17 절차로 반입한다. 사내 DNS 가
+`kpdc.kopri.re.kr` 을 모른다 — 모듈이 IP 로 붙는다(`DIARUGA_KPDC_IP`). **GPU 를 쓰는 작업은 한 번에
 하나만 돈다** — 잠금이 `segment_diatoms` 안에 있어 폴러가 도는 중에 손으로 돌려도
 기다렸다 이어 간다.
 
@@ -796,6 +814,25 @@ WAL 이라 읽기는 여럿이 되지만 **쓰기는 한 번에 하나**다. 파
 
 ### 3.8 아직 안 한 이전기·일회성
 
+- **`ops/fetch_kpdc.py --missing` — 197 이 든 판을 배포한 뒤에 돌린다.**
+  좌표·수심이 빈 코어 지점 7개(`RS14-GC04`·`RS19-GC17`·`RS21-GC02/03B/04/05`·
+  `RS23-GC03`)를 KPDC 에서 채운다. **판을 올리기 전에 스크립트를 `/srv` 로
+  밀지 말 것** — `0044` 의 칼럼이 없어 폴러 로그에 실패 줄만 쌓인다.
+  **뷰어만 올리면 파이프라인이 멈춘다** — 198 의 `schema_guard` 가 장부에
+  `0044` 가 있는데 이미지가 모르면 검출을 거부한다(설계대로). 파이프라인
+  이미지(`PIPELINE_TAG`)를 같은 마이그레이션으로 함께 굽고 `.env` 를 올린다.
+
+    ```bash
+    deploy/host/sync_to_srv.sh                    # poll_nas.sh 에 단계가 하나 늘었다
+    deploy/host/dbsync.sh fetch_kpdc.py
+    deploy/host/dbrun.sh  fetch_kpdc.py --missing --dry-run
+    deploy/host/dbrun.sh  fetch_kpdc.py --missing
+    ```
+
+  사본 dry-run 실측(09-17): 10개 중 9개 긁힘 · `RS21-GC02` 의 채취일이
+  `2021-10-05` 로 들어가 있는데 **그것은 KPDC 등록일이다**(채취는
+  2020-12-13). 사람이 넣은 값이라 안 덮는다 — 관리 화면에서 고칠 것.
+
 - **`ops/import_taxon_names.py` — `v0.22.0` 배포 뒤에 돌렸다** (P24, 08-31
   15:48 · 학명 1,999건 — accepted 995·synonym 740·unassessed 145·
   absent 119 · `check_db` 11·12번 OK). `taxon_names.json` 이 이
@@ -1001,6 +1038,7 @@ YOLO 는 **라벨 없는 자리를 배경으로 배우므로** 별도 처리 없
 | `ops/export_yolo.py` | 검토 → YOLO 꾸러미. **판정을 다시 쓰지 않고 `viewer.data` 를 부른다** |
 | `migrate/rebind.py` | 새 검출과 기존 교정을 다시 맺는다 |
 | `deploy/host/dbsync.sh` · `dbrun.sh` | DB 를 만지는 스크립트가 들어가는 **유일한 문** (9.2절) |
+| `ops/fetch_kpdc.py` · `web/viewer/kpdc.py` | KPDC 코어 메타데이터. 폴러가 그룹핑 뒤에 `--slide` 로, 손으로는 `--missing` (197) |
 | `deploy/poll_nas.sh` | 1분 폴러 |
 | `deploy/warm_thumbs.sh` | 축소본 미리 굽기. 폴러가 합성 뒤에 부른다 (125) |
 

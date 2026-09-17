@@ -180,7 +180,9 @@ flowchart LR
 | `code` | char(32) | `GC03` · `BP09` |
 | `kind` | char(12) | **`core` \| `outcrop`.** 지점의 성질이다 — 한 지점이 둘일 수 없다 |
 | `collect_kind` | char(64) | 채취 방식(`gravity core`). **사람이 적는 자유 문자열** — 예전 `Core.kind` 가 이것이다 |
-| `lat` / `lon` / `water_depth_m` / `collected_at` / `note` | | 사람이 채운다 |
+| `lat` / `lon` / `water_depth_m` / `collected_at` / `note` | | 사람이 채운다. **코어는 KPDC 가 빈 칸만 채운다** (197 — `collect_kind` 도) |
+| `kpdc_id` | char(32), `db_default ""` | KPDC Entry ID (`KOPRI-KPDC-00001836`). DOI 는 `10.22663/<id>`. `viewer/kpdc.py` 가 채운다 (`0044`, 197) |
+| `kpdc_meta` | JSON, null | KPDC 페이지에 노출된 것 전부 — 제목·요약·담당자·좌표·첨부 목록·판 이력. 다시 긁으면 갈아치운다 |
 
 **`kind` 와 `collect_kind` 를 가른 이유**: 앞은 화면이 갈래를 짓는 두 값이고
 (노두면 깊이 축을 안 그리고 `OC` 를 찍는다) 뒤는 사람이 아무 말이나 적는 칸이다.
