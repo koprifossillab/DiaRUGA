@@ -735,6 +735,50 @@
   .antmap a:hover .dot { stroke: var(--accent); }
   .antmap a { text-decoration: none; }
 
+  /* --- 로스해 확대 (EPSG:3031 · 180° 돌림) --- */
+  /* 전체·확대 두 SVG 가 한 자리를 번갈아 쓴다. 갈아타는 것은 `.mapstage` 의
+     클래스다 — `[hidden]` 은 `.antmap` 의 display 에 진다 (063). */
+  .mapstage { flex: 1 1 620px; max-width: 900px; min-width: 0; }
+  .mapstage .antmap { flex: none; display: block; }
+  .mapstage .rossmap { display: none; }
+  .mapstage.zoomRoss .rossmap { display: block; }
+  .mapstage.zoomRoss .antmap:not(.rossmap) { display: none; }
+  .mapzoom { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; margin-bottom: 8px; }
+  .mapzoom button {
+    font: inherit; font-size: 12.5px; padding: 3px 11px; border-radius: 6px;
+    border: 1px solid var(--line); background: var(--panel); color: var(--dim); cursor: pointer;
+  }
+  .mapzoom button.on { color: var(--fg); border-color: var(--accent); }
+  .mapzoom .outside { font-size: 11.5px; margin-left: 8px; }
+  .mapstage:not(.zoomRoss) .outside { display: none; }
+  /* 전체 지도 위의 확대 틀 — 누르면 확대로 간다 */
+  .antmap .zoomframe {
+    fill: var(--accent); fill-opacity: .04; stroke: var(--accent); stroke-width: 8;
+    stroke-dasharray: 40 30; opacity: .75; cursor: pointer;
+  }
+  .antmap .zoomframe:hover { fill-opacity: .12; opacity: 1; }
+  .antmap .sealabel .zoomlink { cursor: pointer; text-decoration: underline dotted; }
+  /* `.antmap` 을 함께 걸어 마커·판형을 그대로 쓴다. 단위는 같은 km 인데 viewBox
+     폭이 7600 → 1500 이라 글자·획을 약 1/5 (`ross.MARK`) 로 줄여야 같은 크기로
+     보인다. 마커는 SVG 쪽에서 scale() 로 처리한다. */
+  .rossmap .land { stroke: none; }
+  .rossmap .shelf { fill: var(--bg); fill-opacity: .7; stroke: none; fill-rule: evenodd; }
+  .rossmap .shelfhatch { fill: url(#rosshatch); stroke: none; fill-rule: evenodd; }
+  .rossmap #rosshatch line { stroke: var(--dim); stroke-width: 1; opacity: .35; }
+  .rossmap .landline { fill: none; stroke: var(--dim); stroke-width: .9; }
+  .rossmap .shelfline { fill: none; stroke: var(--dim); stroke-width: .7; opacity: .7; }
+  .rossmap .grat circle, .rossmap .grat line { stroke-width: .7; }
+  .rossmap .glabel text { font-size: 23px; }
+  .rossmap .sealabel text { font-size: 28px; }
+  .rossmap .landmark rect { fill: var(--dim); }
+  .rossmap .landmark text { fill: var(--dim); font-size: 21px; paint-order: stroke; stroke: var(--bg); stroke-width: 6; }
+  .rossmap .kscale line { stroke: var(--dim); stroke-width: 1.6; opacity: .9; }
+  .rossmap .kscale text { fill: var(--dim); font-size: 21px; }
+  /* 이름표 크기는 `ross.context()` 의 자리 계산과 같은 값이어야 한다 (150 × MARK) */
+  .rossmap .site .tag { font-size: 29.5px; stroke-width: 8; }
+  .rossmap .site .tag.a-start { text-anchor: start; }
+  .rossmap .site .tag.a-end { text-anchor: end; }
+
   /* --- 남한 지도 (EPSG:5179) --- */
   /* `.antmap` 을 함께 걸어 마커·판형을 그대로 쓴다. 여기서는 **단위가 달라서
      달라지는 것만** 덮는다 — 남극은 km, 한국은 m 라 글자와 획을 약 90배로

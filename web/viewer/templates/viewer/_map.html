@@ -12,7 +12,54 @@
   {% if antmap.kind == "kr" %}
     {% include "viewer/_map_kr.html" %}
   {% else %}
-    {% include "viewer/_map_ant.html" %}
+{% comment %}
+    남극은 지도가 둘이다 — 전체와 로스해 확대. 둘 다 내려보내고 화면에서
+    갈아탄다(`.mapstage` 의 `zoomRoss`). 고른 것은 `localStorage` 에 남는다.
+    전체 지도 위의 틀 사각형과 "로스해" 이름도 확대로 가는 문이다.
+{% endcomment %}
+    <div class="mapstage" id="mapstage">
+      <div class="mapzoom" id="mapzoom" role="group" aria-label="지도 범위">
+        <button type="button" data-zoom="all" class="on" aria-pressed="true">남극 전체</button>
+        <button type="button" data-zoom="ross" aria-pressed="false">로스해</button>
+        {% if antmap.ross.outside %}
+        <span class="dim outside">로스해 틀 밖: {{ antmap.ross.outside|join:" · " }}</span>
+        {% endif %}
+      </div>
+      {% include "viewer/_map_ant.html" %}
+      {% include "viewer/_map_ross.html" with ross=antmap.ross only %}
+    </div>
   {% endif %}
   {% include "viewer/_map_legend.html" %}
 </div>
+{% if antmap.kind != "kr" %}
+<script>
+(function () {
+  var KEY = 'diaruga.mapzoom', stage = document.getElementById('mapstage'),
+      bar = document.getElementById('mapzoom');
+  if (!stage || !bar) return;
+  function apply(v) {
+    stage.classList.toggle('zoomRoss', v === 'ross');
+    bar.querySelectorAll('button[data-zoom]').forEach(function (b) {
+      var on = b.dataset.zoom === v;
+      b.classList.toggle('on', on);
+      b.setAttribute('aria-pressed', on ? 'true' : 'false');
+    });
+  }
+  function pick(v) {
+    apply(v);
+    try { localStorage.setItem(KEY, v); } catch (err) { /* 사생활 모드 */ }
+  }
+  var saved = null;
+  try { saved = localStorage.getItem(KEY); } catch (e) { saved = null; }
+  apply(saved === 'ross' ? 'ross' : 'all');
+  bar.addEventListener('click', function (e) {
+    var b = e.target.closest('button[data-zoom]');
+    if (b) pick(b.dataset.zoom);
+  });
+  // 전체 지도의 틀 사각형·"로스해" 글자를 눌러도 확대로 간다
+  stage.querySelectorAll('[data-zoom-to]').forEach(function (el) {
+    el.addEventListener('click', function () { pick(el.dataset.zoomTo); });
+  });
+})();
+</script>
+{% endif %}

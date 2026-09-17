@@ -18,7 +18,7 @@ from django.urls import reverse
 from django.utils import timezone
 from django.views.decorators.http import require_POST
 
-from . import (antarctica, atlas as atlas_mod, data, korea,
+from . import (antarctica, atlas as atlas_mod, data, korea, ross,
                manage_data, offline, outcrop, regroup, thresholds as th)
 from .models import (Candidate, Detection, DiatomObject,  # noqa: E501
                      Image as ImageModel,
@@ -172,6 +172,9 @@ def _map_ctx(area: str, pts: list) -> dict:
         "lon_labels": antarctica.LON_LABELS,
         "lon_spokes": antarctica.LON_SPOKES,
         "sea_labels": antarctica.SEA_LABELS,
+        # 로스해 확대 틀. 전체 지도와 함께 늘 보낸다(30 KB) — 화면에서 즉시
+        # 갈아탄다. 전체 지도가 이 틀의 사각형을 그려 어디를 확대하는지 보인다.
+        "ross": ross.context(pts),
     }
 
 

@@ -46,8 +46,18 @@
 
     {# 해역 이름. 마커보다 아래에 깔아 겹쳐도 마커가 읽히게 한다 #}
     <g class="sealabel">
-      {% for name, x, y in antmap.sea_labels %}<text x="{{ x }}" y="{{ y }}">{{ name }}</text>{% endfor %}
+      {% for name, x, y in antmap.sea_labels %}<text x="{{ x }}" y="{{ y }}"{% if name == "로스해" %} class="zoomlink" data-zoom-to="ross"{% endif %}>{{ name }}</text>{% endfor %}
     </g>
+
+{% comment %}
+    로스해 확대 틀. 확대 지도가 어디를 담는지 여기 사각형으로 보인다 — 없으면
+    두 지도의 관계를 사람이 머리로 맞춰야 한다. 누르면 확대로 간다.
+    좌표는 `ross.FRAME` (이 지도의 좌표 · 돌리기 전) 이다.
+{% endcomment %}
+    {% with f=antmap.ross.frame %}
+    <rect class="zoomframe" data-zoom-to="ross" x="{{ f.0 }}" y="{{ f.1 }}"
+          width="{{ f.2 }}" height="{{ f.3 }}"><title>로스해 확대 — 누르면 그 틀을 봅니다</title></rect>
+    {% endwith %}
 
     {# 시료 위치 #}
     <g class="sites">

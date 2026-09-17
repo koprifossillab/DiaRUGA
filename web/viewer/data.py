@@ -639,8 +639,20 @@ def map_points(area: str | None = None,
         # 코드는 <지역><연도> 꼴이다 (RS23 · WAP13 · AM22). 뒤의 숫자를 떼고 찾는다.
         base = re.sub(r"\d+$", "", site.code).upper()
         approx = approx_sites.get(base)
+        # 관찰이 있는 지점의 좌표. 지역 좌표가 비었을 때 이것의 평균으로 찍는다 —
+        # KPDC 반입(197)이 지점(코어)에 좌표를 채우는데 지역 칸은 그대로 비어
+        # 있어서, 로스해 네 지역이 전부 "대략 위치" 한 점에 겹쳐 찍혔다. 지점
+        # 좌표는 실측이라 그 평균도 대략값이 아니다 (지점끼리 수백 km 갈리는
+        # 지역이면 그 값 자체가 지도에서 보인다 — 확대 지도가 그것을 가른다).
+        loc_xy = [(loc.lat, loc.lon) for loc in site.localities.all()
+                  if loc.lat is not None and loc.lon is not None
+                  and slides_of(loc)]
         if site.lat is not None and site.lon is not None:
             lat, lon, exact, note = site.lat, site.lon, True, ""
+        elif loc_xy:
+            lat = sum(la for la, _ in loc_xy) / len(loc_xy)
+            lon = sum(lo for _, lo in loc_xy) / len(loc_xy)
+            exact, note = True, ""
         elif approx:
             lat, lon, exact, note = approx[0], approx[1], False, approx[2]
         else:
@@ -655,23 +667,35 @@ def map_points(area: str | None = None,
             rows = sorted(slides_of(loc), key=_slide_order)
             if not rows:
                 continue
+            # 지점 자체의 좌표 — 확대 지도가 코어 하나하나를 찍는 데 쓴다. 지점에
+            # 좌표가 없으면 지역의 자리(위에서 정한 것)를 물려받고 `exact` 도
+            # 그것을 따른다. 전체 지도는 이 값을 안 본다.
+            if loc.lat is not None and loc.lon is not None:
+                cx, cy = project(loc.lat, loc.lon)
+                c_exact = True
+            else:
+                cx, cy, c_exact = x, y, exact
+            slide_rows = [{
+                "slug": sl.slug,
+                "label": sl.name,
+                "depth_cm": sl.depth_cm,
+                "sample_kind": sl.sample_kind,
+                "state": sl.state,
+                # 지도 목록은 깊이만 적는다 — 같은 깊이의 관찰 둘이 글자
+                # 그대로 같아 보인다. 배지가 그것을 가른다.
+                **_obs(sl),
+                "n_viewpoints": sl.viewpoints.count(),
+                # **고른 묶음의 완료만 센다** (073) — 묶음마다 따로다
+                "reviewed": len(done_viewpoints(slide=sl)),
+            } for sl in rows]
             cores.append({
                 "code": loc.code,
                 "kind": loc.kind,
                 "n_slides": len(rows),
-                "slides": [{
-                    "slug": sl.slug,
-                    "label": sl.name,
-                    "depth_cm": sl.depth_cm,
-                    "sample_kind": sl.sample_kind,
-                    "state": sl.state,
-                    # 지도 목록은 깊이만 적는다 — 같은 깊이의 관찰 둘이 글자
-                    # 그대로 같아 보인다. 배지가 그것을 가른다.
-                    **_obs(sl),
-                    "n_viewpoints": sl.viewpoints.count(),
-                    # **고른 묶음의 완료만 센다** (073) — 묶음마다 따로다
-                    "reviewed": len(done_viewpoints(slide=sl)),
-                } for sl in rows],
+                "x": round(cx, 1), "y": round(cy, 1), "exact": c_exact,
+                # 시야 수는 관찰 줄에서 한 번 센 것을 더한다 — 되묻지 않는다 (105)
+                "n_viewpoints": sum(r["n_viewpoints"] for r in slide_rows),
+                "slides": slide_rows,
             })
 
         out.append({
@@ -680,7 +704,7 @@ def map_points(area: str | None = None,
             "x": round(x, 1), "y": round(y, 1),
             "exact": exact, "approx_note": note,
             "n_slides": len(slides),
-            "n_viewpoints": sum(s.viewpoints.count() for s in slides),
+            "n_viewpoints": sum(c["n_viewpoints"] for c in cores),
             "cores": cores,
             "core_codes": [c["code"] for c in cores],
             "slugs": [s.slug for s in slides],
