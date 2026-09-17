@@ -5,7 +5,16 @@
       https://raw.githubusercontent.com/nvkelso/natural-earth-vector/master/geojson/ne_10m_land.geojson
     curl -sSL -o ne_10m_antarctic_ice_shelves_polys.geojson \\
       https://raw.githubusercontent.com/nvkelso/natural-earth-vector/master/geojson/ne_10m_antarctic_ice_shelves_polys.geojson
-    python3 build_map_ross.py ne_10m_land.geojson ne_10m_antarctic_ice_shelves_polys.geojson 1000
+    python3 build_map_ross.py coast ne_10m_land.geojson ne_10m_antarctic_ice_shelves_polys.geojson 1500
+    python3 build_map_ross.py bathy 3000 ne_10m_bathymetry_K_200.geojson ne_10m_bathymetry_J_1000.geojson …
+
+`bathy` 는 수심대(200 · 1000 · 2000 · 3000 · 4000 m — 파일 이름에서 읽는다)를
+`BATHY = [(깊이, path), …]` 로 낸다. 각 다각형이 "그 깊이보다 깊은 바다" 라
+얕은 것부터 차례로 겹쳐 그리면 색이 단계로 깊어진다. 바탕색이라 획이 없고
+이음매도 문제가 안 되어 면만 낸다 — 허용오차도 해안선보다 성글게 준다.
+**대략이다.** NE 의 수심은 1:10m 에서도 많이 일반화되어 있어 로스해 대륙붕의
+은행·골(수백 m 규모)은 안 나온다 — 어디가 대륙붕이고 어디가 사면인지를 보는
+바탕이지 계측이 아니다.
 
 `build_map.py`(남극 전체)와 **같은 투영(EPSG:3031)·같은 단위(km)** 인데
 **180° 돌려 놓았다.** 전체 지도는 0° 가 위라 로스해(180° 언저리)에서는 남극점이
@@ -39,6 +48,7 @@
 """
 import json
 import math
+import re
 import sys
 
 import proj
@@ -175,12 +185,37 @@ def bake(src, tol_m, what):
     return fills, lines
 
 
+def _print(name, paths):
+    print(f"{name} = (")
+    for p in paths:
+        print(f'    "{p}"')
+    print(")\n")
+
+
 if __name__ == "__main__":
-    land, shelf, tol = sys.argv[1], sys.argv[2], float(sys.argv[3])
-    for name, src in (("LAND", land), ("SHELF", shelf)):
-        fills, lines = bake(src, tol, name)
-        for suffix, paths in (("", fills), ("_LINE", lines)):
-            print(f"{name}{suffix} = (")
-            for p in paths:
-                print(f'    "{p}"')
-            print(")\n")
+    mode = sys.argv[1]
+    if mode == "coast":
+        land, shelf, tol = sys.argv[2], sys.argv[3], float(sys.argv[4])
+        for name, src in (("LAND", land), ("SHELF", shelf)):
+            fills, lines = bake(src, tol, name)
+            _print(name, fills)
+            _print(name + "_LINE", lines)
+    elif mode == "bathy":
+        tol, srcs = float(sys.argv[2]), sys.argv[3:]
+        bands = []
+        for src in srcs:
+            m = re.search(r"_([A-L])_(\d+)\.geojson$", src)
+            if not m:
+                sys.exit(f"수심을 이름에서 못 읽는다: {src}")
+            fills, _ = bake(src, tol, f"bathy {m.group(2)} m")
+            bands.append((int(m.group(2)), fills))
+        bands.sort()
+        print("BATHY = [")
+        for depth, fills in bands:
+            print(f"    ({depth}, (")
+            for p in fills:
+                print(f'        "{p}"')
+            print("    )),")
+        print("]\n")
+    else:
+        sys.exit("모드는 coast 또는 bathy")

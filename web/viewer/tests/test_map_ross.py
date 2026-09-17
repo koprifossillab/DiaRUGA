@@ -156,6 +156,21 @@ class RossContextTest(DiaRUGATestCase):
         self.assertGreaterEqual(min(ys), vy - 40)
         self.assertLessEqual(max(ys), vy + vh + 40)
 
+    def test_수심대는_얕은_것부터이고_경로가_읽힌다(self):
+        """띠를 얕은 것부터 겹쳐 그려야 깊은 색이 위에 남는다 — 순서가 곧 그림이다."""
+        depths = [d for d, _ in ross.BATHY]
+        self.assertEqual(depths, sorted(depths))
+        self.assertEqual(depths[0], 200)
+        for d, path in ross.BATHY:
+            self.assertTrue(_path_ok(path), f"{d} m")
+        self.assertEqual(ross.BATHY_LEGEND, [0] + depths)
+
+    def test_지점의_실측_수심을_싣는다(self):
+        Locality.objects.filter(site__code="RS23").update(water_depth_m=512.0)
+        ctx = ross.context(data.map_points("ant"))
+        p = next(p for p in ctx["points"] if p["label"] == "RS23-GC03")
+        self.assertEqual(p["water_depth_m"], 512.0)
+
     def test_틀과_viewBox_는_같은_사각형을_돌린_것이다(self):
         fx_, fy, fw, fh = ross.FRAME
         vx, vy, vw, vh = ross.VIEWBOX
@@ -205,6 +220,22 @@ class RossRenderTest(DiaRUGATestCase):
         # 방향은 클래스로 — 속성으로 주면 `.tag` 의 CSS 에 진다
         self.assertRegex(svg, r'class="tag a-(start|end)"')
         self.assertNotIn('text-anchor="start"', svg.split('class="sites"')[1])
+
+    def test_수심_띠와_범례와_장보고_별이_그려진다(self):
+        Locality.objects.filter(site__code="RS23").update(water_depth_m=512.0)
+        html = self.html()
+        svg = re.search(r'<svg class="antmap rossmap".*?</svg>', html, re.S).group(0)
+        for d in (200, 1000, 2000, 3000, 4000):
+            self.assertIn(f'<path class="b{d}" d="M', svg)
+        self.assertIn('class="blegend"', svg)
+        self.assertIn('<rect class="b0"', svg)
+        # 우리 기지는 별 + 강조 글자, 남의 기지는 마름모
+        self.assertRegex(svg, re.compile(
+            r'class="lm-ours".*?<path class="star".*?class="hi"[^>]*>장보고기지<', re.S))
+        self.assertRegex(svg, re.compile(
+            r'class="lm-station".*?<rect[^>]*rotate\(45\).*?>맥머도기지<', re.S))
+        # 실측 수심은 툴팁에
+        self.assertIn("수심 512 m", svg)
 
     def test_한국_화면에는_확대가_없다(self):
         fx.make_world(slug="bp", area="kr", kind="outcrop", site_code="BP",

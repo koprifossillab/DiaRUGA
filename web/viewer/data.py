@@ -693,6 +693,7 @@ def map_points(area: str | None = None,
                 "kind": loc.kind,
                 "n_slides": len(rows),
                 "x": round(cx, 1), "y": round(cy, 1), "exact": c_exact,
+                "water_depth_m": loc.water_depth_m,
                 # 시야 수는 관찰 줄에서 한 번 센 것을 더한다 — 되묻지 않는다 (105)
                 "n_viewpoints": sum(r["n_viewpoints"] for r in slide_rows),
                 "slides": slide_rows,

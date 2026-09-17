@@ -40,6 +40,11 @@
        - **뜻 있는 색을 빌리지 않는다** — `--accent`·`--warn`·`--danger` 는 이미
          다른 것을 말하고 분류 색과도 부딪친다. 중립 면이어야 한다 */
     --group-bg: #1d212b; --group-bg-hi: #242936;
+    /* 로스해 확대의 수심 띠 — 얕은 곳(0)부터 깊은 곳(4000 m)까지. **테마마다
+       따로 준다**(107) — 어두운 바탕에서는 깊을수록 진한 남색, 밝은 바탕에서는
+       깊을수록 진한 파랑. 뜻 있는 색(`--accent`)과는 갈라 둔다 */
+    --sea-0: #1b2230; --sea-200: #1a2a3e; --sea-1000: #18334d;
+    --sea-2000: #163c5d; --sea-3000: #13456e; --sea-4000: #0f4e80;
   }
   @media (prefers-color-scheme: light) {
     :root {
@@ -53,6 +58,8 @@
       --wm-op: .06;
       --envwm-op: .14;
       --group-bg: #eaecf1; --group-bg-hi: #e0e3ea;
+      --sea-0: #e9f1fa; --sea-200: #d5e4f4; --sea-1000: #bcd4ec;
+      --sea-2000: #a2c3e3; --sea-3000: #87b1d9; --sea-4000: #6d9fce;
     }
   }
   * { box-sizing: border-box; }
@@ -761,6 +768,17 @@
   /* `.antmap` 을 함께 걸어 마커·판형을 그대로 쓴다. 단위는 같은 km 인데 viewBox
      폭이 7600 → 1500 이라 글자·획을 약 1/5 (`ross.MARK`) 로 줄여야 같은 크기로
      보인다. 마커는 SVG 쪽에서 scale() 로 처리한다. */
+  .rossmap .ocean { fill: var(--sea-0); }
+  .rossmap .bathy path, .rossmap .blegend rect { stroke: none; }
+  .rossmap .b0 { fill: var(--sea-0); }
+  .rossmap .b200 { fill: var(--sea-200); }
+  .rossmap .b1000 { fill: var(--sea-1000); }
+  .rossmap .b2000 { fill: var(--sea-2000); }
+  .rossmap .b3000 { fill: var(--sea-3000); }
+  .rossmap .b4000 { fill: var(--sea-4000); }
+  .rossmap .blegend .back { fill: var(--bg); opacity: .75; }
+  .rossmap .blegend text { fill: var(--dim); font-size: 19px; }
+  .rossmap .blegend .cap { font-size: 21px; }
   .rossmap .land { stroke: none; }
   .rossmap .shelf { fill: var(--bg); fill-opacity: .7; stroke: none; fill-rule: evenodd; }
   .rossmap .shelfhatch { fill: url(#rosshatch); stroke: none; fill-rule: evenodd; }
@@ -772,6 +790,10 @@
   .rossmap .sealabel text { font-size: 28px; }
   .rossmap .landmark rect { fill: var(--dim); }
   .rossmap .landmark text { fill: var(--dim); font-size: 21px; paint-order: stroke; stroke: var(--bg); stroke-width: 6; }
+  /* 우리 기지 — 별과 강조색. 마커(`--accent` 원)와 갈리게 `--warn` 을 빌리지
+     않고 `--good` 을 쓴다: 주황은 이미 "대략 위치" 다 */
+  .rossmap .lm-ours .star { fill: var(--good); stroke: var(--bg); stroke-width: 3; }
+  .rossmap .lm-ours .hi { fill: var(--good); font-size: 27px; font-weight: 700; }
   .rossmap .kscale line { stroke: var(--dim); stroke-width: 1.6; opacity: .9; }
   .rossmap .kscale text { fill: var(--dim); font-size: 21px; }
   /* 이름표 크기는 `ross.context()` 의 자리 계산과 같은 값이어야 한다 (150 × MARK) */

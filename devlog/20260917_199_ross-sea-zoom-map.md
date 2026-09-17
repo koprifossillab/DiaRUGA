@@ -119,10 +119,11 @@ curl -sSL -o ne_10m_land.geojson \
   https://raw.githubusercontent.com/nvkelso/natural-earth-vector/master/geojson/ne_10m_land.geojson
 curl -sSL -o ne_10m_antarctic_ice_shelves_polys.geojson \
   https://raw.githubusercontent.com/nvkelso/natural-earth-vector/master/geojson/ne_10m_antarctic_ice_shelves_polys.geojson
-python3 build_map_ross.py ne_10m_land.geojson ne_10m_antarctic_ice_shelves_polys.geojson 1500
+python3 build_map_ross.py coast ne_10m_land.geojson ne_10m_antarctic_ice_shelves_polys.geojson 1500
 ```
 
-나온 네 상수를 `web/viewer/ross.py` 의 같은 이름에 붙여 넣는다. 틀을 옮기면
+나온 네 상수를 `web/viewer/ross.py` 의 같은 이름에 붙여 넣는다(수심대는
+`bathy` 모드 — 200 에 있다). 틀을 옮기면
 **도구의 `FRAME` 과 `ross.FRAME` 을 함께** 고친다 — 도구는 그 값으로 자르고
 뷰어는 그 값으로 사각형을 그린다.
 
