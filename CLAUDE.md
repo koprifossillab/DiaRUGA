@@ -287,8 +287,8 @@ docker compose run --rm pipeline python pipeline/segment_diatoms.py --slide <slu
 **자동 시험이 있다 — 고치고 나면 이것부터 돌린다** (P08 · 064).
 
 ```bash
-python web/manage.py test viewer --exclude-tag browser   # 939개 · 17초
-python web/manage.py test viewer                         # 1,174개 (브라우저 235개 포함, 474초)
+python web/manage.py test viewer --exclude-tag browser   # 942개 · 17초
+python web/manage.py test viewer                         # 1,179개 (브라우저 237개 포함, 476초)
 ```
 
 호스트 venv 로 돈다 — `dbrun.sh` 를 안 거친다. 규약이 막으려는 "같은 파일을 두
@@ -603,7 +603,9 @@ web/viewer/
   `display: flex` 로 특이도에서 이긴다. 세 화면이 도구를 감춘 줄 알고 계속
   내보이고 있었다(051). **`getComputedStyle` 로 확인할 것** — 예외도 경고도 없다
 - **테마가 둘인 화면에 색을 박지 말 것**(107). `#fff4f2` 가 어두운 쪽에서 흰
-  덩어리가 된다 — 이미 갈려 있는 토큰(`--warn-bg`·`--warn-fg`)을 빌린다
+  덩어리가 된다 — 이미 갈려 있는 토큰(`--warn-bg`·`--warn-fg`)을 빌린다.
+  **테마는 `data-theme` 속성이 정한다**(201) — `@media (prefers-color-scheme)`
+  를 쓰면 사람이 고른 테마를 OS 가 덮는다
 - **조사는 앞 글자를 따라간다**(107). `title + '이 엇갈립니다'` 로 만들면
   "분류이 엇갈립니다" 가 나온다 — **문구를 통째로** 든다
 

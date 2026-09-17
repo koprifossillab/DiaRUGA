@@ -12,6 +12,41 @@
   두 겹 테두리와 늑골 8개만 남겼다 — 작은 자리에서는 덜어내야 형태가 남는다.
   색은 고정이다: 탭에는 물려받을 색이 없다.
 {% endcomment %}
+{% comment %}
+  테마를 **스타일보다 먼저** 정한다 (2026-09-17 · 사용자 요청). 예전에는
+  `@media (prefers-color-scheme: light)` 하나로 OS 설정을 그대로 따라갔고 화면에서
+  고를 길이 없었다. 지금은 `localStorage` 의 `diaruga.theme`(`light`·`dark`,
+  없으면 시스템)을 읽어 `<html data-theme>` 에 붙이고, CSS 는 그 속성만 본다.
+  이 스크립트가 `<style>` 뒤에 오면 첫 그림이 어두운 색으로 한 번 그려졌다가
+  바뀐다 — 그래서 여기다. 시스템을 따를 때는 OS 가 바뀌면 같이 바뀐다.
+{% endcomment %}
+<script>
+(function () {
+  var KEY = 'diaruga.theme', root = document.documentElement,
+      mq = window.matchMedia('(prefers-color-scheme: light)');
+  function saved() {
+    try { var v = localStorage.getItem(KEY); return v === 'light' || v === 'dark' ? v : ''; }
+    catch (e) { return ''; }
+  }
+  function apply() {
+    var pick = saved();
+    root.dataset.theme = pick || (mq.matches ? 'light' : 'dark');
+    root.dataset.themePick = pick || 'system';
+  }
+  apply();
+  if (mq.addEventListener) mq.addEventListener('change', apply); else mq.addListener(apply);
+  // 머리줄 단추가 부른다. 시스템 → 밝게 → 어둡게 → 시스템
+  window.diarugaTheme = {
+    pick: function () { return root.dataset.themePick; },
+    cycle: function () {
+      var next = {system: 'light', light: 'dark', dark: ''}[root.dataset.themePick];
+      try { if (next) localStorage.setItem(KEY, next); else localStorage.removeItem(KEY); }
+      catch (e) { /* 사생활 모드 — 이 화면에서만 바뀐다 */ root.dataset.theme = next || (mq.matches ? 'light' : 'dark'); root.dataset.themePick = next || 'system'; return; }
+      apply();
+    }
+  };
+})();
+</script>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='-64 -64 128 128'%3E%3Cg fill='none' stroke='%235ac8fa' stroke-width='9' stroke-linecap='round'%3E%3Ccircle r='56'/%3E%3Ccircle r='38'/%3E%3Cpath d='M0 -56V-38M40 -40 27 -27M56 0H38M40 40 27 27M0 56V38M-40 40-27 27M-56 0H-38M-40 -40-27 -27'/%3E%3C/g%3E%3C/svg%3E">
 <style>
   :root {
@@ -46,8 +81,12 @@
     --sea-0: #1b2230; --sea-200: #1a2a3e; --sea-1000: #18334d;
     --sea-2000: #163c5d; --sea-3000: #13456e; --sea-4000: #0f4e80;
   }
-  @media (prefers-color-scheme: light) {
-    :root {
+  /* 어두운 값이 기본이고 밝은 값은 `data-theme="light"` 가 켠다. **미디어 쿼리가
+     아니다** — 어느 쪽인지는 <head> 의 스크립트가 저장값·OS 순으로 정해 속성으로
+     붙인다. 여기 미디어 쿼리를 되살리면 화면에서 고른 것을 OS 가 덮는다. */
+  :root { color-scheme: dark; }
+  :root[data-theme="light"] {
+      color-scheme: light;
       --bg: #f6f7f9; --panel: #fff; --line: #e0e3e9;
       --fg: #1a1d23; --dim: #6b7280; --accent: #0b7ec4; --warn: #b45309;
       --good: #15803d; --danger: #dc2626;
@@ -60,7 +99,6 @@
       --group-bg: #eaecf1; --group-bg-hi: #e0e3ea;
       --sea-0: #e9f1fa; --sea-200: #d5e4f4; --sea-1000: #bcd4ec;
       --sea-2000: #a2c3e3; --sea-3000: #87b1d9; --sea-4000: #6d9fce;
-    }
   }
   * { box-sizing: border-box; }
   /* 안내 문구(placeholder)는 값이 아니다. 브라우저 기본값이 꽤 진해서 이미 채워진
@@ -218,8 +256,20 @@
   }
   .gearlink svg { width: 17px; height: 17px; display: block; }
   .gearlink:hover { color: var(--accent); background: var(--panel); }
+  /* 테마 단추 — 톱니와 같은 모양. 세 아이콘을 다 싣고 `data-theme-pick` 이
+     하나만 보인다 (시스템 ◐ · 밝게 ☀ · 어둡게 ☾) */
+  .themebtn {
+    align-self: center; display: inline-flex; margin-left: 12px; padding: 4px;
+    border: 0; border-radius: 7px; background: none; color: var(--dim); cursor: pointer;
+  }
+  .themebtn svg { width: 17px; height: 17px; display: none; }
+  .themebtn:hover { color: var(--accent); background: var(--panel); }
+  :root[data-theme-pick="system"] .themebtn .ic-system,
+  :root[data-theme-pick="light"] .themebtn .ic-light,
+  :root[data-theme-pick="dark"] .themebtn .ic-dark { display: block; }
   /* nav 도 .envlink 도 없는 화면에서는 이것이 오른쪽으로 가야 한다 */
-  header h1 + .sub + .gearlink, header .sub + .gearlink { margin-left: auto; }
+  header h1 + .sub + .gearlink, header .sub + .gearlink,
+  header h1 + .sub + .themebtn, header .sub + .themebtn { margin-left: auto; }
   main { padding: 5px 18px 22px; max-width: 1500px; margin: 0 auto; }
   h2 { font-size: 18px; margin: 0 0 4px; }
   .dim { color: var(--dim); }
@@ -2140,6 +2190,15 @@
     그래서 머리줄에 두고 **모든 화면에서 같은 자리**에 있다. 톱니 왼쪽이다 —
     설정은 늘 오른쪽 끝이라는 자리를 안 뺏는다.
   {% endcomment %}
+  {% comment %}
+    테마 단추. 누를 때마다 시스템 → 밝게 → 어둡게. 오프라인 검토기에서도 보인다 —
+    현장에서 밝은 곳·어두운 곳이 갈린다. 배선은 <head> 의 `diarugaTheme`.
+  {% endcomment %}
+  <button type="button" class="themebtn" id="themebtn" aria-label="테마">
+    <svg class="ic-system" viewBox="-12 -12 24 24" aria-hidden="true"><circle r="9" fill="none" stroke="currentColor" stroke-width="2"/><path d="M0 -9A9 9 0 0 1 0 9Z" fill="currentColor"/></svg>
+    <svg class="ic-light" viewBox="-12 -12 24 24" aria-hidden="true"><circle r="4.5" fill="none" stroke="currentColor" stroke-width="2"/><g stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M0 -10V-7.5M0 7.5V10M-10 0H-7.5M7.5 0H10M-7.1 -7.1L-5.3 -5.3M5.3 5.3L7.1 7.1M-7.1 7.1L-5.3 5.3M5.3 -5.3L7.1 -7.1"/></g></svg>
+    <svg class="ic-dark" viewBox="-12 -12 24 24" aria-hidden="true"><path d="M3 -9.5A8.5 8.5 0 1 0 9.5 3A7 7 0 0 1 3 -9.5Z" fill="currentColor"/></svg>
+  </button>
   {% if not offline %}
   <a class="atlaslink" href="{% url 'atlas' %}" title="Atlas">Atlas</a>
   <a class="gearlink" href="{% url 'system_settings' %}" title="시스템 설정" aria-label="시스템 설정">
@@ -2155,6 +2214,17 @@
 </header>
 <main>{% block content %}{% endblock %}</main>
 <script>
+  (function () {
+    var b = document.getElementById('themebtn');
+    var NAMES = {system: '시스템을 따름', light: '밝게', dark: '어둡게'};
+    function label() {
+      b.title = '테마: ' + NAMES[window.diarugaTheme.pick()] + ' — 누르면 바뀝니다';
+    }
+    if (b && window.diarugaTheme) {
+      label();
+      b.addEventListener('click', function () { window.diarugaTheme.cycle(); label(); });
+    }
+  })();
   // 뒤로 가기로 돌아오면 브라우저가 캐시된 화면을 되살린다(bfcache). 교정·검토
   // 표시와 마스크가 옛것이 되므로 그때는 다시 받는다.
   window.addEventListener('pageshow', function (e) {
