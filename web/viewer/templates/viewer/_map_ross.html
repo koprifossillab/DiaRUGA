@@ -97,7 +97,7 @@
   {# 시추 지점 #}
   <g class="sites">
     {% for p in ross.points %}
-    <a href="{% url 'dataset' p.slug %}">
+    <a href="{% url 'dataset' p.slug %}" data-core="{{ p.label }}">
       <g class="site{% if not p.exact %} approx{% endif %}"
          transform="translate({{ p.x }},{{ p.y }})">
         {% if not p.exact %}<circle class="halo" r="260" transform="scale({{ ross.mark }})"/>{% endif %}

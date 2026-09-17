@@ -896,6 +896,32 @@
   /* 검토 표시는 남는 자리로 밀어 오른쪽에 세운다 */
   .maptree .mslide .rev { margin-left: auto; white-space: nowrap; }
   .maptree .mdone { color: var(--good); font-size: 11px; }
+  /* 보일 슬라이드 고르기 (203) — 끈 줄·지점·지역과 그 마커. 클래스로 감춘다:
+     `[hidden]` 은 `.maptree .mslide` 의 display 에 진다 (063). */
+  .maptree .msite.mhid, .maptree .mcore.mhid, .maptree .mslide.mhid { display: none; }
+  .antmap .sites a.mhid { display: none; }
+  /* 로스해 확대 상태에서는 나무도 틀 안의 것만 (203). `.mapstage` 와
+     `.maplegend` 는 `.mapwrap` 안의 형제라 `~` 로 닿는다. */
+  .mapstage.zoomRoss ~ .maplegend .maptree .msite.outross,
+  .mapstage.zoomRoss ~ .maplegend .maptree .mcore.outross,
+  .mapstage.zoomRoss ~ .maplegend .mapfilter .outross { display: none; }
+  .mapfilter {
+    border: 1px solid var(--line); border-radius: 6px; margin-bottom: 10px;
+    background: var(--panel); font-size: 12px;
+  }
+  .mapfilter summary { cursor: pointer; padding: 6px 10px; font-weight: 600; }
+  .mapfilter summary .n { color: var(--warn); font-weight: 600; margin-left: 6px; }
+  .mapfilter .body { padding: 2px 10px 8px; }
+  .mapfilter .fsite { margin-top: 6px; }
+  .mapfilter .fcore { margin: 2px 0 0 10px; }
+  .mapfilter .fcore .mono { margin-right: 4px; }
+  .mapfilter label {
+    display: inline-flex; align-items: baseline; gap: 3px; margin: 1px 8px 1px 0;
+    white-space: nowrap; font-variant-numeric: tabular-nums;
+  }
+  .mapfilter label input { margin: 0; vertical-align: middle; }
+  .mapfilter .act { margin-top: 8px; display: flex; gap: 8px; align-items: center; }
+  .mapfilter .act button { font-size: 11.5px; padding: 2px 9px; }
   .mdot {
     display: inline-block; width: 9px; height: 9px; border-radius: 50%;
     background: var(--accent); flex: 0 0 auto;

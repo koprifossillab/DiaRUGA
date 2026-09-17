@@ -23,12 +23,46 @@
     <div class="mapwarn"><b>표시된 위치는 대략값입니다.</b></div>
     {% endif %}
 {% comment %}
+      보일 슬라이드 고르기 (203). **이 브라우저에서만** 감춘다 — 체크를 끄면
+      나무·마커에서 사라지고 `localStorage`(`diaruga.maphide`)에 남는다.
+      서버에는 아무것도 안 쓴다: 슬라이드 속성의 「숨김」(`hide_in_list`)은
+      모든 사람의 목록·합계에 걸리는 자료의 성질이고, 이것은 지도를 보는
+      사람 하나의 보기 상태다(사용자 결정 2026-09-17).
+
+      나무와 같은 나열을 한 번 더 적는다 — 나무 안에 체크박스를 섞으면 고르는
+      중과 보는 중이 한 화면에 겹쳐, 끈 것이 보이는지 안 보이는지가 흔들린다.
+    {% endcomment %}
+    <details class="mapfilter" id="mapfilter">
+      <summary>보일 슬라이드 고르기<span class="n" id="mapfilter-n"></span></summary>
+      <div class="body">
+        {% for p in antmap.points %}
+          <div class="fsite{% if p.ross_out %} outross{% endif %}"><b>{{ p.code }}</b>
+            {% for c in p.cores %}
+              <div class="fcore{% if c.ross_out %} outross{% endif %}"><span class="mono">{{ c.code }}</span>
+                {% for sl in c.slides %}
+                  <label><input type="checkbox" data-slug="{{ sl.slug }}" checked>
+                    {% include "viewer/_depth.html" with sample_kind=sl.sample_kind depth_cm=sl.depth_cm dash=1 short=1 only %}{% if sl.obs_badge %} <span class="dim">{{ sl.obs_badge }}</span>{% endif %}</label>
+                {% endfor %}
+              </div>
+            {% endfor %}
+          </div>
+        {% endfor %}
+        <div class="act"><button type="button" id="mapfilter-all">모두 보이기</button>
+          <span class="dim">이 브라우저에서만 감춥니다.</span></div>
+      </div>
+    </details>
+{% comment %}
       지역 → 코어 → 슬라이드. 깊이순이다 — 같은 코어에서 깊이에 따른 변화를
       보는 것이 이 시료의 목적이라 그 순서로 읽혀야 한다.
+
+      `data-site`·`data-core`·`data-slug` 는 위 고르기와 로스해 확대가 줄을
+      찾는 열쇠다. `outross` 는 로스해 틀 밖의 지점 — 확대 상태에서는 CSS 가
+      감춘다(`.mapstage.zoomRoss ~ .maplegend`). 마커와 같은 판정이다
+      (`views._map_ctx`).
     {% endcomment %}
     <ul class="maptree">
     {% for p in antmap.points %}
-      <li class="msite">
+      <li class="msite{% if p.ross_out %} outross{% endif %}" data-site="{{ p.code }}">
         <div class="mhead">
           <span class="mdot{% if not p.exact %} approx{% endif %}"></span>
           <b>{{ p.code }}</b>
@@ -36,16 +70,16 @@
         </div>
         <ul>
         {% for c in p.cores %}
-          <li class="mcore">
+          <li class="mcore{% if c.ross_out %} outross{% endif %}" data-core="{{ p.code }}-{{ c.code }}">
             <div class="mhead"><span class="mono">{{ c.code }}</span>
-              <span class="dim">슬라이드 {{ c.n_slides }}장</span></div>
+              <span class="dim">슬라이드 <span class="nsl">{{ c.n_slides }}</span>장</span></div>
             <ul>
             {% for sl in c.slides %}
               {% comment %}
                 여기는 이름이 아니라 깊이만 적는 자리다 — 같은 깊이의 관찰 둘이
                 **글자 그대로 같아 보인다.** 배지가 그것을 가른다.
               {% endcomment %}
-              <li class="mslide{% if sl.hidden %} rowhidden{% endif %}">
+              <li class="mslide{% if sl.hidden %} rowhidden{% endif %}" data-slug="{{ sl.slug }}" data-vp="{{ sl.n_viewpoints }}">
                 <a href="{% url 'dataset' sl.slug %}">
                   {% include "viewer/_depth.html" with sample_kind=sl.sample_kind depth_cm=sl.depth_cm dash=1 short=1 only %}
                 </a>

@@ -62,7 +62,7 @@
     {# 시료 위치 #}
     <g class="sites">
       {% for p in antmap.points %}
-      <a href="{% url 'dataset' p.slugs.0 %}">
+      <a href="{% url 'dataset' p.slugs.0 %}" data-site="{{ p.code }}">
         <g class="site{% if not p.exact %} approx{% endif %}"
            transform="translate({{ p.x }},{{ p.y }})">
           {# 대략 위치는 원으로 범위를 함께 그린다 — 점만 찍으면 실측처럼 보인다 #}
