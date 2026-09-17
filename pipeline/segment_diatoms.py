@@ -62,6 +62,13 @@ sys.path.insert(0, str(APP / "web"))
 sys.path.append(str(APP))
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "diarugaweb.settings")
 django.setup()
+# **모델 코드와 DB 의 판이 같은가** — DB 를 만지기 전에 본다 (198). 이미지의
+# 모델이 걷힌 칼럼을 알고 있으면 SELECT 한 번에 죽는데, 저장 도중이면 앞
+# 트랜잭션이 이미 커밋된 뒤라 실패마다 행이 남는다. 어긋나면 3 으로 끝낸다.
+# 스크립트로 돌 때만이다 — 시험이 임포트할 때는 시험 DB 가 아직 없다.
+import schema_guard                                                 # noqa: E402
+if __name__ == "__main__":
+    schema_guard.check_or_exit("segment_diatoms")
 
 from django.conf import settings                                    # noqa: E402
 from django.db import transaction                                   # noqa: E402
@@ -811,6 +818,22 @@ def save_detection(payload: dict, img_path: Path, run: Run, iou_min: float,
         return det, len(rows), None
 
     # 두 번째 — 짧고, 반드시 한 덩어리여야 하는 부분
+    #
+    # **여기서 죽으면 첫 트랜잭션이 남긴 것을 거둔다** (198). 앞 트랜잭션은
+    # 이미 커밋된 뒤라 그냥 올려보내면 `is_current=False` 인 검출과 후보
+    # 수백 행이 실패마다 남는다 — 폴러가 매분 다시 부르므로 이틀에 4,200번
+    # 쌓여 DB 가 여섯 배가 됐다. 잠금 재시도(`with_db_retry`)도 같은 길이다:
+    # 다시 돌면 첫 트랜잭션을 또 지나므로 앞엣것은 지워져 있어야 한다.
+    try:
+        stat = _promote_and_rebind(vp, det, iou_min)
+    except BaseException:
+        Detection.objects.filter(pk=det.pk).delete()    # 후보는 CASCADE
+        raise
+    return det, len(rows), stat
+
+
+def _promote_and_rebind(vp, det, iou_min):
+    """새 검출을 현재로 올리고 교정을 다시 맺는다 — 한 트랜잭션. 재바인딩 통계를 돌려준다."""
     with transaction.atomic():
         # **같은 묶음 안에서만 인계한다** (P10). `is_current` 의 뜻이 좁아졌다 —
         # 예전에는 "뷰어가 볼 것" 이라 시야에 하나였고, 이제는 **그 묶음 안에서
@@ -833,9 +856,7 @@ def save_detection(payload: dict, img_path: Path, run: Run, iou_min: float,
         det.save(update_fields=["is_current"])
 
         det.refresh_from_db()
-        stat = rebind.rebind_viewpoint(vp, det, iou_min=iou_min)
-
-    return det, len(rows), stat
+        return rebind.rebind_viewpoint(vp, det, iou_min=iou_min)
 
 
 def process(img_path: Path, gen, args, out_dir: Path, scale_log=None):

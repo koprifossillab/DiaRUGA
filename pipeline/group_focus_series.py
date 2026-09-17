@@ -59,6 +59,13 @@ sys.path.insert(0, str(APP / "web"))
 sys.path.append(str(APP))
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "diarugaweb.settings")
 django.setup()
+# **모델 코드와 DB 의 판이 같은가** — DB 를 만지기 전에 본다 (198). 이미지의
+# 모델이 걷힌 칼럼을 알고 있으면 SELECT 한 번에 죽는데, 저장 도중이면 앞
+# 트랜잭션이 이미 커밋된 뒤라 실패마다 행이 남는다. 어긋나면 3 으로 끝낸다.
+# 스크립트로 돌 때만이다 — 시험이 임포트할 때는 시험 DB 가 아직 없다.
+import schema_guard                                                 # noqa: E402
+if __name__ == "__main__":
+    schema_guard.check_or_exit("group_focus_series")
 
 from django.conf import settings                                    # noqa: E402
 from django.db import transaction                                   # noqa: E402
