@@ -163,6 +163,13 @@ def _map_ctx(area: str, pts: list) -> dict:
             "scale_x": x + round(w * 0.06),
             "scale_y": y + h - round(h * 0.06),
         }
+    # 로스해 확대 상태에서 오른쪽 나무가 틀 안의 것만 내도록(203) 지점·지역에
+    # 틀 밖 표시를 적는다. 판정은 `ross.in_frame` 하나다 — 확대 지도가 마커를
+    # 거르는 그 규칙이라, 마커가 있는 지점은 나무에도 있고 없는 것은 없다.
+    for q in pts:
+        for c in q["cores"]:
+            c["ross_out"] = not ross.in_frame(c["x"], c["y"])
+        q["ross_out"] = all(c["ross_out"] for c in q["cores"]) if q["cores"] else True
     return {
         **common, "kind": "ant",
         "land": antarctica.LAND,
@@ -265,6 +272,24 @@ def dataset(request, slug):
     ctx["marked"] = request.GET.get("marked") or ""
     ctx["marked_n"] = request.GET.get("n") or ""
     return render(request, "viewer/dataset.html", ctx)
+
+
+
+def compare(request):
+    """산출 비교 — 슬라이드 몇 장을 `?s=<slug>&s=<slug>` 로 받아 나란히 놓는다 (202).
+
+    **고르는 자리도 이 화면이다.** 목록 화면에 체크박스를 두면 권역 탭·숨김
+    토글과 얽혀 고른 것이 탭을 넘길 때 사라진다 — 주소에 실어 두면 적어 둔
+    링크가 곧 그 비교다.
+
+    **모르는 slug 는 거르고 알린다.** 404 로 세우면 링크 하나가 낡았을 때
+    나머지도 못 본다.
+    """
+    slugs = [s for s in request.GET.getlist("s") if s]
+    ctx = data.compare_slides(slugs)
+    ctx["picker"] = data.compare_picker({c["slug"] for c in ctx["cols"]})
+    ctx["review_batch"] = data.review_batch_label()
+    return render(request, "viewer/compare.html", ctx)
 
 
 @require_POST

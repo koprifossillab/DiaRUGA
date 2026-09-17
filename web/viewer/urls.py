@@ -61,6 +61,9 @@ urlpatterns = [
     # 항목에 조용히 저장된다.** 본문으로 받으면 그 갈래가 아예 없다.
     path("loc/<str:site_code>/<str:core_code>/series/points",
          views.core_points_edit, name="core_points_edit"),
+    # 산출 비교 (202). 슬라이드는 `?s=<slug>` 를 되풀이해 고른다 — 주소가 곧
+    # 비교라서 적어 두고 다시 열 수 있다.
+    path("compare/", views.compare, name="compare"),
     # 오프라인 검토기·동정기 (P25). **꺼내는 자리와 되돌리는 자리가 하나다** —
     # 결과 파일을 든 사람이 올릴 곳을 찾아 헤매지 않게.
     path("offline/", views.offline_page, name="offline"),

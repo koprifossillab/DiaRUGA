@@ -2381,6 +2381,9 @@ SELECT v.slide_id AS slide_id,
                  WHEN c.elongation >= 2.0 AND c.elongation <= 20.0 THEN 'rod'
                  ELSE '' END
             ELSE c.cls END                                          AS eff_cls,
+       -- 종명은 분류 아래 한 단계다 (202). 목록 화면은 `_summary_rows` 가
+       -- 접어서 못 보고, 비교 화면만 이 축을 쓴다.
+       COALESCE(o.species, '')                                      AS species,
        COUNT(*) FILTER (WHERE (c.passed AND NOT COALESCE(r.removed, 0))
                            OR (NOT c.passed AND COALESCE(r.accepted, 0)))   AS n_kept,
        COUNT(*) FILTER (WHERE c.passed)                                     AS n_auto,
@@ -2397,7 +2400,7 @@ LEFT JOIN viewer_objectreview r
 -- 아래 `IS NOT NULL` 검사가 예전 그대로 걸린다.
 LEFT JOIN viewer_diatomobject o ON o.id = r.diatom_object_id
 WHERE {where}
-GROUP BY v.slide_id, eff_cls
+GROUP BY v.slide_id, eff_cls, species
 
 UNION ALL
 
@@ -2412,6 +2415,7 @@ UNION ALL
 -- 몇 개" 에 섞이면 엔진 성적을 잘못 읽는다.
 SELECT v.slide_id AS slide_id,
        COALESCE(NULLIF(o.label, ''), '') AS eff_cls,
+       COALESCE(o.species, '')                                   AS species,
        COUNT(*)                                                  AS n_kept,
        0                                                         AS n_auto,
        COUNT(*) FILTER (WHERE o.label IS NOT NULL AND o.label <> '') AS n_labeled
@@ -2420,7 +2424,7 @@ JOIN viewer_diatomobject o ON o.id = r.diatom_object_id
 JOIN rep ON rep.image_id = r.image_id AND rep.rn = 1
 JOIN viewer_viewpoint v ON v.id = rep.viewpoint_id
 WHERE r.batch_id IS NULL AND r.source = 'manual' AND {where}
-GROUP BY v.slide_id, eff_cls
+GROUP BY v.slide_id, eff_cls, species
 """
 
 
@@ -2498,16 +2502,25 @@ def _summary_rows(where: str, params: list) -> dict[int, dict]:
     **분류 목록을 SQL 에 박지 않는다.** `ClassDef` 에 행을 더하면 저절로 따라온다
     (038~040 과 같은 방향). 모르는 분류로 나온 개체도 `n_detected` 에는 들어간다 —
     화면의 분류 열에만 안 보인다.
+
+    SQL 은 `(분류, 종명)` 으로 묶어 오고 여기서 종명을 접는다 — `per_cls` 는
+    예전 그대로이고, `per_sp` 에 `(분류, 종명) → 수` 를 따로 남긴다(202 의
+    비교 화면이 쓴다). **두 벌의 SQL 을 두지 않는다** — 세는 규칙이 갈리면
+    목록과 비교 화면이 같은 슬라이드에 다른 수를 낸다.
     """
     out: dict[int, dict] = {}
     with connection.cursor() as cur:
         # `{where}` 가 두 번 들어간다 (UNION 의 양쪽) — 파라미터도 두 벌이다.
         cur.execute(_SUMMARY_SQL.format(where=where), list(params) * 2)
-        for slide_id, eff_cls, n_kept, n_auto, n_labeled in cur.fetchall():
-            r = out.setdefault(slide_id, {"per_cls": {}, "n_detected": 0,
+        for slide_id, eff_cls, species, n_kept, n_auto, n_labeled in cur.fetchall():
+            r = out.setdefault(slide_id, {"per_cls": {}, "per_sp": {},
+                                          "n_detected": 0,
                                           "n_auto": 0, "n_labeled": 0})
             if n_kept:
                 r["per_cls"][eff_cls] = r["per_cls"].get(eff_cls, 0) + n_kept
+                if species:
+                    k = (eff_cls, species)
+                    r["per_sp"][k] = r["per_sp"].get(k, 0) + n_kept
             r["n_detected"] += n_kept
             r["n_auto"] += n_auto
             r["n_labeled"] += n_labeled
@@ -2795,6 +2808,175 @@ def datasets_by_locality(rows: list[dict], with_hidden: bool = False) -> list[di
         g["n"] = len(g["rows"])
         g["n_hidden"] = len(g["all_rows"]) - g["n"]
     return out
+
+
+# --- 산출 비교 (202) ---------------------------------------------------------
+def _slide_head(slide: Slide) -> dict:
+    """비교 표의 열 머리 하나. 목록의 행과 같은 열쇠를 쓴다(`datasets`)."""
+    sample = slide.sample
+    loc = sample.locality if sample else None
+    site = loc.site if loc else None
+    return {
+        "slug": slide.slug,
+        "label": slide.name,
+        "site": (site.region or site.name or site.code) if site else "",
+        "site_code": site.code if site else "",
+        "core": loc.code if loc else "",
+        "sample_code": sample.code if sample else "",
+        "depth_cm": sample.depth_cm if sample else None,
+        "sample_kind": loc.kind if loc else "core",
+        **_obs(slide),
+    }
+
+
+def _slides_in_order(qs):
+    """목록과 같은 차례 — 지역 → 지점 → 시료 위치 → 관찰 번호 (`datasets`)."""
+    return (qs.select_related("sample__locality__site")
+              .order_by("sample__locality__site__code",
+                        "sample__locality__code", "sample__depth_cm",
+                        "sample__sample_no", "obs_no", "name"))
+
+
+def compare_picker(picked: set) -> list[dict]:
+    """비교할 슬라이드를 고르는 목록 — 지점으로 묶는다.
+
+    **집계를 안 부른다.** 고르는 자리에 필요한 것은 이름과 소속뿐이고, 목록
+    화면처럼 슬라이드마다 세면 고르기도 전에 그 값을 다 치른다(060 의 자리).
+    """
+    groups: list[dict] = []
+    for sl in _slides_in_order(Slide.objects.all()):
+        head = _slide_head(sl)
+        key = (head["site_code"], head["core"])
+        g = groups[-1] if groups and groups[-1]["key"] == key else None
+        if g is None:
+            g = {"key": key, "site": head["site"], "core": head["core"],
+                 "slides": []}
+            groups.append(g)
+        g["slides"].append({**head, "on": sl.slug in picked})
+    return groups
+
+
+def compare_slides(slugs: list[str]) -> dict:
+    """슬라이드 몇 장의 산출을 한 표에 나란히 놓는다 (202).
+
+    열은 슬라이드, 줄은 분류이고 분류 아래에 **종명**이 한 단계 더 있다 —
+    카탈로그에서 적은 `DiatomObject.species` 다. 종명은 아직 드물어서(운영에
+    개체 169개) 분류 층이 먼저이고, 종명은 그 분류의 안에서 몇 개가 어느
+    이름으로 동정됐는가로 읽는다.
+
+    **세는 규칙은 목록 화면과 하나다** (`_summary_rows`). 대표 이미지 하나 ·
+    검토 대상 묶음 · 사람이 지운 것을 빼고 되살린 것을 더한 값이다. 그래서
+    이 표의 분류 칸은 목록의 분류 열과 같은 수여야 한다 — 다르면 어느 쪽이
+    틀린 것이다.
+
+    **비율의 분모는 세는 분류의 합(`n_counted`)이다.** 목록의 "검출" 칸과
+    같은 값이고, 파편·미분류는 분자에도 분모에도 안 든다 — 파편을 개체로
+    세면 밀도가 부푼다(`counted_classes` 머리말). 파편·미분류 줄은 표 아래쪽에
+    수만 적고 비율은 비운다.
+
+    **열의 차례는 고른 차례가 아니라 목록의 차례다** — 지역·지점·깊이 순.
+    깊이에 따른 변화가 분석의 목적이라 그 축이 표에서도 잡혀야 한다.
+
+    **`집계 제외`(`exclude_from_totals`)를 여기서는 안 거른다.** 그 표시는
+    같은 시료의 관찰이 여럿일 때 합계가 두 배가 되는 것을 막는 것인데, 이
+    표는 더하지 않고 나란히 놓는다 — 관찰끼리 비교하는 것이 바로 이 화면의
+    쓸모다. 표시만 열 머리에 얹는다.
+    """
+    wanted = [s for s in dict.fromkeys(slugs) if s]
+    slides = list(_slides_in_order(Slide.objects.filter(slug__in=wanted)))
+    found = {sl.slug for sl in slides}
+    unknown = [s for s in wanted if s not in found]
+    if not slides:
+        return {"cols": [], "rows": [], "extra_rows": [], "unknown": unknown,
+                "n_species": 0}
+
+    ids = [sl.id for sl in slides]
+    marks = ",".join(["%s"] * len(ids))
+    summary = _summary_rows(f"v.slide_id IN ({marks})", ids)
+    done = {sl.id: len(done_viewpoints(slide=sl)) for sl in slides}
+    n_groups = dict(Viewpoint.objects.filter(slide_id__in=ids)
+                    .values_list("slide_id").annotate(n=Count("id")))
+    # 검출이 돈 시야 수 — `_summary_by_sql` 과 같은 셈이다. 시야 전부에 검출이
+    # 안 돌았으면 열의 수가 다른 열과 같은 밀도가 아니다.
+    det_groups = dict(
+        Detection.objects.reviewing().filter(viewpoint__slide_id__in=ids)
+        .values_list("viewpoint__slide_id")
+        .annotate(n=Count("viewpoint_id", distinct=True)))
+
+    counted_keys = [c["key"] for c in counted_classes()]
+    cols = []
+    for sl in slides:
+        r = summary.get(sl.id) or {"per_cls": {}, "per_sp": {},
+                                   "n_detected": 0}
+        n_counted = sum(v for k, v in r["per_cls"].items()
+                        if k in counted_keys)
+        cols.append({**_slide_head(sl),
+                     "n_groups": n_groups.get(sl.id, 0),
+                     "detected_groups": det_groups.get(sl.id, 0),
+                     "reviewed_groups": done.get(sl.id, 0),
+                     "n_detected": r["n_detected"],
+                     "n_counted": n_counted,
+                     "_per_cls": r["per_cls"], "_per_sp": r["per_sp"]})
+
+    def cells(get, pct: bool):
+        out = []
+        for c in cols:
+            n = get(c)
+            out.append({"n": n,
+                        "pct": (round(100.0 * n / c["n_counted"], 1)
+                                if pct and c["n_counted"] else None)})
+        return out
+
+    rows, extra = [], []
+    for cd in _class_rows():
+        key = cd["key"]
+        is_counted = cd["counted"]
+        row = {"key": key, "label": cd["label"], "short": cd["short"],
+               "badge": cd["badge"], "counted": is_counted,
+               "cells": cells(lambda c: c["_per_cls"].get(key, 0),
+                              is_counted),
+               "species": []}
+        row["total"] = sum(x["n"] for x in row["cells"])
+        if not row["total"]:
+            continue
+        # 이 분류 아래의 종명들 — 어느 열에든 하나라도 있으면 줄을 낸다.
+        names = sorted({sp for c in cols
+                        for (k, sp) in c["_per_sp"] if k == key})
+        for sp in names:
+            srow = {"name": sp,
+                    "cells": cells(lambda c, sp=sp:
+                                   c["_per_sp"].get((key, sp), 0),
+                                   is_counted)}
+            srow["total"] = sum(x["n"] for x in srow["cells"])
+            row["species"].append(srow)
+        if names:
+            # 남는 것 — 그 분류인데 아직 종명을 안 적은 개체. 종명 줄만 있으면
+            # 분류 수와 종명 합이 안 맞아 보인다.
+            rest = {"name": "", "cells": cells(
+                lambda c: c["_per_cls"].get(key, 0)
+                - sum(v for (k, _sp), v in c["_per_sp"].items() if k == key),
+                is_counted)}
+            rest["total"] = sum(x["n"] for x in rest["cells"])
+            if rest["total"]:
+                row["species"].append(rest)
+        (rows if is_counted else extra).append(row)
+
+    # 분류가 없는 개체. `ClassDef` 에 없는 열쇠(빈 문자열 포함)가 전부 여기다.
+    known = {cd["key"] for cd in _class_rows()}
+    none_cells = cells(lambda c: sum(v for k, v in c["_per_cls"].items()
+                                     if k not in known), False)
+    if any(x["n"] for x in none_cells):
+        extra.append({"key": "", "label": "미분류", "short": "미분류",
+                      "badge": "", "counted": False, "cells": none_cells,
+                      "species": [],
+                      "total": sum(x["n"] for x in none_cells)})
+
+    for c in cols:
+        del c["_per_cls"], c["_per_sp"]
+    return {"cols": cols, "rows": rows, "extra_rows": extra,
+            "unknown": unknown,
+            "n_species": sum(len([s for s in r["species"] if s["name"]])
+                             for r in rows + extra)}
 
 
 def _nice_step(span: float, want: int = 8) -> int:

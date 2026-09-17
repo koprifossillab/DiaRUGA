@@ -1,0 +1,176 @@
+{% extends "viewer/base.html" %}
+{% comment %}
+  산출 비교 (202). 슬라이드 몇 장의 검출 수를 분류(그 아래 종명)별로 나란히
+  놓는다 — 열이 슬라이드, 줄이 분류다. 목록 화면은 슬라이드가 줄이라 분류
+  열이 옆으로 늘어서고, 종명은 아예 없다. 깊이가 다른 시료 둘을 놓고 "무엇이
+  늘고 무엇이 줄었나" 를 읽는 표는 축이 이쪽이어야 한다.
+
+  **고르는 자리가 이 화면 안에 있다.** 주소(`?s=<slug>&s=<slug>`)가 곧 비교라
+  적어 두고 다시 열면 같은 표가 뜬다. 목록 화면에 체크박스를 두지 않은 이유는
+  `views.compare` 머리말에.
+
+  **세는 규칙은 목록과 하나다** (`data.compare_slides`). 이 표의 분류 칸은
+  목록 표의 분류 열과 같은 수다 — 다르면 어느 쪽이 틀린 것이다.
+
+  `<style>` 은 block 안에 둔다 — 밖에 적으면 렌더되지 않는다(CLAUDE.md).
+{% endcomment %}
+{% block title %}산출 비교 — DiaRUGA{% endblock %}
+{% block subtitle %}<a href="{% url 'index' %}">데이터셋</a> / <b>산출 비교</b>{% endblock %}
+
+{% block content %}
+<style>
+  .cmp-pick { border: 1px solid var(--line); border-radius: 8px;
+              background: var(--panel); margin: 0 0 16px; }
+  .cmp-pick summary { cursor: pointer; padding: 9px 14px; font-size: 13px;
+                      font-weight: 600; }
+  .cmp-pick summary .n { color: var(--dim); font-weight: 500; margin-left: 6px; }
+  .cmp-pick .body { padding: 4px 14px 12px; }
+  .cmp-pick .grp { margin: 8px 0 4px; }
+  .cmp-pick .grp h4 { margin: 0 0 4px; font-size: 12px; color: var(--dim);
+                      font-weight: 600; text-transform: none; }
+  .cmp-pick label { display: inline-flex; align-items: center; gap: 5px;
+                    margin: 2px 14px 2px 0; font-size: 13px; white-space: nowrap; }
+  .cmp-pick label.hid { opacity: .55; }
+  .cmp-pick .obs { font-size: 11px; color: var(--dim); }
+  .cmp-pick .act { margin-top: 10px; display: flex; gap: 10px; align-items: center; }
+  .cmp-pick .act .dim { font-size: 12px; }
+
+  .cmp table { width: auto; }
+  .cmp td, .cmp th { padding-left: 14px; padding-right: 14px; }
+  .cmp th, .cmp td { white-space: nowrap; }
+  .cmp thead th { vertical-align: bottom; text-transform: none; letter-spacing: 0; }
+  .cmp thead th .lbl { font-size: 13px; color: var(--fg); font-weight: 600; }
+  .cmp thead th .where { display: block; font-size: 11px; font-weight: 500; }
+  .cmp thead tr.sub th { font-size: 11px; font-weight: 500; padding-top: 2px; }
+  .cmp thead th .exmark { margin-left: 2px; }
+  .cmp tr.cls td:first-child { font-weight: 600; }
+  .cmp tr.sp td:first-child { padding-left: 28px; font-style: italic; }
+  .cmp tr.sp td:first-child .rest { font-style: normal; color: var(--dim); }
+  .cmp tr.sp td { color: var(--dim); }
+  .cmp tr.sum td { font-weight: 700; border-top: 2px solid var(--line); }
+  .cmp tr.sec td { color: var(--dim); font-size: 11px; padding-top: 12px;
+                   border-bottom: 0; text-transform: uppercase; letter-spacing: .4px; }
+  .cmp td .pct { display: inline-block; min-width: 46px; margin-left: 6px;
+                 font-size: 11px; color: var(--dim);
+                 font-variant-numeric: tabular-nums; text-align: right; }
+  /* 비율 막대 — 칸의 바탕에 얹는다. 색은 뜻 있는 것(--accent·--warn)을
+     빌리지 않고 선 색을 쓴다: 값의 크기만 보이면 된다. */
+  .cmp td.v { background: linear-gradient(to left, var(--line) 0 var(--w), transparent var(--w));
+              background-clip: padding-box; }
+  .cmp td.zero { color: var(--dim); opacity: .6; }
+  .cmp .nodet { color: var(--dim); }
+  .cmp-note { font-size: 12.5px; color: var(--dim); line-height: 1.6; margin: 10px 0 0; }
+</style>
+
+<div class="pagehead">
+  <h2>산출 비교</h2>
+  {% include "viewer/_batchtag.html" with review_batch=review_batch only %}
+</div>
+
+{% if unknown %}
+  <div class="note">모르는 슬라이드가 주소에 있어 뺐습니다:
+    {% for u in unknown %}<code class="mono">{{ u }}</code>{% if not forloop.last %} · {% endif %}{% endfor %}</div>
+{% endif %}
+
+{% comment %}
+  고른 것이 없으면 펼쳐 두고, 있으면 접는다 — 표가 먼저 보여야 한다.
+  `<details>` 라 JS 없이 접히고 펼쳐진다.
+{% endcomment %}
+<details class="cmp-pick"{% if not cols %} open{% endif %}>
+  <summary>슬라이드 고르기<span class="n">{% if cols %}{{ cols|length }}장 고름{% else %}둘 이상 고르세요{% endif %}</span></summary>
+  <form class="body" method="get" action="{% url 'compare' %}">
+    {% for g in picker %}
+      <div class="grp">
+        <h4>{% if g.site %}{{ g.site }}{% endif %}{% if g.core %} · {{ g.core }}{% endif %}{% if not g.site and not g.core %}소속 없음{% endif %}</h4>
+        {% for s in g.slides %}
+          <label{% if s.hidden %} class="hid" title="목록에서 숨긴 슬라이드"{% endif %}>
+            <input type="checkbox" name="s" value="{{ s.slug }}"{% if s.on %} checked{% endif %}>
+            {{ s.label }}{% if s.obs_badge %} <span class="obs">{{ s.obs_badge }}</span>{% endif %}
+          </label>
+        {% endfor %}
+      </div>
+    {% empty %}
+      <p class="dim">슬라이드가 아직 없습니다.</p>
+    {% endfor %}
+    <div class="act">
+      <button type="submit">비교</button>
+      <span class="dim">고른 슬라이드가 주소에 실립니다 — 적어 두면 같은 표가 다시 뜹니다.</span>
+    </div>
+  </form>
+</details>
+
+{% if cols %}
+<div class="scroll cmp">
+<table>
+  <thead>
+    <tr>
+      <th>분류 · 종명</th>
+      {% for c in cols %}
+        <th><a class="lbl" href="{% url 'dataset' c.slug %}">{{ c.label }}</a>{% if c.excluded %}<span class="exmark" title="집계 제외로 표시된 관찰 — 목록 합계에는 안 든다">*</span>{% endif %}
+          <span class="where">{% if c.site %}{{ c.site }}{% endif %}{% if c.core %} · {{ c.core }}{% endif %}{% if c.sample_kind == "outcrop" or c.depth_cm %} · {% include "viewer/_depth.html" with sample_kind=c.sample_kind depth_cm=c.depth_cm only %}{% endif %}{% if c.obs_badge %} · {{ c.obs_badge }}{% endif %}</span></th>
+      {% endfor %}
+    </tr>
+    {% comment %}
+      시야 수와 검출이 돈 시야 수. 열마다 분모가 다르면 수를 그대로 견줄 수
+      없고 비율로 봐야 한다 — 그 사실이 표 머리에 있어야 한다.
+    {% endcomment %}
+    <tr class="sub">
+      <th>시야 · 검토</th>
+      {% for c in cols %}
+        <th title="시야 {{ c.n_groups }}개 중 검출이 돈 시야 {{ c.detected_groups }}개 · 검토 완료 {{ c.reviewed_groups }}개">{% if c.detected_groups < c.n_groups %}{{ c.detected_groups }}/{% endif %}{{ c.n_groups }} 시야 · 검토 {{ c.reviewed_groups }}</th>
+      {% endfor %}
+    </tr>
+  </thead>
+  <tbody>
+    {% for r in rows %}
+      <tr class="cls">
+        <td><span class="badge {{ r.badge }}">{{ r.short }}</span> {{ r.label }}</td>
+        {% for x in r.cells %}
+          <td class="{% if x.n %}v{% else %}zero{% endif %}"{% if x.pct %} style="--w: {{ x.pct }}%"{% endif %}>{{ x.n }}<span class="pct">{% if x.pct is not None %}{{ x.pct }}%{% endif %}</span></td>
+        {% endfor %}
+      </tr>
+      {% for sp in r.species %}
+        <tr class="sp">
+          <td>{% if sp.name %}{{ sp.name }}{% else %}<span class="rest">종명 없음</span>{% endif %}</td>
+          {% for x in sp.cells %}
+            <td class="{% if not x.n %}zero{% endif %}">{{ x.n }}<span class="pct">{% if x.pct is not None %}{{ x.pct }}%{% endif %}</span></td>
+          {% endfor %}
+        </tr>
+      {% endfor %}
+    {% empty %}
+      <tr><td class="nodet" colspan="{{ cols|length|add:1 }}">세는 분류의 개체가 없습니다.</td></tr>
+    {% endfor %}
+    <tr class="sum">
+      <td title="세는 분류만 더한 값 — 목록의 「검출」 칸과 같다">검출 (세는 분류)</td>
+      {% for c in cols %}<td>{{ c.n_counted }}<span class="pct">{% if c.n_counted %}100%{% endif %}</span></td>{% endfor %}
+    </tr>
+    {% if extra_rows %}
+      <tr class="sec"><td colspan="{{ cols|length|add:1 }}">세지 않는 것 — 파편·미분류 (비율의 분모에 안 든다)</td></tr>
+      {% for r in extra_rows %}
+        <tr class="cls">
+          <td>{% if r.badge %}<span class="badge {{ r.badge }}">{{ r.short }}</span> {% endif %}{{ r.label }}</td>
+          {% for x in r.cells %}<td class="{% if not x.n %}zero{% endif %}">{{ x.n }}<span class="pct"></span></td>{% endfor %}
+        </tr>
+        {% for sp in r.species %}
+          <tr class="sp">
+            <td>{% if sp.name %}{{ sp.name }}{% else %}<span class="rest">종명 없음</span>{% endif %}</td>
+            {% for x in sp.cells %}<td class="{% if not x.n %}zero{% endif %}">{{ x.n }}<span class="pct"></span></td>{% endfor %}
+          </tr>
+        {% endfor %}
+      {% endfor %}
+      <tr class="sum">
+        <td title="파편·미분류까지 남는 개체 전부">개체 전부</td>
+        {% for c in cols %}<td>{{ c.n_detected }}<span class="pct"></span></td>{% endfor %}
+      </tr>
+    {% endif %}
+  </tbody>
+</table>
+</div>
+<p class="cmp-note">
+  수는 시야마다 대표 이미지 하나에서, 검토 대상 묶음의 검출에 사람의 교정을
+  얹어 센 것입니다 — 목록 화면의 분류 열과 같습니다. 비율은 세는 분류의 합이
+  분모입니다. 종명은 개체 카탈로그에서 적은 것이고{% if n_species %} 이 표에 {{ n_species }}줄 있습니다{% else %} 아직 이 슬라이드들에는 없습니다{% endif %}.
+  <b>*</b> 는 「집계 제외」 관찰 — 같은 시료의 다른 관찰과 함께 더하면 두 배가 되는 것이라 목록 합계에서만 뺍니다. 여기서는 더하지 않으니 그대로 놓습니다.
+</p>
+{% endif %}
+{% endblock %}

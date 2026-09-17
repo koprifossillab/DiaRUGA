@@ -108,6 +108,14 @@
      title="{% if with_hidden %}숨긴 슬라이드를 다시 감춥니다{% else %}숨긴 슬라이드 {{ n_hidden }}장을 흐리게 함께 보입니다{% endif %}">
     <span class="hm">※</span>숨긴 항목<span class="n">{{ n_hidden }}</span></a>
   {% endif %}
+  {% comment %}
+    산출 비교 (202). 슬라이드는 저쪽 화면에서 고른다 — 여기 체크박스를 두면
+    권역 탭·숨김 토글을 넘길 때 고른 것이 사라진다(`views.compare` 머리말).
+  {% endcomment %}
+  {% if datasets %}
+  <a class="hidetoggle" href="{% url 'compare' %}"
+     title="슬라이드 몇 장의 검출 수를 분류·종명별로 나란히 놓습니다">산출 비교</a>
+  {% endif %}
 </div>
 <p class="dim">NAS 에 새 슬라이드가 올라오면 자동으로 가져와 검출까지 돌립니다.
   자동 처리가 끝나야 검토가 열립니다.</p>
