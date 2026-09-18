@@ -288,6 +288,43 @@ class ExtractTest(DiaRUGATestCase):
                 "sheet": "MS", "header_row": 1, "depth_col": 1,
                 "depth_unit": "cm", "columns": [[2, "v", "V", ""]]})
 
+    # --- pptx 차트 (206) — `read_pptx_charts` 가 낸 모양을 손으로 만든다 ---
+
+    def _charts(self, xs, ys, slide=3, title="opal  final"):
+        return {slide: {self.mod._norm_title(title): (
+            dict(enumerate(xs)), dict(enumerate(ys)))}}
+
+    def test_깊이_축은_매핑표가_말한다(self):
+        """같은 파일에서 Opal 만 깊이가 x 축이다. 뒤집으면 값이 깊이 자리에 앉는다."""
+        charts = self._charts([0, 2, 4], [23.5, 24.6, 22.5])
+        got = self.mod.read_chart(charts, {
+            "slide": 3, "title": "opal final", "depth_axis": "x", "depth_unit": "cm"})
+        self.assertEqual(got, {0: 23.5, 20: 24.6, 40: 22.5})
+        with self.assertRaises(ValueError):
+            self.mod.read_chart(charts, {
+                "slide": 3, "title": "opal final", "depth_axis": "y",
+                "depth_unit": "cm"})
+
+    def test_제목은_띄어쓰기_대소문자를_안_가린다(self):
+        """`opal  final`(공백 둘)·`Density(g/cm3)` 가 한 파일 안에 섞여 있다."""
+        charts = self._charts([0], [1.0], title="Opal  Final")
+        got = self.mod.read_chart(charts, {
+            "slide": 3, "title": "opal final", "depth_axis": "x", "depth_unit": "cm"})
+        self.assertEqual(got, {0: 1.0})
+
+    def test_없는_차트는_있는_것을_들어_말한다(self):
+        charts = self._charts([0], [1.0])
+        with self.assertRaisesRegex(ValueError, "opal final"):
+            self.mod.read_chart(charts, {
+                "slide": 3, "title": "toc", "depth_axis": "x", "depth_unit": "cm"})
+
+    def test_점은_idx_로_짝짓는다(self):
+        """빈 셀은 그 축의 캐시에서만 빠진다 — 차례로 zip 하면 뒤가 다 어긋난다."""
+        charts = {3: {"toc": ({0: 0.5, 2: 0.7}, {0: 0.0, 1: 2.0, 2: 4.0})}}
+        got = self.mod.read_chart(charts, {
+            "slide": 3, "title": "toc", "depth_axis": "y", "depth_unit": "cm"})
+        self.assertEqual(got, {0: 0.5, 40: 0.7})
+
 
 class MappingTableTest(DiaRUGATestCase):
     """매핑표 자체를 검사한다.
@@ -302,6 +339,13 @@ class MappingTableTest(DiaRUGATestCase):
         with _MAPPING.open("rb") as f:
             self.conf = tomllib.load(f)
         self.cores = {f"{c['site']}-{c['locality']}": c for c in self.conf["core"]}
+
+    @staticmethod
+    def _keys(core):
+        """블록(xlsx)이든 차트(pptx)든 항목 key 를 편다 — 추출기의 `_entries` 와 같다."""
+        if "chart" in core:
+            return [ch["key"] for ch in core["chart"]]
+        return [c[1] for b in core["block"] for c in b["columns"]]
 
     def _block(self, core, sheet, depth_col=None):
         for b in self.cores[core]["block"]:
@@ -330,7 +374,7 @@ class MappingTableTest(DiaRUGATestCase):
     def test_켤_항목이_실제로_있는_key_다(self):
         """오타면 화면이 아무것도 안 켠 채 뜬다 — 예외가 안 난다."""
         for name, core in self.cores.items():
-            keys = {c[1] for b in core["block"] for c in b["columns"]}
+            keys = set(self._keys(core))
             missing = set(core.get("default_on", [])) - keys
             self.assertFalse(missing, f"{name}: default_on 에 없는 key {missing}")
 
@@ -342,9 +386,25 @@ class MappingTableTest(DiaRUGATestCase):
         self.assertEqual(set(self.cores["RS19-GC17"]["default_on"]),
                          {"ms_whole", "wc", "toc"})
 
+    def test_RS21_은_Opal_만_깊이가_x_축이다(self):
+        """pptx 산점도 스무 개 중 Opal 다섯만 축이 뒤집혀 있다 (206). 누가 "다
+        같게 맞추자" 며 고치면 Opal 이 값을 깊이로 읽는다."""
+        for name in ("RS21-GC02", "RS21-GC03B", "RS21-GC04", "RS21-GC05", "RS21-GC06"):
+            axes = {ch["key"]: ch["depth_axis"] for ch in self.cores[name]["chart"]}
+            self.assertEqual(axes, {"wc": "y", "toc": "y", "density": "y",
+                                    "opal": "x"}, name)
+
+    def test_RS21_의_코어_길이는_KPDC_값이다(self):
+        """`Locality.kpdc_meta.core_length_m` 에서 옮겨 적었다 (197). GC06 은 KPDC
+        에 없어 자료의 끝이다."""
+        self.assertEqual(self.cores["RS21-GC02"]["expect_max_cm"], 217)
+        self.assertEqual(self.cores["RS21-GC03B"]["expect_max_cm"], 288)
+        self.assertEqual(self.cores["RS21-GC04"]["expect_max_cm"], 208)
+        self.assertEqual(self.cores["RS21-GC05"]["expect_max_cm"], 279)
+
     def test_key_가_코어_안에서_안_겹친다(self):
         for name, core in self.cores.items():
-            keys = [c[1] for b in core["block"] for c in b["columns"]]
+            keys = self._keys(core)
             self.assertEqual(len(keys), len(set(keys)), f"{name}: key 중복")
 
 
