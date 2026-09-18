@@ -1,16 +1,27 @@
 {% extends "viewer/base.html" %}
 {% comment %}
-  산출 비교 (202). 슬라이드 몇 장의 검출 수를 분류(그 아래 종명)별로 나란히
-  놓는다 — 열이 슬라이드, 줄이 분류다. 목록 화면은 슬라이드가 줄이라 분류
-  열이 옆으로 늘어서고, 종명은 아예 없다. 깊이가 다른 시료 둘을 놓고 "무엇이
-  늘고 무엇이 줄었나" 를 읽는 표는 축이 이쪽이어야 한다.
+  산출 비교 (202 · 204). 슬라이드 몇 장의 검출 수를 분류(그 아래 종명)별로
+  나란히 놓는다 — 열이 슬라이드, 줄이 분류다. 목록 화면은 슬라이드가 줄이라
+  분류 열이 옆으로 늘어서고, 종명은 아예 없다. 깊이가 다른 시료 둘을 놓고
+  "무엇이 늘고 무엇이 줄었나" 를 읽는 표는 축이 이쪽이어야 한다.
 
   **고르는 자리가 이 화면 안에 있다.** 주소(`?s=<slug>&s=<slug>`)가 곧 비교라
   적어 두고 다시 열면 같은 표가 뜬다. 목록 화면에 체크박스를 두지 않은 이유는
   `views.compare` 머리말에.
 
+  **오른쪽의 「비교 대상」 이 줄을 거른다** (204). 분류·종명마다 체크박스가
+  있고 끄면 그 줄이 표에서 빠진다 — 화면 안에서만 거르고 주소에는 안 싣는다.
+  수는 그대로다: 거르는 것은 보이는 줄이지 분모가 아니다.
+
   **세는 규칙은 목록과 하나다** (`data.compare_slides`). 이 표의 분류 칸은
   목록 표의 분류 열과 같은 수다 — 다르면 어느 쪽이 틀린 것이다.
+
+  **막대는 분류의 색이다** (204). 선 색으로 얹었더니 안 보였다 — `ClassDef.color`
+  (`r,g,b`)를 `--c` 로 내려 반투명하게 깐다. 두 테마 다 그 위에 글자가 읽힌다.
+
+  **열 폭은 쪽에 맞춘다** (204). `table-layout: fixed` 에 `width: 100%` 라
+  둘만 고르면 두 열이 쪽을 나눠 갖고, 많이 고르면 `min-width` 가 열 하나에
+  165px 를 지켜 `.scroll` 이 옆으로 민다.
 
   `<style>` 은 block 안에 둔다 — 밖에 적으면 렌더되지 않는다(CLAUDE.md).
 {% endcomment %}
@@ -35,29 +46,72 @@
   .cmp-pick .act { margin-top: 10px; display: flex; gap: 10px; align-items: center; }
   .cmp-pick .act .dim { font-size: 12px; }
 
-  .cmp table { width: auto; }
-  .cmp td, .cmp th { padding-left: 14px; padding-right: 14px; }
+  /* 표 + 오른쪽의 「비교 대상」. 좁은 화면에서는 위아래로 접는다. */
+  .cmp-layout { display: flex; gap: 16px; align-items: flex-start; }
+  .cmp-layout > .scroll { flex: 1 1 auto; min-width: 0; }
+  .cmp-filter { flex: 0 0 220px; position: sticky; top: 60px;
+                border: 1px solid var(--line); border-radius: 8px;
+                background: var(--panel); padding: 10px 12px 12px; font-size: 13px; }
+  .cmp-filter h3 { margin: 0 0 6px; font-size: 13px; display: flex;
+                   align-items: baseline; gap: 8px; }
+  .cmp-filter h3 .n { color: var(--dim); font-weight: 500; font-size: 12px; }
+  .cmp-filter .all { font-size: 12px; margin: 0 0 8px; display: flex; gap: 10px; }
+  .cmp-filter label { display: flex; align-items: center; gap: 6px; margin: 3px 0;
+                      cursor: pointer; }
+  .cmp-filter label.sp { padding-left: 22px; font-style: italic; color: var(--dim); }
+  .cmp-filter label.sp input:disabled + span { opacity: .5; }
+  .cmp-filter label .tot { margin-left: auto; color: var(--dim); font-size: 11px;
+                           font-variant-numeric: tabular-nums; }
+  .cmp-filter .sec { margin: 8px 0 2px; color: var(--dim); font-size: 11px;
+                     text-transform: uppercase; letter-spacing: .4px; }
+  @media (max-width: 800px) {
+    .cmp-layout { flex-direction: column-reverse; }
+    .cmp-filter { position: static; flex: none; width: 100%; box-sizing: border-box; }
+  }
+
+  .cmp table { width: 100%; table-layout: fixed; }
+  .cmp col.first { width: 230px; }
+  .cmp td, .cmp th { padding-left: 12px; padding-right: 12px; overflow: hidden;
+                     text-overflow: ellipsis; }
   .cmp th, .cmp td { white-space: nowrap; }
+  /* 수는 왼쪽에 — 막대가 왼쪽부터 자라니 수가 그 머리에 있어야 한다. base 는
+     셋째 열부터 오른쪽 정렬이라 둘째 열만 다르게 서 있었다. */
+  .cmp th:not(:first-child), .cmp td:not(:first-child) { text-align: left; }
   .cmp thead th { vertical-align: bottom; text-transform: none; letter-spacing: 0; }
   .cmp thead th .lbl { font-size: 13px; color: var(--fg); font-weight: 600; }
   .cmp thead th .where { display: block; font-size: 11px; font-weight: 500; }
-  .cmp thead tr.sub th { font-size: 11px; font-weight: 500; padding-top: 2px; }
+  .cmp thead tr.sub th { font-size: 12px; font-weight: 500; padding-top: 3px;
+                         padding-bottom: 3px; }
+  .cmp thead tr.sub th:first-child { color: var(--dim); font-size: 11px; }
+  .cmp thead tr.sub th b { font-size: 14px; font-weight: 600; color: var(--fg);
+                           font-variant-numeric: tabular-nums; }
+  .cmp thead tr.sub th .u { color: var(--dim); font-size: 11px; margin-left: 3px; }
   .cmp thead th .exmark { margin-left: 2px; }
   .cmp tr.cls td:first-child { font-weight: 600; }
   .cmp tr.sp td:first-child { padding-left: 28px; font-style: italic; }
-  .cmp tr.sp td:first-child .rest { font-style: normal; color: var(--dim); }
   .cmp tr.sp td { color: var(--dim); }
+  .cmp tr.off { display: none; }
   .cmp tr.sum td { font-weight: 700; border-top: 2px solid var(--line); }
   .cmp tr.sec td { color: var(--dim); font-size: 11px; padding-top: 12px;
                    border-bottom: 0; text-transform: uppercase; letter-spacing: .4px; }
   .cmp td .pct { display: inline-block; min-width: 46px; margin-left: 6px;
                  font-size: 11px; color: var(--dim);
                  font-variant-numeric: tabular-nums; text-align: right; }
-  /* 비율 막대 — 칸의 바탕에 얹는다. 색은 뜻 있는 것(--accent·--warn)을
-     빌리지 않고 선 색을 쓴다: 값의 크기만 보이면 된다. */
-  .cmp td.v { background: linear-gradient(to left, var(--line) 0 var(--w), transparent var(--w));
+  /* 비율 막대 — 칸의 바탕에 그 분류의 색(`--c`, r,g,b)으로 왼쪽부터 얹는다
+     (열이 넓어져 오른쪽부터 그리면 수와 막대가 떨어진다). 종명 줄은
+     같은 색을 더 옅게. 코어 참조값은 분류가 아니라 회색(`--ref-c`). */
+  .cmp { --ref-c: 139,147,163; }
+  :root[data-theme="light"] .cmp { --ref-c: 107,114,128; }
+  .cmp td.v { --c: var(--ref-c);
+              background: linear-gradient(to right, rgba(var(--c), .38) 0 var(--w), transparent var(--w));
+              /* 100% 막대가 옆 칸의 막대와 이어져 보이지 않게 오른쪽 12px 를 비운다 */
+              background-size: calc(100% - 12px) 100%; background-repeat: no-repeat;
               background-clip: padding-box; }
+  .cmp tr.sp td.v { background-image: linear-gradient(to right, rgba(var(--c), .2) 0 var(--w), transparent var(--w)); }
   .cmp td.zero { color: var(--dim); opacity: .6; }
+  .cmp td.ref .u { color: var(--dim); font-size: 11px; margin-left: 3px; }
+  .cmp td.ref .approx { color: var(--dim); margin-right: 2px; }
+  .cmp td.ref.none { color: var(--dim); font-size: 12px; }
   .cmp .nodet { color: var(--dim); }
   .cmp-note { font-size: 12.5px; color: var(--dim); line-height: 1.6; margin: 10px 0 0; }
 </style>
@@ -100,8 +154,10 @@
 </details>
 
 {% if cols %}
+<div class="cmp-layout">
 <div class="scroll cmp">
-<table>
+<table style="min-width: calc(230px + {% widthratio cols|length 1 165 %}px)">
+  <colgroup><col class="first">{% for c in cols %}<col>{% endfor %}</colgroup>
   <thead>
     <tr>
       <th>분류 · 종명</th>
@@ -111,29 +167,42 @@
       {% endfor %}
     </tr>
     {% comment %}
-      시야 수와 검출이 돈 시야 수. 열마다 분모가 다르면 수를 그대로 견줄 수
-      없고 비율로 봐야 한다 — 그 사실이 표 머리에 있어야 한다.
+      열의 수 셋 — 시야 · 시야당 개체 · 파편 비율 (204). 열마다 분모가 다르면
+      수를 그대로 견줄 수 없고 비율로 봐야 한다 — 그 사실이 표 머리에 있어야
+      한다. 검토 수는 안 낸다: 검토가 끝난 것을 놓고 비교하는 화면이다.
     {% endcomment %}
     <tr class="sub">
-      <th>시야 · 검토</th>
+      <th>시야</th>
       {% for c in cols %}
-        <th title="시야 {{ c.n_groups }}개 중 검출이 돈 시야 {{ c.detected_groups }}개 · 검토 완료 {{ c.reviewed_groups }}개">{% if c.detected_groups < c.n_groups %}{{ c.detected_groups }}/{% endif %}{{ c.n_groups }} 시야 · 검토 {{ c.reviewed_groups }}</th>
+        <th title="시야 {{ c.n_groups }}개{% if c.detected_groups < c.n_groups %} 중 검출이 돈 시야 {{ c.detected_groups }}개{% endif %}"><b>{% if c.detected_groups < c.n_groups %}{{ c.detected_groups }}/{% endif %}{{ c.n_groups }}</b><span class="u">시야</span></th>
+      {% endfor %}
+    </tr>
+    <tr class="sub">
+      <th title="세는 분류의 개체 ÷ 검출이 돈 시야 — 파편·미분류는 안 든다">시야당 개체 (파편 제외)</th>
+      {% for c in cols %}
+        <th>{% if c.per_view is not None %}<b>{{ c.per_view }}</b><span class="u">개/시야</span>{% else %}<span class="u">—</span>{% endif %}</th>
+      {% endfor %}
+    </tr>
+    <tr class="sub">
+      <th title="파편 분류의 개체 ÷ 남는 개체 전부(파편·미분류 포함)">파편 비율</th>
+      {% for c in cols %}
+        <th>{% if c.frag_pct is not None %}<b>{{ c.frag_pct }}%</b><span class="u">{{ c.n_frag }}/{{ c.n_detected }}</span>{% else %}<span class="u">—</span>{% endif %}</th>
       {% endfor %}
     </tr>
   </thead>
   <tbody>
     {% for r in rows %}
-      <tr class="cls">
+      <tr class="cls" data-cls="{{ r.key }}">
         <td><span class="badge {{ r.badge }}">{{ r.short }}</span> {{ r.label }}</td>
         {% for x in r.cells %}
-          <td class="{% if x.n %}v{% else %}zero{% endif %}"{% if x.pct %} style="--w: {{ x.pct }}%"{% endif %}>{{ x.n }}<span class="pct">{% if x.pct is not None %}{{ x.pct }}%{% endif %}</span></td>
+          <td class="{% if x.n %}v{% else %}zero{% endif %}"{% if x.pct %} style="--w: {{ x.pct }}%{% if r.color %}; --c: {{ r.color }}{% endif %}"{% endif %}>{{ x.n }}<span class="pct">{% if x.pct is not None %}{{ x.pct }}%{% endif %}</span></td>
         {% endfor %}
       </tr>
       {% for sp in r.species %}
-        <tr class="sp">
-          <td>{% if sp.name %}{{ sp.name }}{% else %}<span class="rest">종명 없음</span>{% endif %}</td>
+        <tr class="sp" data-cls="{{ r.key }}" data-sp="{{ r.key }}-{{ forloop.counter }}">
+          <td>{{ sp.name }}</td>
           {% for x in sp.cells %}
-            <td class="{% if not x.n %}zero{% endif %}">{{ x.n }}<span class="pct">{% if x.pct is not None %}{{ x.pct }}%{% endif %}</span></td>
+            <td class="{% if x.n %}v{% else %}zero{% endif %}"{% if x.pct %} style="--w: {{ x.pct }}%{% if r.color %}; --c: {{ r.color }}{% endif %}"{% endif %}>{{ x.n }}<span class="pct">{% if x.pct is not None %}{{ x.pct }}%{% endif %}</span></td>
           {% endfor %}
         </tr>
       {% endfor %}
@@ -147,13 +216,13 @@
     {% if extra_rows %}
       <tr class="sec"><td colspan="{{ cols|length|add:1 }}">세지 않는 것 — 파편·미분류 (비율의 분모에 안 든다)</td></tr>
       {% for r in extra_rows %}
-        <tr class="cls">
+        <tr class="cls" data-cls="{{ r.key|default:'_none' }}">
           <td>{% if r.badge %}<span class="badge {{ r.badge }}">{{ r.short }}</span> {% endif %}{{ r.label }}</td>
           {% for x in r.cells %}<td class="{% if not x.n %}zero{% endif %}">{{ x.n }}<span class="pct"></span></td>{% endfor %}
         </tr>
         {% for sp in r.species %}
-          <tr class="sp">
-            <td>{% if sp.name %}{{ sp.name }}{% else %}<span class="rest">종명 없음</span>{% endif %}</td>
+          <tr class="sp" data-cls="{{ r.key|default:'_none' }}" data-sp="{{ r.key|default:'_none' }}-{{ forloop.counter }}">
+            <td>{{ sp.name }}</td>
             {% for x in sp.cells %}<td class="{% if not x.n %}zero{% endif %}">{{ x.n }}<span class="pct"></span></td>{% endfor %}
           </tr>
         {% endfor %}
@@ -163,14 +232,100 @@
         {% for c in cols %}<td>{{ c.n_detected }}<span class="pct"></span></td>{% endfor %}
       </tr>
     {% endif %}
+    {% comment %}
+      코어 자료의 참조값 (204). 시료 깊이에서 읽고, 그 깊이에 잰 점이 없으면
+      양옆을 내삽한다(`≈`). 잰 범위 밖은 지어내지 않고, 코어 자료가 없으면
+      「데이터 없음」. 막대는 열 중 가장 큰 값이 100 이다.
+    {% endcomment %}
+    <tr class="sec"><td colspan="{{ cols|length|add:1 }}">코어 자료 — 시료 깊이에서 읽은 값</td></tr>
+    {% for r in ref_rows %}
+      <tr class="cls">
+        <td title="그 지점의 코어 자료(/loc/)에서 시료 깊이의 값을 읽는다">{{ r.label }}{% if r.unit %} ({{ r.unit }}){% endif %}</td>
+        {% for x in r.cells %}
+          {% if x.state == "none" %}
+            <td class="ref none">데이터 없음</td>
+          {% elif x.state == "outside" %}
+            <td class="ref none" title="잰 범위 {{ x.lo_cm|floatformat:"-1" }}–{{ x.hi_cm|floatformat:"-1" }} cm 의 밖이라 내삽하지 않는다">범위 밖</td>
+          {% else %}
+            <td class="ref v" style="--w: {{ x.w }}%"{% if x.state == "interp" %} title="{{ x.lo_cm|floatformat:"-1" }} cm 와 {{ x.hi_cm|floatformat:"-1" }} cm 사이를 내삽한 값"{% else %} title="{{ x.at_cm|floatformat:"-1" }} cm 에서 잰 값"{% endif %}>{% if x.state == "interp" %}<span class="approx">≈</span>{% endif %}{{ x.value|floatformat:1 }}<span class="u">{{ x.unit }}</span></td>
+          {% endif %}
+        {% endfor %}
+      </tr>
+    {% endfor %}
   </tbody>
 </table>
 </div>
+
+{% comment %}
+  「비교 대상」 — 표에 선 분류·종명 전부. 체크를 끄면 그 줄이 빠진다. 분류를
+  끄면 그 아래 종명도 함께 빠진다(체크박스는 잠근다). `data-cls`·`data-sp` 가
+  표의 줄과 같은 열쇠다 — 둘 다 같은 `rows` 를 같은 차례로 돈다.
+{% endcomment %}
+<aside class="cmp-filter" aria-label="비교 대상">
+  <h3>비교 대상 <span class="n" data-count></span></h3>
+  <div class="all"><a href="#" data-all="1">전부</a><a href="#" data-all="0">없음</a></div>
+  {% for r in rows %}
+    <label><input type="checkbox" checked data-cls="{{ r.key }}"><span class="badge {{ r.badge }}">{{ r.short }}</span> <span>{{ r.label }}</span><span class="tot">{{ r.total }}</span></label>
+    {% for sp in r.species %}
+      <label class="sp"><input type="checkbox" checked data-cls="{{ r.key }}" data-sp="{{ r.key }}-{{ forloop.counter }}"><span>{{ sp.name }}</span><span class="tot">{{ sp.total }}</span></label>
+    {% endfor %}
+  {% endfor %}
+  {% if extra_rows %}
+    <div class="sec">세지 않는 것</div>
+    {% for r in extra_rows %}
+      <label><input type="checkbox" checked data-cls="{{ r.key|default:'_none' }}">{% if r.badge %}<span class="badge {{ r.badge }}">{{ r.short }}</span> {% endif %}<span>{{ r.label }}</span><span class="tot">{{ r.total }}</span></label>
+      {% for sp in r.species %}
+        <label class="sp"><input type="checkbox" checked data-cls="{{ r.key|default:'_none' }}" data-sp="{{ r.key|default:'_none' }}-{{ forloop.counter }}"><span>{{ sp.name }}</span><span class="tot">{{ sp.total }}</span></label>
+      {% endfor %}
+    {% endfor %}
+  {% endif %}
+</aside>
+</div>
+
 <p class="cmp-note">
   수는 시야마다 대표 이미지 하나에서, 검토 대상 묶음의 검출에 사람의 교정을
   얹어 센 것입니다 — 목록 화면의 분류 열과 같습니다. 비율은 세는 분류의 합이
   분모입니다. 종명은 개체 카탈로그에서 적은 것이고{% if n_species %} 이 표에 {{ n_species }}줄 있습니다{% else %} 아직 이 슬라이드들에는 없습니다{% endif %}.
+  코어 자료의 값은 그 지점의 항목에서 시료 깊이로 읽은 것이고 <b>≈</b> 는 양옆 점을 내삽한 값입니다.
   <b>*</b> 는 「집계 제외」 관찰 — 같은 시료의 다른 관찰과 함께 더하면 두 배가 되는 것이라 목록 합계에서만 뺍니다. 여기서는 더하지 않으니 그대로 놓습니다.
 </p>
+
+<script>
+(function () {
+  const panel = document.querySelector('.cmp-filter');
+  if (!panel) return;
+  const rows = document.querySelectorAll('.cmp tbody tr[data-cls]');
+  const boxes = panel.querySelectorAll('input[type=checkbox]');
+  const count = panel.querySelector('[data-count]');
+
+  function apply() {
+    const offCls = new Set(), offSp = new Set();
+    boxes.forEach(b => {
+      if (b.dataset.sp === undefined) { if (!b.checked) offCls.add(b.dataset.cls); }
+    });
+    boxes.forEach(b => {
+      if (b.dataset.sp === undefined) return;
+      // 분류를 끄면 그 종명은 잠근다 — 켜 봐야 줄이 안 뜬다.
+      b.disabled = offCls.has(b.dataset.cls);
+      if (!b.checked) offSp.add(b.dataset.sp);
+    });
+    rows.forEach(tr => {
+      const hide = offCls.has(tr.dataset.cls)
+        || (tr.dataset.sp !== undefined && offSp.has(tr.dataset.sp));
+      tr.classList.toggle('off', hide);
+    });
+    const on = Array.from(boxes).filter(b => b.checked && !b.disabled).length;
+    count.textContent = on === boxes.length ? '전부' : on + '/' + boxes.length;
+  }
+
+  panel.addEventListener('change', apply);
+  panel.querySelectorAll('[data-all]').forEach(a => a.addEventListener('click', e => {
+    e.preventDefault();
+    boxes.forEach(b => { b.checked = a.dataset.all === '1'; });
+    apply();
+  }));
+  apply();
+})();
+</script>
 {% endif %}
 {% endblock %}

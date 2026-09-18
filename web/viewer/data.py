@@ -9,6 +9,7 @@
 
 기하 계산(주축·스케일바)은 DB 와 무관하므로 그대로 두었다.
 """
+import bisect
 import json
 import math
 import re
@@ -2856,13 +2857,83 @@ def compare_picker(picked: set) -> list[dict]:
     return groups
 
 
+# 비교 표가 코어 자료에서 참조하는 항목 (204). Opal 은 규조 껍질(생물기원
+# 규산)의 양이라 산출과 바로 견주어 읽는 값이다 — 다른 항목을 더 얹고 싶으면
+# 이 목록에 더한다. 없는 코어에서는 「데이터 없음」 이 된다.
+COMPARE_CORE_KEYS = ("opal",)
+
+
+def core_value_at(pts: list[tuple[int, float]], depth_mm: int) -> dict:
+    """항목의 점 목록에서 깊이 하나의 값을 읽는다 (204).
+
+    그 깊이에 잰 점이 있으면 그 값이고(`exact`), 없으면 **양옆의 점 둘로
+    선형 내삽**한다(`interp`) — 시료를 딴 깊이가 측정 깊이와 딱 맞는 일이
+    드물다(2 cm 간격 측정에 71 cm 시료). **잰 범위 밖은 내삽하지 않는다**
+    (`outside`) — 한쪽 점만 보고 늘여 그리면 없는 값을 지어내는 것이다.
+    점이 없으면 `none`.
+
+    `pts` 는 깊이(mm) 오름차순이어야 한다 — `CorePoint.Meta.ordering`.
+    """
+    if not pts:
+        return {"state": "none", "value": None}
+    depths = [mm for mm, _ in pts]
+    i = bisect.bisect_left(depths, depth_mm)
+    if i < len(pts) and depths[i] == depth_mm:
+        return {"state": "exact", "value": pts[i][1], "at_cm": depth_mm / 10}
+    if i == 0 or i == len(pts):
+        return {"state": "outside", "value": None,
+                "lo_cm": depths[0] / 10, "hi_cm": depths[-1] / 10}
+    (d0, v0), (d1, v1) = pts[i - 1], pts[i]
+    t = (depth_mm - d0) / (d1 - d0)
+    return {"state": "interp", "value": v0 + (v1 - v0) * t,
+            "lo_cm": d0 / 10, "hi_cm": d1 / 10}
+
+
+def _core_refs(slides) -> dict[int, list[dict]]:
+    """열마다 코어 자료의 참조값 — `COMPARE_CORE_KEYS` 항목 하나에 셀 하나 (204).
+
+    슬라이드 → 시료의 깊이 → 그 지점의 항목에서 값을 읽는다. **점은 지점마다
+    한 번만 읽는다** — 같은 코어의 슬라이드가 여럿이면 열마다 3,575점을 다시
+    받게 된다(105 의 자리).
+
+    노두는 깊이 축이 없어(`locality_detail` 머리말) 항목이 있을 수도 없다 —
+    `none` 으로 간다. 깊이가 없는 시료도 같다.
+    """
+    loc_ids = {sl.sample.locality_id for sl in slides if sl.sample}
+    series = {(cs.locality_id, cs.key): cs
+              for cs in CoreSeries.objects.filter(locality_id__in=loc_ids,
+                                                  key__in=COMPARE_CORE_KEYS)}
+    pts: dict[int, list[tuple[int, float]]] = {}
+    if series:
+        for sid, mm, v in (CorePoint.objects
+                           .filter(series_id__in=[cs.id for cs in series.values()])
+                           .order_by("series_id", "depth_mm")
+                           .values_list("series_id", "depth_mm", "value")):
+            pts.setdefault(sid, []).append((mm, v))
+
+    out: dict[int, list[dict]] = {}
+    for sl in slides:
+        smp = sl.sample
+        cells = []
+        for key in COMPARE_CORE_KEYS:
+            cs = series.get((smp.locality_id, key)) if smp else None
+            if cs is None or smp.depth_cm is None:
+                cells.append({"key": key, "state": "none", "value": None})
+                continue
+            r = core_value_at(pts.get(cs.id, []), round(smp.depth_cm * 10))
+            cells.append({"key": key, "label": cs.label, "unit": cs.unit, **r})
+        out[sl.id] = cells
+    return out
+
+
 def compare_slides(slugs: list[str]) -> dict:
-    """슬라이드 몇 장의 산출을 한 표에 나란히 놓는다 (202).
+    """슬라이드 몇 장의 산출을 한 표에 나란히 놓는다 (202 · 204).
 
     열은 슬라이드, 줄은 분류이고 분류 아래에 **종명**이 한 단계 더 있다 —
     카탈로그에서 적은 `DiatomObject.species` 다. 종명은 아직 드물어서(운영에
     개체 169개) 분류 층이 먼저이고, 종명은 그 분류의 안에서 몇 개가 어느
-    이름으로 동정됐는가로 읽는다.
+    이름으로 동정됐는가로 읽는다. **종명을 안 적은 나머지 줄은 안 낸다**(204,
+    사용자 요청) — 분류 수에서 종명 줄을 빼면 그 수이고, 줄로 세우면 표만 는다.
 
     **세는 규칙은 목록 화면과 하나다** (`_summary_rows`). 대표 이미지 하나 ·
     검토 대상 묶음 · 사람이 지운 것을 빼고 되살린 것을 더한 값이다. 그래서
@@ -2873,6 +2944,15 @@ def compare_slides(slugs: list[str]) -> dict:
     같은 값이고, 파편·미분류는 분자에도 분모에도 안 든다 — 파편을 개체로
     세면 밀도가 부푼다(`counted_classes` 머리말). 파편·미분류 줄은 표 아래쪽에
     수만 적고 비율은 비운다.
+
+    **열 머리의 수 셋** (204) — 시야 수 · **시야당 개체**(세는 분류의 합 ÷
+    검출이 돈 시야) · **파편 비율**(`counted=False` 분류의 합 ÷ 남는 개체
+    전부). 시야당 개체가 밀도이고, 파편 비율은 보존 상태다 — 검토 수는 안
+    낸다: 검토가 끝난 슬라이드를 놓고 비교하는 화면이다. 미분류는 파편이
+    아니다(`is_fragment` 머리말) — 파편 비율의 분자에 안 든다.
+
+    **코어 자료의 참조값**(`refs`, 204) — 그 지점의 Opal 을 시료 깊이에서
+    읽어 열마다 얹는다(`_core_refs`). 없으면 「데이터 없음」 이다.
 
     **열의 차례는 고른 차례가 아니라 목록의 차례다** — 지역·지점·깊이 순.
     깊이에 따른 변화가 분석의 목적이라 그 축이 표에서도 잡혀야 한다.
@@ -2888,12 +2968,11 @@ def compare_slides(slugs: list[str]) -> dict:
     unknown = [s for s in wanted if s not in found]
     if not slides:
         return {"cols": [], "rows": [], "extra_rows": [], "unknown": unknown,
-                "n_species": 0}
+                "n_species": 0, "ref_rows": []}
 
     ids = [sl.id for sl in slides]
     marks = ",".join(["%s"] * len(ids))
     summary = _summary_rows(f"v.slide_id IN ({marks})", ids)
-    done = {sl.id: len(done_viewpoints(slide=sl)) for sl in slides}
     n_groups = dict(Viewpoint.objects.filter(slide_id__in=ids)
                     .values_list("slide_id").annotate(n=Count("id")))
     # 검출이 돈 시야 수 — `_summary_by_sql` 과 같은 셈이다. 시야 전부에 검출이
@@ -2902,20 +2981,28 @@ def compare_slides(slugs: list[str]) -> dict:
         Detection.objects.reviewing().filter(viewpoint__slide_id__in=ids)
         .values_list("viewpoint__slide_id")
         .annotate(n=Count("viewpoint_id", distinct=True)))
+    refs = _core_refs(slides)
 
     counted_keys = [c["key"] for c in counted_classes()]
+    frag_keys = [r["key"] for r in _class_rows() if not r["counted"]]
     cols = []
     for sl in slides:
         r = summary.get(sl.id) or {"per_cls": {}, "per_sp": {},
                                    "n_detected": 0}
         n_counted = sum(v for k, v in r["per_cls"].items()
                         if k in counted_keys)
+        n_frag = sum(v for k, v in r["per_cls"].items() if k in frag_keys)
+        dg = det_groups.get(sl.id, 0)
         cols.append({**_slide_head(sl),
                      "n_groups": n_groups.get(sl.id, 0),
-                     "detected_groups": det_groups.get(sl.id, 0),
-                     "reviewed_groups": done.get(sl.id, 0),
+                     "detected_groups": dg,
                      "n_detected": r["n_detected"],
                      "n_counted": n_counted,
+                     "n_frag": n_frag,
+                     "per_view": (round(n_counted / dg, 1) if dg else None),
+                     "frag_pct": (round(100.0 * n_frag / r["n_detected"], 1)
+                                  if r["n_detected"] else None),
+                     "refs": refs[sl.id],
                      "_per_cls": r["per_cls"], "_per_sp": r["per_sp"]})
 
     def cells(get, pct: bool):
@@ -2932,7 +3019,8 @@ def compare_slides(slugs: list[str]) -> dict:
         key = cd["key"]
         is_counted = cd["counted"]
         row = {"key": key, "label": cd["label"], "short": cd["short"],
-               "badge": cd["badge"], "counted": is_counted,
+               "badge": cd["badge"], "color": cd["color"],
+               "counted": is_counted,
                "cells": cells(lambda c: c["_per_cls"].get(key, 0),
                               is_counted),
                "species": []}
@@ -2949,16 +3037,6 @@ def compare_slides(slugs: list[str]) -> dict:
                                    is_counted)}
             srow["total"] = sum(x["n"] for x in srow["cells"])
             row["species"].append(srow)
-        if names:
-            # 남는 것 — 그 분류인데 아직 종명을 안 적은 개체. 종명 줄만 있으면
-            # 분류 수와 종명 합이 안 맞아 보인다.
-            rest = {"name": "", "cells": cells(
-                lambda c: c["_per_cls"].get(key, 0)
-                - sum(v for (k, _sp), v in c["_per_sp"].items() if k == key),
-                is_counted)}
-            rest["total"] = sum(x["n"] for x in rest["cells"])
-            if rest["total"]:
-                row["species"].append(rest)
         (rows if is_counted else extra).append(row)
 
     # 분류가 없는 개체. `ClassDef` 에 없는 열쇠(빈 문자열 포함)가 전부 여기다.
@@ -2967,16 +3045,32 @@ def compare_slides(slugs: list[str]) -> dict:
                                      if k not in known), False)
     if any(x["n"] for x in none_cells):
         extra.append({"key": "", "label": "미분류", "short": "미분류",
-                      "badge": "", "counted": False, "cells": none_cells,
-                      "species": [],
+                      "badge": "", "color": "", "counted": False,
+                      "cells": none_cells, "species": [],
                       "total": sum(x["n"] for x in none_cells)})
+
+    # 참조값 줄 — 항목마다 하나. 막대는 **열 중 가장 큰 값**을 100 으로 잡는다:
+    # 열끼리 견주는 자리라 절대 눈금(0~100 %)보다 그쪽이 읽힌다. 값이 있는
+    # 열이 하나도 없어도 줄은 낸다 — 「데이터 없음」 이 곧 답이다.
+    ref_rows = []
+    for i, key in enumerate(COMPARE_CORE_KEYS):
+        rcells = [c["refs"][i] for c in cols]
+        vals = [x["value"] for x in rcells if x["value"] is not None]
+        top = max(vals) if vals else 0
+        for x in rcells:
+            x["w"] = (round(100.0 * x["value"] / top, 1)
+                      if x["value"] is not None and top > 0 else 0)
+        labeled = next((x for x in rcells if x.get("label")), None)
+        ref_rows.append({"key": key,
+                         "label": labeled["label"] if labeled else key.capitalize(),
+                         "unit": labeled["unit"] if labeled else "",
+                         "cells": rcells})
 
     for c in cols:
         del c["_per_cls"], c["_per_sp"]
     return {"cols": cols, "rows": rows, "extra_rows": extra,
-            "unknown": unknown,
-            "n_species": sum(len([s for s in r["species"] if s["name"]])
-                             for r in rows + extra)}
+            "unknown": unknown, "ref_rows": ref_rows,
+            "n_species": sum(len(r["species"]) for r in rows + extra)}
 
 
 def _nice_step(span: float, want: int = 8) -> int:
