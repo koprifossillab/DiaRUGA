@@ -151,7 +151,7 @@ var. kanayae` 의 열쇠는 `binomial()` 이 `C. kanayae` 로 뭉뚱그리는데
 
 `taxon_names.json` 1,999 → **2,031** 건(accepted 1,010 · synonym 750 ·
 unassessed 151 · absent 120). `dbrun.sh import_taxon_names.py --src
-/data3/DiaRUGA/tmp/taxon_names_20260918.json` 으로 18:30 에 운영에 넣었다 —
+/data3/DiaRUGA/tmp/taxon_names_20260918.json` 으로 18:26 에 운영에 넣었다 —
 `check_db` OK, `/atlas/?q=Rouxia+peragalli` 에 "이명" 칩이 뜬다. **판에는
 아직 안 실렸다** — 다음 판이 저장소의 `taxon_names.json` 을 싣기 전까지
 기본 `--src` 로 다시 돌리면 1,999 로 되돌아간다(HANDOFF 3.8).
