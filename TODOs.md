@@ -77,6 +77,26 @@ DB 설계는 [devlog/20260730_P02_db-schema.md](devlog/20260730_P02_db-schema.md
 
 ## 지금 가장 급한 것
 
+- [ ] **정보 편집에서 코드로 시료를 새로 만들어 붙이면 실제로는 안 붙는다**
+      (`web/viewer/views.py` `dataset_edit` · 2026-09-18 · ForGIA 1단계 이식 중 발견)
+
+      `attached = sample is not None and slide.sample_id != sample.pk` 를
+      **`transaction.atomic()` 앞에서** 계산한다. 새로 만든 `Sample` 은 저장 전이라
+      `pk` 가 `None` 이고, 소속 없는 관찰의 `sample_id` 도 `None` 이라
+      `None != None` 이 거짓 — `attached` 가 `False` 로 굳는다. 그래서 지역·지점·
+      시료 코드를 다 채워 저장하면 **행 셋은 생기고 "새로 만들어 붙였습니다" 도
+      뜨는데 `slide.sample` 은 그대로 비어 있다** — 063 이 말한 "아무것도 안 한
+      저장이 성공으로 보이는" 그 갈래다. 기존 시료에 붙이는 길(`attach_sample`)은
+      `pk` 가 있어 멀쩡하다 — 그래서 여태 안 걸렸다.
+
+      **고치는 자리**: 비교를 `sample.save()` **뒤로** 옮긴다 —
+      `if sample is not None and slide.sample_id != sample.pk: slide.sample = sample;
+      attached = True`. ForGIA `web/viewer/views.py` 가 그렇게 돼 있고,
+      `tests/test_edit_settings.py::EditTest.test_create_layers_from_codes` 가
+      그 갈래를 되살려 잡는다 — 시험을 같이 옮겨 올 것(`make_slide(orphan=True)` 로
+      소속 없는 관찰을 세우고, 코드 셋을 채워 POST 한 뒤 `slide.sample` 을 본다).
+      ForGIA devlog [001](../ForGIA/devlog/20260918_001_stage1-ingest-viewer.md).
+
 - [ ] **개체마다 판의 선명도를 잰다 — YOLO 4차와 함께**
       ([P26](devlog/20260910_P26_object-plane-sharpness.md) · 2026-09-10 사용자 요청)
 
