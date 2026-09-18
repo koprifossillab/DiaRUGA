@@ -23,6 +23,25 @@
 
 ## 뷰어
 
+### `v0.29.2` — 09-18 (마이그레이션 없음)
+
+**남극 논문 도판 둘이 도감에 들어온다 — Censarek 2002 · Zielinski 2002**
+([207](devlog/20260918_207_paper-plates-antarctic-2002.md))
+
+- `atlas/2002-censarek-miocene.json` — ODP 689·690·1088·1092 마이오세 규조
+  층서(Ber. Polarforsch. 430) Plate 1~5 · 그림 101 · 항목 49. *Fragilariopsis*
+  13종·*Denticulopsis* 6종·*Thalassiosira*·*Hemidiscus* 등 남극 마이오세
+  층서 종 한 벌
+- `atlas/2002-zielinski-rouxia.json` — *Rouxia leventerae*·*R. constricta*
+  (Mar. Micropaleontol. 46) Plate I · 그림 14 · 항목 2
+- 크롭 115장은 `/data3/DiaRUGA/atlas/<key>/crops/` 에 미리 옮겨 뒀다 —
+  **배포 뒤 `dbrun.sh import_atlas.py`** (도감 16 → 18 · 항목 2,701 · 자리 3,301)
+- `tools/parse_atlas.py` — `sp.1` 처럼 번호가 붙어 찍힌 것도 속 수준으로 받는다
+  (`GENUS_ONLY_RE`). 다른 도감의 결과는 안 바뀐다
+- RS21 코어 다섯의 물성·Opal 반입 도구([206](devlog/20260918_206_rs21-coredata-from-pptx.md) ·
+  `tools/coredata_extract.py` 가 `.pptx` 차트 캐시를 읽는다 · `coredata/mapping.toml`)
+  도 이 판에 실린다 — 자료는 09-18 14:11 에 이미 운영에 넣었다
+
 ### `v0.29.1` — 09-18 (마이그레이션 없음)
 
 **정보 편집이 새 시료를 만들고도 관찰에 안 붙이던 것을 고쳤다**
