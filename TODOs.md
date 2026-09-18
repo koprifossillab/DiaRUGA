@@ -19,8 +19,9 @@ DB 설계는 [devlog/20260730_P02_db-schema.md](devlog/20260730_P02_db-schema.md
 
 ## 생층서 기준면 (P28 · 208 · 2026-09-18)
 
-- [ ] **판을 내고 반입한다** — `v0.30.0`(`0045`) → 배포 → `dbrun.sh
-      import_biodatums.py` · `import_taxon_names.py` → `check_db` 13번 (HANDOFF 3.8)
+- [x] **판을 내고 반입한다** — `v0.30.0` 을 09-18 19:16 에 배포하고
+      `import_biodatums.py`(728) · `import_taxon_names.py`(2,108) 를 돌렸다 ·
+      `check_db` 13번 OK (HANDOFF 3.8)
 - [x] **AlgaeBase 재확인 85 이름** — 09-18 저녁에 답이 와서 `taxon_names.json`
       에 얹었다(2,108 · 208). 남은 것 둘: *Rouxia antarctica* 의 계급(종인가
       *R. peragalloi* 의 변종인가 — 원기재로) · `S. tetraoestruppii var.` 의
