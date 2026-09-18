@@ -320,9 +320,12 @@ upsert · `kind="paper"`) 에 앉는다. 다만 지금 `Reference` 에는 `url` 
    `yanagisawa1998`·`iodp346`·`fujiwara2008`)으로 나누는 것이 자연스럽다.
    `Site.area` 의 `한국`·`남극` 과는 다른 축이라(북서태평양은 한국 도감 권역이
    아니다) 이름을 `atlas.py` 의 `AREAS` 에 안 섞고 따로 둔다
-7. **`2002-censarek-miocene`·`2002-zielinski-rouxia` 가 `AREA_OF` 에 없다**
-   (207 이 안 넣었다 — 도감 화면에서 "권역 미정" 으로 서 있을 것이다). 이
-   작업과 무관하지만 같은 파일을 만지므로 함께 `antarctic` 으로 넣는다
+7. ~~`2002-censarek-miocene`·`2002-zielinski-rouxia` 가 `AREA_OF` 에 없다~~
+   — **닫았다** (옆 세션이 `3deb52e` 로 `antarctic` 을 줬다, 같은 날). 실측은
+   내 짐작과 달랐다: 카드에 "권역 미정" 이 뜨는 것이 아니라(굽는 책 도감만
+   카드가 선다) **`?area=antarctic` 거르개에서 그 종이 조용히 빠지고 있었다.**
+   `test_atlas_area` 7번이 `atlas/*.json` 마다 권역이 있는지 센다 — 6번은
+   `LEFT_PARITY`(책 셋)만 봐서 논문 도판집이 구멍이었다. 운영 반영은 `v0.29.3`
 
 ## 8. 버린 것
 
