@@ -77,8 +77,11 @@ DB 설계는 [devlog/20260730_P02_db-schema.md](devlog/20260730_P02_db-schema.md
 
 ## 지금 가장 급한 것
 
-- [ ] **정보 편집에서 코드로 시료를 새로 만들어 붙이면 실제로는 안 붙는다**
+- [x] **정보 편집에서 코드로 시료를 새로 만들어 붙이면 실제로는 안 붙는다**
       (`web/viewer/views.py` `dataset_edit` · 2026-09-18 · ForGIA 1단계 이식 중 발견)
+      → **고쳤다** ([205](devlog/20260918_205_edit-attach-new-sample.md) · `v0.29.1`).
+      비교를 `sample.save()` 뒤로 옮기고 `tests/test_dataset_edit.py` 넷을
+      세웠다(고치기 전에 첫 번째가 죽는 것을 봤다). 운영 자료는 안 다쳤다.
 
       `attached = sample is not None and slide.sample_id != sample.pk` 를
       **`transaction.atomic()` 앞에서** 계산한다. 새로 만든 `Sample` 은 저장 전이라

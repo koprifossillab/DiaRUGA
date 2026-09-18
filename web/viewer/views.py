@@ -738,7 +738,7 @@ def dataset_edit(request, slug):
             # 넷을 한 덩어리로 저장한다. 아래만 바뀌고 위가 안 바뀌면 화면에
             # 보이는 것과 저장된 것이 어긋난다.
             try:
-                attached = sample is not None and slide.sample_id != sample.pk
+                attached = False
                 with transaction.atomic():
                     if site and own["site"]:
                         site.save()
@@ -748,8 +748,14 @@ def dataset_edit(request, slug):
                     if sample and own["sample"]:
                         sample.locality = loc
                         sample.save()
-                    if attached:
+                    # **붙일지는 시료를 저장한 뒤에 본다** (205). 앞에서 재면
+                    # 새로 만든 시료의 `pk` 도 소속 없는 관찰의 `sample_id` 도
+                    # `None` 이라 "이미 같다" 가 되어 — 행 셋은 생기고 문구도
+                    # 뜨는데 관찰은 그대로 비어 있었다. 063 이 말한 "아무것도
+                    # 안 한 저장이 성공으로 보이는" 그 갈래다.
+                    if sample is not None and slide.sample_id != sample.pk:
                         slide.sample = sample
+                        attached = True
                     slide.save()
                 saved = True
                 new = " · ".join(x for x in (
