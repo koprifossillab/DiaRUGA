@@ -232,6 +232,7 @@ nginx 가 80 에서 `/DiaRUGA/` 을 떼고 `127.0.0.1:8090` 의 컨테이너로 
 도감 쪽 격자   /atlas/<도감>/<권>/         ?n=<쪽> 으로 곧장 간다
 도감 쪽 한 장  /atlas/<도감>/<권>/<쪽>/    번호가 곧 `PDF p.N` 이다
 도감 두 쪽     /atlas/<도감>/<권>/<쪽>/?spread=1   원래 책처럼 펼친다 (131 덧)
+기준면 그림    /atlas/datums/?genus=<속>   종마다 FO→LO 막대 위에 문헌별 점 · 대 띠 · MIS 눈금 (P28 · 208). 권역 체크박스
 산출 비교      /compare/?s=<slug>&s=…  슬라이드 몇 장을 분류 → 종명별로 나란히 (202)
 오프라인 올리기 /offline/          결과 JSON 을 올려 **미리보기 → 적용** (P25)
                POST /offline/export  파일을 굽는다 — 부르는 자리는 아래 둘이다
@@ -873,6 +874,14 @@ WAL 이라 읽기는 여럿이 되지만 **쓰기는 한 번에 하나**다. 파
 
 ### 3.8 아직 안 한 이전기·일회성
 
+- **`ops/import_biodatums.py` — 아직 안 돌렸다** (P28 · 208 · 09-18). 생층서
+  기준면 728행·대 43·문헌 14 를 `atlas/biodatum/datums.json` 에서 넣는다.
+  **마이그레이션 `0045`(더하기만 · 파이프라인 안 굽는다)가 실린 판이 먼저
+  나가야 한다** — JSON 이 이미지에 실려 가므로 배포 뒤 `dbsync.sh
+  import_biodatums.py` → `dbrun.sh import_biodatums.py` → `check_db` 13번.
+  넣기 전에는 `/atlas/datums/` 가 "기준면이 아직 안 들어와 있습니다" 를 낸다.
+  반입 뒤 사람이 할 일: `Diadiction/datums/algaebase_recheck_20260918.md`
+  (85 이름)를 AlgaeBase 에서 확인 → `names/` 표 → `import_taxon_names.py`.
 - **`ops/import_taxon_names.py` — 09-18 18:26 에 `--src` 로 돌렸다** (207 저녁 ·
   남극 2002 답 32종 + 덤 1 · **1,999 → 2,031 건** · `check_db` OK).
   `taxon_names.json` 은 저장소에 커밋했지만 **`v0.29.3` 이미지에는 옛 것(1,999)이

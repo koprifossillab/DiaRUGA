@@ -23,6 +23,24 @@
 
 ## 뷰어
 
+### 다음 판 (아직 안 냈다 · 마이그레이션 `0045` · 더하기만)
+
+**생층서 기준면(FO·LO) 층 — 논문 열넷의 연령 728행을 도감 종·속에 붙인다**
+([P28](devlog/20260918_P28_biodatum-layer.md) ·
+[208](devlog/20260918_208_biodatum-layer.md))
+
+- `Biodatum`·`Biozone` 두 표와 `Reference.url` — 원본은 NAS
+  `Diadiction/datums/`, `tools/parse_biodatums.py` → `atlas/biodatum/datums.json`
+  → **배포 뒤 `dbrun.sh import_biodatums.py`**(문헌 14 · 기준면 728 · 대 43)
+- `/atlas/datums/` — 종마다 FO→LO 막대 위에 문헌별 점, 대 띠, 1.5 Ma 이하면
+  MIS 눈금. 권역(남극해 · 북서태평양) 체크박스 · 속 · 이름 · Cody 두 모델 ·
+  재인용 겹침(기본 숨김 · 참고문헌은 남긴다) · 출처. 표와 참고문헌 절이 붙는다
+- 도감 검색 카드에 「기준면」 줄(출현 줄 옆 · 없으면 안 낸다) · 속 목록에
+  `기준면 N` · 머리줄에 「기준면」 링크
+- `check_db` 13번 — 경유 문헌·출처 종류·연령 순서 · 도감에 없는 기준종·속을
+  센다(63 · 6 — 멸종 속 반입이 진행되면 줄어야 하는 수)
+- `viewer/mis.py` — LR04 MIS 경계표(눈금용 · 값으로 안 적는다)
+
 ### `v0.29.3` — 09-18 (마이그레이션 없음)
 
 - **남극 논문 도판 둘이 권역 거르개에서 빠지던 것을 고쳤다** — `atlas.AREA_OF`

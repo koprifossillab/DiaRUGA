@@ -17,6 +17,19 @@ DB 설계는 [devlog/20260730_P02_db-schema.md](devlog/20260730_P02_db-schema.md
 > **끝난 일은 여기 안 쌓는다** — 아래 "최근에 끝난 것" 만 남기고 지웠다.
 > 그때의 판단과 근거는 `devlog/` 에 있다.
 
+## 생층서 기준면 (P28 · 208 · 2026-09-18)
+
+- [ ] **판을 내고 반입한다** — `0045` 가 실린 판 → 배포 → `dbrun.sh
+      import_biodatums.py` → `check_db` 13번 (HANDOFF 3.8)
+- [ ] **AlgaeBase 재확인 85 이름** — `Diadiction/datums/algaebase_recheck_
+      20260918.md`. 사용자가 확인하면 `names/` 표에 적고 `import_taxon_names.py`.
+      `S. tetraoestruppii var.` ↔ `T. tetraoestrupii reimeri` 가 같은 사건인지도
+      여기서 가른다(합치지 않았다)
+- [ ] **오프라인 꾸러미 v1.3.0** — 카드의 「기준면」 줄을 `data/biodatum.js` 로
+      (P28 §5). 범위 그림은 그다음
+- [ ] 멸종 속 반입이 끝나면 `check_db` 13번의 "도감에 없는 기준종 63 · 속 6"
+      이 줄어야 한다 — 안 줄면 이름이 다른 것이다
+
 ## 최근에 끝난 것 (2026-08-10)
 
 - [x] **여러 프레임에서 잡힌 같은 개체를 하나로 묶는다** — P11 (`v0.9.0` ·
