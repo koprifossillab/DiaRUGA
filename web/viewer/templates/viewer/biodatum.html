@@ -242,7 +242,7 @@
     <tbody>
     {% for s in chart.species %}{% for p in s.points %}
       <tr{% if p.confidence == 'low' %} class="low"{% endif %}>
-        <td><i>{{ p.name }}</i>{% if not s.in_atlas and s.binomial %} <span class="pnote">도감에 없다</span>{% endif %}</td>
+        <td><i>{{ p.name }}</i>{% if not s.in_atlas and s.binomial %} <span class="pnote">도감에 없다</span>{% endif %}{% if s.taxon.status == 'synonym' %} <span class="chip warnchip" title="AlgaeBase 확인 — 이 표기는 이명이다{% if s.taxon.note %} · {{ s.taxon.note }}{% endif %}">이명</span> <i class="dim">{{ s.taxon.valid_name }}</i>{% elif s.taxon.status == 'absent' %} <span class="pnote" title="{{ s.taxon.note }}">AlgaeBase 에 없다</span>{% endif %}</td>
         <td>{{ p.datum }}{% if p.primary %} <b title="원문이 주요 지시종·기준면으로 표시">+</b>{% endif %}</td>
         <td class="num">{{ p.age }}{% if p.uncertainty %} ± {{ p.uncertainty }}{% endif %}</td>
         <td>{{ p.age_text }}{% if p.name_printed != p.name %} <span class="dim">{{ p.name_printed }}</span>{% endif %}</td>

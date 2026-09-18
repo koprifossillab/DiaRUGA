@@ -34,6 +34,17 @@
   (`HOLD`·`EXTRA`, 아래 주석) — 조회한 사람이 정리 노트에서 "이 판정은
   반영하지 말라" 고 한 것과, 조회 중에 함께 확인된 다른 조합이다
 
+- `Diadiction/names/algaebase/biodatum_answered_20260918.md` — 생층서
+  기준면 표(P28·208)의 이름 가운데 도감 판정이 없던 85 이름을 같은
+  방법으로 채운 표(2026-09-18, `biodatum_todo_`·`biodatum_notes_` 가 같은
+  자료). 이번엔 JSON 이 없고 **마크다운 표 그대로**라 `from_answered_md()`
+  가 읽는다 — 칸의 뜻은 `filled.json` 과 같다(이름 · 판정 · 비고).
+  비공식 이름 셋(`Actinocyclus F …`·`Nitzschia 17 …`)은 열쇠가 없어
+  건너뛴다 — `parse_biodatums.split_name()` 이 `binomial` 을 비우는 것과
+  같은 규칙이다(종소명이 두 글자 이하). 정리 노트가 짚은 것 하나를
+  `HOLD` 에 더했다(*Actinocyclus maccollumii* — 중심규조를 깃돌말
+  *Diploneis* 로 넘긴 오연결) 
+
 열쇠는 `tools/harvest_worms.binomial()` 로 정규화한다 — `var.`·`sp.`
 꼬리는 종 단위로 뭉뚱그려진다(예: `Actinocyclus ehrenbergii var.
 tenella` → `Actinocyclus ehrenbergii`). **두 소스가 같은 binomial 을
@@ -62,16 +73,35 @@ from harvest_worms import DIADICTION, binomial  # noqa: E402
 WORMS_MASTER = DIADICTION / "names/worms/worms_master_20260814.tsv"
 PAPER_FILLED = DIADICTION / "names/algaebase/paper_plates_filled_20260831.json"
 PAPER_FILLED_2002 = DIADICTION / "names/algaebase/antarctic2002_filled_20260918.json"
+BIODATUM_ANSWERED = DIADICTION / "names/algaebase/biodatum_answered_20260918.md"
 
 # **판정을 그대로 반영하지 않는 이름** — 조회한 사람이 정리 노트에서 짚었다.
 # `Nitzschia denticuloides`: AlgaeBase 가 `N. amphibia f. frauenfeldii`(담수종의
 # 품종)로 넘기는데, 남극 중기 마이오세 층서 지표종이 담수종 품종일 리 없다 —
 # 동명이의를 잘못 이은 것으로 보인다(worms_master 도 같은 이유로 `확인 필요`
 # 를 뒀다: Hustedt 판 vs Schrader 판). 원기재 확인 전까지 `unassessed` 로 둔다
+# `Actinocyclus maccollumii`(기준면 표 · Cody 2008): AlgaeBase 가 `Diploneis
+# mollenhaueri`(깃돌말)로 넘기는데 *Actinocyclus* 는 중심규조라 이명이 될 수
+# 없다 — 같은 종류의 오연결(기준면 정리 노트 1절). 같은 종소명의 `Denticulopsis
+# maccollumii` 가 2002 건에서 "확인 필요" 였고 그쪽과 같은 종일 가능성이 크다
 HOLD = {
     "Nitzschia denticuloides":
         "⚠ 09-18 남극 논문 조회는 N. amphibia f. frauenfeldii 이명으로 냈으나 "
         "동명이의 오연결로 보여 반영하지 않았다(정리 노트 5절)",
+    "Actinocyclus maccollumii":
+        "⚠ 09-18 기준면 조회는 Diploneis mollenhaueri 이명으로 냈으나 중심규조 → "
+        "깃돌말이라 오연결로 보여 반영하지 않았다(기준면 정리 노트 1절 · "
+        "Denticulopsis maccollumii 와 같은 종일 가능성)",
+}
+
+# **판정은 그대로 두되 덧붙일 말** — 정리 노트가 "다음에 확인할 것" 으로 짚은 자리
+REMARK = {
+    "Rouxia antarctica":
+        "⚠ AlgaeBase 는 종이 아니라 R. peragalloi 의 변종으로만 잡는다 — 계급은 "
+        "원기재로 확인할 것(기준면 정리 노트 4절 · 남극 2002 의 R. peragalloi 와 이어진다)",
+    "Shionodiscus tetraoestruppii":
+        "tetraoestrupii(p 하나)의 오식 · var. 뒤가 비어 있어 reimeri 인지 원문 확인 "
+        "전까지 합치지 않는다(기준면 정리 노트 2절)",
 }
 
 # **조회하다 함께 확인된 다른 조합** — 답변 표엔 없지만 `raw2.tsv` 에 판정이
@@ -132,6 +162,47 @@ def from_worms_master() -> dict[str, dict]:
 CHECKED_RE = re.compile(r"갱신\s*(\d{4})")
 
 
+def _verdict(orig: str, verdict: str, note: str, source: str) -> tuple[str, dict] | None:
+    """한 행(원문 표기 · 판정 · 비고) → (열쇠, 행). 열쇠를 못 뽑으면 `None`.
+
+    **판정 문구를 읽는 규칙은 여기 하나뿐이다** — JSON(`filled.json`)도
+    마크다운 표(`biodatum_answered`)도 같은 칸을 같은 뜻으로 쓴다.
+    """
+    b = binomial(orig)
+    if b is None:
+        return None
+    # 비공식 이름(`Actinocyclus F …`) — 종소명이 두 글자 이하면 형태 기호다
+    # (`parse_biodatums.split_name()` 과 같은 규칙). 열쇠가 될 수 없다
+    if len(b.split()[1]) < 3:
+        return None
+    v = verdict.strip()
+    if v.startswith("**") and v.endswith("**"):
+        # 굵은 이름 — 철자 교정만이든 진짜 이명이든 "이 표기로는 안
+        # 걸리고 이 이름으로 걸린다" 는 검색 쪽에선 같은 동작이라
+        # 가르지 않는다(머리말 참고)
+        status, valid_name = "synonym", v.strip("*")
+        # 굵은 이름이 열쇠와 같은 종이면(`Crucidenticula kanayae var.
+        # kanayae` → `C. kanayae`) 이명이 아니라 종 단위로는 유효다 —
+        # 자기 자신을 가리키는 synonym 을 내면 안 된다
+        if binomial(valid_name) == b:
+            status, valid_name = "accepted", ""
+    elif "그대로 유효" in v:
+        status, valid_name = "accepted", ""
+    elif "없음" in v:  # `AlgaeBase에 없음`
+        status, valid_name = "absent", ""
+    else:  # `확인 필요`
+        status, valid_name = "unassessed", ""
+    m = CHECKED_RE.search(note)
+    return b, {
+        "binomial": b,
+        "status": status,
+        "valid_name": valid_name,
+        "source": source,
+        "note": note.strip(),
+        "checked": m.group(1) if m else "",
+    }
+
+
 def from_paper_plates(path: Path = PAPER_FILLED,
                       source: str = "paper-plates-filled-20260831") -> dict[str, dict]:
     """논문 도판 캡션 학명을 사람이 철자 교정 뒤 AlgaeBase 로 채운 표를 읽는다.
@@ -143,35 +214,42 @@ def from_paper_plates(path: Path = PAPER_FILLED,
     rows = json.loads(path.read_text(encoding="utf-8"))
     out: dict[str, dict] = {}
     for orig, _papers, verdict, note in rows:
-        b = binomial(orig)
-        if b is None:
+        r = _verdict(orig, verdict, note, source)
+        if r:
+            out[r[0]] = r[1]
+    return out
+
+
+MD_ROW_RE = re.compile(r"^\|\s*(\d+)\s*\|(.*?)\|(.*?)\|(.*?)\|\s*$")
+
+
+def from_answered_md(path: Path = BIODATUM_ANSWERED,
+                     source: str = "biodatum-answered-20260918") -> dict[str, dict]:
+    """마크다운 표(`| # | *이름* | 판정 | 비고 |`)로 온 답을 읽는다 —
+    `filled.json` 이 없는 판(기준면 85 이름)이다. 같은 이명법 열쇠가 여러
+    행이면(변종·`s.l.`·`(plicate)` 가 종으로 뭉뚱그려진다) **판정이 있는
+    행을 우선**하고, 둘 다 있으면 앞 행을 둔다(실측: 갈리는 쌍은 없다 —
+    `main()` 이 세어 멈춘다)."""
+    out: dict[str, dict] = {}
+    clash: list[str] = []
+    for line in path.read_text(encoding="utf-8").splitlines():
+        m = MD_ROW_RE.match(line)
+        if not m:
             continue
-        v = verdict.strip()
-        if v.startswith("**") and v.endswith("**"):
-            # 굵은 이름 — 철자 교정만이든 진짜 이명이든 "이 표기로는 안
-            # 걸리고 이 이름으로 걸린다" 는 검색 쪽에선 같은 동작이라
-            # 가르지 않는다(머리말 참고)
-            status, valid_name = "synonym", v.strip("*")
-            # 굵은 이름이 열쇠와 같은 종이면(`Crucidenticula kanayae var.
-            # kanayae` → `C. kanayae`) 이명이 아니라 종 단위로는 유효다 —
-            # 자기 자신을 가리키는 synonym 을 내면 안 된다
-            if binomial(valid_name) == b:
-                status, valid_name = "accepted", ""
-        elif "그대로 유효" in v:
-            status, valid_name = "accepted", ""
-        elif "없음" in v:  # `AlgaeBase에 없음`
-            status, valid_name = "absent", ""
-        else:  # `확인 필요`
-            status, valid_name = "unassessed", ""
-        m = CHECKED_RE.search(note)
-        out[b] = {
-            "binomial": b,
-            "status": status,
-            "valid_name": valid_name,
-            "source": source,
-            "note": note,
-            "checked": m.group(1) if m else "",
-        }
+        _n, name, verdict, note = m.groups()
+        r = _verdict(name.strip().strip("*"), verdict, note, source)
+        if not r:
+            continue
+        b, row = r
+        prev = out.get(b)
+        if prev is None or (prev["status"] not in RESOLVED and row["status"] in RESOLVED):
+            out[b] = row
+        elif prev["status"] in RESOLVED and row["status"] in RESOLVED and (
+                prev["status"], prev["valid_name"]) != (row["status"], row["valid_name"]):
+            clash.append(f"{b}: {prev['status']} {prev['valid_name']} / "
+                         f"{row['status']} {row['valid_name']}")
+    if clash:
+        raise SystemExit("같은 열쇠에 다른 판정: " + "; ".join(clash))
     return out
 
 
@@ -221,6 +299,19 @@ def main() -> int:
         # 양쪽 다 판정이 없으면 merge 가 note 를 안 건드린다 — 잡아 둔 사실은 남긴다
         if b in merged and why not in merged[b]["note"]:
             merged[b]["note"] = (merged[b]["note"] + " · " + why).strip(" ·")
+    # 기준면 85 이름(09-18 저녁) — 같은 규칙. HOLD·REMARK 는 위와 같은 자리
+    paper3 = from_answered_md()
+    for b, why in HOLD.items():
+        if b in paper3:
+            paper3[b]["status"], paper3[b]["valid_name"] = "unassessed", ""
+            paper3[b]["note"] = (paper3[b]["note"] + " · " + why).strip(" ·")
+    for b, why in REMARK.items():
+        if b in paper3 and why not in paper3[b]["note"]:
+            paper3[b]["note"] = (paper3[b]["note"] + " · " + why).strip(" ·")
+    merged = merge(merged, paper3)
+    for b, why in {**HOLD, **REMARK}.items():
+        if b in merged and why not in merged[b]["note"]:
+            merged[b]["note"] = (merged[b]["note"] + " · " + why).strip(" ·")
     for b, row in EXTRA.items():
         merged.setdefault(b, dict(row))
 
@@ -228,8 +319,8 @@ def main() -> int:
     c = Counter(v["status"] for v in merged.values())
     overlap = set(worms) & set(paper)
     print(f"worms_master {len(worms)} · paper_plates {len(paper)} "
-          f"· 겹침 {len(overlap)} · 남극2002 {len(paper2)} · 덤 {len(EXTRA)} "
-          f"· 합계 {len(merged)}")
+          f"· 겹침 {len(overlap)} · 남극2002 {len(paper2)} · 기준면 {len(paper3)} "
+          f"· 덤 {len(EXTRA)} · 합계 {len(merged)}")
     print("  " + " · ".join(f"{k} {v}" for k, v in c.most_common()))
 
     if args.dry_run:

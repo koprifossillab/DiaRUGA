@@ -12,6 +12,8 @@
 7. **`check_db` 13번이 가리키는 자리가 성립한다**
 8. **배치** — 하한만 있는 대는 위 대의 하한이 상한 · MIS 눈금은 1.5 Ma 이하만
 9. **파서의 이름 정규화** — 종소명 소문자 · `var.` 유지 · 비공식 이름은 이명법 없음
+10. **학명 판정이 그림의 표에 붙는다** — 이명·없음만, 종마다 한 번
+    (`taxon_names.json` 의 기준면 85 이름 답 · 09-18 저녁)
 """
 import importlib.util
 import json
@@ -20,7 +22,7 @@ from pathlib import Path
 
 from .base import DiaRUGATestCase
 from .. import biodatum as bd, data, mis
-from ..models import Atlas, AtlasEntry, Biodatum, Biozone, Reference
+from ..models import Atlas, AtlasEntry, Biodatum, Biozone, Reference, TaxonName
 
 _ROOT = Path(__file__).resolve().parents[3]
 
@@ -130,6 +132,24 @@ class BiodatumChartTests(DiaRUGATestCase):
         by = {s["name"]: s["in_atlas"] for s in got["species"]}
         self.assertTrue(by["Rouxia antarctica"])
         self.assertFalse(by["Rouxia californica"])
+
+    def test_학명_판정이_표에_붙는다(self):
+        # `data.biodatum_chart` 의 `taxa = _taxon_names_by_binomial(...)` 을 빼면
+        # `taxon` 이 None 이 되어 이명 칩이 안 뜬다
+        TaxonName.objects.create(binomial="Rouxia antarctica", status="synonym",
+                                 valid_name="Rouxia peragalloi var. antarctica",
+                                 note="갱신 2015")
+        TaxonName.objects.create(binomial="Rouxia californica", status="accepted")
+        TaxonName.objects.create(binomial="Rouxia constricta", status="absent",
+                                 note="AlgaeBase 에 없음")
+        got = data.biodatum_chart(areas=["antarctic", "npacific"], genus="Rouxia")
+        by = {s["name"]: s["taxon"] for s in got["species"]}
+        self.assertEqual(by["Rouxia antarctica"]["valid_name"], "Rouxia peragalloi var. antarctica")
+        self.assertIsNone(by["Rouxia californica"])  # 유효는 낼 것이 없다
+        self.assertEqual(by["Rouxia constricta"]["status"], "absent")
+        body = self.client.get("/atlas/datums/?area=antarctic&area=npacific&genus=Rouxia&f=1").content.decode()
+        self.assertIn(">이명</span> <i class=\"dim\">Rouxia peragalloi var. antarctica</i>", body)
+        self.assertIn("AlgaeBase 에 없다", body)
 
     def test_화면이_그린다(self):
         r = self.client.get("/atlas/datums/?area=antarctic&genus=Rouxia&f=1")
@@ -278,6 +298,56 @@ class ParserTests(DiaRUGATestCase):
              "age_text": "1.0", "confidence": "높음(원문 대조)", "note": "", "code": ""}
         r.update(kw)
         return r
+
+
+class TaxonNamesAnswerTests(DiaRUGATestCase):
+    """기준면 85 이름의 AlgaeBase 답(마크다운 표)을 `parse_taxon_names` 가 읽는다."""
+
+    def setUp(self):
+        self.mod = _load("parse_taxon_names", "tools")
+
+    def test_마크다운_표를_읽는다(self):
+        md = (
+            "| # | 이름 | AlgaeBase 현재 통용명 | 비고 |\n|---|---|---|---|\n"
+            "| 1 | *Actinocyclus F Zielinski and Gersonde 2003* | AlgaeBase에 없음 | 비공식 |\n"
+            "| 2 | *Azpeitia nodulifer* | **Azpeitia nodulifera** | 갱신 2018 · 교정 |\n"
+            "| 3 | *Fragilariopsis matuyamae* | (그대로 유효) | 갱신 2026 |\n"
+            "| 4 | *Fragilariopsis matuyamae heteropola* | (그대로 유효) | 갱신 2026 · 열쇠 |\n"
+            "| 5 | *Thalassiosira kolbei* | 확인 필요 | 갱신 2004 |\n"
+            "| 6 | *Nitzschia 17 Schrader 1976* | AlgaeBase에 없음 | 비공식 |\n"
+            "| 7 | *Thalassiosira jacksonii* | AlgaeBase에 없음 |  |\n"
+        )
+        path = self._tmp / "answered.md"
+        path.write_text(md, encoding="utf-8")
+        got = self.mod.from_answered_md(path, "t")
+        # 비공식 둘은 열쇠가 없다 — `Actinocyclus f` 같은 열쇠를 만들지 않는다
+        self.assertEqual(set(got), {"Azpeitia nodulifer", "Fragilariopsis matuyamae",
+                                    "Thalassiosira kolbei", "Thalassiosira jacksonii"})
+        self.assertEqual(got["Azpeitia nodulifer"]["status"], "synonym")
+        self.assertEqual(got["Azpeitia nodulifer"]["valid_name"], "Azpeitia nodulifera")
+        self.assertEqual(got["Azpeitia nodulifer"]["checked"], "2018")
+        self.assertEqual(got["Fragilariopsis matuyamae"]["status"], "accepted")
+        self.assertEqual(got["Thalassiosira kolbei"]["status"], "unassessed")
+        self.assertEqual(got["Thalassiosira jacksonii"]["status"], "absent")
+        # 같은 열쇠에 다른 판정이면 멈춘다
+        path.write_text(md + "| 8 | *Fragilariopsis matuyamae* | **Nitzschia x** | 갱신 2020 |\n",
+                        encoding="utf-8")
+        with self.assertRaises(SystemExit):
+            self.mod.from_answered_md(path, "t")
+
+    def test_저장소의_taxon_names_에_기준면_답이_들어_있다(self):
+        rows = {r["binomial"]: r for r in json.loads(
+            (_ROOT / "taxon_names.json").read_text(encoding="utf-8"))}
+        self.assertGreaterEqual(len(rows), 2108)
+        self.assertEqual(rows["Thalassiosira tetraoestrupii"]["status"], "synonym")
+        self.assertTrue(rows["Thalassiosira tetraoestrupii"]["valid_name"]
+                        .startswith("Shionodiscus tetraoestrupii"))
+        # 정리 노트가 반영하지 말라고 한 것 — 중심규조 → 깃돌말 오연결
+        self.assertEqual(rows["Actinocyclus maccollumii"]["status"], "unassessed")
+        self.assertIn("오연결", rows["Actinocyclus maccollumii"]["note"])
+        # 오식은 합치지 않았다
+        self.assertEqual(rows["Shionodiscus tetraoestruppii"]["status"], "absent")
+        self.assertNotIn("Actinocyclus f", rows)
 
 
 class ImportBiodatumsTests(DiaRUGATestCase):

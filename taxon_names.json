@@ -536,6 +536,14 @@
   "checked": "2005-03-30"
  },
  {
+  "binomial": "Actinocyclus ellipticus",
+  "status": "accepted",
+  "valid_name": "",
+  "source": "biodatum-answered-20260918",
+  "note": "갱신 2021",
+  "checked": "2021"
+ },
+ {
   "binomial": "Actinocyclus fasciculatus",
   "status": "accepted",
   "valid_name": "",
@@ -557,6 +565,14 @@
   "valid_name": "",
   "source": "paper-plates-filled-20260831",
   "note": "갱신 2021 · Coscinodiscophyceae",
+  "checked": "2021"
+ },
+ {
+  "binomial": "Actinocyclus maccollumii",
+  "status": "unassessed",
+  "valid_name": "",
+  "source": "biodatum-answered-20260918",
+  "note": "갱신 2021 · ⚠ 09-18 기준면 조회는 Diploneis mollenhaueri 이명으로 냈으나 중심규조 → 깃돌말이라 오연결로 보여 반영하지 않았다(기준면 정리 노트 1절 · Denticulopsis maccollumii 와 같은 종일 가능성)",
   "checked": "2021"
  },
  {
@@ -582,6 +598,14 @@
   "source": "paper-plates-filled-20260831",
   "note": "갱신 2026 · Coscinodiscophyceae",
   "checked": "2026"
+ },
+ {
+  "binomial": "Actinocyclus oculatus",
+  "status": "accepted",
+  "valid_name": "",
+  "source": "biodatum-answered-20260918",
+  "note": "갱신 2023",
+  "checked": "2023"
  },
  {
   "binomial": "Actinocyclus splendens",
@@ -870,6 +894,14 @@
   "source": "worms-master-20260814",
   "note": "그대로 유효 · algaebase_day3_0101-0150.md · (그대로 유효)",
   "checked": "2005-08-18"
+ },
+ {
+  "binomial": "Alveus marinus",
+  "status": "accepted",
+  "valid_name": "",
+  "source": "biodatum-answered-20260918",
+  "note": "갱신 2020",
+  "checked": "2020"
  },
  {
   "binomial": "Ammodchium rectagulare",
@@ -1552,6 +1584,14 @@
   "checked": "2009-11-07"
  },
  {
+  "binomial": "Araniscus lewisianus",
+  "status": "accepted",
+  "valid_name": "",
+  "source": "biodatum-answered-20260918",
+  "note": "갱신 2018",
+  "checked": "2018"
+ },
+ {
   "binomial": "Asterionella formosa",
   "status": "accepted",
   "valid_name": "",
@@ -1712,12 +1752,28 @@
   "checked": "2023"
  },
  {
+  "binomial": "Asteromphalus hyalinus",
+  "status": "accepted",
+  "valid_name": "",
+  "source": "biodatum-answered-20260918",
+  "note": "갱신 2023",
+  "checked": "2023"
+ },
+ {
   "binomial": "Asteromphalus kennettii",
   "status": "accepted",
   "valid_name": "",
   "source": "worms-master-20260814",
   "note": "그대로 유효 · algaebase_day5_0201-0250.md · (그대로 유효)",
   "checked": "2017-03-14"
+ },
+ {
+  "binomial": "Asteromphalus oligocenicus",
+  "status": "accepted",
+  "valid_name": "",
+  "source": "biodatum-answered-20260918",
+  "note": "갱신 2025",
+  "checked": "2025"
  },
  {
   "binomial": "Asteromphalus parvulus",
@@ -2446,6 +2502,14 @@
   "source": "worms-master-20260814",
   "note": "아직 안 찾았다 · algaebase_day6_0251-0300.md · 검색 안 함 · 독일어 단어(\"통합된\") 섞임 — OCR 오독",
   "checked": ""
+ },
+ {
+  "binomial": "Azpeitia nodulifer",
+  "status": "synonym",
+  "valid_name": "Azpeitia nodulifera",
+  "source": "biodatum-answered-20260918",
+  "note": "갱신 2018 · Azpeitia nodulifer → Azpeitia nodulifera 로 찾으면 유효",
+  "checked": "2018"
  },
  {
   "binomial": "Azpeitia tabularis",
@@ -3278,6 +3342,30 @@
   "source": "antarctic2002-filled-20260918",
   "note": "갱신 2021 · (원래 비고) 속째 대조표에 없음",
   "checked": "2021"
+ },
+ {
+  "binomial": "Cavitatus lanceolatus",
+  "status": "absent",
+  "valid_name": "",
+  "source": "biodatum-answered-20260918",
+  "note": "",
+  "checked": ""
+ },
+ {
+  "binomial": "Cavitatus miocenicus",
+  "status": "unassessed",
+  "valid_name": "",
+  "source": "biodatum-answered-20260918",
+  "note": "갱신 2020 · AlgaeBase가 \"추가 조사 필요\"로 둠",
+  "checked": "2020"
+ },
+ {
+  "binomial": "Cavitatus rectus",
+  "status": "accepted",
+  "valid_name": "",
+  "source": "biodatum-answered-20260918",
+  "note": "갱신 2024",
+  "checked": "2024"
  },
  {
   "binomial": "Cerataulus laevis",
@@ -5280,6 +5368,14 @@
   "checked": ""
  },
  {
+  "binomial": "Cosmiodiscus insignis",
+  "status": "synonym",
+  "valid_name": "Thalassiosira insigna (Jousé) D.M.Harwood & T.Maruyama",
+  "source": "biodatum-answered-20260918",
+  "note": "갱신 2023",
+  "checked": "2023"
+ },
+ {
   "binomial": "Cosmiodiscus marginulatus",
   "status": "absent",
   "valid_name": "",
@@ -5381,6 +5477,14 @@
   "valid_name": "",
   "source": "antarctic2002-filled-20260918",
   "note": "갱신 2026 · (원래 비고) 속째 대조표에 없음",
+  "checked": "2026"
+ },
+ {
+  "binomial": "Crucidenticula sawamurae",
+  "status": "accepted",
+  "valid_name": "",
+  "source": "biodatum-answered-20260918",
+  "note": "갱신 2026",
   "checked": "2026"
  },
  {
@@ -6240,6 +6344,14 @@
   "checked": "2018-02-01"
  },
  {
+  "binomial": "Denticulopsis hyalina",
+  "status": "accepted",
+  "valid_name": "",
+  "source": "biodatum-answered-20260918",
+  "note": "갱신 2025",
+  "checked": "2025"
+ },
+ {
   "binomial": "Denticulopsis hyaline",
   "status": "synonym",
   "valid_name": "Denticulopsis hyalina",
@@ -6254,6 +6366,14 @@
   "source": "paper-plates-filled-20260831",
   "note": "갱신 2025 · Bacillariophyceae",
   "checked": "2025"
+ },
+ {
+  "binomial": "Denticulopsis katayamae",
+  "status": "accepted",
+  "valid_name": "",
+  "source": "biodatum-answered-20260918",
+  "note": "갱신 2023",
+  "checked": "2023"
  },
  {
   "binomial": "Denticulopsis lauta",
@@ -6272,6 +6392,14 @@
   "checked": "2025"
  },
  {
+  "binomial": "Denticulopsis okunoi",
+  "status": "accepted",
+  "valid_name": "",
+  "source": "biodatum-answered-20260918",
+  "note": "갱신 2026",
+  "checked": "2026"
+ },
+ {
   "binomial": "Denticulopsis ovata",
   "status": "accepted",
   "valid_name": "",
@@ -6285,6 +6413,30 @@
   "valid_name": "",
   "source": "paper-plates-filled-20260831",
   "note": "갱신 2022 · Bacillariophyceae",
+  "checked": "2022"
+ },
+ {
+  "binomial": "Denticulopsis praehyalina",
+  "status": "accepted",
+  "valid_name": "",
+  "source": "biodatum-answered-20260918",
+  "note": "갱신 2022",
+  "checked": "2022"
+ },
+ {
+  "binomial": "Denticulopsis praekatayamae",
+  "status": "accepted",
+  "valid_name": "",
+  "source": "biodatum-answered-20260918",
+  "note": "갱신 2026",
+  "checked": "2026"
+ },
+ {
+  "binomial": "Denticulopsis praelauta",
+  "status": "accepted",
+  "valid_name": "",
+  "source": "biodatum-answered-20260918",
+  "note": "갱신 2022",
   "checked": "2022"
  },
  {
@@ -7400,6 +7552,22 @@
   "checked": "2018-02-01"
  },
  {
+  "binomial": "Fragilariopsis bohatyi",
+  "status": "unassessed",
+  "valid_name": "",
+  "source": "biodatum-answered-20260918",
+  "note": "갱신 2018 · AlgaeBase가 \"추가 조사 필요\"로 둠",
+  "checked": "2018"
+ },
+ {
+  "binomial": "Fragilariopsis claviceps",
+  "status": "unassessed",
+  "valid_name": "",
+  "source": "biodatum-answered-20260918",
+  "note": "갱신 2019 · AlgaeBase가 \"추가 조사 필요\"로 둠",
+  "checked": "2019"
+ },
+ {
   "binomial": "Fragilariopsis clementia",
   "status": "accepted",
   "valid_name": "",
@@ -7448,6 +7616,22 @@
   "checked": "2016"
  },
  {
+  "binomial": "Fragilariopsis interfrigidaria",
+  "status": "unassessed",
+  "valid_name": "",
+  "source": "biodatum-answered-20260918",
+  "note": "갱신 2026 · AlgaeBase가 \"추가 조사 필요\"로 둠",
+  "checked": "2026"
+ },
+ {
+  "binomial": "Fragilariopsis januaria",
+  "status": "unassessed",
+  "valid_name": "",
+  "source": "biodatum-answered-20260918",
+  "note": "갱신 2026 · Nitzschia januaria 로는 있으나 \"추가 조사 필요\"",
+  "checked": "2026"
+ },
+ {
   "binomial": "Fragilariopsis kerguelensis",
   "status": "accepted",
   "valid_name": "",
@@ -7478,6 +7662,14 @@
   "source": "antarctic2002-filled-20260918",
   "note": "갱신 2019 · AlgaeBase가 \"추가 조사 필요\"로 둠 · (원래 비고) 위와 같음",
   "checked": "2019"
+ },
+ {
+  "binomial": "Fragilariopsis matuyamae",
+  "status": "accepted",
+  "valid_name": "",
+  "source": "biodatum-answered-20260918",
+  "note": "갱신 2026",
+  "checked": "2026"
  },
  {
   "binomial": "Fragilariopsis obliquecostata",
@@ -7536,6 +7728,14 @@
   "checked": "2018-01-31"
  },
  {
+  "binomial": "Fragilariopsis robusta",
+  "status": "unassessed",
+  "valid_name": "",
+  "source": "biodatum-answered-20260918",
+  "note": "갱신 2018 · AlgaeBase가 \"추가 조사 필요\"로 둠",
+  "checked": "2018"
+ },
+ {
   "binomial": "Fragilariopsis separanda",
   "status": "accepted",
   "valid_name": "",
@@ -7558,6 +7758,14 @@
   "source": "paper-plates-filled-20260831",
   "note": "검색 결과 0건",
   "checked": ""
+ },
+ {
+  "binomial": "Fragilariopsis weaveri",
+  "status": "synonym",
+  "valid_name": "Nitzschia weaveri",
+  "source": "biodatum-answered-20260918",
+  "note": "갱신 2022 · Fragilariopsis weaveri → Nitzschia weaveri 로 찾으면 유효",
+  "checked": "2022"
  },
  {
   "binomial": "Frustulia rhomboides",
@@ -8224,6 +8432,14 @@
   "checked": "2005-07-06"
  },
  {
+  "binomial": "Kisseleviella ezoensis",
+  "status": "accepted",
+  "valid_name": "",
+  "source": "biodatum-answered-20260918",
+  "note": "갱신 2023",
+  "checked": "2023"
+ },
+ {
   "binomial": "Kittonia elaborata",
   "status": "accepted",
   "valid_name": "",
@@ -8382,6 +8598,14 @@
   "source": "worms-master-20260814",
   "note": "그대로 유효 · algaebase_day19_0901-0950.md · (그대로 유효, Grunow)",
   "checked": "2012-09-03"
+ },
+ {
+  "binomial": "Lithodesmium minisculum",
+  "status": "unassessed",
+  "valid_name": "",
+  "source": "biodatum-answered-20260918",
+  "note": "갱신 2025 · Lithodesmium minusculum 로는 있으나 \"추가 조사 필요\"",
+  "checked": "2025"
  },
  {
   "binomial": "Lithodesmium minusculum",
@@ -12192,6 +12416,14 @@
   "checked": "2005-07-15"
  },
  {
+  "binomial": "Navicula wisei",
+  "status": "accepted",
+  "valid_name": "",
+  "source": "biodatum-answered-20260918",
+  "note": "갱신 2022",
+  "checked": "2022"
+ },
+ {
   "binomial": "Navicula zanzibarica",
   "status": "synonym",
   "valid_name": "Lyrella zanzibarica",
@@ -12246,6 +12478,38 @@
   "source": "worms-master-20260814",
   "note": "AlgaeBase 에 없다 · algaebase_day29_1401-1450.md · AlgaeBase에 없음 · 검색 0건(철자 변형 \"preschewalskii\"도 확인)",
   "checked": ""
+ },
+ {
+  "binomial": "Neobrunia mirabilis",
+  "status": "accepted",
+  "valid_name": "",
+  "source": "biodatum-answered-20260918",
+  "note": "갱신 2024",
+  "checked": "2024"
+ },
+ {
+  "binomial": "Neodenticula kamtschatica",
+  "status": "accepted",
+  "valid_name": "",
+  "source": "biodatum-answered-20260918",
+  "note": "갱신 2026",
+  "checked": "2026"
+ },
+ {
+  "binomial": "Neodenticula koizumii",
+  "status": "accepted",
+  "valid_name": "",
+  "source": "biodatum-answered-20260918",
+  "note": "갱신 2026",
+  "checked": "2026"
+ },
+ {
+  "binomial": "Neodenticula seminae",
+  "status": "accepted",
+  "valid_name": "",
+  "source": "biodatum-answered-20260918",
+  "note": "갱신 2026",
+  "checked": "2026"
  },
  {
   "binomial": "Nitzchiella longissima",
@@ -12520,6 +12784,14 @@
   "checked": "2017-03-14"
  },
  {
+  "binomial": "Nitzschia miocenica",
+  "status": "accepted",
+  "valid_name": "",
+  "source": "biodatum-answered-20260918",
+  "note": "갱신 2026",
+  "checked": "2026"
+ },
+ {
   "binomial": "Nitzschia obliquecostata",
   "status": "synonym",
   "valid_name": "Fragilariopsis obliquecostata",
@@ -12542,6 +12814,14 @@
   "source": "worms-master-20260814",
   "note": "이명 → 갈아탄다 · algaebase_day29_1401-1450.md · 신설 속. ⚠ WoRMS는 accepted(원명 그대로) 표기 — DB 갱신 시차",
   "checked": "2005-07-22"
+ },
+ {
+  "binomial": "Nitzschia pliocena",
+  "status": "synonym",
+  "valid_name": "Fragilariopsis pliocena (Brun) Sheshukova-Poretskaya",
+  "source": "biodatum-answered-20260918",
+  "note": "갱신 2018",
+  "checked": "2018"
  },
  {
   "binomial": "Nitzschia porterei",
@@ -13576,6 +13856,30 @@
   "checked": ""
  },
  {
+  "binomial": "Porosira pseudodenticulata",
+  "status": "accepted",
+  "valid_name": "",
+  "source": "biodatum-answered-20260918",
+  "note": "갱신 2023",
+  "checked": "2023"
+ },
+ {
+  "binomial": "Proboscia barboi",
+  "status": "accepted",
+  "valid_name": "",
+  "source": "biodatum-answered-20260918",
+  "note": "갱신 2025",
+  "checked": "2025"
+ },
+ {
+  "binomial": "Proboscia curvirostris",
+  "status": "accepted",
+  "valid_name": "",
+  "source": "biodatum-answered-20260918",
+  "note": "갱신 2025",
+  "checked": "2025"
+ },
+ {
   "binomial": "Pseudauliscus diffusus",
   "status": "synonym",
   "valid_name": "Auliscus diffusus",
@@ -13662,6 +13966,14 @@
   "source": "worms-master-20260814",
   "note": "이명 → 갈아탄다 · algaebase_day32_1551-1600.md · 완전 이명화",
   "checked": "2018-01-31"
+ },
+ {
+  "binomial": "Raphidodiscus marylandicus",
+  "status": "accepted",
+  "valid_name": "",
+  "source": "biodatum-answered-20260918",
+  "note": "갱신 2024",
+  "checked": "2024"
  },
  {
   "binomial": "Rhabdonema adriaticum",
@@ -13784,6 +14096,14 @@
   "checked": "2018-01-31"
  },
  {
+  "binomial": "Rhizosolenia costata",
+  "status": "accepted",
+  "valid_name": "",
+  "source": "biodatum-answered-20260918",
+  "note": "갱신 2022",
+  "checked": "2022"
+ },
+ {
   "binomial": "Rhizosolenia crassa",
   "status": "accepted",
   "valid_name": "",
@@ -13824,12 +14144,28 @@
   "checked": "2008-10-11"
  },
  {
+  "binomial": "Rhizosolenia harwoodii",
+  "status": "absent",
+  "valid_name": "",
+  "source": "biodatum-answered-20260918",
+  "note": "",
+  "checked": ""
+ },
+ {
   "binomial": "Rhizosolenia hebetata",
   "status": "accepted",
   "valid_name": "",
   "source": "worms-master-20260814",
   "note": "그대로 유효 · algaebase_day32_1551-1600.md · (그대로 유효, J.W.Bailey)",
   "checked": "2022-04-10"
+ },
+ {
+  "binomial": "Rhizosolenia hotaense",
+  "status": "synonym",
+  "valid_name": "Rhizosolenia hotaensis",
+  "source": "biodatum-answered-20260918",
+  "note": "갱신 2026 · Rhizosolenia hotaense → Rhizosolenia hotaensis 로 찾으면 유효",
+  "checked": "2026"
  },
  {
   "binomial": "Rhizosolenia hyalina",
@@ -13968,11 +14304,43 @@
   "checked": "2023"
  },
  {
+  "binomial": "Rouxia antarctica",
+  "status": "synonym",
+  "valid_name": "Rouxia peragalloi var. antarctica",
+  "source": "biodatum-answered-20260918",
+  "note": "갱신 2015 · Rouxia antarctica → Rouxia peragalloi var. antarctica 로 찾으면 유효 · ⚠ AlgaeBase 는 종이 아니라 R. peragalloi 의 변종으로만 잡는다 — 계급은 원기재로 확인할 것(기준면 정리 노트 4절 · 남극 2002 의 R. peragalloi 와 이어진다)",
+  "checked": "2015"
+ },
+ {
+  "binomial": "Rouxia californica",
+  "status": "accepted",
+  "valid_name": "",
+  "source": "biodatum-answered-20260918",
+  "note": "갱신 2018",
+  "checked": "2018"
+ },
+ {
   "binomial": "Rouxia constricta",
   "status": "accepted",
   "valid_name": "",
   "source": "worms-master-20260814",
   "note": "그대로 유효 · algaebase_day7_priority-148.md · (그대로 유효) · 표제 Rouxia constricta Zielinski & Gersonde · 갱신 12 February 2026",
+  "checked": ""
+ },
+ {
+  "binomial": "Rouxia diploneides",
+  "status": "accepted",
+  "valid_name": "",
+  "source": "biodatum-answered-20260918",
+  "note": "갱신 2023",
+  "checked": "2023"
+ },
+ {
+  "binomial": "Rouxia heteropolara",
+  "status": "absent",
+  "valid_name": "",
+  "source": "biodatum-answered-20260918",
+  "note": "",
   "checked": ""
  },
  {
@@ -14102,6 +14470,38 @@
   "source": "worms-master-20260814",
   "note": "그대로 유효 · algaebase_day33_1601-1650.md · (그대로 유효, (Brébisson ex Kützing) Cleve) · Scoliopleura의 여러 동명이종(elegans, convexa 등)이 공통으로 수렴하는 목적지",
   "checked": "2010-08-25"
+ },
+ {
+  "binomial": "Shionodiscus gracilis",
+  "status": "accepted",
+  "valid_name": "",
+  "source": "biodatum-answered-20260918",
+  "note": "갱신 2023",
+  "checked": "2023"
+ },
+ {
+  "binomial": "Shionodiscus oestrupii",
+  "status": "accepted",
+  "valid_name": "",
+  "source": "biodatum-answered-20260918",
+  "note": "갱신 2026",
+  "checked": "2026"
+ },
+ {
+  "binomial": "Shionodiscus tetraoestrupii",
+  "status": "accepted",
+  "valid_name": "",
+  "source": "biodatum-answered-20260918",
+  "note": "갱신 2017",
+  "checked": "2017"
+ },
+ {
+  "binomial": "Shionodiscus tetraoestruppii",
+  "status": "absent",
+  "valid_name": "",
+  "source": "biodatum-answered-20260918",
+  "note": "Shionodiscus tetraoestrupii 로도 없음 · 열쇠 *Shionodiscus tetraoestruppii* 로 조회 · tetraoestrupii(p 하나)의 오식 · var. 뒤가 비어 있어 reimeri 인지 원문 확인 전까지 합치지 않는다(기준면 정리 노트 2절)",
+  "checked": ""
  },
  {
   "binomial": "Skeletonema costatum",
@@ -15424,6 +15824,14 @@
   "checked": "2022-04-10"
  },
  {
+  "binomial": "Thalassionema schraderi",
+  "status": "synonym",
+  "valid_name": "Thalassionema nitzschioides var. schraderi (Akiba) J.L.Moreno-Ruíz",
+  "source": "biodatum-answered-20260918",
+  "note": "갱신 2015",
+  "checked": "2015"
+ },
+ {
   "binomial": "Thalassiosira antarctica",
   "status": "accepted",
   "valid_name": "",
@@ -15446,6 +15854,22 @@
   "source": "worms-master-20260814",
   "note": "그대로 유효 · algaebase_day36_1751-1800.md · (그대로 유효, (Grunow) Ostenfeld) · Thalassiosira 시작",
   "checked": "2005-07-06"
+ },
+ {
+  "binomial": "Thalassiosira castanea",
+  "status": "accepted",
+  "valid_name": "",
+  "source": "biodatum-answered-20260918",
+  "note": "갱신 2026",
+  "checked": "2026"
+ },
+ {
+  "binomial": "Thalassiosira complicata",
+  "status": "accepted",
+  "valid_name": "",
+  "source": "biodatum-answered-20260918",
+  "note": "갱신 2023",
+  "checked": "2023"
  },
  {
   "binomial": "Thalassiosira condensata",
@@ -15504,6 +15928,14 @@
   "checked": "2018"
  },
  {
+  "binomial": "Thalassiosira fasciculata",
+  "status": "accepted",
+  "valid_name": "",
+  "source": "biodatum-answered-20260918",
+  "note": "갱신 2023",
+  "checked": "2023"
+ },
+ {
   "binomial": "Thalassiosira fraga",
   "status": "accepted",
   "valid_name": "",
@@ -15520,6 +15952,14 @@
   "checked": "2018-02-01"
  },
  {
+  "binomial": "Thalassiosira grunowii",
+  "status": "accepted",
+  "valid_name": "",
+  "source": "biodatum-answered-20260918",
+  "note": "갱신 2026 · 열쇠 *Thalassiosira grunowii* 로 조회",
+  "checked": "2026"
+ },
+ {
   "binomial": "Thalassiosira hyalina",
   "status": "accepted",
   "valid_name": "",
@@ -15528,12 +15968,44 @@
   "checked": "2005-03-30"
  },
  {
+  "binomial": "Thalassiosira insigna",
+  "status": "accepted",
+  "valid_name": "",
+  "source": "biodatum-answered-20260918",
+  "note": "갱신 2023",
+  "checked": "2023"
+ },
+ {
   "binomial": "Thalassiosira inura",
   "status": "accepted",
   "valid_name": "",
   "source": "worms-master-20260814",
   "note": "그대로 유효 · algaebase_day36_1751-1800.md · (그대로 유효, Gersonde)",
   "checked": "2017-03-14"
+ },
+ {
+  "binomial": "Thalassiosira jacksonii",
+  "status": "absent",
+  "valid_name": "",
+  "source": "biodatum-answered-20260918",
+  "note": "",
+  "checked": ""
+ },
+ {
+  "binomial": "Thalassiosira jouseae",
+  "status": "accepted",
+  "valid_name": "",
+  "source": "biodatum-answered-20260918",
+  "note": "갱신 2023",
+  "checked": "2023"
+ },
+ {
+  "binomial": "Thalassiosira kolbei",
+  "status": "unassessed",
+  "valid_name": "",
+  "source": "biodatum-answered-20260918",
+  "note": "갱신 2004 · AlgaeBase가 \"추가 조사 필요\"로 둠",
+  "checked": "2004"
  },
  {
   "binomial": "Thalassiosira lentiginosa",
@@ -15560,11 +16032,35 @@
   "checked": "2017"
  },
  {
+  "binomial": "Thalassiosira mahoodii",
+  "status": "accepted",
+  "valid_name": "",
+  "source": "biodatum-answered-20260918",
+  "note": "갱신 2023",
+  "checked": "2023"
+ },
+ {
   "binomial": "Thalassiosira mala",
   "status": "accepted",
   "valid_name": "",
   "source": "paper-plates-filled-20260831",
   "note": "갱신 2024 · Thalassiosirophyceae",
+  "checked": "2024"
+ },
+ {
+  "binomial": "Thalassiosira miocenica",
+  "status": "accepted",
+  "valid_name": "",
+  "source": "biodatum-answered-20260918",
+  "note": "갱신 2023",
+  "checked": "2023"
+ },
+ {
+  "binomial": "Thalassiosira nativa",
+  "status": "accepted",
+  "valid_name": "",
+  "source": "biodatum-answered-20260918",
+  "note": "갱신 2024",
   "checked": "2024"
  },
  {
@@ -15616,12 +16112,52 @@
   "checked": "2019"
  },
  {
+  "binomial": "Thalassiosira praeconvexa",
+  "status": "accepted",
+  "valid_name": "",
+  "source": "biodatum-answered-20260918",
+  "note": "갱신 2018",
+  "checked": "2018"
+ },
+ {
+  "binomial": "Thalassiosira praefraga",
+  "status": "accepted",
+  "valid_name": "",
+  "source": "biodatum-answered-20260918",
+  "note": "갱신 2010",
+  "checked": "2010"
+ },
+ {
   "binomial": "Thalassiosira praelineata",
   "status": "synonym",
   "valid_name": "Thalassiosira leptopus (Grunow) Hasle & G.Fryxell",
   "source": "antarctic2002-filled-20260918",
   "note": "갱신 2014 · Coscinodiscus praelineatus 로 찾으면 이 이름의 이명 · (원래 비고) 논문 자신이 *Coscinodiscus praelineatus* → *Thalassiosira leptopus* 이명 관계를 언급한다(p.72) — AlgaeBase 판정과 비교할 것",
   "checked": "2014"
+ },
+ {
+  "binomial": "Thalassiosira praeoestrupii",
+  "status": "synonym",
+  "valid_name": "Shionodiscus praeoestrupii (M.P.Dumont, J.G.Baldauf & J.A.Barron) A.J.Alverson, S.-H.Kang & E.C. Theriot",
+  "source": "biodatum-answered-20260918",
+  "note": "갱신 2023",
+  "checked": "2023"
+ },
+ {
+  "binomial": "Thalassiosira praeyabei",
+  "status": "accepted",
+  "valid_name": "",
+  "source": "biodatum-answered-20260918",
+  "note": "갱신 2026",
+  "checked": "2026"
+ },
+ {
+  "binomial": "Thalassiosira ritscheri",
+  "status": "synonym",
+  "valid_name": "Shionodiscus ritscheri (Hustedt) Alverson, Kang & Theriot",
+  "source": "biodatum-answered-20260918",
+  "note": "갱신 2023",
+  "checked": "2023"
  },
  {
   "binomial": "Thalassiosira rotula",
@@ -15640,6 +16176,22 @@
   "checked": "2023"
  },
  {
+  "binomial": "Thalassiosira scotia",
+  "status": "accepted",
+  "valid_name": "",
+  "source": "biodatum-answered-20260918",
+  "note": "갱신 2023",
+  "checked": "2023"
+ },
+ {
+  "binomial": "Thalassiosira singularis",
+  "status": "unassessed",
+  "valid_name": "",
+  "source": "biodatum-answered-20260918",
+  "note": "갱신 2021 · AlgaeBase가 \"추가 조사 필요\"로 둠",
+  "checked": "2021"
+ },
+ {
   "binomial": "Thalassiosira spinosa",
   "status": "synonym",
   "valid_name": "Thalassiosira spinoconvexa Akiba & Yanagisawa",
@@ -15656,6 +16208,14 @@
   "checked": "2020"
  },
  {
+  "binomial": "Thalassiosira striata",
+  "status": "accepted",
+  "valid_name": "",
+  "source": "biodatum-answered-20260918",
+  "note": "갱신 2023",
+  "checked": "2023"
+ },
+ {
   "binomial": "Thalassiosira subtilis",
   "status": "accepted",
   "valid_name": "",
@@ -15664,12 +16224,60 @@
   "checked": "2018-01-31"
  },
  {
+  "binomial": "Thalassiosira tappanae",
+  "status": "absent",
+  "valid_name": "",
+  "source": "biodatum-answered-20260918",
+  "note": "",
+  "checked": ""
+ },
+ {
+  "binomial": "Thalassiosira temperei",
+  "status": "accepted",
+  "valid_name": "",
+  "source": "biodatum-answered-20260918",
+  "note": "갱신 2026",
+  "checked": "2026"
+ },
+ {
+  "binomial": "Thalassiosira tetraoestrupii",
+  "status": "synonym",
+  "valid_name": "Shionodiscus tetraoestrupii (Bodén) A.J.Alverson, S.H.Kang & E.C.Theriot",
+  "source": "biodatum-answered-20260918",
+  "note": "갱신 2023",
+  "checked": "2023"
+ },
+ {
+  "binomial": "Thalassiosira torokina",
+  "status": "accepted",
+  "valid_name": "",
+  "source": "biodatum-answered-20260918",
+  "note": "갱신 2017",
+  "checked": "2017"
+ },
+ {
   "binomial": "Thalassiosira tumida",
   "status": "accepted",
   "valid_name": "",
   "source": "paper-plates-filled-20260831",
   "note": "갱신 2016 · Thalassiosirophyceae",
   "checked": "2016"
+ },
+ {
+  "binomial": "Thalassiosira vulnifica",
+  "status": "accepted",
+  "valid_name": "",
+  "source": "biodatum-answered-20260918",
+  "note": "갱신 2024",
+  "checked": "2024"
+ },
+ {
+  "binomial": "Thalassiosira webbi",
+  "status": "synonym",
+  "valid_name": "Thalassiosira webbii",
+  "source": "biodatum-answered-20260918",
+  "note": "갱신 2023 · Thalassiosira webbi → Thalassiosira webbii 로 찾으면 유효",
+  "checked": "2023"
  },
  {
   "binomial": "Thalassiothrix antarctica",
@@ -15694,6 +16302,14 @@
   "source": "worms-master-20260814",
   "note": "그대로 유효 · algaebase_day36_1751-1800.md · (그대로 유효, Cleve & Grunow)",
   "checked": "2018-01-31"
+ },
+ {
+  "binomial": "Thalassiothrix miocenica",
+  "status": "accepted",
+  "valid_name": "",
+  "source": "biodatum-answered-20260918",
+  "note": "갱신 2023",
+  "checked": "2023"
  },
  {
   "binomial": "Thalassiothrix nitzschioides",

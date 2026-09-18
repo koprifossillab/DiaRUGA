@@ -5558,13 +5558,20 @@ def biodatum_chart(areas=("antarctic", "npacific"), genus: str = "", q: str = ""
     ref_keys = {r.reference.key for r in rows} | {r.via for r in rows if r.via}
     ref_objs = {r.key: r for r in Reference.objects.filter(key__in=ref_keys)}
 
+    binomials = {r.binomial for r in rows if r.binomial}
     in_atlas = set(AtlasEntry.objects.filter(
-        binomial__in={r.binomial for r in rows if r.binomial}).values_list("binomial", flat=True))
+        binomial__in=binomials).values_list("binomial", flat=True))
+    # 학명 판정(P24) — 도감 카드와 같은 자리에서 한 번 묻는다. 그림은 종마다
+    # 한 번만 들고, 이명·없음만 화면에 낸다(유효·미확인은 낼 것이 없다)
+    taxa = _taxon_names_by_binomial(binomials)
     by_name: dict[str, dict] = {}
     for r in rows:
+        t = taxa.get(r.binomial)
         s = by_name.setdefault(r.name, {
             "name": r.name, "binomial": r.binomial, "genus": r.genus, "infra": r.infra,
-            "in_atlas": bool(r.binomial) and r.binomial in in_atlas, "points": []})
+            "in_atlas": bool(r.binomial) and r.binomial in in_atlas,
+            "taxon": t if t and t["status"] in ("synonym", "absent") else None,
+            "points": []})
         s["points"].append(_biodatum_dict(r, ref_objs))
     species = list(by_name.values())
 
