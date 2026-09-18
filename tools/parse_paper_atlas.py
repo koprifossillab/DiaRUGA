@@ -136,6 +136,23 @@ PAPER_META = {
         short="1991 Lee 연일층군",
         crop_prefix="1991lee",
     ),
+    # P22 밖 — 남극 마이오세·제4기 층서 종(207, 2026-09-18). `temp/` 에 온
+    # 남극 논문 여섯 중 도판이 있는 둘. 자동 검출이 처음으로 거의 그대로
+    # 먹혔다(배경이 순백인 1비트 스캔·8비트 사진 격자)
+    "2002_censarek_so_miocene_thesis": dict(
+        atlas_key="2002-censarek-miocene",
+        title="Censarek, B. (2002) 남극해 중·후기 마이오세 규조 층서 "
+              "(Ber. Polarforsch. Meeresforsch. 430, ch.2 · ODP 689·690·1088·1092)",
+        short="2002 Censarek 남극 마이오세",
+        crop_prefix="2002cen",
+    ),
+    "2002_zielinski_rouxia_lod": dict(
+        atlas_key="2002-zielinski-rouxia",
+        title="Zielinski, U. 외 (2002) Rouxia leventerae·R. constricta 의 LOD "
+              "(Mar. Micropaleontol. 46(1-2):127–137 · ODP Leg 177)",
+        short="2002 Zielinski Rouxia",
+        crop_prefix="2002zie",
+    ),
 }
 
 

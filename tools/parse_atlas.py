@@ -96,6 +96,11 @@ def head_of(text: str, title: str) -> tuple[str, int]:
 
 # `sp.`·`group` 은 동정을 속까지만 내린 것이다 — 이름이 상한 것과 다르다
 GENUS_ONLY = {"sp.", "sp", "spp.", "group"}
+# **`sp.1`·`sp.2` 처럼 번호가 붙어 찍힌 것도 속 수준이다** — Censarek 2002 가
+# `Rouxia sp.1 Gersonde` 로 띄어쓰기 없이 조판했다(207). 캡션은 원문대로
+# 두는 것이 방침이라 이름을 안 고치고 판별을 넓힌다 — 안 그러면 `unreadable`
+# 로 떨어져 "이름이 상했다" 는 뜻이 된다
+GENUS_ONLY_RE = re.compile(r"^spp?\.?\d+$")
 
 
 def name_fields(headword: str) -> dict:
@@ -115,7 +120,7 @@ def name_fields(headword: str) -> dict:
     # 이명법 규칙을 그냥 통과한다 — 색인에서는 `***Rhizosolenia*** group` 처럼
     # 표제어 밖에 있어 `harvest_worms` 가 애초에 안 묻는 이름이다. 여기서
     # 이명법으로 세우면 **없는 종이 하나 생긴다**
-    if GENUS_ONLY & set(words[1:]):
+    if GENUS_ONLY & set(words[1:]) or any(GENUS_ONLY_RE.match(w) for w in words[1:]):
         rank, bino = "genus_only", None
     elif bino:
         rank = "infraspecies" if m else "species"

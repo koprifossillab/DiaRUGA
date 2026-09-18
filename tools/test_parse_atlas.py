@@ -151,6 +151,7 @@ check("키릴 и 가 섞인 종소명",
       pa.name_fields("Synedra cyclopиm BRUTSCHY")["rank"], "unreadable")
 check("sp. 는 속 수준", pa.name_fields("Navicula sp.")["rank"], "genus_only")
 check("group 도 속 수준", pa.name_fields("Rhizosolenia group")["rank"], "genus_only")
+check("sp.1 (번호 붙여 찍은 것)도 속 수준", pa.name_fields("Rouxia sp.1 Gersonde")["rank"], "genus_only")
 
 print("\n7. 검산 — 성한 것은 통과한다")
 for key, text, entries in (("korean", KOREAN, kr),

@@ -103,6 +103,18 @@ SOURCE = {
     "1991_lee_yeonil_biostratigraphy": {
         1: (16, 15), 2: (18, 17), 3: (20, 19), 4: (22, 21), 5: (24, 23),
     },
+    # **P22 밖 — 남극 마이오세 층서 종 한 벌**(207). Censarek 2002 박사논문
+    # (Ber. Polarforsch. 430) 2장. 캡션이 도판 바로 앞 쪽에 있다(1936 과 같은
+    # 배치). **1비트 JBIG2 스캔이라** 작은 개체(Plate 2·3)는 망점이 거칠다 —
+    # 8비트 원판(Censarek & Gersonde 2002, Mar. Micropaleo. 45)이 오면 바꾼다
+    "2002_censarek_so_miocene_thesis": {
+        1: (72, 73), 2: (74, 75), 3: (76, 77), 4: (78, 79), 5: (80, 81),
+    },
+    # Zielinski et al. 2002 (Mar. Micropaleo. 46:127-137). 도판 한 장, 캡션이
+    # 같은 쪽 아래에 있다(2017 과 같은 배치). 8비트 회색조라 깨끗하다
+    "2002_zielinski_rouxia_lod": {
+        1: (5, 5),
+    },
 }
 
 # 논문 → 도판 → {그림 번호: 캡션에 찍힌 학명}
@@ -895,6 +907,90 @@ CAPTIONS = {
    33: "Dictyocha ausonia Deflandre",
   },
  },
+ # **캡션은 원문(도판 앞 쪽)을 150dpi 로 렌더해 읽었다** — 텍스트 레이어는 OCR
+ # 이라 `praecurfa`·`splendide`·`Thalassiofrix` 로 틀려 있었다. **원문 자체의
+ # 흔들림은 그대로 둔다**: Plate 3 fig27 `Hemidiscus kastenii`(보통 karstenii),
+ # Plate 5 fig15 `Thalassiotrix`(보통 Thalassiothrix). **Plate 5 는 원문이 fig4
+ # 자리를 "6."으로 찍었다**(6 이 둘) — 도판의 4번 자리가 Rouxia peragalli 다
+ "2002_censarek_so_miocene_thesis": {
+  1: {
+   1: "Actinocyclus ingens",
+   2: "Asteromphalus kennettii",
+   3: "Coscinodiscus rhombicus",
+   4: "Actinocyclus ingens var. nodus",
+   5: "Actinocyclus karstenii",
+   6: "Actinocyclus ingens var. ovalis",
+   7: "Azpeitia tabularis",
+   8: "Actinocyclus ingens var. ovalis",
+  },
+  2: {
+   **{k: "Denticulopsis praedimorpha" for k in range(1, 8)},
+   **{k: "Denticulopsis dimorpha" for k in range(8, 12)},
+   12: "Denticulopsis crassa",
+   **{k: "Denticulopsis ovata" for k in range(13, 21)},
+   **{k: "Denticulopsis simonsenii" for k in range(21, 25)},
+   25: "Crucidenticula nicobarica", 26: "Crucidenticula nicobarica",
+   **{k: "Nitzschia denticuloides" for k in range(27, 32)},
+   32: "Denticulopsis maccollumii", 33: "Denticulopsis maccollumii",
+   34: "Denticulopsis maccollumii",
+   35: "Crucidenticula kanayae var. kanayae",
+   36: "Crucidenticula kanayae var. kanayae",
+   37: "Nitzschia grossepunctata", 38: "Nitzschia grossepunctata",
+   39: "Nitzschia pseudokerguelensis",
+  },
+  3: {
+   1: "Fragilariopsis reinholdii", 2: "Fragilariopsis reinholdii",
+   3: "Fragilariopsis fossilis", 4: "Fragilariopsis fossilis",
+   5: "Fragilariopsis lacrima", 6: "Fragilariopsis lacrima",
+   7: "Fragilariopsis clementia", 8: "Fragilariopsis clementia",
+   9: "Fragilariopsis aurica", 10: "Fragilariopsis aurica",
+   11: "Fragilariopsis aurica", 12: "Fragilariopsis aurica",
+   13: "Fragilariopsis donahuensis", 14: "Fragilariopsis donahuensis",
+   15: "Fragilariopsis arcula", 16: "Fragilariopsis arcula",
+   17: "Fragilariopsis arcula", 18: "Fragilariopsis arcula",
+   19: "Fragilariopsis praecurta", 20: "Fragilariopsis praecurta",
+   21: "Fragilariopsis praecurta",
+   22: "Fragilariopsis praeinterfrigidaria",
+   23: "Fragilariopsis praeinterfrigidaria",
+   24: "Fragilariopsis cylindrica",
+   25: "Fragilariopsis pusilla",
+   26: "Fragilariopsis maleinterpretaria",
+   27: "Hemidiscus kastenii",
+  },
+  4: {
+   1: "Hemidiscus triangularus", 2: "Hemidiscus triangularus",
+   3: "Hemidiscus triangularus", 4: "Hemidiscus triangularus",
+   5: "Hemidiscus cuneiformis",
+   6: "Thalassiosira fraga",
+   7: "Thalassiosira spinosa",
+   8: "Thalassiosira convexa var. aspinosa",
+   9: "Thalassiosira convexa var. aspinosa",
+   10: "Thalassiosira spumellaroides",
+   11: "Thalassiosira inura", 12: "Thalassiosira inura",
+  },
+  5: {
+   1: "Thalassiosira oliverana var. sparsa",
+   2: "Thalassiosira oliverana var. sparsa",
+   3: "Diploneis bombus",
+   4: "Rouxia peragalli",
+   5: "Mediaria splendida",
+   6: "Thalassiosira praelineata", 7: "Thalassiosira praelineata",
+   8: "Rouxia sp.1 Gersonde",
+   9: "Thalassiosira oestrupii", 10: "Thalassiosira oestrupii",
+   11: "Actinoptychus senarius",
+   12: "Cavitatus jouseanus",
+   13: "Thalassiosira sancettae", 14: "Thalassiosira sancettae",
+   15: "Thalassiotrix miocenica",
+  },
+ },
+ # 캡션이 도판 아래 같은 쪽에 있다. 1-7 과 8-14 로만 갈린다 — 그림마다 시료
+ # (1094A-4H-3 14-15 cm 등)가 붙어 있는데 여기엔 안 싣는다(1994 와 같은 자리)
+ "2002_zielinski_rouxia_lod": {
+  1: {
+   **{k: "Rouxia leventerae" for k in range(1, 8)},
+   **{k: "Rouxia constricta" for k in range(8, 15)},
+  },
+ },
 }
 
 
@@ -1161,6 +1257,22 @@ MANUAL_BOXES = {
         31: (1083, 900, 1307, 1117), 32: (720, 1130, 843, 1270),
         33: (1115, 1330, 1310, 1600),
     },
+    # 2002 Censarek — **자동 검출이 이 논문에서는 먹혔다**(207). 1비트 스캔이라
+    # 배경이 순백이고 그림끼리 떨어져 있어 상자 수가 그림 수와 거의 맞았다
+    # (9/8·42/39·28/27·14/12·16/15 — 더 잡힌 것은 머리줄과 짝 그림이다).
+    # 손으로 보탠 것은 둘뿐: Plate 2 fig3(작고 옅어 문턱을 못 넘었다)과 **한
+    # 그림이 두 판인 자리**(초점을 달리한 같은 개체 — Plate 2 의 12·33·34,
+    # Plate 4 의 7). 자동 상자가 판마다 하나씩 잡혀 `ASSIGN` 에서 `None` 으로
+    # 걷고 여기서 둘을 합친 상자 하나로 자른다(한 그림 = 파일 하나)
+    ("2002_censarek_so_miocene_thesis", 75): {
+        3: (355, 553, 393, 637),
+        12: (973, 529, 1138, 743),
+        33: (291, 1555, 392, 1831),
+        34: (435, 1602, 540, 1830),
+    },
+    ("2002_censarek_so_miocene_thesis", 79): {
+        7: (243, 1193, 696, 1422),
+    },
 }
 
 ASSIGN = {
@@ -1416,6 +1528,26 @@ ASSIGN = {
  ("1991_lee_yeonil_biostratigraphy", 19): [None] * 24,
  ("1991_lee_yeonil_biostratigraphy", 21): [None] * 41,
  ("1991_lee_yeonil_biostratigraphy", 23): [None] * 37,
+ # 2002 Censarek — 자동 상자를 그대로 쓴다(위 `MANUAL_BOXES` 주석). 상자 1 은
+ # 늘 머리줄이다. 순서가 인쇄 번호와 다른 자리는 인쇄 번호를 따라 짚었다
+ ("2002_censarek_so_miocene_thesis", 73): [None, 2, 1, 3, 4, 5, 6, 7, 8],
+ ("2002_censarek_so_miocene_thesis", 75): [
+   None, 1, 2, 8, None, None, 9, 10, 4, 11,
+   5, 6, 7, 20, 19, 13, 16, 17, 18, 14,
+   15, 29, 25, 27, 28, 30, 21, 22, 23, 24,
+   26, 31, 39, 32, 37, 35, None, None, 36, 38,
+   None, None],
+ ("2002_censarek_so_miocene_thesis", 77): [
+   None, 1, 2, 3, 4, 5, 6, 7, 8, 14,
+   13, 10, 11, 12, 9, 15, 21, 16, 17, 19,
+   20, 18, 25, 22, 27, 24, 23, 26],
+ ("2002_censarek_so_miocene_thesis", 79): [
+   None, 1, 3, 2, 5, 4, 6, None, None, 8, 9, 10, 12, 11],
+ ("2002_censarek_so_miocene_thesis", 81): [
+   None, 15, 1, 2, 3, 4, 5, 6, 7, 8, 12, 9, 10, 11, 13, 14],
+ # 2002 Zielinski — 8비트 사진 격자라 자동 상자 15개가 머리줄 + 그림 14개
+ ("2002_zielinski_rouxia_lod", 5): [
+   None, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 14, 13],
 }
 
 # **검출 설정이 쪽마다 다르다.** 도판마다 그림이 붙은 정도가 달라서 한 값으로

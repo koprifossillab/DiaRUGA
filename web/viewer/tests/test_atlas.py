@@ -148,9 +148,10 @@ class AtlasImportTest(DiaRUGATestCase):
         # 도감 셋(P15 2절 · 2,059) + 도판 있는 논문 넷(P20 3단계 · 218) +
         # 크롭까지 있는 논문 여덟(P23 · 372) = 열다섯. **거기에 작업 이름 하나가
         # 더 있다**(186) — 색인에서 온 것이 아니라 사람이 적는 파일이고, 도판이
-        # 없어 자리(`AtlasPlacement`)도 안 는다
-        self.assertEqual(Atlas.objects.count(), 16)
-        self.assertEqual(total_e, 2650)
+        # 없어 자리(`AtlasPlacement`)도 안 는다. **남극 논문 둘이 더 왔다**(207 ·
+        # Censarek 2002 항목 49 · Zielinski 2002 항목 2) — 열여덟
+        self.assertEqual(Atlas.objects.count(), 18)
+        self.assertEqual(total_e, 2701)
 
 
 class CheckAtlasTest(DiaRUGATestCase):

@@ -1,0 +1,1858 @@
+{
+ "atlas": {
+  "key": "2002-censarek-miocene",
+  "title": "Censarek, B. (2002) 남극해 중·후기 마이오세 규조 층서 (Ber. Polarforsch. Meeresforsch. 430, ch.2 · ODP 689·690·1088·1092)",
+  "short": "2002 Censarek 남극 마이오세",
+  "source": "tools/plate_figs.py 의 CAPTIONS (손으로 짚었다)",
+  "source_sha256": "fbd40360230c96c92fd916d2dd0f4990c4634427aed1aedc87cd326788a297eb",
+  "note": "도판 5장 · 그림 101개 · 종 항목 49개"
+ },
+ "entries": [
+  {
+   "seq": 1,
+   "item_no": null,
+   "name": "Actinocyclus ingens",
+   "genus": "Actinocyclus",
+   "binomial": "Actinocyclus ingens",
+   "rank": "species",
+   "infra": null,
+   "authority": null,
+   "genus_guess": false,
+   "placements": [
+    {
+     "plate": 1,
+     "plate_label": null,
+     "figures": "1",
+     "book_page": 72,
+     "pdf_page": 73,
+     "pdf_plate_page": null,
+     "volume": null,
+     "note": null,
+     "crop_image": "atlas/2002-censarek-miocene/crops/pl1_fig01.png"
+    }
+   ],
+   "extra": {},
+   "line": 1
+  },
+  {
+   "seq": 2,
+   "item_no": null,
+   "name": "Asteromphalus kennettii",
+   "genus": "Asteromphalus",
+   "binomial": "Asteromphalus kennettii",
+   "rank": "species",
+   "infra": null,
+   "authority": null,
+   "genus_guess": false,
+   "placements": [
+    {
+     "plate": 1,
+     "plate_label": null,
+     "figures": "2",
+     "book_page": 72,
+     "pdf_page": 73,
+     "pdf_plate_page": null,
+     "volume": null,
+     "note": null,
+     "crop_image": "atlas/2002-censarek-miocene/crops/pl1_fig02.png"
+    }
+   ],
+   "extra": {},
+   "line": 1
+  },
+  {
+   "seq": 3,
+   "item_no": null,
+   "name": "Coscinodiscus rhombicus",
+   "genus": "Coscinodiscus",
+   "binomial": "Coscinodiscus rhombicus",
+   "rank": "species",
+   "infra": null,
+   "authority": null,
+   "genus_guess": false,
+   "placements": [
+    {
+     "plate": 1,
+     "plate_label": null,
+     "figures": "3",
+     "book_page": 72,
+     "pdf_page": 73,
+     "pdf_plate_page": null,
+     "volume": null,
+     "note": null,
+     "crop_image": "atlas/2002-censarek-miocene/crops/pl1_fig03.png"
+    }
+   ],
+   "extra": {},
+   "line": 1
+  },
+  {
+   "seq": 4,
+   "item_no": null,
+   "name": "Actinocyclus ingens var. nodus",
+   "genus": "Actinocyclus",
+   "binomial": "Actinocyclus ingens",
+   "rank": "infraspecies",
+   "infra": "var. nodus",
+   "authority": null,
+   "genus_guess": false,
+   "placements": [
+    {
+     "plate": 1,
+     "plate_label": null,
+     "figures": "4",
+     "book_page": 72,
+     "pdf_page": 73,
+     "pdf_plate_page": null,
+     "volume": null,
+     "note": null,
+     "crop_image": "atlas/2002-censarek-miocene/crops/pl1_fig04.png"
+    }
+   ],
+   "extra": {},
+   "line": 1
+  },
+  {
+   "seq": 5,
+   "item_no": null,
+   "name": "Actinocyclus karstenii",
+   "genus": "Actinocyclus",
+   "binomial": "Actinocyclus karstenii",
+   "rank": "species",
+   "infra": null,
+   "authority": null,
+   "genus_guess": false,
+   "placements": [
+    {
+     "plate": 1,
+     "plate_label": null,
+     "figures": "5",
+     "book_page": 72,
+     "pdf_page": 73,
+     "pdf_plate_page": null,
+     "volume": null,
+     "note": null,
+     "crop_image": "atlas/2002-censarek-miocene/crops/pl1_fig05.png"
+    }
+   ],
+   "extra": {},
+   "line": 1
+  },
+  {
+   "seq": 6,
+   "item_no": null,
+   "name": "Actinocyclus ingens var. ovalis",
+   "genus": "Actinocyclus",
+   "binomial": "Actinocyclus ingens",
+   "rank": "infraspecies",
+   "infra": "var. ovalis",
+   "authority": null,
+   "genus_guess": false,
+   "placements": [
+    {
+     "plate": 1,
+     "plate_label": null,
+     "figures": "6",
+     "book_page": 72,
+     "pdf_page": 73,
+     "pdf_plate_page": null,
+     "volume": null,
+     "note": null,
+     "crop_image": "atlas/2002-censarek-miocene/crops/pl1_fig06.png"
+    },
+    {
+     "plate": 1,
+     "plate_label": null,
+     "figures": "8",
+     "book_page": 72,
+     "pdf_page": 73,
+     "pdf_plate_page": null,
+     "volume": null,
+     "note": null,
+     "crop_image": "atlas/2002-censarek-miocene/crops/pl1_fig08.png"
+    }
+   ],
+   "extra": {},
+   "line": 1
+  },
+  {
+   "seq": 7,
+   "item_no": null,
+   "name": "Azpeitia tabularis",
+   "genus": "Azpeitia",
+   "binomial": "Azpeitia tabularis",
+   "rank": "species",
+   "infra": null,
+   "authority": null,
+   "genus_guess": false,
+   "placements": [
+    {
+     "plate": 1,
+     "plate_label": null,
+     "figures": "7",
+     "book_page": 72,
+     "pdf_page": 73,
+     "pdf_plate_page": null,
+     "volume": null,
+     "note": null,
+     "crop_image": "atlas/2002-censarek-miocene/crops/pl1_fig07.png"
+    }
+   ],
+   "extra": {},
+   "line": 1
+  },
+  {
+   "seq": 8,
+   "item_no": null,
+   "name": "Denticulopsis praedimorpha",
+   "genus": "Denticulopsis",
+   "binomial": "Denticulopsis praedimorpha",
+   "rank": "species",
+   "infra": null,
+   "authority": null,
+   "genus_guess": false,
+   "placements": [
+    {
+     "plate": 2,
+     "plate_label": null,
+     "figures": "1",
+     "book_page": 74,
+     "pdf_page": 75,
+     "pdf_plate_page": null,
+     "volume": null,
+     "note": null,
+     "crop_image": "atlas/2002-censarek-miocene/crops/pl2_fig01.png"
+    },
+    {
+     "plate": 2,
+     "plate_label": null,
+     "figures": "2",
+     "book_page": 74,
+     "pdf_page": 75,
+     "pdf_plate_page": null,
+     "volume": null,
+     "note": null,
+     "crop_image": "atlas/2002-censarek-miocene/crops/pl2_fig02.png"
+    },
+    {
+     "plate": 2,
+     "plate_label": null,
+     "figures": "3",
+     "book_page": 74,
+     "pdf_page": 75,
+     "pdf_plate_page": null,
+     "volume": null,
+     "note": null,
+     "crop_image": "atlas/2002-censarek-miocene/crops/pl2_fig03.png"
+    },
+    {
+     "plate": 2,
+     "plate_label": null,
+     "figures": "4",
+     "book_page": 74,
+     "pdf_page": 75,
+     "pdf_plate_page": null,
+     "volume": null,
+     "note": null,
+     "crop_image": "atlas/2002-censarek-miocene/crops/pl2_fig04.png"
+    },
+    {
+     "plate": 2,
+     "plate_label": null,
+     "figures": "5",
+     "book_page": 74,
+     "pdf_page": 75,
+     "pdf_plate_page": null,
+     "volume": null,
+     "note": null,
+     "crop_image": "atlas/2002-censarek-miocene/crops/pl2_fig05.png"
+    },
+    {
+     "plate": 2,
+     "plate_label": null,
+     "figures": "6",
+     "book_page": 74,
+     "pdf_page": 75,
+     "pdf_plate_page": null,
+     "volume": null,
+     "note": null,
+     "crop_image": "atlas/2002-censarek-miocene/crops/pl2_fig06.png"
+    },
+    {
+     "plate": 2,
+     "plate_label": null,
+     "figures": "7",
+     "book_page": 74,
+     "pdf_page": 75,
+     "pdf_plate_page": null,
+     "volume": null,
+     "note": null,
+     "crop_image": "atlas/2002-censarek-miocene/crops/pl2_fig07.png"
+    }
+   ],
+   "extra": {},
+   "line": 2
+  },
+  {
+   "seq": 9,
+   "item_no": null,
+   "name": "Denticulopsis dimorpha",
+   "genus": "Denticulopsis",
+   "binomial": "Denticulopsis dimorpha",
+   "rank": "species",
+   "infra": null,
+   "authority": null,
+   "genus_guess": false,
+   "placements": [
+    {
+     "plate": 2,
+     "plate_label": null,
+     "figures": "8",
+     "book_page": 74,
+     "pdf_page": 75,
+     "pdf_plate_page": null,
+     "volume": null,
+     "note": null,
+     "crop_image": "atlas/2002-censarek-miocene/crops/pl2_fig08.png"
+    },
+    {
+     "plate": 2,
+     "plate_label": null,
+     "figures": "9",
+     "book_page": 74,
+     "pdf_page": 75,
+     "pdf_plate_page": null,
+     "volume": null,
+     "note": null,
+     "crop_image": "atlas/2002-censarek-miocene/crops/pl2_fig09.png"
+    },
+    {
+     "plate": 2,
+     "plate_label": null,
+     "figures": "10",
+     "book_page": 74,
+     "pdf_page": 75,
+     "pdf_plate_page": null,
+     "volume": null,
+     "note": null,
+     "crop_image": "atlas/2002-censarek-miocene/crops/pl2_fig10.png"
+    },
+    {
+     "plate": 2,
+     "plate_label": null,
+     "figures": "11",
+     "book_page": 74,
+     "pdf_page": 75,
+     "pdf_plate_page": null,
+     "volume": null,
+     "note": null,
+     "crop_image": "atlas/2002-censarek-miocene/crops/pl2_fig11.png"
+    }
+   ],
+   "extra": {},
+   "line": 2
+  },
+  {
+   "seq": 10,
+   "item_no": null,
+   "name": "Denticulopsis crassa",
+   "genus": "Denticulopsis",
+   "binomial": "Denticulopsis crassa",
+   "rank": "species",
+   "infra": null,
+   "authority": null,
+   "genus_guess": false,
+   "placements": [
+    {
+     "plate": 2,
+     "plate_label": null,
+     "figures": "12",
+     "book_page": 74,
+     "pdf_page": 75,
+     "pdf_plate_page": null,
+     "volume": null,
+     "note": null,
+     "crop_image": "atlas/2002-censarek-miocene/crops/pl2_fig12.png"
+    }
+   ],
+   "extra": {},
+   "line": 2
+  },
+  {
+   "seq": 11,
+   "item_no": null,
+   "name": "Denticulopsis ovata",
+   "genus": "Denticulopsis",
+   "binomial": "Denticulopsis ovata",
+   "rank": "species",
+   "infra": null,
+   "authority": null,
+   "genus_guess": false,
+   "placements": [
+    {
+     "plate": 2,
+     "plate_label": null,
+     "figures": "13",
+     "book_page": 74,
+     "pdf_page": 75,
+     "pdf_plate_page": null,
+     "volume": null,
+     "note": null,
+     "crop_image": "atlas/2002-censarek-miocene/crops/pl2_fig13.png"
+    },
+    {
+     "plate": 2,
+     "plate_label": null,
+     "figures": "14",
+     "book_page": 74,
+     "pdf_page": 75,
+     "pdf_plate_page": null,
+     "volume": null,
+     "note": null,
+     "crop_image": "atlas/2002-censarek-miocene/crops/pl2_fig14.png"
+    },
+    {
+     "plate": 2,
+     "plate_label": null,
+     "figures": "15",
+     "book_page": 74,
+     "pdf_page": 75,
+     "pdf_plate_page": null,
+     "volume": null,
+     "note": null,
+     "crop_image": "atlas/2002-censarek-miocene/crops/pl2_fig15.png"
+    },
+    {
+     "plate": 2,
+     "plate_label": null,
+     "figures": "16",
+     "book_page": 74,
+     "pdf_page": 75,
+     "pdf_plate_page": null,
+     "volume": null,
+     "note": null,
+     "crop_image": "atlas/2002-censarek-miocene/crops/pl2_fig16.png"
+    },
+    {
+     "plate": 2,
+     "plate_label": null,
+     "figures": "17",
+     "book_page": 74,
+     "pdf_page": 75,
+     "pdf_plate_page": null,
+     "volume": null,
+     "note": null,
+     "crop_image": "atlas/2002-censarek-miocene/crops/pl2_fig17.png"
+    },
+    {
+     "plate": 2,
+     "plate_label": null,
+     "figures": "18",
+     "book_page": 74,
+     "pdf_page": 75,
+     "pdf_plate_page": null,
+     "volume": null,
+     "note": null,
+     "crop_image": "atlas/2002-censarek-miocene/crops/pl2_fig18.png"
+    },
+    {
+     "plate": 2,
+     "plate_label": null,
+     "figures": "19",
+     "book_page": 74,
+     "pdf_page": 75,
+     "pdf_plate_page": null,
+     "volume": null,
+     "note": null,
+     "crop_image": "atlas/2002-censarek-miocene/crops/pl2_fig19.png"
+    },
+    {
+     "plate": 2,
+     "plate_label": null,
+     "figures": "20",
+     "book_page": 74,
+     "pdf_page": 75,
+     "pdf_plate_page": null,
+     "volume": null,
+     "note": null,
+     "crop_image": "atlas/2002-censarek-miocene/crops/pl2_fig20.png"
+    }
+   ],
+   "extra": {},
+   "line": 2
+  },
+  {
+   "seq": 12,
+   "item_no": null,
+   "name": "Denticulopsis simonsenii",
+   "genus": "Denticulopsis",
+   "binomial": "Denticulopsis simonsenii",
+   "rank": "species",
+   "infra": null,
+   "authority": null,
+   "genus_guess": false,
+   "placements": [
+    {
+     "plate": 2,
+     "plate_label": null,
+     "figures": "21",
+     "book_page": 74,
+     "pdf_page": 75,
+     "pdf_plate_page": null,
+     "volume": null,
+     "note": null,
+     "crop_image": "atlas/2002-censarek-miocene/crops/pl2_fig21.png"
+    },
+    {
+     "plate": 2,
+     "plate_label": null,
+     "figures": "22",
+     "book_page": 74,
+     "pdf_page": 75,
+     "pdf_plate_page": null,
+     "volume": null,
+     "note": null,
+     "crop_image": "atlas/2002-censarek-miocene/crops/pl2_fig22.png"
+    },
+    {
+     "plate": 2,
+     "plate_label": null,
+     "figures": "23",
+     "book_page": 74,
+     "pdf_page": 75,
+     "pdf_plate_page": null,
+     "volume": null,
+     "note": null,
+     "crop_image": "atlas/2002-censarek-miocene/crops/pl2_fig23.png"
+    },
+    {
+     "plate": 2,
+     "plate_label": null,
+     "figures": "24",
+     "book_page": 74,
+     "pdf_page": 75,
+     "pdf_plate_page": null,
+     "volume": null,
+     "note": null,
+     "crop_image": "atlas/2002-censarek-miocene/crops/pl2_fig24.png"
+    }
+   ],
+   "extra": {},
+   "line": 2
+  },
+  {
+   "seq": 13,
+   "item_no": null,
+   "name": "Crucidenticula nicobarica",
+   "genus": "Crucidenticula",
+   "binomial": "Crucidenticula nicobarica",
+   "rank": "species",
+   "infra": null,
+   "authority": null,
+   "genus_guess": false,
+   "placements": [
+    {
+     "plate": 2,
+     "plate_label": null,
+     "figures": "25",
+     "book_page": 74,
+     "pdf_page": 75,
+     "pdf_plate_page": null,
+     "volume": null,
+     "note": null,
+     "crop_image": "atlas/2002-censarek-miocene/crops/pl2_fig25.png"
+    },
+    {
+     "plate": 2,
+     "plate_label": null,
+     "figures": "26",
+     "book_page": 74,
+     "pdf_page": 75,
+     "pdf_plate_page": null,
+     "volume": null,
+     "note": null,
+     "crop_image": "atlas/2002-censarek-miocene/crops/pl2_fig26.png"
+    }
+   ],
+   "extra": {},
+   "line": 2
+  },
+  {
+   "seq": 14,
+   "item_no": null,
+   "name": "Nitzschia denticuloides",
+   "genus": "Nitzschia",
+   "binomial": "Nitzschia denticuloides",
+   "rank": "species",
+   "infra": null,
+   "authority": null,
+   "genus_guess": false,
+   "placements": [
+    {
+     "plate": 2,
+     "plate_label": null,
+     "figures": "27",
+     "book_page": 74,
+     "pdf_page": 75,
+     "pdf_plate_page": null,
+     "volume": null,
+     "note": null,
+     "crop_image": "atlas/2002-censarek-miocene/crops/pl2_fig27.png"
+    },
+    {
+     "plate": 2,
+     "plate_label": null,
+     "figures": "28",
+     "book_page": 74,
+     "pdf_page": 75,
+     "pdf_plate_page": null,
+     "volume": null,
+     "note": null,
+     "crop_image": "atlas/2002-censarek-miocene/crops/pl2_fig28.png"
+    },
+    {
+     "plate": 2,
+     "plate_label": null,
+     "figures": "29",
+     "book_page": 74,
+     "pdf_page": 75,
+     "pdf_plate_page": null,
+     "volume": null,
+     "note": null,
+     "crop_image": "atlas/2002-censarek-miocene/crops/pl2_fig29.png"
+    },
+    {
+     "plate": 2,
+     "plate_label": null,
+     "figures": "30",
+     "book_page": 74,
+     "pdf_page": 75,
+     "pdf_plate_page": null,
+     "volume": null,
+     "note": null,
+     "crop_image": "atlas/2002-censarek-miocene/crops/pl2_fig30.png"
+    },
+    {
+     "plate": 2,
+     "plate_label": null,
+     "figures": "31",
+     "book_page": 74,
+     "pdf_page": 75,
+     "pdf_plate_page": null,
+     "volume": null,
+     "note": null,
+     "crop_image": "atlas/2002-censarek-miocene/crops/pl2_fig31.png"
+    }
+   ],
+   "extra": {},
+   "line": 2
+  },
+  {
+   "seq": 15,
+   "item_no": null,
+   "name": "Denticulopsis maccollumii",
+   "genus": "Denticulopsis",
+   "binomial": "Denticulopsis maccollumii",
+   "rank": "species",
+   "infra": null,
+   "authority": null,
+   "genus_guess": false,
+   "placements": [
+    {
+     "plate": 2,
+     "plate_label": null,
+     "figures": "32",
+     "book_page": 74,
+     "pdf_page": 75,
+     "pdf_plate_page": null,
+     "volume": null,
+     "note": null,
+     "crop_image": "atlas/2002-censarek-miocene/crops/pl2_fig32.png"
+    },
+    {
+     "plate": 2,
+     "plate_label": null,
+     "figures": "33",
+     "book_page": 74,
+     "pdf_page": 75,
+     "pdf_plate_page": null,
+     "volume": null,
+     "note": null,
+     "crop_image": "atlas/2002-censarek-miocene/crops/pl2_fig33.png"
+    },
+    {
+     "plate": 2,
+     "plate_label": null,
+     "figures": "34",
+     "book_page": 74,
+     "pdf_page": 75,
+     "pdf_plate_page": null,
+     "volume": null,
+     "note": null,
+     "crop_image": "atlas/2002-censarek-miocene/crops/pl2_fig34.png"
+    }
+   ],
+   "extra": {},
+   "line": 2
+  },
+  {
+   "seq": 16,
+   "item_no": null,
+   "name": "Crucidenticula kanayae var. kanayae",
+   "genus": "Crucidenticula",
+   "binomial": "Crucidenticula kanayae",
+   "rank": "infraspecies",
+   "infra": "var. kanayae",
+   "authority": null,
+   "genus_guess": false,
+   "placements": [
+    {
+     "plate": 2,
+     "plate_label": null,
+     "figures": "35",
+     "book_page": 74,
+     "pdf_page": 75,
+     "pdf_plate_page": null,
+     "volume": null,
+     "note": null,
+     "crop_image": "atlas/2002-censarek-miocene/crops/pl2_fig35.png"
+    },
+    {
+     "plate": 2,
+     "plate_label": null,
+     "figures": "36",
+     "book_page": 74,
+     "pdf_page": 75,
+     "pdf_plate_page": null,
+     "volume": null,
+     "note": null,
+     "crop_image": "atlas/2002-censarek-miocene/crops/pl2_fig36.png"
+    }
+   ],
+   "extra": {},
+   "line": 2
+  },
+  {
+   "seq": 17,
+   "item_no": null,
+   "name": "Nitzschia grossepunctata",
+   "genus": "Nitzschia",
+   "binomial": "Nitzschia grossepunctata",
+   "rank": "species",
+   "infra": null,
+   "authority": null,
+   "genus_guess": false,
+   "placements": [
+    {
+     "plate": 2,
+     "plate_label": null,
+     "figures": "37",
+     "book_page": 74,
+     "pdf_page": 75,
+     "pdf_plate_page": null,
+     "volume": null,
+     "note": null,
+     "crop_image": "atlas/2002-censarek-miocene/crops/pl2_fig37.png"
+    },
+    {
+     "plate": 2,
+     "plate_label": null,
+     "figures": "38",
+     "book_page": 74,
+     "pdf_page": 75,
+     "pdf_plate_page": null,
+     "volume": null,
+     "note": null,
+     "crop_image": "atlas/2002-censarek-miocene/crops/pl2_fig38.png"
+    }
+   ],
+   "extra": {},
+   "line": 2
+  },
+  {
+   "seq": 18,
+   "item_no": null,
+   "name": "Nitzschia pseudokerguelensis",
+   "genus": "Nitzschia",
+   "binomial": "Nitzschia pseudokerguelensis",
+   "rank": "species",
+   "infra": null,
+   "authority": null,
+   "genus_guess": false,
+   "placements": [
+    {
+     "plate": 2,
+     "plate_label": null,
+     "figures": "39",
+     "book_page": 74,
+     "pdf_page": 75,
+     "pdf_plate_page": null,
+     "volume": null,
+     "note": null,
+     "crop_image": "atlas/2002-censarek-miocene/crops/pl2_fig39.png"
+    }
+   ],
+   "extra": {},
+   "line": 2
+  },
+  {
+   "seq": 19,
+   "item_no": null,
+   "name": "Fragilariopsis reinholdii",
+   "genus": "Fragilariopsis",
+   "binomial": "Fragilariopsis reinholdii",
+   "rank": "species",
+   "infra": null,
+   "authority": null,
+   "genus_guess": false,
+   "placements": [
+    {
+     "plate": 3,
+     "plate_label": null,
+     "figures": "1",
+     "book_page": 76,
+     "pdf_page": 77,
+     "pdf_plate_page": null,
+     "volume": null,
+     "note": null,
+     "crop_image": "atlas/2002-censarek-miocene/crops/pl3_fig01.png"
+    },
+    {
+     "plate": 3,
+     "plate_label": null,
+     "figures": "2",
+     "book_page": 76,
+     "pdf_page": 77,
+     "pdf_plate_page": null,
+     "volume": null,
+     "note": null,
+     "crop_image": "atlas/2002-censarek-miocene/crops/pl3_fig02.png"
+    }
+   ],
+   "extra": {},
+   "line": 3
+  },
+  {
+   "seq": 20,
+   "item_no": null,
+   "name": "Fragilariopsis fossilis",
+   "genus": "Fragilariopsis",
+   "binomial": "Fragilariopsis fossilis",
+   "rank": "species",
+   "infra": null,
+   "authority": null,
+   "genus_guess": false,
+   "placements": [
+    {
+     "plate": 3,
+     "plate_label": null,
+     "figures": "3",
+     "book_page": 76,
+     "pdf_page": 77,
+     "pdf_plate_page": null,
+     "volume": null,
+     "note": null,
+     "crop_image": "atlas/2002-censarek-miocene/crops/pl3_fig03.png"
+    },
+    {
+     "plate": 3,
+     "plate_label": null,
+     "figures": "4",
+     "book_page": 76,
+     "pdf_page": 77,
+     "pdf_plate_page": null,
+     "volume": null,
+     "note": null,
+     "crop_image": "atlas/2002-censarek-miocene/crops/pl3_fig04.png"
+    }
+   ],
+   "extra": {},
+   "line": 3
+  },
+  {
+   "seq": 21,
+   "item_no": null,
+   "name": "Fragilariopsis lacrima",
+   "genus": "Fragilariopsis",
+   "binomial": "Fragilariopsis lacrima",
+   "rank": "species",
+   "infra": null,
+   "authority": null,
+   "genus_guess": false,
+   "placements": [
+    {
+     "plate": 3,
+     "plate_label": null,
+     "figures": "5",
+     "book_page": 76,
+     "pdf_page": 77,
+     "pdf_plate_page": null,
+     "volume": null,
+     "note": null,
+     "crop_image": "atlas/2002-censarek-miocene/crops/pl3_fig05.png"
+    },
+    {
+     "plate": 3,
+     "plate_label": null,
+     "figures": "6",
+     "book_page": 76,
+     "pdf_page": 77,
+     "pdf_plate_page": null,
+     "volume": null,
+     "note": null,
+     "crop_image": "atlas/2002-censarek-miocene/crops/pl3_fig06.png"
+    }
+   ],
+   "extra": {},
+   "line": 3
+  },
+  {
+   "seq": 22,
+   "item_no": null,
+   "name": "Fragilariopsis clementia",
+   "genus": "Fragilariopsis",
+   "binomial": "Fragilariopsis clementia",
+   "rank": "species",
+   "infra": null,
+   "authority": null,
+   "genus_guess": false,
+   "placements": [
+    {
+     "plate": 3,
+     "plate_label": null,
+     "figures": "7",
+     "book_page": 76,
+     "pdf_page": 77,
+     "pdf_plate_page": null,
+     "volume": null,
+     "note": null,
+     "crop_image": "atlas/2002-censarek-miocene/crops/pl3_fig07.png"
+    },
+    {
+     "plate": 3,
+     "plate_label": null,
+     "figures": "8",
+     "book_page": 76,
+     "pdf_page": 77,
+     "pdf_plate_page": null,
+     "volume": null,
+     "note": null,
+     "crop_image": "atlas/2002-censarek-miocene/crops/pl3_fig08.png"
+    }
+   ],
+   "extra": {},
+   "line": 3
+  },
+  {
+   "seq": 23,
+   "item_no": null,
+   "name": "Fragilariopsis aurica",
+   "genus": "Fragilariopsis",
+   "binomial": "Fragilariopsis aurica",
+   "rank": "species",
+   "infra": null,
+   "authority": null,
+   "genus_guess": false,
+   "placements": [
+    {
+     "plate": 3,
+     "plate_label": null,
+     "figures": "9",
+     "book_page": 76,
+     "pdf_page": 77,
+     "pdf_plate_page": null,
+     "volume": null,
+     "note": null,
+     "crop_image": "atlas/2002-censarek-miocene/crops/pl3_fig09.png"
+    },
+    {
+     "plate": 3,
+     "plate_label": null,
+     "figures": "10",
+     "book_page": 76,
+     "pdf_page": 77,
+     "pdf_plate_page": null,
+     "volume": null,
+     "note": null,
+     "crop_image": "atlas/2002-censarek-miocene/crops/pl3_fig10.png"
+    },
+    {
+     "plate": 3,
+     "plate_label": null,
+     "figures": "11",
+     "book_page": 76,
+     "pdf_page": 77,
+     "pdf_plate_page": null,
+     "volume": null,
+     "note": null,
+     "crop_image": "atlas/2002-censarek-miocene/crops/pl3_fig11.png"
+    },
+    {
+     "plate": 3,
+     "plate_label": null,
+     "figures": "12",
+     "book_page": 76,
+     "pdf_page": 77,
+     "pdf_plate_page": null,
+     "volume": null,
+     "note": null,
+     "crop_image": "atlas/2002-censarek-miocene/crops/pl3_fig12.png"
+    }
+   ],
+   "extra": {},
+   "line": 3
+  },
+  {
+   "seq": 24,
+   "item_no": null,
+   "name": "Fragilariopsis donahuensis",
+   "genus": "Fragilariopsis",
+   "binomial": "Fragilariopsis donahuensis",
+   "rank": "species",
+   "infra": null,
+   "authority": null,
+   "genus_guess": false,
+   "placements": [
+    {
+     "plate": 3,
+     "plate_label": null,
+     "figures": "13",
+     "book_page": 76,
+     "pdf_page": 77,
+     "pdf_plate_page": null,
+     "volume": null,
+     "note": null,
+     "crop_image": "atlas/2002-censarek-miocene/crops/pl3_fig13.png"
+    },
+    {
+     "plate": 3,
+     "plate_label": null,
+     "figures": "14",
+     "book_page": 76,
+     "pdf_page": 77,
+     "pdf_plate_page": null,
+     "volume": null,
+     "note": null,
+     "crop_image": "atlas/2002-censarek-miocene/crops/pl3_fig14.png"
+    }
+   ],
+   "extra": {},
+   "line": 3
+  },
+  {
+   "seq": 25,
+   "item_no": null,
+   "name": "Fragilariopsis arcula",
+   "genus": "Fragilariopsis",
+   "binomial": "Fragilariopsis arcula",
+   "rank": "species",
+   "infra": null,
+   "authority": null,
+   "genus_guess": false,
+   "placements": [
+    {
+     "plate": 3,
+     "plate_label": null,
+     "figures": "15",
+     "book_page": 76,
+     "pdf_page": 77,
+     "pdf_plate_page": null,
+     "volume": null,
+     "note": null,
+     "crop_image": "atlas/2002-censarek-miocene/crops/pl3_fig15.png"
+    },
+    {
+     "plate": 3,
+     "plate_label": null,
+     "figures": "16",
+     "book_page": 76,
+     "pdf_page": 77,
+     "pdf_plate_page": null,
+     "volume": null,
+     "note": null,
+     "crop_image": "atlas/2002-censarek-miocene/crops/pl3_fig16.png"
+    },
+    {
+     "plate": 3,
+     "plate_label": null,
+     "figures": "17",
+     "book_page": 76,
+     "pdf_page": 77,
+     "pdf_plate_page": null,
+     "volume": null,
+     "note": null,
+     "crop_image": "atlas/2002-censarek-miocene/crops/pl3_fig17.png"
+    },
+    {
+     "plate": 3,
+     "plate_label": null,
+     "figures": "18",
+     "book_page": 76,
+     "pdf_page": 77,
+     "pdf_plate_page": null,
+     "volume": null,
+     "note": null,
+     "crop_image": "atlas/2002-censarek-miocene/crops/pl3_fig18.png"
+    }
+   ],
+   "extra": {},
+   "line": 3
+  },
+  {
+   "seq": 26,
+   "item_no": null,
+   "name": "Fragilariopsis praecurta",
+   "genus": "Fragilariopsis",
+   "binomial": "Fragilariopsis praecurta",
+   "rank": "species",
+   "infra": null,
+   "authority": null,
+   "genus_guess": false,
+   "placements": [
+    {
+     "plate": 3,
+     "plate_label": null,
+     "figures": "19",
+     "book_page": 76,
+     "pdf_page": 77,
+     "pdf_plate_page": null,
+     "volume": null,
+     "note": null,
+     "crop_image": "atlas/2002-censarek-miocene/crops/pl3_fig19.png"
+    },
+    {
+     "plate": 3,
+     "plate_label": null,
+     "figures": "20",
+     "book_page": 76,
+     "pdf_page": 77,
+     "pdf_plate_page": null,
+     "volume": null,
+     "note": null,
+     "crop_image": "atlas/2002-censarek-miocene/crops/pl3_fig20.png"
+    },
+    {
+     "plate": 3,
+     "plate_label": null,
+     "figures": "21",
+     "book_page": 76,
+     "pdf_page": 77,
+     "pdf_plate_page": null,
+     "volume": null,
+     "note": null,
+     "crop_image": "atlas/2002-censarek-miocene/crops/pl3_fig21.png"
+    }
+   ],
+   "extra": {},
+   "line": 3
+  },
+  {
+   "seq": 27,
+   "item_no": null,
+   "name": "Fragilariopsis praeinterfrigidaria",
+   "genus": "Fragilariopsis",
+   "binomial": "Fragilariopsis praeinterfrigidaria",
+   "rank": "species",
+   "infra": null,
+   "authority": null,
+   "genus_guess": false,
+   "placements": [
+    {
+     "plate": 3,
+     "plate_label": null,
+     "figures": "22",
+     "book_page": 76,
+     "pdf_page": 77,
+     "pdf_plate_page": null,
+     "volume": null,
+     "note": null,
+     "crop_image": "atlas/2002-censarek-miocene/crops/pl3_fig22.png"
+    },
+    {
+     "plate": 3,
+     "plate_label": null,
+     "figures": "23",
+     "book_page": 76,
+     "pdf_page": 77,
+     "pdf_plate_page": null,
+     "volume": null,
+     "note": null,
+     "crop_image": "atlas/2002-censarek-miocene/crops/pl3_fig23.png"
+    }
+   ],
+   "extra": {},
+   "line": 3
+  },
+  {
+   "seq": 28,
+   "item_no": null,
+   "name": "Fragilariopsis cylindrica",
+   "genus": "Fragilariopsis",
+   "binomial": "Fragilariopsis cylindrica",
+   "rank": "species",
+   "infra": null,
+   "authority": null,
+   "genus_guess": false,
+   "placements": [
+    {
+     "plate": 3,
+     "plate_label": null,
+     "figures": "24",
+     "book_page": 76,
+     "pdf_page": 77,
+     "pdf_plate_page": null,
+     "volume": null,
+     "note": null,
+     "crop_image": "atlas/2002-censarek-miocene/crops/pl3_fig24.png"
+    }
+   ],
+   "extra": {},
+   "line": 3
+  },
+  {
+   "seq": 29,
+   "item_no": null,
+   "name": "Fragilariopsis pusilla",
+   "genus": "Fragilariopsis",
+   "binomial": "Fragilariopsis pusilla",
+   "rank": "species",
+   "infra": null,
+   "authority": null,
+   "genus_guess": false,
+   "placements": [
+    {
+     "plate": 3,
+     "plate_label": null,
+     "figures": "25",
+     "book_page": 76,
+     "pdf_page": 77,
+     "pdf_plate_page": null,
+     "volume": null,
+     "note": null,
+     "crop_image": "atlas/2002-censarek-miocene/crops/pl3_fig25.png"
+    }
+   ],
+   "extra": {},
+   "line": 3
+  },
+  {
+   "seq": 30,
+   "item_no": null,
+   "name": "Fragilariopsis maleinterpretaria",
+   "genus": "Fragilariopsis",
+   "binomial": "Fragilariopsis maleinterpretaria",
+   "rank": "species",
+   "infra": null,
+   "authority": null,
+   "genus_guess": false,
+   "placements": [
+    {
+     "plate": 3,
+     "plate_label": null,
+     "figures": "26",
+     "book_page": 76,
+     "pdf_page": 77,
+     "pdf_plate_page": null,
+     "volume": null,
+     "note": null,
+     "crop_image": "atlas/2002-censarek-miocene/crops/pl3_fig26.png"
+    }
+   ],
+   "extra": {},
+   "line": 3
+  },
+  {
+   "seq": 31,
+   "item_no": null,
+   "name": "Hemidiscus kastenii",
+   "genus": "Hemidiscus",
+   "binomial": "Hemidiscus kastenii",
+   "rank": "species",
+   "infra": null,
+   "authority": null,
+   "genus_guess": false,
+   "placements": [
+    {
+     "plate": 3,
+     "plate_label": null,
+     "figures": "27",
+     "book_page": 76,
+     "pdf_page": 77,
+     "pdf_plate_page": null,
+     "volume": null,
+     "note": null,
+     "crop_image": "atlas/2002-censarek-miocene/crops/pl3_fig27.png"
+    }
+   ],
+   "extra": {},
+   "line": 3
+  },
+  {
+   "seq": 32,
+   "item_no": null,
+   "name": "Hemidiscus triangularus",
+   "genus": "Hemidiscus",
+   "binomial": "Hemidiscus triangularus",
+   "rank": "species",
+   "infra": null,
+   "authority": null,
+   "genus_guess": false,
+   "placements": [
+    {
+     "plate": 4,
+     "plate_label": null,
+     "figures": "1",
+     "book_page": 78,
+     "pdf_page": 79,
+     "pdf_plate_page": null,
+     "volume": null,
+     "note": null,
+     "crop_image": "atlas/2002-censarek-miocene/crops/pl4_fig01.png"
+    },
+    {
+     "plate": 4,
+     "plate_label": null,
+     "figures": "2",
+     "book_page": 78,
+     "pdf_page": 79,
+     "pdf_plate_page": null,
+     "volume": null,
+     "note": null,
+     "crop_image": "atlas/2002-censarek-miocene/crops/pl4_fig02.png"
+    },
+    {
+     "plate": 4,
+     "plate_label": null,
+     "figures": "3",
+     "book_page": 78,
+     "pdf_page": 79,
+     "pdf_plate_page": null,
+     "volume": null,
+     "note": null,
+     "crop_image": "atlas/2002-censarek-miocene/crops/pl4_fig03.png"
+    },
+    {
+     "plate": 4,
+     "plate_label": null,
+     "figures": "4",
+     "book_page": 78,
+     "pdf_page": 79,
+     "pdf_plate_page": null,
+     "volume": null,
+     "note": null,
+     "crop_image": "atlas/2002-censarek-miocene/crops/pl4_fig04.png"
+    }
+   ],
+   "extra": {},
+   "line": 4
+  },
+  {
+   "seq": 33,
+   "item_no": null,
+   "name": "Hemidiscus cuneiformis",
+   "genus": "Hemidiscus",
+   "binomial": "Hemidiscus cuneiformis",
+   "rank": "species",
+   "infra": null,
+   "authority": null,
+   "genus_guess": false,
+   "placements": [
+    {
+     "plate": 4,
+     "plate_label": null,
+     "figures": "5",
+     "book_page": 78,
+     "pdf_page": 79,
+     "pdf_plate_page": null,
+     "volume": null,
+     "note": null,
+     "crop_image": "atlas/2002-censarek-miocene/crops/pl4_fig05.png"
+    }
+   ],
+   "extra": {},
+   "line": 4
+  },
+  {
+   "seq": 34,
+   "item_no": null,
+   "name": "Thalassiosira fraga",
+   "genus": "Thalassiosira",
+   "binomial": "Thalassiosira fraga",
+   "rank": "species",
+   "infra": null,
+   "authority": null,
+   "genus_guess": false,
+   "placements": [
+    {
+     "plate": 4,
+     "plate_label": null,
+     "figures": "6",
+     "book_page": 78,
+     "pdf_page": 79,
+     "pdf_plate_page": null,
+     "volume": null,
+     "note": null,
+     "crop_image": "atlas/2002-censarek-miocene/crops/pl4_fig06.png"
+    }
+   ],
+   "extra": {},
+   "line": 4
+  },
+  {
+   "seq": 35,
+   "item_no": null,
+   "name": "Thalassiosira spinosa",
+   "genus": "Thalassiosira",
+   "binomial": "Thalassiosira spinosa",
+   "rank": "species",
+   "infra": null,
+   "authority": null,
+   "genus_guess": false,
+   "placements": [
+    {
+     "plate": 4,
+     "plate_label": null,
+     "figures": "7",
+     "book_page": 78,
+     "pdf_page": 79,
+     "pdf_plate_page": null,
+     "volume": null,
+     "note": null,
+     "crop_image": "atlas/2002-censarek-miocene/crops/pl4_fig07.png"
+    }
+   ],
+   "extra": {},
+   "line": 4
+  },
+  {
+   "seq": 36,
+   "item_no": null,
+   "name": "Thalassiosira convexa var. aspinosa",
+   "genus": "Thalassiosira",
+   "binomial": "Thalassiosira convexa",
+   "rank": "infraspecies",
+   "infra": "var. aspinosa",
+   "authority": null,
+   "genus_guess": false,
+   "placements": [
+    {
+     "plate": 4,
+     "plate_label": null,
+     "figures": "8",
+     "book_page": 78,
+     "pdf_page": 79,
+     "pdf_plate_page": null,
+     "volume": null,
+     "note": null,
+     "crop_image": "atlas/2002-censarek-miocene/crops/pl4_fig08.png"
+    },
+    {
+     "plate": 4,
+     "plate_label": null,
+     "figures": "9",
+     "book_page": 78,
+     "pdf_page": 79,
+     "pdf_plate_page": null,
+     "volume": null,
+     "note": null,
+     "crop_image": "atlas/2002-censarek-miocene/crops/pl4_fig09.png"
+    }
+   ],
+   "extra": {},
+   "line": 4
+  },
+  {
+   "seq": 37,
+   "item_no": null,
+   "name": "Thalassiosira spumellaroides",
+   "genus": "Thalassiosira",
+   "binomial": "Thalassiosira spumellaroides",
+   "rank": "species",
+   "infra": null,
+   "authority": null,
+   "genus_guess": false,
+   "placements": [
+    {
+     "plate": 4,
+     "plate_label": null,
+     "figures": "10",
+     "book_page": 78,
+     "pdf_page": 79,
+     "pdf_plate_page": null,
+     "volume": null,
+     "note": null,
+     "crop_image": "atlas/2002-censarek-miocene/crops/pl4_fig10.png"
+    }
+   ],
+   "extra": {},
+   "line": 4
+  },
+  {
+   "seq": 38,
+   "item_no": null,
+   "name": "Thalassiosira inura",
+   "genus": "Thalassiosira",
+   "binomial": "Thalassiosira inura",
+   "rank": "species",
+   "infra": null,
+   "authority": null,
+   "genus_guess": false,
+   "placements": [
+    {
+     "plate": 4,
+     "plate_label": null,
+     "figures": "11",
+     "book_page": 78,
+     "pdf_page": 79,
+     "pdf_plate_page": null,
+     "volume": null,
+     "note": null,
+     "crop_image": "atlas/2002-censarek-miocene/crops/pl4_fig11.png"
+    },
+    {
+     "plate": 4,
+     "plate_label": null,
+     "figures": "12",
+     "book_page": 78,
+     "pdf_page": 79,
+     "pdf_plate_page": null,
+     "volume": null,
+     "note": null,
+     "crop_image": "atlas/2002-censarek-miocene/crops/pl4_fig12.png"
+    }
+   ],
+   "extra": {},
+   "line": 4
+  },
+  {
+   "seq": 39,
+   "item_no": null,
+   "name": "Thalassiosira oliverana var. sparsa",
+   "genus": "Thalassiosira",
+   "binomial": "Thalassiosira oliverana",
+   "rank": "infraspecies",
+   "infra": "var. sparsa",
+   "authority": null,
+   "genus_guess": false,
+   "placements": [
+    {
+     "plate": 5,
+     "plate_label": null,
+     "figures": "1",
+     "book_page": 80,
+     "pdf_page": 81,
+     "pdf_plate_page": null,
+     "volume": null,
+     "note": null,
+     "crop_image": "atlas/2002-censarek-miocene/crops/pl5_fig01.png"
+    },
+    {
+     "plate": 5,
+     "plate_label": null,
+     "figures": "2",
+     "book_page": 80,
+     "pdf_page": 81,
+     "pdf_plate_page": null,
+     "volume": null,
+     "note": null,
+     "crop_image": "atlas/2002-censarek-miocene/crops/pl5_fig02.png"
+    }
+   ],
+   "extra": {},
+   "line": 5
+  },
+  {
+   "seq": 40,
+   "item_no": null,
+   "name": "Diploneis bombus",
+   "genus": "Diploneis",
+   "binomial": "Diploneis bombus",
+   "rank": "species",
+   "infra": null,
+   "authority": null,
+   "genus_guess": false,
+   "placements": [
+    {
+     "plate": 5,
+     "plate_label": null,
+     "figures": "3",
+     "book_page": 80,
+     "pdf_page": 81,
+     "pdf_plate_page": null,
+     "volume": null,
+     "note": null,
+     "crop_image": "atlas/2002-censarek-miocene/crops/pl5_fig03.png"
+    }
+   ],
+   "extra": {},
+   "line": 5
+  },
+  {
+   "seq": 41,
+   "item_no": null,
+   "name": "Rouxia peragalli",
+   "genus": "Rouxia",
+   "binomial": "Rouxia peragalli",
+   "rank": "species",
+   "infra": null,
+   "authority": null,
+   "genus_guess": false,
+   "placements": [
+    {
+     "plate": 5,
+     "plate_label": null,
+     "figures": "4",
+     "book_page": 80,
+     "pdf_page": 81,
+     "pdf_plate_page": null,
+     "volume": null,
+     "note": null,
+     "crop_image": "atlas/2002-censarek-miocene/crops/pl5_fig04.png"
+    }
+   ],
+   "extra": {},
+   "line": 5
+  },
+  {
+   "seq": 42,
+   "item_no": null,
+   "name": "Mediaria splendida",
+   "genus": "Mediaria",
+   "binomial": "Mediaria splendida",
+   "rank": "species",
+   "infra": null,
+   "authority": null,
+   "genus_guess": false,
+   "placements": [
+    {
+     "plate": 5,
+     "plate_label": null,
+     "figures": "5",
+     "book_page": 80,
+     "pdf_page": 81,
+     "pdf_plate_page": null,
+     "volume": null,
+     "note": null,
+     "crop_image": "atlas/2002-censarek-miocene/crops/pl5_fig05.png"
+    }
+   ],
+   "extra": {},
+   "line": 5
+  },
+  {
+   "seq": 43,
+   "item_no": null,
+   "name": "Thalassiosira praelineata",
+   "genus": "Thalassiosira",
+   "binomial": "Thalassiosira praelineata",
+   "rank": "species",
+   "infra": null,
+   "authority": null,
+   "genus_guess": false,
+   "placements": [
+    {
+     "plate": 5,
+     "plate_label": null,
+     "figures": "6",
+     "book_page": 80,
+     "pdf_page": 81,
+     "pdf_plate_page": null,
+     "volume": null,
+     "note": null,
+     "crop_image": "atlas/2002-censarek-miocene/crops/pl5_fig06.png"
+    },
+    {
+     "plate": 5,
+     "plate_label": null,
+     "figures": "7",
+     "book_page": 80,
+     "pdf_page": 81,
+     "pdf_plate_page": null,
+     "volume": null,
+     "note": null,
+     "crop_image": "atlas/2002-censarek-miocene/crops/pl5_fig07.png"
+    }
+   ],
+   "extra": {},
+   "line": 5
+  },
+  {
+   "seq": 44,
+   "item_no": null,
+   "name": "Rouxia sp.1 Gersonde",
+   "genus": "Rouxia",
+   "binomial": null,
+   "rank": "genus_only",
+   "infra": null,
+   "authority": null,
+   "genus_guess": false,
+   "placements": [
+    {
+     "plate": 5,
+     "plate_label": null,
+     "figures": "8",
+     "book_page": 80,
+     "pdf_page": 81,
+     "pdf_plate_page": null,
+     "volume": null,
+     "note": null,
+     "crop_image": "atlas/2002-censarek-miocene/crops/pl5_fig08.png"
+    }
+   ],
+   "extra": {},
+   "line": 5
+  },
+  {
+   "seq": 45,
+   "item_no": null,
+   "name": "Thalassiosira oestrupii",
+   "genus": "Thalassiosira",
+   "binomial": "Thalassiosira oestrupii",
+   "rank": "species",
+   "infra": null,
+   "authority": null,
+   "genus_guess": false,
+   "placements": [
+    {
+     "plate": 5,
+     "plate_label": null,
+     "figures": "9",
+     "book_page": 80,
+     "pdf_page": 81,
+     "pdf_plate_page": null,
+     "volume": null,
+     "note": null,
+     "crop_image": "atlas/2002-censarek-miocene/crops/pl5_fig09.png"
+    },
+    {
+     "plate": 5,
+     "plate_label": null,
+     "figures": "10",
+     "book_page": 80,
+     "pdf_page": 81,
+     "pdf_plate_page": null,
+     "volume": null,
+     "note": null,
+     "crop_image": "atlas/2002-censarek-miocene/crops/pl5_fig10.png"
+    }
+   ],
+   "extra": {},
+   "line": 5
+  },
+  {
+   "seq": 46,
+   "item_no": null,
+   "name": "Actinoptychus senarius",
+   "genus": "Actinoptychus",
+   "binomial": "Actinoptychus senarius",
+   "rank": "species",
+   "infra": null,
+   "authority": null,
+   "genus_guess": false,
+   "placements": [
+    {
+     "plate": 5,
+     "plate_label": null,
+     "figures": "11",
+     "book_page": 80,
+     "pdf_page": 81,
+     "pdf_plate_page": null,
+     "volume": null,
+     "note": null,
+     "crop_image": "atlas/2002-censarek-miocene/crops/pl5_fig11.png"
+    }
+   ],
+   "extra": {},
+   "line": 5
+  },
+  {
+   "seq": 47,
+   "item_no": null,
+   "name": "Cavitatus jouseanus",
+   "genus": "Cavitatus",
+   "binomial": "Cavitatus jouseanus",
+   "rank": "species",
+   "infra": null,
+   "authority": null,
+   "genus_guess": false,
+   "placements": [
+    {
+     "plate": 5,
+     "plate_label": null,
+     "figures": "12",
+     "book_page": 80,
+     "pdf_page": 81,
+     "pdf_plate_page": null,
+     "volume": null,
+     "note": null,
+     "crop_image": "atlas/2002-censarek-miocene/crops/pl5_fig12.png"
+    }
+   ],
+   "extra": {},
+   "line": 5
+  },
+  {
+   "seq": 48,
+   "item_no": null,
+   "name": "Thalassiosira sancettae",
+   "genus": "Thalassiosira",
+   "binomial": "Thalassiosira sancettae",
+   "rank": "species",
+   "infra": null,
+   "authority": null,
+   "genus_guess": false,
+   "placements": [
+    {
+     "plate": 5,
+     "plate_label": null,
+     "figures": "13",
+     "book_page": 80,
+     "pdf_page": 81,
+     "pdf_plate_page": null,
+     "volume": null,
+     "note": null,
+     "crop_image": "atlas/2002-censarek-miocene/crops/pl5_fig13.png"
+    },
+    {
+     "plate": 5,
+     "plate_label": null,
+     "figures": "14",
+     "book_page": 80,
+     "pdf_page": 81,
+     "pdf_plate_page": null,
+     "volume": null,
+     "note": null,
+     "crop_image": "atlas/2002-censarek-miocene/crops/pl5_fig14.png"
+    }
+   ],
+   "extra": {},
+   "line": 5
+  },
+  {
+   "seq": 49,
+   "item_no": null,
+   "name": "Thalassiotrix miocenica",
+   "genus": "Thalassiotrix",
+   "binomial": "Thalassiotrix miocenica",
+   "rank": "species",
+   "infra": null,
+   "authority": null,
+   "genus_guess": false,
+   "placements": [
+    {
+     "plate": 5,
+     "plate_label": null,
+     "figures": "15",
+     "book_page": 80,
+     "pdf_page": 81,
+     "pdf_plate_page": null,
+     "volume": null,
+     "note": null,
+     "crop_image": "atlas/2002-censarek-miocene/crops/pl5_fig15.png"
+    }
+   ],
+   "extra": {},
+   "line": 5
+  }
+ ]
+}

@@ -1171,6 +1171,20 @@ DB 설계는 [devlog/20260730_P02_db-schema.md](devlog/20260730_P02_db-schema.md
       **그림 크롭 440장은 안 실었다**(사용자 결정 — 쪽 이미지로 볼 수 있다).
       앞판을 지우고 `N:\DiaRUGA\Diadiction\temp\` 로 옮겼다.
 
+- [x] **남극 논문 도판 둘을 딴다** (207,
+      [devlog/20260918_207_paper-plates-antarctic-2002.md](devlog/20260918_207_paper-plates-antarctic-2002.md),
+      2026-09-18). `temp/` 의 남극 논문 여섯 중 도판이 있는 둘 — Censarek
+      2002(Plate 1~5 · 101개, 마이오세 층서 종 한 벌 — *Fragilariopsis* 13종·
+      *Denticulopsis* 6종 등)·Zielinski 2002(Plate I · 14개, *Rouxia
+      leventerae*·*R. constricta*). **자동 검출이 처음으로 거의 그대로
+      먹혔다**(순백 배경의 1비트 스캔·사진 격자) — 손으로 보탠 상자 다섯뿐.
+      P23 의 문 그대로 `atlas/2002-*.json` 을 내고 크롭은 `/data3` 로 옮겼다.
+      `Rouxia sp.1` 이 `unreadable` 로 떨어져 `parse_atlas.py` 의 속 수준 판별에
+      `sp.\d+` 를 더했다. **판을 내고 `import_atlas.py` 를 돌리는 것이 남았다**
+      (HANDOFF 3.8). AlgaeBase 없다 34개는 `paper_plates_pending.md` 에.
+      **Censarek 8비트 원판**(Censarek & Gersonde 2002, Mar. Micropaleo. 45)이
+      구해지면 Plate 2·3 의 작은 개체를 갈아 끼운다.
+
 - [ ] **이미 검출한 마스크를 다른 판에도 번지게 한다** (2026-08-14, 사용자 요청) —
       111 이 **사람이 그린** 마스크를 같은 시야의 모든 판에 앉히고 한 개체로
       묶는다(`data._spread_drawn`). 같은 것을 **엔진이 잡아 놓은 개체**에도 하고
