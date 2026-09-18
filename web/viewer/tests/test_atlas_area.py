@@ -19,6 +19,11 @@
   놓고 치는데 한국 이름을 권한다 — 골라도 결과가 빈다
 - 6번 — `render_atlas_pages.LEFT_PARITY` 에 도감을 더하면서 `AREA_OF` 를
   안 채우면 실패한다. 굽는 표가 곧 "우리가 가진 도감" 의 목록이다
+- 7번 — `atlas/*.json` 을 더하면서 `AREA_OF` 를 안 채우면 실패한다. 6번은
+  **굽는 도감(책 셋)만 본다** — 논문 도판집은 쪽을 안 구워 그 표에 없고,
+  카드도 안 서서 "권역 미정" 이 화면에 안 뜬다. 그런데 거르개는 `area_of`
+  를 보므로 **권역을 골라 찾으면 그 논문의 종이 조용히 빠진다**(207 —
+  `2002-censarek-miocene` 이 `?area=antarctic` 에서 사라졌다)
 """
 import json
 from pathlib import Path
@@ -146,3 +151,14 @@ class AtlasAreaTests(DiaRUGATestCase):
                          f"권역이 안 정해진 도감: {missing} — atlas.AREA_OF 에 적는다")
         for code, area in atlas_mod.AREA_OF.items():
             self.assertIn(area, atlas_mod.AREA_LABEL, f"{code}: 모르는 권역 {area}")
+
+    # 7) 저장소의 도감 JSON 마다 권역이 정해져 있다 — 논문 도판집까지
+    def test_every_atlas_json_has_an_area(self):
+        src = Path(settings.BASE_DIR).parent / "atlas"
+        keys = {json.loads(f.read_text(encoding="utf-8"))["atlas"]["key"]
+                for f in src.glob("*.json")}
+        # 작업 이름(186)은 도감이 아니라 권역이 없는 것이 맞다
+        keys.discard("working-names")
+        missing = sorted(keys - set(atlas_mod.AREA_OF))
+        self.assertEqual(missing, [],
+                         f"권역이 안 정해진 도감: {missing} — atlas.AREA_OF 에 적는다")
