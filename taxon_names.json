@@ -3272,6 +3272,14 @@
   "checked": ""
  },
  {
+  "binomial": "Cavitatus jouseanus",
+  "status": "accepted",
+  "valid_name": "",
+  "source": "antarctic2002-filled-20260918",
+  "note": "갱신 2021 · (원래 비고) 속째 대조표에 없음",
+  "checked": "2021"
+ },
+ {
   "binomial": "Cerataulus laevis",
   "status": "synonym",
   "valid_name": "Pleurosira laevis",
@@ -5360,6 +5368,22 @@
   "checked": "2017"
  },
  {
+  "binomial": "Crucidenticula kanayae",
+  "status": "accepted",
+  "valid_name": "",
+  "source": "antarctic2002-filled-20260918",
+  "note": "갱신 2026 · Crucidenticula kanayae var. kanayae → Crucidenticula kanayae 로 찾으면 유효 · (원래 비고) 속째 대조표에 없음",
+  "checked": "2026"
+ },
+ {
+  "binomial": "Crucidenticula nicobarica",
+  "status": "accepted",
+  "valid_name": "",
+  "source": "antarctic2002-filled-20260918",
+  "note": "갱신 2026 · (원래 비고) 속째 대조표에 없음",
+  "checked": "2026"
+ },
+ {
   "binomial": "Cyclotella americana",
   "status": "unassessed",
   "valid_name": "",
@@ -6192,6 +6216,14 @@
   "checked": "2023"
  },
  {
+  "binomial": "Denticulopsis crassa",
+  "status": "accepted",
+  "valid_name": "",
+  "source": "antarctic2002-filled-20260918",
+  "note": "갱신 2026",
+  "checked": "2026"
+ },
+ {
   "binomial": "Denticulopsis dimorpha",
   "status": "accepted",
   "valid_name": "",
@@ -6232,12 +6264,36 @@
   "checked": "2018-02-01"
  },
  {
+  "binomial": "Denticulopsis maccollumii",
+  "status": "unassessed",
+  "valid_name": "",
+  "source": "antarctic2002-filled-20260918",
+  "note": "갱신 2025 · AlgaeBase가 \"추가 조사 필요\"로 둠",
+  "checked": "2025"
+ },
+ {
+  "binomial": "Denticulopsis ovata",
+  "status": "accepted",
+  "valid_name": "",
+  "source": "antarctic2002-filled-20260918",
+  "note": "갱신 2026",
+  "checked": "2026"
+ },
+ {
   "binomial": "Denticulopsis praedimorpha",
   "status": "accepted",
   "valid_name": "",
   "source": "paper-plates-filled-20260831",
   "note": "갱신 2022 · Bacillariophyceae",
   "checked": "2022"
+ },
+ {
+  "binomial": "Denticulopsis simonsenii",
+  "status": "accepted",
+  "valid_name": "",
+  "source": "antarctic2002-filled-20260918",
+  "note": "갱신 2026",
+  "checked": "2026"
  },
  {
   "binomial": "Desmogonium rabenhorstianum",
@@ -6366,6 +6422,14 @@
   "source": "worms-master-20260814",
   "note": "AlgaeBase 에 없다 · algaebase_day15_0701-0750.md · AlgaeBase에 없음 · 검색 0건",
   "checked": ""
+ },
+ {
+  "binomial": "Diploneis bombus",
+  "status": "accepted",
+  "valid_name": "",
+  "source": "antarctic2002-filled-20260918",
+  "note": "갱신 2020",
+  "checked": "2020"
  },
  {
   "binomial": "Diploneis crabro",
@@ -7312,12 +7376,36 @@
   "checked": "2005-07-12"
  },
  {
+  "binomial": "Fragilariopsis arcula",
+  "status": "accepted",
+  "valid_name": "",
+  "source": "antarctic2002-filled-20260918",
+  "note": "갱신 2026 · (원래 비고) *Fragilariopsis* 마이오세 종은 AlgaeBase 가 *Nitzschia* 아래 두는 일이 있다 — 안 걸리면 *Nitzschia arcula* 로도",
+  "checked": "2026"
+ },
+ {
+  "binomial": "Fragilariopsis aurica",
+  "status": "accepted",
+  "valid_name": "",
+  "source": "antarctic2002-filled-20260918",
+  "note": "갱신 2026 · (원래 비고) 위와 같음",
+  "checked": "2026"
+ },
+ {
   "binomial": "Fragilariopsis barronii",
   "status": "accepted",
   "valid_name": "",
   "source": "worms-master-20260814",
   "note": "그대로 유효 · algaebase_day18_0851-0900.md · (그대로 유효, (Gersonde) Gersonde & Bárcena) · WoRMS 참고명 Nitzschia barronii(unassessed)",
   "checked": "2018-02-01"
+ },
+ {
+  "binomial": "Fragilariopsis clementia",
+  "status": "accepted",
+  "valid_name": "",
+  "source": "antarctic2002-filled-20260918",
+  "note": "갱신 2026 · (원래 비고) 위와 같음",
+  "checked": "2026"
  },
  {
   "binomial": "Fragilariopsis curta",
@@ -7328,12 +7416,36 @@
   "checked": "2008-03-27"
  },
  {
+  "binomial": "Fragilariopsis cylindrica",
+  "status": "synonym",
+  "valid_name": "Nitzschia cylindrica",
+  "source": "antarctic2002-filled-20260918",
+  "note": "갱신 2018 · Fragilariopsis cylindrica → Nitzschia cylindrica 로 찾으면 유효 · (원래 비고) 위와 같음",
+  "checked": "2018"
+ },
+ {
   "binomial": "Fragilariopsis cylindrus",
   "status": "accepted",
   "valid_name": "",
   "source": "paper-plates-filled-20260831",
   "note": "갱신 2023 · Bacillariophyceae",
   "checked": "2023"
+ },
+ {
+  "binomial": "Fragilariopsis donahuensis",
+  "status": "unassessed",
+  "valid_name": "",
+  "source": "antarctic2002-filled-20260918",
+  "note": "갱신 2019 · AlgaeBase가 \"추가 조사 필요\"로 둠 · (원래 비고) 위와 같음",
+  "checked": "2019"
+ },
+ {
+  "binomial": "Fragilariopsis fossilis",
+  "status": "accepted",
+  "valid_name": "",
+  "source": "antarctic2002-filled-20260918",
+  "note": "갱신 2016 · (원래 비고) 위와 같음",
+  "checked": "2016"
  },
  {
   "binomial": "Fragilariopsis kerguelensis",
@@ -7344,6 +7456,14 @@
   "checked": "2018-02-01"
  },
  {
+  "binomial": "Fragilariopsis lacrima",
+  "status": "synonym",
+  "valid_name": "Nitzschia lacrima",
+  "source": "antarctic2002-filled-20260918",
+  "note": "갱신 2022 · Fragilariopsis lacrima → Nitzschia lacrima 로 찾으면 유효 · (원래 비고) 위와 같음",
+  "checked": "2022"
+ },
+ {
   "binomial": "Fragilariopsis lineata",
   "status": "absent",
   "valid_name": "",
@@ -7352,12 +7472,52 @@
   "checked": ""
  },
  {
+  "binomial": "Fragilariopsis maleinterpretaria",
+  "status": "unassessed",
+  "valid_name": "",
+  "source": "antarctic2002-filled-20260918",
+  "note": "갱신 2019 · AlgaeBase가 \"추가 조사 필요\"로 둠 · (원래 비고) 위와 같음",
+  "checked": "2019"
+ },
+ {
   "binomial": "Fragilariopsis obliquecostata",
   "status": "accepted",
   "valid_name": "",
   "source": "worms-master-20260814",
   "note": "그대로 유효 · algaebase_day18_0851-0900.md · (그대로 유효, (Van Heurck) Heiden) · WoRMS 일치(accepted)",
   "checked": "2008-03-27"
+ },
+ {
+  "binomial": "Fragilariopsis praecurta",
+  "status": "synonym",
+  "valid_name": "Nitzschia praecurta",
+  "source": "antarctic2002-filled-20260918",
+  "note": "갱신 2022 · Fragilariopsis praecurta → Nitzschia praecurta 로 찾으면 유효 · (원래 비고) 위와 같음",
+  "checked": "2022"
+ },
+ {
+  "binomial": "Fragilariopsis praeinterfrigidaria",
+  "status": "absent",
+  "valid_name": "",
+  "source": "antarctic2002-filled-20260918",
+  "note": "Nitzschia praeinterfrigidaria 로도 없음 · (원래 비고) 위와 같음",
+  "checked": ""
+ },
+ {
+  "binomial": "Fragilariopsis pusilla",
+  "status": "synonym",
+  "valid_name": "Nitzschia pusilla",
+  "source": "antarctic2002-filled-20260918",
+  "note": "갱신 2022 · Fragilariopsis pusilla → Nitzschia pusilla 로 찾으면 유효 · (원래 비고) 위와 같음",
+  "checked": "2022"
+ },
+ {
+  "binomial": "Fragilariopsis reinholdii",
+  "status": "synonym",
+  "valid_name": "Fragilariopsis kanayae D.M.Williams & Kociolek",
+  "source": "antarctic2002-filled-20260918",
+  "note": "갱신 2024 · (원래 비고) 위와 같음 (*Nitzschia reinholdii* 는 1985·1991 에 있다)",
+  "checked": "2024"
  },
  {
   "binomial": "Fragilariopsis rhombica",
@@ -7936,6 +8096,14 @@
   "checked": "2018-01-31"
  },
  {
+  "binomial": "Hemidiscus kastenii",
+  "status": "unassessed",
+  "valid_name": "",
+  "source": "antarctic2002-filled-20260918",
+  "note": "갱신 2023 · Hemidiscus karstenii 로는 있으나 AlgaeBase가 \"추가 조사 필요\"로 둠 · (원래 비고) **원문 오식으로 보임** — *Hemidiscus karstenii* 로 찾을 것. *Hemidiscus cuneiformis* 는 이미 *Actinocyclus cuneiformis* 이명 판정이라 이것도 *Actinocyclus* 쪽일 수 있다",
+  "checked": "2023"
+ },
+ {
   "binomial": "Hemidiscus rectus",
   "status": "synonym",
   "valid_name": "Actinocyclus cuneiformis",
@@ -7957,6 +8125,14 @@
   "valid_name": "Actinocyclus cuneiformis",
   "source": "paper-plates-filled-20260831",
   "note": "갱신 2021 · Coscinodiscophyceae",
+  "checked": "2021"
+ },
+ {
+  "binomial": "Hemidiscus triangularus",
+  "status": "unassessed",
+  "valid_name": "",
+  "source": "antarctic2002-filled-20260918",
+  "note": "갱신 2021 · Hemidiscus triangularis 로는 있으나 AlgaeBase가 \"추가 조사 필요\"로 둠 · (원래 비고) 위와 같은 사정 — *Actinocyclus* 쪽도 볼 것",
   "checked": "2021"
  },
  {
@@ -12180,7 +12356,7 @@
   "status": "unassessed",
   "valid_name": "",
   "source": "worms-master-20260814",
-  "note": "확인 필요 · algaebase_day29_1401-1450.md · 확인 필요 · 동명이종 2건 — Hustedt판(→Nitzschia amphibia f. frauenfeldii), Schrader판(→Delphineis denticuloides, 완전히 다른 속) — 도감 저자 표기 없어 판단 보류",
+  "note": "확인 필요 · algaebase_day29_1401-1450.md · 확인 필요 · 동명이종 2건 — Hustedt판(→Nitzschia amphibia f. frauenfeldii), Schrader판(→Delphineis denticuloides, 완전히 다른 속) — 도감 저자 표기 없어 판단 보류 · ⚠ 09-18 남극 논문 조회는 N. amphibia f. frauenfeldii 이명으로 냈으나 동명이의 오연결로 보여 반영하지 않았다(정리 노트 5절)",
   "checked": "2018-01-31"
  },
  {
@@ -12253,6 +12429,14 @@
   "valid_name": "Tryblionella granulata",
   "source": "paper-plates-filled-20260831",
   "note": "갱신 2026 · Bacillariophyceae",
+  "checked": "2026"
+ },
+ {
+  "binomial": "Nitzschia grossepunctata",
+  "status": "accepted",
+  "valid_name": "",
+  "source": "antarctic2002-filled-20260918",
+  "note": "갱신 2026",
   "checked": "2026"
  },
  {
@@ -12374,6 +12558,22 @@
   "source": "paper-plates-filled-20260831",
   "note": "갱신 2017 · Bacillariophyceae",
   "checked": "2017"
+ },
+ {
+  "binomial": "Nitzschia pseudokerguelensis",
+  "status": "accepted",
+  "valid_name": "",
+  "source": "antarctic2002-filled-20260918",
+  "note": "갱신 2026",
+  "checked": "2026"
+ },
+ {
+  "binomial": "Nitzschia reinholdii",
+  "status": "synonym",
+  "valid_name": "Fragilariopsis kanayae D.M.Williams & Kociolek",
+  "source": "antarctic2002-raw2-20260918",
+  "note": "갱신 2018 · Fragilariopsis reinholdii 와 함께 F. kanayae 로 (정리 노트 4절 · raw2.tsv)",
+  "checked": "2018"
  },
  {
   "binomial": "Nitzschia ricta",
@@ -13790,6 +13990,14 @@
   "source": "worms-master-20260814",
   "note": "그대로 유효 · algaebase_day33_1601-1650.md · (그대로 유효, H.J.Schrader)",
   "checked": "2017-03-14"
+ },
+ {
+  "binomial": "Rouxia peragalli",
+  "status": "synonym",
+  "valid_name": "Rouxia peragalloi",
+  "source": "antarctic2002-filled-20260918",
+  "note": "갱신 2026 · Rouxia peragalli → Rouxia peragalloi 로 찾으면 유효 · (원래 비고) 1985 의 `Rouxia cf. peragalli` 와 같은 이름 — cf. 없는 형태는 처음",
+  "checked": "2026"
  },
  {
   "binomial": "Rutilaria epsilon",
@@ -15296,6 +15504,14 @@
   "checked": "2018"
  },
  {
+  "binomial": "Thalassiosira fraga",
+  "status": "accepted",
+  "valid_name": "",
+  "source": "antarctic2002-filled-20260918",
+  "note": "갱신 2023",
+  "checked": "2023"
+ },
+ {
   "binomial": "Thalassiosira gracilis",
   "status": "synonym",
   "valid_name": "Shionodiscus gracilis",
@@ -15400,12 +15616,44 @@
   "checked": "2019"
  },
  {
+  "binomial": "Thalassiosira praelineata",
+  "status": "synonym",
+  "valid_name": "Thalassiosira leptopus (Grunow) Hasle & G.Fryxell",
+  "source": "antarctic2002-filled-20260918",
+  "note": "갱신 2014 · Coscinodiscus praelineatus 로 찾으면 이 이름의 이명 · (원래 비고) 논문 자신이 *Coscinodiscus praelineatus* → *Thalassiosira leptopus* 이명 관계를 언급한다(p.72) — AlgaeBase 판정과 비교할 것",
+  "checked": "2014"
+ },
+ {
   "binomial": "Thalassiosira rotula",
   "status": "synonym",
   "valid_name": "Thalassiosira gravida",
   "source": "worms-master-20260814",
   "note": "이명 → 갈아탄다 · algaebase_day36_1751-1800.md · Thalassiosira gravida(종내 이명) · WoRMS 정확히 일치(junior subjective synonym)",
   "checked": "2024-10-17"
+ },
+ {
+  "binomial": "Thalassiosira sancettae",
+  "status": "accepted",
+  "valid_name": "",
+  "source": "antarctic2002-filled-20260918",
+  "note": "갱신 2023",
+  "checked": "2023"
+ },
+ {
+  "binomial": "Thalassiosira spinosa",
+  "status": "synonym",
+  "valid_name": "Thalassiosira spinoconvexa Akiba & Yanagisawa",
+  "source": "antarctic2002-filled-20260918",
+  "note": "갱신 2019",
+  "checked": "2019"
+ },
+ {
+  "binomial": "Thalassiosira spumellaroides",
+  "status": "unassessed",
+  "valid_name": "",
+  "source": "antarctic2002-filled-20260918",
+  "note": "갱신 2020 · AlgaeBase가 \"추가 조사 필요\"로 둠",
+  "checked": "2020"
  },
  {
   "binomial": "Thalassiosira subtilis",
@@ -15454,6 +15702,14 @@
   "source": "worms-master-20260814",
   "note": "이명 → 갈아탄다 · algaebase_day36_1751-1800.md · 재배치((Grunow) Mereschkowsky). WoRMS 정확히 일치. #1766과 동일 목적지로 수렴 — 이번 구간의 순환 확인 사례. Thalassiothrix 구간 종료",
   "checked": "2005-07-20"
+ },
+ {
+  "binomial": "Thalassiotrix miocenica",
+  "status": "synonym",
+  "valid_name": "Thalassiothrix miocenica",
+  "source": "antarctic2002-filled-20260918",
+  "note": "갱신 2023 · Thalassiotrix miocenica → Thalassiothrix miocenica 로 찾으면 유효 · (원래 비고) **원문 오식** — *Thalassiothrix miocenica* 로 찾을 것",
+  "checked": "2023"
  },
  {
   "binomial": "Trachyneis aspera",

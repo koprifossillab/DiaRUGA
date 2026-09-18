@@ -24,6 +24,14 @@
   `AtlasEntry` 에도 이미 들어가 있다 — TaxonName 이 그것까지 가릴 자리는
   아니다)
 
+- `Diadiction/names/algaebase/antarctic2002_filled_20260918.json` — 남극
+  논문 둘(207 · Censarek 2002 · Zielinski 2002)의 캡션 학명 중 판정이
+  없던 32종을 같은 방법으로 채운 표(2026-09-18, `antarctic2002_answered_
+  20260918.md`·`_notes_`·`_raw*_` 가 같은 자료). 모양이 `filled.json` 과
+  같아 같은 파서로 읽는다. **둘을 손으로 잡아 둔 자리가 있다**
+  (`HOLD`·`EXTRA`, 아래 주석) — 조회한 사람이 정리 노트에서 "이 판정은
+  반영하지 말라" 고 한 것과, 조회 중에 함께 확인된 다른 조합이다
+
 열쇠는 `tools/harvest_worms.binomial()` 로 정규화한다 — `var.`·`sp.`
 꼬리는 종 단위로 뭉뚱그려진다(예: `Actinocyclus ehrenbergii var.
 tenella` → `Actinocyclus ehrenbergii`). **두 소스가 같은 binomial 을
@@ -51,6 +59,34 @@ from harvest_worms import DIADICTION, binomial  # noqa: E402
 
 WORMS_MASTER = DIADICTION / "names/worms/worms_master_20260814.tsv"
 PAPER_FILLED = DIADICTION / "temp/filled.json"
+PAPER_FILLED_2002 = DIADICTION / "names/algaebase/antarctic2002_filled_20260918.json"
+
+# **판정을 그대로 반영하지 않는 이름** — 조회한 사람이 정리 노트에서 짚었다.
+# `Nitzschia denticuloides`: AlgaeBase 가 `N. amphibia f. frauenfeldii`(담수종의
+# 품종)로 넘기는데, 남극 중기 마이오세 층서 지표종이 담수종 품종일 리 없다 —
+# 동명이의를 잘못 이은 것으로 보인다(worms_master 도 같은 이유로 `확인 필요`
+# 를 뒀다: Hustedt 판 vs Schrader 판). 원기재 확인 전까지 `unassessed` 로 둔다
+HOLD = {
+    "Nitzschia denticuloides":
+        "⚠ 09-18 남극 논문 조회는 N. amphibia f. frauenfeldii 이명으로 냈으나 "
+        "동명이의 오연결로 보여 반영하지 않았다(정리 노트 5절)",
+}
+
+# **조회하다 함께 확인된 다른 조합** — 답변 표엔 없지만 `raw2.tsv` 에 판정이
+# 있고 도감 항목(`AtlasEntry.binomial`)에 그 표기가 있는 것만 싣는다.
+# `Nitzschia reinholdii`(1985 Plate) 는 `Fragilariopsis reinholdii` 와 같이
+# `F. kanayae` 로 간다 — 종소명이 통째로 바뀌어 기계적으로는 못 잇는 자리
+EXTRA = {
+    "Nitzschia reinholdii": {
+        "binomial": "Nitzschia reinholdii",
+        "status": "synonym",
+        "valid_name": "Fragilariopsis kanayae D.M.Williams & Kociolek",
+        "source": "antarctic2002-raw2-20260918",
+        "note": "갱신 2018 · Fragilariopsis reinholdii 와 함께 F. kanayae 로 "
+                "(정리 노트 4절 · raw2.tsv)",
+        "checked": "2018",
+    },
+}
 OUT = Path(__file__).resolve().parent.parent / "taxon_names.json"
 
 # worms_master 의 `AlgaeBase` 칼럼이 이 문구 중 하나면 그게 상태다.
@@ -94,14 +130,15 @@ def from_worms_master() -> dict[str, dict]:
 CHECKED_RE = re.compile(r"갱신\s*(\d{4})")
 
 
-def from_paper_plates() -> dict[str, dict]:
-    """논문 도판 156종, 사람이 철자 교정 뒤 AlgaeBase 로 채운 표를 읽는다.
+def from_paper_plates(path: Path = PAPER_FILLED,
+                      source: str = "paper-plates-filled-20260831") -> dict[str, dict]:
+    """논문 도판 캡션 학명을 사람이 철자 교정 뒤 AlgaeBase 로 채운 표를 읽는다.
 
     `filled.json` 은 `[캡션 원문 표기, 논문(들), 판정, 비고]` 네 칸짜리
-    행 156개다. **열쇠는 캡션 원문 표기**(교정 전) — `AtlasEntry.binomial`
-    이 그 표기를 정규화한 것과 같아야 찾아진다.
+    행이다(156종 · 남극 2002 는 32종). **열쇠는 캡션 원문 표기**(교정 전) —
+    `AtlasEntry.binomial` 이 그 표기를 정규화한 것과 같아야 찾아진다.
     """
-    rows = json.loads(PAPER_FILLED.read_text(encoding="utf-8"))
+    rows = json.loads(path.read_text(encoding="utf-8"))
     out: dict[str, dict] = {}
     for orig, _papers, verdict, note in rows:
         b = binomial(orig)
@@ -113,6 +150,11 @@ def from_paper_plates() -> dict[str, dict]:
             # 걸리고 이 이름으로 걸린다" 는 검색 쪽에선 같은 동작이라
             # 가르지 않는다(머리말 참고)
             status, valid_name = "synonym", v.strip("*")
+            # 굵은 이름이 열쇠와 같은 종이면(`Crucidenticula kanayae var.
+            # kanayae` → `C. kanayae`) 이명이 아니라 종 단위로는 유효다 —
+            # 자기 자신을 가리키는 synonym 을 내면 안 된다
+            if binomial(valid_name) == b:
+                status, valid_name = "accepted", ""
         elif "그대로 유효" in v:
             status, valid_name = "accepted", ""
         elif "없음" in v:  # `AlgaeBase에 없음`
@@ -124,7 +166,7 @@ def from_paper_plates() -> dict[str, dict]:
             "binomial": b,
             "status": status,
             "valid_name": valid_name,
-            "source": "paper-plates-filled-20260831",
+            "source": source,
             "note": note,
             "checked": m.group(1) if m else "",
         }
@@ -165,12 +207,27 @@ def main() -> int:
     worms = from_worms_master()
     paper = from_paper_plates()
     merged = merge(worms, paper)
+    # 남극 2002(32종) — 같은 규칙으로 얹는다. 잡아 둔 것(HOLD)은 판정 대신
+    # 그 사실을 note 에 남기고, 덤으로 확인된 조합(EXTRA)은 없을 때만 더한다
+    paper2 = from_paper_plates(PAPER_FILLED_2002, "antarctic2002-filled-20260918")
+    for b, why in HOLD.items():
+        if b in paper2:
+            paper2[b]["status"], paper2[b]["valid_name"] = "unassessed", ""
+            paper2[b]["note"] = (paper2[b]["note"] + " · " + why).strip(" ·")
+    merged = merge(merged, paper2)
+    for b, why in HOLD.items():
+        # 양쪽 다 판정이 없으면 merge 가 note 를 안 건드린다 — 잡아 둔 사실은 남긴다
+        if b in merged and why not in merged[b]["note"]:
+            merged[b]["note"] = (merged[b]["note"] + " · " + why).strip(" ·")
+    for b, row in EXTRA.items():
+        merged.setdefault(b, dict(row))
 
     from collections import Counter
     c = Counter(v["status"] for v in merged.values())
     overlap = set(worms) & set(paper)
     print(f"worms_master {len(worms)} · paper_plates {len(paper)} "
-          f"· 겹침 {len(overlap)} · 합계 {len(merged)}")
+          f"· 겹침 {len(overlap)} · 남극2002 {len(paper2)} · 덤 {len(EXTRA)} "
+          f"· 합계 {len(merged)}")
     print("  " + " · ".join(f"{k} {v}" for k, v in c.most_common()))
 
     if args.dry_run:
