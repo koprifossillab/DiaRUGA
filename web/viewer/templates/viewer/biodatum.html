@@ -1,0 +1,296 @@
+{% extends "viewer/base.html" %}
+{% block title %}기준면 — DiaRUGA{% endblock %}
+{% block subtitle %}<b>생층서 기준면</b> · <a href="{% url 'atlas' %}">도감</a>{% endblock %}
+
+{% block content %}
+{% comment %}
+  생층서 기준면 범위 그림 (P28 §4.2). 종마다 한 열, 세로 시간축은 **아래가
+  오래된 쪽**. 같은 사건을 본 문헌마다 점을 따로 찍는다 — 연구 간 흩어짐이
+  점의 벌어짐으로 보인다. 자리는 `viewer/biodatum.layout` 이 잡고 여기서는
+  그린다(`core.html` 의 깊이 축과 같은 식 · JS 없이도 선다).
+
+  **색은 사건 종류(FO·LO·그 밖)이지 문헌이 아니다** — 문헌은 열넷이라 색으로
+  못 가른다. 문헌은 점에 마우스를 올리면 뜨고 아래 표에 전부 있다.
+  세 색은 dataviz 팔레트의 1·2·3 슬롯이고 밝은·어두운 면 둘 다 검증했다.
+{% endcomment %}
+<style>
+  .bdq { display: flex; flex-wrap: wrap; gap: 10px 16px; align-items: center;
+         margin: 4px 0 12px; }
+  .bdq input[type=text], .bdq select { padding: 7px 10px; font-size: .95rem;
+         border: 1px solid var(--line); border-radius: 6px;
+         background: var(--panel); color: inherit; }
+  .bdq input[type=text] { width: 16em; }
+  .bdq label { display: inline-flex; gap: 5px; align-items: center; font-size: .92rem; }
+  .bdq fieldset { border: 1px solid var(--line); border-radius: 6px; padding: 4px 10px;
+                  display: inline-flex; gap: 12px; align-items: center; margin: 0; }
+  .bdq legend { font-size: .8rem; color: var(--dim); padding: 0 4px; }
+  .bdrefs { font-size: .88rem; margin: -4px 0 12px; }
+  .bdrefs summary { cursor: pointer; color: var(--dim); }
+  .bdrefs .list { display: flex; flex-wrap: wrap; gap: 6px 14px; padding: 6px 0; }
+  .bdsum { font-size: .9rem; color: var(--dim); margin-bottom: 8px; }
+  .bdwrap { overflow-x: auto; border: 1px solid var(--line); border-radius: 8px;
+            background: var(--panel); padding: 8px; }
+  .bdsvg { display: block; font-size: 11px; }
+  /* 세 색 — dataviz 슬롯 1·2·3. 어두운 값이 기본이고 밝은 값은 `data-theme="light"`
+     가 켠다 — base.html 과 같은 식이고 **미디어 쿼리가 아니다**(201). 어두운 면의
+     값은 같은 색상을 그 면에 맞춰 밟은 것이라 둘 다 검증했다 */
+  :root { --bd-fo: #3987e5; --bd-lo: #d95926; --bd-x: #199e70; }
+  :root[data-theme="light"] { --bd-fo: #2a78d6; --bd-lo: #eb6834; --bd-x: #1baf7a; }
+  .bdsvg .bd-grid { stroke: var(--line); stroke-width: 1; }
+  .bdsvg .bd-axis text, .bdsvg .bd-mis text { fill: var(--dim); }
+  .bdsvg rect.bd-band { stroke: var(--panel); stroke-width: 1; }
+  .bdsvg rect.bd-band.s0 { fill: var(--group-bg); }
+  .bdsvg rect.bd-band.s1 { fill: var(--group-bg-hi); }
+  .bdsvg .bd-band text { fill: var(--dim); font-size: 9px; }
+  .bdsvg .bd-bar { fill: var(--dim); opacity: .22; }
+  .bdsvg .bd-bar.open { stroke: var(--dim); stroke-dasharray: 3 3; fill: none; opacity: .6; }
+  .bdsvg .bd-pt.FO { fill: var(--bd-fo); stroke: var(--bd-fo); }
+  .bdsvg .bd-pt.LO { fill: var(--bd-lo); stroke: var(--bd-lo); }
+  .bdsvg .bd-pt.X  { fill: var(--bd-x);  stroke: var(--bd-x); }
+  /* 재인용은 속이 빈 점, 신뢰도 낮음(Winter & Iwai)은 흐리게 —
+     색만으로 가르지 않는다 */
+  .bdsvg .bd-pt.via { fill: var(--panel); }
+  .bdsvg .bd-pt.low { opacity: .4; }
+  .bdsvg .bd-err { stroke-width: 1.5; }
+  .bdsvg .bd-err.FO { stroke: var(--bd-fo); } .bdsvg .bd-err.LO { stroke: var(--bd-lo); }
+  .bdsvg .bd-err.X { stroke: var(--bd-x); }
+  .bdsvg .bd-hit { fill: transparent; cursor: pointer; }
+  .bdsvg .bd-sp text { fill: var(--fg); font-style: italic; }
+  .bdsvg .bd-sp.noatlas text { fill: var(--dim); }
+  .bdsvg a text:hover { text-decoration: underline; }
+  .bdsvg .bd-mis line { stroke: var(--line); }
+  .bdsvg .bd-term text { fill: var(--warn); }
+  .bdlegend { display: flex; flex-wrap: wrap; gap: 14px; font-size: .85rem;
+              margin: 8px 2px 16px; align-items: center; }
+  .bdlegend .sw { display: inline-block; width: 10px; height: 10px; border-radius: 50%;
+                  vertical-align: middle; margin-right: 4px; }
+  .bdlegend .sw.via { background: var(--panel) !important; border: 2px solid var(--dim); }
+  .bdtip { position: fixed; z-index: 40; max-width: 360px; padding: 8px 10px;
+           pointer-events: none; background: var(--panel); color: var(--fg);
+           border: 1px solid var(--line); border-radius: 6px; font-size: .84rem;
+           box-shadow: 0 6px 24px rgba(0, 0, 0, .35); line-height: 1.4; }
+  .bdtip .dim { display: block; }
+  table.bdtab { border-collapse: collapse; font-size: .84rem; width: 100%; margin-top: 14px; }
+  table.bdtab th, table.bdtab td { border-bottom: 1px solid var(--line); padding: 4px 8px;
+                                   text-align: left; vertical-align: top; }
+  table.bdtab th { color: var(--dim); font-weight: normal; white-space: nowrap; }
+  table.bdtab td.num { text-align: right; white-space: nowrap; font-variant-numeric: tabular-nums; }
+  table.bdtab tr.low td { opacity: .55; }
+  .bdreflist { font-size: .86rem; margin-top: 18px; }
+  .bdreflist li { margin: 6px 0; }
+  .warnchip { background: var(--warn-bg); color: var(--warn-fg); }
+  .pnote { font-size: .82rem; color: var(--warn-fg); }
+  .bdnote { font-size: .86rem; color: var(--dim); max-width: 60em; }
+</style>
+
+{% comment %}
+  **권역은 체크박스다** — 태평양 자료를 남극과 한 축에 놓고 볼 때가 있다
+  (사용자, 09-18). 둘 다 끄면 아무것도 안 그리고 그렇게 말한다.
+{% endcomment %}
+<form class="bdq" method="get" action="{% url 'biodatum' %}" id="bdq">
+  {% comment %}폼이 보냈다는 표시 — 체크박스는 다 끄면 아무것도 안 보내서, 이것이
+     없으면 "아직 아무것도 안 골랐다" 로 보고 권역 둘을 켠다{% endcomment %}
+  <input type="hidden" name="f" value="1">
+  <fieldset><legend>권역</legend>
+    {% for key, label in areas %}
+      <label><input type="checkbox" name="area" value="{{ key }}"
+             {% if key in area_on %}checked{% endif %}> {{ label }}</label>
+    {% endfor %}
+  </fieldset>
+  <select name="genus" aria-label="속으로 거른다" title="속으로 거른다 — 고르면 바로 그린다"
+          onchange="document.getElementById('bdq').requestSubmit()">
+    <option value="">속을 고른다</option>
+    {% for g in genera %}
+      <option value="{{ g.genus }}"{% if g.genus|lower == genus|lower and genus %} selected{% endif %}
+        >{{ g.genus }} ({{ g.n }}){% if not g.in_atlas %} · 도감에 없다{% endif %}</option>
+    {% endfor %}
+  </select>
+  <input type="text" name="q" value="{{ q }}" placeholder="이름으로 찾는다 (예: kolbei)"
+         aria-label="이름으로 찾는다">
+  <fieldset><legend>Cody 2008 모델</legend>
+    {% for key, label in models %}
+      <label><input type="radio" name="model" value="{{ key }}"
+             {% if key == model %}checked{% endif %}> {{ label }}</label>
+    {% endfor %}
+  </fieldset>
+  <label title="원문 행과 값이 같은 재인용 41행도 그린다 (Warnock 2025 Table 2 경유)">
+    <input type="checkbox" name="via" value="1" {% if include_via %}checked{% endif %}> 재인용 겹침도</label>
+  <button type="submit">그린다</button>
+</form>
+<details class="bdrefs"{% if refs_on %} open{% endif %}>
+  <summary>출처로 거른다{% if refs_on %} · {{ refs_on|length }}편{% endif %}</summary>
+  <div class="list">
+    {% for r in references %}
+      <label><input type="checkbox" name="ref" value="{{ r.key }}" form="bdq"
+             {% if r.key in refs_on %}checked{% endif %}> {{ r.label }}
+        <span class="dim">({{ r.n }})</span></label>
+    {% endfor %}
+  </div>
+</details>
+
+{% if no_data %}
+  <p class="warnchip" style="padding:8px 12px;border-radius:6px;display:inline-block">
+    기준면이 아직 안 들어와 있습니다 — <code>import_biodatums.py</code> 로 넣습니다 (P28).</p>
+{% elif not area_on %}
+  <p class="bdnote">권역을 하나도 안 골랐습니다 — 남극해·북서태평양 중 적어도 하나를 켭니다.</p>
+{% elif not searched %}
+  <p class="bdnote">속을 고르거나 이름을 넣으면 그 종들의 FO·LO 범위를 그립니다.
+    문헌 열넷 · 세로축은 아래가 오래된 쪽입니다. 같은 사건을 여러 문헌이 다르게
+    본 것은 점의 흩어짐으로 보입니다 — <b>연령은 시간척도에 종속되므로</b>(문헌마다
+    Berggren 1995 · Gradstein 2004 · GTS2012 · 궤도조율) 점에 마우스를 올려 어느
+    척도인지 함께 읽습니다.</p>
+{% elif not chart.species %}
+  <p class="bdnote">이 거르개로는 기준면이 없습니다
+    {% if genus %}— 속 <b>{{ genus }}</b>{% endif %}{% if q %} · <b>{{ q }}</b>{% endif %}
+    {% if refs_on %} · 출처 {{ refs_on|length }}편{% endif %}.</p>
+{% else %}
+  {% with L=chart.layout %}
+  <div class="bdsum">이름 {{ chart.n_species }} · 점 {{ chart.n_points }}
+    {% if chart.n_hidden_via %} · 재인용 겹침 {{ chart.n_hidden_via }}건 숨김{% endif %}
+    · 축 0–{{ L.y_max }} Ma</div>
+  <div class="bdwrap">
+  <svg class="bdsvg" width="{{ L.width }}" height="{{ L.height }}"
+       viewBox="0 0 {{ L.width }} {{ L.height }}" role="img"
+       aria-label="생층서 기준면 범위 그림">
+    {% comment %}연령 축{% endcomment %}
+    <g class="bd-axis">
+      {% for t in L.ticks %}
+        <line class="bd-grid" x1="{{ L.x0 }}" x2="{{ L.mis_x }}" y1="{{ t.y }}" y2="{{ t.y }}"/>
+        <text x="38" y="{{ t.y }}" text-anchor="end" dominant-baseline="middle">{{ t.ma }}</text>
+      {% endfor %}
+      <text x="2" y="{{ L.top|add:-12 }}" class="dim">Ma</text>
+    </g>
+    {% comment %}대 띠 — 권역의 체계마다 한 기둥{% endcomment %}
+    {% for s in L.schemes %}
+      <text x="{{ s.x|add:4 }}" y="{{ L.top|add:-6 }}" fill="var(--dim)" font-size="8"
+            transform="rotate(-40 {{ s.x|add:4 }} {{ L.top|add:-6 }})">{{ s.label }}</text>
+    {% endfor %}
+    {% for b in L.bands %}
+      <g class="bd-band s{{ b.shade }}">
+        <rect class="bd-band s{{ b.shade }}" x="{{ b.x }}" y="{{ b.y1 }}" width="{{ b.w }}"
+              height="{{ b.h }}"{% if b.open_top %} stroke-dasharray="3 3"{% endif %}>
+          <title>{{ b.name }}{% if b.base_def %} · 하한 {{ b.base_def }}{% endif %}{% if b.top_def %} · 상한 {{ b.top_def }}{% endif %}</title>
+        </rect>
+        {% if b.h > 34 %}<text x="{{ b.x|add:17 }}" y="{{ b.y1|add:3 }}" transform="rotate(90 {{ b.x|add:17 }} {{ b.y1|add:3 }})">{{ b.short }}</text>{% endif %}
+      </g>
+    {% endfor %}
+    {% comment %}종 열{% endcomment %}
+    {% for c in L.cols %}
+      <g class="bd-sp{% if not c.in_atlas %} noatlas{% endif %}">
+        {% if c.bar %}
+          <rect class="bd-bar{% if c.bar.open_top or c.bar.open_base %} open{% endif %}"
+                x="{{ c.x|add:-4 }}" y="{{ c.bar.y1 }}" width="8" height="{{ c.bar.h }}"/>
+        {% endif %}
+        {% for p in c.points %}
+          <g class="bd-ptg" data-tip="{{ p.datum }} <i>{{ p.name }}</i> · <b>{{ p.age }} Ma</b>{% if p.age_differs %} (원문 {{ p.age_text }}){% endif %}{% if p.variant %} · {{ p.variant_label }}{% endif %}&#10;{{ p.ref_label }}{% if p.via_label %} — {{ p.via_label }} 경유{% endif %}{% if p.timescale %}&#10;시간척도 {{ p.timescale }}{% endif %}{% if p.zone %}&#10;{{ p.zone }}{% endif %}{% if p.code %} {{ p.code }}{% endif %}{% if p.chron %} · {{ p.chron }}{% endif %}&#10;신뢰도 {{ p.confidence }}{% if p.primary %} · 주요{% endif %}{% if p.mis_stated %}&#10;{{ p.mis_stated }}{% endif %}{% if p.note %}&#10;{{ p.note }}{% endif %}">
+            {% if p.y1 != p.y2 %}
+              <line class="bd-err {% if p.datum == 'FO' or p.datum == 'LO' %}{{ p.datum }}{% else %}X{% endif %}"
+                    x1="{{ c.x }}" x2="{{ c.x }}" y1="{{ p.y1 }}" y2="{{ p.y2 }}"/>
+            {% endif %}
+            {% if p.datum == 'FO' or p.datum == 'LO' %}
+              <circle class="bd-pt {{ p.datum }}{% if p.via %} via{% endif %}{% if p.confidence == 'low' %} low{% endif %}"
+                      cx="{{ c.x }}" cy="{{ p.cy }}" r="{% if p.primary %}4.5{% else %}3.5{% endif %}" stroke-width="1.5"/>
+            {% else %}
+              <rect class="bd-pt X{% if p.via %} via{% endif %}{% if p.confidence == 'low' %} low{% endif %}"
+                    x="{{ c.x|add:-3 }}" y="{{ p.cy|add:-3 }}" width="6" height="6" stroke-width="1.5"
+                    transform="rotate(45 {{ c.x }} {{ p.cy }})"/>
+            {% endif %}
+            <circle class="bd-hit" cx="{{ c.x }}" cy="{{ p.cy }}" r="8"/>
+          </g>
+        {% endfor %}
+        {% if c.binomial %}
+          <a href="{% url 'atlas' %}?q={{ c.binomial|urlencode }}">
+            <text x="{{ c.x|add:4 }}" y="{{ L.axis_bottom|add:10 }}"
+                  transform="rotate(60 {{ c.x|add:4 }} {{ L.axis_bottom|add:10 }})">{{ c.label }}{% if not c.in_atlas %} ⁽도감에 없다⁾{% endif %}</text>
+          </a>
+        {% else %}
+          <text x="{{ c.x|add:4 }}" y="{{ L.axis_bottom|add:10 }}"
+                transform="rotate(60 {{ c.x|add:4 }} {{ L.axis_bottom|add:10 }})">{{ c.label }}</text>
+        {% endif %}
+      </g>
+    {% endfor %}
+    {% comment %}MIS 눈금 — 축이 1.5 Ma 이하일 때만 (값이 아니라 눈금이다 · mis.py){% endcomment %}
+    {% if L.mis_ticks %}
+      <g class="bd-mis">
+        {% for t in L.mis_ticks %}
+          <line x1="{{ L.mis_x }}" x2="{{ L.mis_x|add:5 }}" y1="{{ t.y }}" y2="{{ t.y }}"/>
+          <text x="{{ L.mis_x|add:7 }}" y="{{ t.y }}" font-size="8" dominant-baseline="middle">{{ t.boundary }}</text>
+        {% endfor %}
+        <text x="{{ L.mis_x }}" y="{{ L.top|add:-12 }}" font-size="9">MIS (LR04)</text>
+      </g>
+      {% for t in L.terminations %}
+        <g class="bd-term"><text x="{{ L.mis_x|add:-2 }}" y="{{ t.y }}" text-anchor="end" font-size="8" dominant-baseline="middle">{{ t.name }}</text></g>
+      {% endfor %}
+    {% endif %}
+  </svg>
+  </div>
+  <div class="bdlegend">
+    <span><span class="sw" style="background:var(--bd-fo)"></span>FO 최초 산출</span>
+    <span><span class="sw" style="background:var(--bd-lo)"></span>LO 최종 산출</span>
+    <span><span class="sw" style="background:var(--bd-x);border-radius:0;transform:rotate(45deg)"></span>FCO · LCO · 극대</span>
+    <span><span class="sw via"></span>재인용(경유)</span>
+    <span class="dim">흐린 점 = 원문 미대조(Winter &amp; Iwai 2002 — 교정 연령으로 인용하지 말 것)</span>
+    <span class="dim">큰 점 = 원문이 주요 지시종·기준면으로 표시</span>
+    <span class="dim">세로선 = 원문 연령 폭 · 막대 = 가장 젊은 LO~가장 오래된 FO</span>
+  </div>
+  {% endwith %}
+
+  {% comment %} 표 — 그림의 점 전부. 참고문헌을 지우지 않는다(재인용은 경유 문헌까지) {% endcomment %}
+  <table class="bdtab">
+    <thead><tr><th>이름</th><th>기준면</th><th class="num">Ma</th><th>원문 표기</th>
+      <th>출처</th><th>모델·대</th><th>시간척도</th><th>신뢰도</th><th>비고</th></tr></thead>
+    <tbody>
+    {% for s in chart.species %}{% for p in s.points %}
+      <tr{% if p.confidence == 'low' %} class="low"{% endif %}>
+        <td><i>{{ p.name }}</i>{% if not s.in_atlas and s.binomial %} <span class="pnote">도감에 없다</span>{% endif %}</td>
+        <td>{{ p.datum }}{% if p.primary %} <b title="원문이 주요 지시종·기준면으로 표시">+</b>{% endif %}</td>
+        <td class="num">{{ p.age }}{% if p.uncertainty %} ± {{ p.uncertainty }}{% endif %}</td>
+        <td>{{ p.age_text }}{% if p.name_printed != p.name %} <span class="dim">{{ p.name_printed }}</span>{% endif %}</td>
+        <td>{{ p.ref_label }}{% if p.via_label %} <span class="dim">— {{ p.via_label }} 경유</span>{% endif %}</td>
+        <td>{{ p.variant_label }}{% if p.zone %} {{ p.zone }}{% endif %}{% if p.code %} <span class="dim">{{ p.code }}</span>{% endif %}{% if p.chron %} {{ p.chron }}{% endif %}</td>
+        <td>{{ p.timescale }}</td>
+        <td>{{ p.confidence }}</td>
+        <td>{% if p.mis_stated %}{{ p.mis_stated }} · {% endif %}{{ p.note }}</td>
+      </tr>
+    {% endfor %}{% endfor %}
+    </tbody>
+  </table>
+
+  <div class="bdreflist">
+    <b>참고문헌</b> — 이 그림의 점이 온 곳{% if chart.n_hidden_via %} (숨긴 재인용 겹침도 이 문헌들이다){% endif %}
+    <ol>
+    {% for r in chart.references %}
+      <li>{% if r.citation %}{{ r.citation }}{% else %}{{ r.label }}{% endif %}
+        {% if r.url %} <a href="{{ r.url }}" target="_blank" rel="noopener">{{ r.url }}</a>{% endif %}
+        {% if r.atlas %} · <a href="{% url 'atlas' %}?atlas={{ r.atlas }}">도판 →</a>{% endif %}
+        <span class="dim">— 점 {{ r.n }}{% if r.n_via %} · 경유 {{ r.n_via }}{% endif %}{% if r.note %} · {{ r.note }}{% endif %}</span></li>
+    {% endfor %}
+    </ol>
+  </div>
+{% endif %}
+
+<div class="bdtip" id="bdtip" hidden></div>
+<script>
+(function () {
+  // 그림은 서버가 다 그렸다 — 여기는 마우스를 올렸을 때의 설명 상자뿐이다
+  var tip = document.getElementById('bdtip');
+  function show(e) {
+    var t = e.currentTarget.getAttribute('data-tip') || '';
+    tip.innerHTML = t.split('\n').map(function (l, i) {
+      return i ? '<span class="dim">' + l + '</span>' : l; }).join('');
+    tip.hidden = false; move(e);
+  }
+  function move(e) {
+    var x = e.clientX + 14, y = e.clientY + 14;
+    if (x + 370 > window.innerWidth) x = e.clientX - 370;
+    if (y + tip.offsetHeight + 10 > window.innerHeight) y = e.clientY - tip.offsetHeight - 10;
+    tip.style.left = x + 'px'; tip.style.top = y + 'px';
+  }
+  document.querySelectorAll('.bdsvg .bd-ptg').forEach(function (g) {
+    g.addEventListener('mouseenter', show);
+    g.addEventListener('mousemove', move);
+    g.addEventListener('mouseleave', function () { tip.hidden = true; });
+  });
+})();
+</script>
+{% endblock %}

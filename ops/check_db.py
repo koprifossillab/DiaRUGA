@@ -49,10 +49,11 @@ sys.path.insert(0, str(APP / "pipeline"))
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "diarugaweb.settings")
 django.setup()
 
-from django.db.models import Count, Q                               # noqa: E402
+from django.db.models import Count, F, Q                               # noqa: E402
 
 import judge                                                        # noqa: E402
 from viewer.models import (Atlas, AtlasEntry, AtlasPlacement,
+                           Biodatum, Biozone,
                            Candidate, ClassDef, Detection, DiatomObject,
                            Frame,    # noqa: E402
                            Locality, Occurrence, ObjectReview, Reference,
@@ -863,8 +864,9 @@ def check_occurrence(slug=None):
     report("출현 기록의 source 가 도감·문헌 어디도 아니다", len(unknown), len(sources),
            "Atlas.key 나 Reference.key 오타다", sorted(unknown)[:5])
 
-    # 인용됐는데 출현 기록이 하나도 안 붙은 문헌 — 반입이 반쪽만 됐다는 뜻
-    unused = Reference.objects.filter(occurrences__isnull=True)
+    # 인용됐는데 출현 기록이 하나도 안 붙은 문헌 — 반입이 반쪽만 됐다는 뜻.
+    # 기준면(P28)의 출처는 출현 기록이 원래 없다 — 그쪽이 붙어 있으면 뺀다
+    unused = Reference.objects.filter(occurrences__isnull=True, biodatums__isnull=True)
     report("출현 기록이 하나도 없는 문헌", unused.count(), refs,
            "1단계 파서나 반입기가 그 문헌을 놓쳤다",
            [f"{r.key} ({r.authors} {r.year})" for r in unused[:5]])
@@ -872,6 +874,51 @@ def check_occurrence(slug=None):
     empty = Occurrence.objects.filter(binomial="").count()
     report("종명이 빈 출현 기록", empty, n,
            "1단계 파서가 이름을 못 뽑은 자리다 — 있으면 안 된다", [])
+
+
+def check_biodatum(slide):
+    """생층서 기준면이 들어와 있고 도감·문헌과 이어지는가 (P28).
+
+    `binomial`·`genus` 는 문자열이라(FK 가 아니다 — 도감 반입이 통째로
+    갈아치우고, 속 여섯이 뒤에 들어온다) 예외 없이 조용히 안 이어질 수 있다.
+    **도감에 없는 종·속은 오류가 아니라 숫자다** — 멸종 속 반입이 진행되면
+    줄어야 하는 값이고, 여기서 세어 두어야 그쪽이 어디까지 왔는지 보인다.
+
+    이 검사는 슬라이드와 무관하다.
+    """
+    if not Biodatum.objects.exists():
+        print("   기준면이 안 들어와 있다 — `import_biodatums.py` 로 넣는다 (건너뛴다)")
+        return
+    n = Biodatum.objects.count()
+    names = len(set(Biodatum.objects.values_list("name", flat=True)))
+    print(f"   기준면 {n} · 이름 {names} · 대 {Biozone.objects.count()} · "
+          f"재인용 {Biodatum.objects.exclude(via='').count()}")
+
+    ref_keys = set(Reference.objects.values_list("key", flat=True))
+    vias = set(Biodatum.objects.exclude(via="").values_list("via", flat=True))
+    report("경유 문헌이 Reference 에 없다", len(vias - ref_keys), len(vias),
+           "반입기가 경유 키를 안 만들었다", sorted(vias - ref_keys))
+    not_paper = Reference.objects.filter(biodatums__isnull=False).exclude(kind="paper").distinct()
+    report("기준면 출처가 논문이 아니다", not_paper.count(), len(ref_keys),
+           "Reference.kind 가 paper 여야 한다", [r.key for r in not_paper[:5]])
+
+    bad_age = Biodatum.objects.filter(Q(age__lt=F("age_min")) | Q(age__gt=F("age_max")))
+    report("연령이 하한·상한 밖이다", bad_age.count(), n,
+           "파서가 막는 자리다 — DB 에서 손으로 고쳤나", [str(b) for b in bad_age[:5]])
+
+    # 도감과의 대응 — 오류가 아니라 진척 숫자다
+    atlas_bin = set(AtlasEntry.objects.exclude(binomial="").values_list("binomial", flat=True))
+    atlas_gen = set(AtlasEntry.objects.exclude(genus="").values_list("genus", flat=True))
+    d_bin = set(Biodatum.objects.exclude(binomial="").values_list("binomial", flat=True))
+    d_gen = set(Biodatum.objects.values_list("genus", flat=True))
+    miss_b, miss_g = sorted(d_bin - atlas_bin), sorted(d_gen - atlas_gen)
+    print(f"   도감에 없는 기준종 {len(miss_b)}/{len(d_bin)} · 없는 속 {len(miss_g)}/{len(d_gen)}"
+          f"{'  ' + ' '.join(miss_g) if miss_g else ''}")
+    if VERBOSE:
+        for b in miss_b[:10]:
+            print(f"       {b}")
+    informal = sorted(set(Biodatum.objects.filter(binomial="").values_list("name", flat=True)))
+    print(f"   이명법이 없는 비공식 이름 {len(informal)}: {', '.join(informal)}")
 
 
 def main():
@@ -910,6 +957,8 @@ def main():
     check_atlas(args.slide)
     print("\n=== 12. 출현 기록 (P20) ===")
     check_occurrence(args.slide)
+    print("\n=== 13. 생층서 기준면 (P28) ===")
+    check_biodatum(args.slide)
 
     print()
     if problems:

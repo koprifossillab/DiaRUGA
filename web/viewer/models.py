@@ -1515,6 +1515,9 @@ class Reference(models.Model):
     title = models.TextField(blank=True, default="", db_default="")
     journal = models.CharField(max_length=200, blank=True, default="", db_default="")
     note = models.TextField(blank=True, default="", db_default="")
+    # DOI·공개 주소 (P28 — 기준면 출처 열넷이 처음 채운다). 도감이 인용한
+    # 옛 문헌은 비어 있다
+    url = models.CharField(max_length=200, blank=True, default="", db_default="")
 
     class Meta:
         ordering = ["-year", "authors"]
@@ -1601,6 +1604,136 @@ class TaxonName(models.Model):
 
     def __str__(self):
         return f"{self.binomial} ({self.status})"
+
+
+# ─────────────────────────────────────────────────── 생층서 기준면 (P28)
+
+# 기준면 어휘. `tools/parse_biodatums.py` 가 같은 목록으로 막는다 —
+# 여기 없는 것이 DB 에 들어오면 화면이 그 사건을 못 그린다
+BIODATUM_KINDS = [
+    ("FO", "최초 산출"), ("LO", "최종 산출"),
+    ("FCO", "흔해지는 층준"), ("LCO", "드물어지는 층준"),
+    ("LCO(LAAD)", "드물어지는 층준 (Cody)"),
+    ("AC1", "극대 1"), ("AC2", "극대 2"), ("AC+LCO", "극대 · 드물어짐"),
+]
+BIODATUM_CONFIDENCE = [
+    ("high", "원문 대조"), ("recite", "재인용 · 원문 대조"),
+    ("mid", "재인용"), ("low", "웹 요약 1회 · 원문 미대조"),
+]
+
+
+class Biodatum(models.Model):
+    """생층서 기준면 하나 — 종 하나의 FO/LO 가 어느 문헌에서 몇 Ma 인가 (P28).
+
+    **원본은 NAS 다** — `Diadiction/datums/diatom_datums_1.json`(사람이 논문
+    열넷을 원문과 대조해 만든 표, 2026-09-18). `tools/parse_biodatums.py` 가
+    `atlas/biodatum/datums.json` 으로 고르고 `ops/import_biodatums.py` 가
+    넣는다. **사본이라 통째로 지우고 다시 만들어도 안전하다** —
+    `Atlas`·`TaxonName` 과 같은 자리.
+
+    **`(reference, seq)` 가 열쇠다.** `(출처, 종, 기준면)` 은 열쇠가 아니다
+    — Cody (2008) 는 한 사건에 두 모델(`variant` = average/total)을, Censarek
+    (2002) 는 남북 대 구분 둘(SSODZ/NSODZ)을 주고, Warnock (2025) 이 재인용한
+    Cody 값 48행이 원문 직접 파싱 행과 나란히 있다(`via`). 그 셋을 칸으로
+    세우지 않으면 같은 열쇠가 209건 겹친다.
+
+    **`AtlasEntry` 에 FK 를 매달지 않는다** — `Occurrence`·`TaxonName` 과
+    같은 이유(도감 반입이 통째로 갈아치운다)에 하나가 더 있다: 이 표의 속
+    여섯이 아직 도감에 없고 뒤에 들어온다. `binomial`(두 낱말 · 도감과 같은
+    규칙)·`genus` 문자열로 느슨하게 잇는다 — 속이 나중에 와도 저절로 이어진다.
+
+    **`name` 은 변종까지 든다.** `A. ingens` 와 `A. ingens var. ovalis` 는
+    다른 사건이고 연령이 다르다(표의 용어 시트). 맞추는 열쇠 `binomial` 만
+    두 낱말이다. 비공식 이름(`Nitzschia 17 Schrader 1976`)은 `binomial` 이
+    빈 칸이다 — 사건은 유효하지만 맞출 종이 없다.
+
+    **`reference` 는 FK 다.** `Reference` 는 key 로 upsert 라(지우지 않는다)
+    CASCADE 가 안전하다 — `Occurrence.reference` 와 같은 판단.
+    """
+
+    reference = models.ForeignKey(Reference, on_delete=models.CASCADE,
+                                  related_name="biodatums")
+    # 재인용 경유 문헌의 `Reference.key`. 원문을 직접 본 행은 빈 칸. **화면이
+    # "Cody 2008 (Warnock 2025 경유)" 로 말해야 하고, 원문 행과 값이 같은
+    # 42행을 그림에서 두 번 찍으면 안 된다**
+    via = models.CharField(max_length=40, blank=True, default="", db_default="")
+    # 원본 표에서 그 출처의 몇째 행인가 — 반입의 열쇠
+    seq = models.PositiveIntegerField()
+    # 정규화 표시 이름 — 종소명 소문자 · 변종/`s.l.`/형태 표시 유지
+    name = models.CharField(max_length=120)
+    # 원문 표기 그대로 (`Rouxia Antarctica` · `Th. kolbei`). 안 고친다
+    name_printed = models.CharField(max_length=120)
+    # 두 낱말. `AtlasEntry.binomial` 과 맞추는 열쇠. 비공식 이름은 빈 칸
+    binomial = models.CharField(max_length=120, blank=True, default="", db_default="")
+    genus = models.CharField(max_length=64)
+    # `var. ovalis` · `s.l.` · `(plicate)` · `heteropola` — 표시용
+    infra = models.CharField(max_length=64, blank=True, default="", db_default="")
+    datum = models.CharField(max_length=12, choices=BIODATUM_KINDS)
+    # `average`·`total`(Cody 두 모델) · `SSODZ`·`NSODZ`(Censarek) ·
+    # `composite`(Crampton) · 빈 칸
+    variant = models.CharField(max_length=24, blank=True, default="", db_default="")
+    # Ma. 단일값이면 셋이 같다. `age_min ≤ age ≤ age_max` 를 파서가 지킨다
+    age = models.FloatField()
+    age_min = models.FloatField()
+    age_max = models.FloatField()
+    # ± Ma. 원문이 준 것만 — 없으면 null 이다(0 으로 채우면 그것이 자료가 된다)
+    uncertainty = models.FloatField(null=True, blank=True)
+    # 원문 연령 표기 (`∼ 13–13.37` · `6430 ka` · `0.121 ± 0.003`)
+    age_text = models.CharField(max_length=40, blank=True, default="", db_default="")
+    zone = models.CharField(max_length=120, blank=True, default="", db_default="")
+    # 대 코드 (`NPD 12` · `#D 120` · `SSODZ`)
+    code = models.CharField(max_length=24, blank=True, default="", db_default="")
+    chron = models.CharField(max_length=24, blank=True, default="", db_default="")
+    scheme = models.CharField(max_length=80, blank=True, default="", db_default="")
+    # **연령은 시간척도에 종속된다.** 같은 기준면도 척도에 따라 수십만 년
+    # 다르다 — 화면이 값 옆에 이것을 함께 낸다
+    timescale = models.CharField(max_length=80, blank=True, default="", db_default="")
+    region = models.CharField(max_length=120, blank=True, default="", db_default="")
+    confidence = models.CharField(max_length=8, choices=BIODATUM_CONFIDENCE)
+    # 주요 지시종(+) · 주요 기준면(#) — Cody·Yanagisawa 가 표시한 것
+    primary = models.BooleanField(default=False, db_default=False)
+    # 원문이 직접 말한 MIS (2행뿐). 연령→LR04 환산은 저장하지 않는다 —
+    # 시간척도가 다른 자로 잰 것이라 표 스스로 "참고용" 이라 했다
+    mis_stated = models.CharField(max_length=80, blank=True, default="", db_default="")
+    # 나머지 — 모델 기록 수·misfit·환산 근거·원문 오식
+    note = models.TextField(blank=True, default="", db_default="")
+
+    class Meta:
+        ordering = ["genus", "binomial", "name", "datum", "reference_id", "seq"]
+        constraints = [models.UniqueConstraint(
+            fields=["reference", "seq"], name="biodatum_unique_seq")]
+        indexes = [models.Index(fields=["binomial"]),
+                   models.Index(fields=["genus"])]
+
+    def __str__(self):
+        return f"{self.datum} {self.name} {self.age} Ma ({self.reference_id})"
+
+
+class Biozone(models.Model):
+    """생층서대 하나 — 상·하한 연령과 그것을 정의한 기준면 (P28). 그림의 바탕띠.
+
+    `scheme` 은 `warnock2025`(Winter 2012 대 구분) · `censarek-ssodz` ·
+    `censarek-nsodz` · `npd`. **Censarek·NPD 는 하한만 있다** — 상한은 위
+    대의 하한이다. `null` 을 0 으로 채우지 않는다.
+    `Biodatum` 과 같이 통째로 갈아치운다.
+    """
+
+    scheme = models.CharField(max_length=24)
+    seq = models.PositiveIntegerField()
+    name = models.CharField(max_length=120)
+    top_ma = models.FloatField(null=True, blank=True)
+    base_ma = models.FloatField(null=True, blank=True)
+    top_def = models.CharField(max_length=120, blank=True, default="", db_default="")
+    base_def = models.CharField(max_length=120, blank=True, default="", db_default="")
+    author = models.CharField(max_length=200, blank=True, default="", db_default="")
+
+    class Meta:
+        ordering = ["scheme", "seq"]
+        constraints = [models.UniqueConstraint(
+            fields=["scheme", "seq"], name="biozone_unique_seq")]
+
+    def __str__(self):
+        return f"{self.scheme} {self.name}"
 
 
 # --- 코어 자료 (P17) --------------------------------------------------------

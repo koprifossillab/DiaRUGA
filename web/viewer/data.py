@@ -5331,7 +5331,13 @@ def atlas_genera(atlas_key: str = "", area: str = "") -> list[dict]:
     from django.db.models import Count
     from .models import AtlasEntry
     qs = _atlas_scope(AtlasEntry.objects.exclude(genus=""), atlas_key, area)
-    return list(qs.values("genus").annotate(n=Count("id")).order_by("genus"))
+    rows = list(qs.values("genus").annotate(n=Count("id")).order_by("genus"))
+    # 기준면이 있는 속은 그렇게 표시한다 (P28 §4.3) — 도감의 속과 기준면의
+    # 속은 문자열로 이어져 있어 여기서 맞춘다. 한 번만 묻는다
+    counts = biodatum_counts_by_genus()
+    for r in rows:
+        r["nd"] = counts.get(r["genus"], 0)
+    return rows
 
 
 def _placement_dict(p) -> dict:
@@ -5428,6 +5434,182 @@ def _taxon_names_by_binomial(binomials) -> dict[str, dict]:
             for t in qs}
 
 
+def _ref_label(ref) -> str:
+    return f"{ref.authors} ({ref.year})"
+
+
+def _dedupe_via(rows: list) -> list:
+    """재인용 행 가운데 **원문 직접 행과 값이 같은 것**을 뺀다 (P28 §1.2).
+
+    Warnock (2025) Table 2 가 Cody (2008) 값을 옮긴 48행 중 41행은 (출처 ·
+    이름 · 기준면 · 모델 · 연령) 이 원문 행과 똑같다 — 그림에 두 번 찍으면
+    안 된다. **값이 다른 일곱(재인용 오차 — 그중 LO H. karstenii 는 연령은
+    같지만 모델이 다르다)과 원문 행이 없는 재인용(Crampton 2016 류)은
+    남는다** — 그것이 참고문헌을 지우지 않는 규칙이다.
+    """
+    direct = {(r.reference_id, r.name, r.datum, r.variant, r.age)
+              for r in rows if not r.via}
+    return [r for r in rows
+            if not r.via or (r.reference_id, r.name, r.datum, r.variant, r.age) not in direct]
+
+
+_VARIANT_LABEL = {"average": "평균범위", "total": "전범위", "composite": "복합",
+                  "SSODZ": "SSODZ", "NSODZ": "NSODZ"}
+
+
+def _biodatum_dict(b, refs: dict) -> dict:
+    """`b.reference` 는 미리 떠 왔고(`select_related`), 경유 문헌은 `refs`
+    (key → Reference) 에서 짚는다. **`Reference` 의 열쇠는 `key` 이고 pk 가
+    아니다** — 질의는 `reference__key` 로 간다."""
+    ref = b.reference
+    via = refs.get(b.via) if b.via else None
+    return {
+        "name": b.name, "binomial": b.binomial, "genus": b.genus, "infra": b.infra,
+        "name_printed": b.name_printed,
+        "datum": b.datum, "variant": b.variant,
+        "variant_label": _VARIANT_LABEL.get(b.variant, b.variant),
+        "age": b.age, "age_min": b.age_min, "age_max": b.age_max,
+        "uncertainty": b.uncertainty, "age_text": b.age_text,
+        # 원문 표기가 값과 다른 모양이면(`∼ 13–13.37` · `6430 ka`) 화면이 함께 낸다
+        "age_differs": b.age_text not in ("", str(b.age), f"{b.age:g}"),
+        "ref": ref.key, "ref_label": _ref_label(ref), "ref_url": ref.url,
+        "via": b.via, "via_label": _ref_label(via) if via else "",
+        "confidence": b.confidence, "primary": b.primary,
+        "zone": b.zone, "code": b.code, "chron": b.chron,
+        "timescale": b.timescale, "region": b.region, "scheme": b.scheme,
+        "mis_stated": b.mis_stated, "note": b.note,
+    }
+
+
+def _biodatums_by_binomial(binomials) -> dict[str, list[dict]]:
+    """이명법 집합에 대한 생층서 기준면 — 카드의 「기준면」 줄 (P28 §4.1).
+
+    **한 번에 묻는다** — `_occurrences_by_binomial()` 과 같은 자리. 정확
+    일치다(168) — `icontains` 면 `Rouxia` 가 `Rouxia antarctica` 것까지 끌어
+    온다. `var.` 행은 종 카드에 걸리되 `infra` 를 달고 나온다. Cody 의 두
+    모델 중 카드에는 평균만 낸다(전범위는 그림에서 고른다) — 줄이 두 배로
+    길어지고 같은 사건이 두 번 적히기 때문이다.
+    """
+    from .models import Biodatum, Reference
+    binomials = {b for b in binomials if b}
+    if not binomials:
+        return {}
+    rows = list(Biodatum.objects.filter(binomial__in=binomials).exclude(variant="total")
+                .select_related("reference").order_by("name", "datum", "age"))
+    if not rows:
+        return {}
+    refs = {r.key: r for r in Reference.objects.filter(key__in={r.via for r in rows if r.via})}
+    out: dict[str, list[dict]] = {}
+    for b in _dedupe_via(rows):
+        out.setdefault(b.binomial, []).append(_biodatum_dict(b, refs))
+    return out
+
+
+def biodatum_genera(areas=()) -> list[dict]:
+    """기준면이 있는 속 — 이름순, 전부 (`atlas_genera` 와 같은 모양).
+    `in_atlas` 가 거짓이면 도감에 아직 없는 속이다 — 화면이 그렇게 말한다."""
+    from django.db.models import Count
+    from . import biodatum as bd
+    from .models import AtlasEntry, Biodatum
+    qs = Biodatum.objects.all()
+    if areas:
+        qs = qs.filter(reference__key__in=bd.area_keys(areas))
+    rows = list(qs.values("genus").annotate(n=Count("id")).order_by("genus"))
+    have = set(AtlasEntry.objects.filter(genus__in=[r["genus"] for r in rows])
+               .values_list("genus", flat=True))
+    for r in rows:
+        r["in_atlas"] = r["genus"] in have
+    return rows
+
+
+def biodatum_counts_by_genus() -> dict[str, int]:
+    """속 → 기준면 수. 도감의 속 목록이 `· 기준면 N` 을 달 때 쓴다 (P28 §4.3)."""
+    from django.db.models import Count
+    from .models import Biodatum
+    return {r["genus"]: r["n"] for r in
+            Biodatum.objects.values("genus").annotate(n=Count("id"))}
+
+
+def biodatum_chart(areas=("antarctic", "npacific"), genus: str = "", q: str = "",
+                   refs=(), include_via: bool = False, model: str = "average") -> dict:
+    """범위 그림에 그릴 것 — 종 열 · 점 · 대 띠 · 문헌 (P28 §4.2).
+
+    **무엇을 그릴지는 여기서 정하고 자리는 `biodatum.layout` 이 잡는다.**
+    권역이 비면 아무것도 안 그린다(거르개가 죽은 것을 조용히 숨기지 않는다).
+    `include_via` 가 꺼져 있으면 원문 행과 값이 같은 재인용만 뺀다 —
+    값이 다른 재인용과 원문이 없는 재인용은 늘 남는다(`_dedupe_via`).
+    """
+    from . import biodatum as bd
+    from .models import AtlasEntry, Biodatum, Biozone, Reference
+    areas = [a for a in areas if a in bd.AREA_LABEL]
+    keys = bd.area_keys(areas)
+    if refs:
+        keys &= set(refs)
+    qs = Biodatum.objects.filter(reference__key__in=keys).select_related("reference")
+    if genus:
+        qs = qs.filter(genus__iexact=genus)
+    if q:
+        qs = qs.filter(name__icontains=q)
+    if model in ("average", "total"):
+        qs = qs.exclude(variant="total" if model == "average" else "average")
+    rows = list(qs.order_by("genus", "name", "datum", "age"))
+    if not include_via:
+        rows = _dedupe_via(rows)
+    ref_keys = {r.reference.key for r in rows} | {r.via for r in rows if r.via}
+    ref_objs = {r.key: r for r in Reference.objects.filter(key__in=ref_keys)}
+
+    in_atlas = set(AtlasEntry.objects.filter(
+        binomial__in={r.binomial for r in rows if r.binomial}).values_list("binomial", flat=True))
+    by_name: dict[str, dict] = {}
+    for r in rows:
+        s = by_name.setdefault(r.name, {
+            "name": r.name, "binomial": r.binomial, "genus": r.genus, "infra": r.infra,
+            "in_atlas": bool(r.binomial) and r.binomial in in_atlas, "points": []})
+        s["points"].append(_biodatum_dict(r, ref_objs))
+    species = list(by_name.values())
+
+    # 오래된 FO 부터 — 범위도가 읽히는 순서. FO 가 없으면 가장 오래된 점
+    def oldest(s):
+        fo = [p["age_max"] for p in s["points"] if p["datum"] == "FO"]
+        return -(max(fo) if fo else max(p["age_max"] for p in s["points"]))
+    species.sort(key=lambda s: (oldest(s), s["name"]))
+
+    schemes = {sc for sc, a in bd.AREA_OF_SCHEME.items() if a in areas}
+    zones = list(Biozone.objects.filter(scheme__in=schemes).values(
+        "scheme", "seq", "name", "top_ma", "base_ma", "top_def", "base_def", "author"))
+    # 그 권역의 체계는 자료가 좁아도 전부 낸다 — 띠는 자료가 아니라 바탕이다
+    zones.sort(key=lambda z: (list(bd.AREA_OF_SCHEME).index(z["scheme"]), z["seq"]))
+
+    used = sorted(ref_keys, key=lambda k: (-ref_objs[k].year, k))
+    references = [{
+        "key": k, "label": _ref_label(ref_objs[k]), "citation": ref_objs[k].title,
+        "url": ref_objs[k].url, "note": ref_objs[k].note,
+        "atlas": bd.ATLAS_OF_REF.get(k, ""), "area": bd.area_of_ref(k),
+        "n": sum(1 for r in rows if r.reference.key == k),
+        "n_via": sum(1 for r in rows if r.via == k),
+    } for k in used]
+    return {"species": species, "zones": zones, "references": references,
+            "n_points": len(rows), "n_species": len(species),
+            "n_hidden_via": 0 if include_via else _n_hidden_via(qs)}
+
+
+def _n_hidden_via(qs) -> int:
+    """거르개 안에서 뺀 재인용 수 — 화면이 "재인용 N건 숨김" 이라 말한다."""
+    rows = list(qs)
+    return len(rows) - len(_dedupe_via(rows))
+
+
+def biodatum_references() -> list[dict]:
+    """기준면 출처 전부 — 거르개의 출처 체크박스."""
+    from . import biodatum as bd
+    from django.db.models import Count
+    from .models import Reference
+    qs = (Reference.objects.filter(biodatums__isnull=False)
+          .annotate(n=Count("biodatums")).order_by("-year", "key"))
+    return [{"key": r.key, "label": _ref_label(r), "n": r.n,
+             "area": bd.area_of_ref(r.key)} for r in qs]
+
+
 def _synonym_binomials(q: str) -> set[str]:
     """검색어가 어느 `TaxonName.valid_name`(현재 통용 학명)과 맞으면 그
     옛 이름(binomial)들을 낸다 (P24).
@@ -5484,6 +5666,7 @@ def atlas_search(q: str = "", atlas_key: str = "", genus: str = "",
     page = list(qs[offset:offset + ATLAS_PER_PAGE])
     occs = _occurrences_by_binomial(e.binomial for e in page)
     taxa = _taxon_names_by_binomial(e.binomial for e in page)
+    datums = _biodatums_by_binomial(e.binomial for e in page)
     rows = []
     for e in page:
         rows.append({
@@ -5499,6 +5682,8 @@ def atlas_search(q: str = "", atlas_key: str = "", genus: str = "",
             "extra": e.extra or {},
             "places": [_placement_dict(p) for p in e.placements.all()],
             "occurrences": occs.get(e.binomial, []),
+            # 생층서 기준면 (P28) — 없으면 줄을 안 낸다(출현과 같은 원칙)
+            "biodatums": datums.get(e.binomial, []),
             # 이명이면 현재 통용 학명을 함께 낸다 (P24). 유효/미확인이면
             # 화면이 낼 것이 없으니 안 담는다 — `occurrences` 가 없을 때
             # "출현" 줄을 안 내는 것과 같은 원칙

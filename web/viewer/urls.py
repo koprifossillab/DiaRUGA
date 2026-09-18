@@ -91,6 +91,9 @@ urlpatterns = [
     # 짚으므로(`Tafel 26 (Band1 PDF p.68/69)`) 색인에서 이 화면으로 가는 길이
     # 계산 없이 선다 — 번호를 옮겨 적는 자리를 안 만든다.
     path("atlas/", views.atlas_index, name="atlas"),
+    # 생층서 기준면 범위 그림 (P28). 도감의 형제 — 카드의 「기준면」 줄이
+    # 여기로 온다. `atlas/<도감>/<권>/` 보다 앞에 둔다
+    path("atlas/datums/", views.biodatum_chart, name="biodatum"),
     path("atlas/<slug:atlas>/<slug:vol>/", views.atlas_volume,
          name="atlas_volume"),
     path("atlas/<slug:atlas>/<slug:vol>/<int:n>/", views.atlas_page,

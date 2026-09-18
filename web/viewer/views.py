@@ -18,8 +18,8 @@ from django.urls import reverse
 from django.utils import timezone
 from django.views.decorators.http import require_POST
 
-from . import (antarctica, atlas as atlas_mod, data, korea, ross,
-               manage_data, offline, outcrop, regroup, thresholds as th)
+from . import (antarctica, atlas as atlas_mod, biodatum as bd_mod, data, korea,
+               ross, manage_data, offline, outcrop, regroup, thresholds as th)
 from .models import (Candidate, Detection, DiatomObject,  # noqa: E501
                      Image as ImageModel,
                      Locality,
@@ -1704,6 +1704,54 @@ def _atlas_area_groups(plates, area=""):
             "papers": [a for a in mine if a["code"] not in _BOOK_ATLAS_CODES],
         })
     return out
+
+
+def biodatum_chart(request):
+    """생층서 기준면 범위 그림 (P28 §4.2).
+
+    속 하나(또는 검색어)를 고르면 그 속의 종들이 세로 시간축(Ma · **아래가
+    오래된 쪽**) 위에 FO→LO 막대로 놓이고, 사건마다 문헌의 점이 따로 찍힌다
+    — 같은 사건을 여러 문헌이 다르게 본 것이 점의 흩어짐으로 보인다.
+
+    **권역은 체크박스다** — 태평양 자료를 남극과 한 축에 놓고 볼 때가 있다.
+    둘 다 끄면 아무것도 안 그리고 화면이 그렇게 말한다. 속·검색어 없이는
+    결과를 안 낸다(도감 화면과 같은 규칙 · 196) — 170 이름을 한 번에 그리면
+    가로 4 m 다.
+    """
+    g = request.GET
+    areas = [a for a in g.getlist("area") if a in bd_mod.AREA_LABEL]
+    # 폼이 보낸 요청(`f=1`)이 아니면 — 처음 열었거나 카드의 링크로 왔거나 —
+    # 둘 다 켠다. 체크박스는 다 끄면 아무것도 안 보내므로 **사람이 둘 다 끈
+    # 것**은 `f` 로만 가려진다
+    if g.get("f") != "1":
+        areas = [a for a, _ in bd_mod.AREAS]
+    genus = (g.get("genus") or "").strip()
+    q = (g.get("q") or "").strip()
+    refs = [r for r in g.getlist("ref") if r in bd_mod.AREA_OF_REF]
+    include_via = g.get("via") == "1"
+    model = g.get("model") or "average"
+    if model not in dict(bd_mod.MODELS):
+        model = "average"
+    searched = bool(genus or q)
+
+    chart = None
+    if searched and areas:
+        got = data.biodatum_chart(areas=areas, genus=genus, q=q, refs=refs,
+                                  include_via=include_via, model=model)
+        got["layout"] = bd_mod.layout(got["species"], got["zones"])
+        chart = got
+    references = data.biodatum_references()
+    ctx = {
+        "areas": bd_mod.AREAS, "area_on": areas, "genus": genus, "q": q,
+        "refs_on": refs, "include_via": include_via, "model": model,
+        "models": bd_mod.MODELS,
+        "genera": data.biodatum_genera(areas),
+        "references": references,
+        "searched": searched, "chart": chart,
+        # 반입 전이면 거르개도 그림도 빈다 — 화면이 그 사실을 말한다
+        "no_data": not references,
+    }
+    return render(request, "viewer/biodatum.html", ctx)
 
 
 def atlas_suggest(request):
