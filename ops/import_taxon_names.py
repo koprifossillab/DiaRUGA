@@ -6,7 +6,7 @@
     dbrun.sh  import_taxon_names.py --dry-run
 
 1단계(`tools/parse_taxon_names.py`)가 NAS 두 벌(`worms_master_20260814.tsv`·
-`paper_plates_156_result.json`)을 `taxon_names.json` 으로 뽑아 저장소에
+`names/algaebase/paper_plates_filled_20260831.json` — 09-18 까지는 `temp/filled.json`)을 `taxon_names.json` 으로 뽑아 저장소에
 넣어 두었다. **이쪽은 NAS 를 안 본다** — 그래서 컨테이너 안에서 돌 수 있다
 (`ops/import_atlas.py` 와 같은 사정). JSON 은 `COPY . .` 를 타고 이미지의
 `/app/taxon_names.json` 에 함께 실린다.

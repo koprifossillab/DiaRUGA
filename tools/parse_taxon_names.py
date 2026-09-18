@@ -9,11 +9,13 @@
   쓴다. 그 칼럼 값이 상태 문구 여섯 개(`그대로 유효`·`AlgaeBase 에
   없다`·`확인 필요`·`아직 안 찾았다`·`안 적혀 있다`·`미확인`) 중
   하나가 아니면, **그 값 자체가 새 학명이다**(이명 → 갈아탄다)
-- `Diadiction/temp/filled.json` — 논문 도판(P22·P23) 캡션 학명 156종을
-  **사람이 철자를 먼저 교정하고** AlgaeBase 상세 페이지의 `Status of
-  Name` 을 읽어 채운 표(2026-08-31, `algaebase_todo_paper_plates_
-  ANSWERED.md` 와 같은 자료 · `공부노트_논문도판156종.md` 가 읽는 법과
-  결과를 정리해 뒀다). 열쇠는 **교정 전** 표기(`row[0]`) 그대로 쓴다 —
+- `Diadiction/names/algaebase/paper_plates_filled_20260831.json` — 논문
+  도판(P22·P23) 캡션 학명 156종을 **사람이 철자를 먼저 교정하고**
+  AlgaeBase 상세 페이지의 `Status of Name` 을 읽어 채운 표(2026-08-31,
+  `paper_plates_answered_20260831.md` 와 같은 자료 · `paper_plates_notes_
+  20260831.md` 가 읽는 법과 결과를 정리해 뒀다). **09-18 까지 `temp/filled.json`
+  이었다** — `temp/` 는 README 가 "언제든 비워도 됨" 이라 못 박은 자리라
+  옮겼다(이름은 ASCII · 내용은 md5 같음). 열쇠는 **교정 전** 표기(`row[0]`) 그대로 쓴다 —
   `AtlasEntry.binomial` 도 캡션 원문을 그대로 정규화한 것이라 맞아야
   한다. `row[2]` 가 굵게 적힌 새 이름이면(철자 교정만이든 진짜 이명이든)
   `synonym` 으로 통일한다 — 검색 기능이 보기엔 "조회한 표기로는 안
@@ -58,7 +60,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 from harvest_worms import DIADICTION, binomial  # noqa: E402
 
 WORMS_MASTER = DIADICTION / "names/worms/worms_master_20260814.tsv"
-PAPER_FILLED = DIADICTION / "temp/filled.json"
+PAPER_FILLED = DIADICTION / "names/algaebase/paper_plates_filled_20260831.json"
 PAPER_FILLED_2002 = DIADICTION / "names/algaebase/antarctic2002_filled_20260918.json"
 
 # **판정을 그대로 반영하지 않는 이름** — 조회한 사람이 정리 노트에서 짚었다.
