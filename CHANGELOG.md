@@ -23,7 +23,7 @@
 
 ## 뷰어
 
-### 다음 판 (아직 안 냈다 · 마이그레이션 `0045` · 더하기만)
+### `v0.30.0` — 09-18 (마이그레이션 `0045` · 더하기만 — 파이프라인은 안 굽는다)
 
 **생층서 기준면(FO·LO) 층 — 논문 열넷의 연령 728행을 도감 종·속에 붙인다**
 ([P28](devlog/20260918_P28_biodatum-layer.md) ·
@@ -40,6 +40,13 @@
 - `check_db` 13번 — 경유 문헌·출처 종류·연령 순서 · 도감에 없는 기준종·속을
   센다(63 · 6 — 멸종 속 반입이 진행되면 줄어야 하는 수)
 - `viewer/mis.py` — LR04 MIS 경계표(눈금용 · 값으로 안 적는다)
+- **기준면 85 이름의 AlgaeBase 답을 `taxon_names.json` 에 얹었다**(2,031 →
+  2,108 · 208 저녁) — `tools/parse_taxon_names.py` 가 마크다운 표
+  (`names/algaebase/biodatum_answered_20260918.md`)를 셋째 소스로 읽는다.
+  *Actinocyclus maccollumii* 는 오연결이라 `unassessed` 로 잡아 뒀다.
+  `/atlas/datums/` 표에 「이명」 칩·「AlgaeBase 에 없다」. **배포 뒤
+  `import_taxon_names.py`** (기본 `--src`) — 이 이미지가 2,108 을 처음 싣는다
+  (207 의 2,031 도 `v0.29.3` 이미지엔 없었다)
 
 ### `v0.29.3` — 09-18 (마이그레이션 없음)
 

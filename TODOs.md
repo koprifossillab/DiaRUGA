@@ -19,12 +19,14 @@ DB 설계는 [devlog/20260730_P02_db-schema.md](devlog/20260730_P02_db-schema.md
 
 ## 생층서 기준면 (P28 · 208 · 2026-09-18)
 
-- [ ] **판을 내고 반입한다** — `0045` 가 실린 판 → 배포 → `dbrun.sh
-      import_biodatums.py` → `check_db` 13번 (HANDOFF 3.8)
-- [ ] **AlgaeBase 재확인 85 이름** — `Diadiction/datums/algaebase_recheck_
-      20260918.md`. 사용자가 확인하면 `names/` 표에 적고 `import_taxon_names.py`.
-      `S. tetraoestruppii var.` ↔ `T. tetraoestrupii reimeri` 가 같은 사건인지도
-      여기서 가른다(합치지 않았다)
+- [ ] **판을 내고 반입한다** — `v0.30.0`(`0045`) → 배포 → `dbrun.sh
+      import_biodatums.py` · `import_taxon_names.py` → `check_db` 13번 (HANDOFF 3.8)
+- [x] **AlgaeBase 재확인 85 이름** — 09-18 저녁에 답이 와서 `taxon_names.json`
+      에 얹었다(2,108 · 208). 남은 것 둘: *Rouxia antarctica* 의 계급(종인가
+      *R. peragalloi* 의 변종인가 — 원기재로) · `S. tetraoestruppii var.` 의
+      변종명(Cody 원문에서 — *reimeri* 이면 #55·#81 과 한 사건). 그리고
+      *Actinocyclus maccollumii* 는 AlgaeBase 판정이 오연결이라 잡아 뒀다 —
+      Cody 2008 원문의 속을 볼 것
 - [ ] **오프라인 꾸러미 v1.3.0** — 카드의 「기준면」 줄을 `data/biodatum.js` 로
       (P28 §5). 범위 그림은 그다음
 - [ ] 멸종 속 반입이 끝나면 `check_db` 13번의 "도감에 없는 기준종 63 · 속 6"

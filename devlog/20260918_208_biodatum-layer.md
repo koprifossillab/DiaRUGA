@@ -16,7 +16,7 @@
 |---|---|---|---|
 | 1 | `temp/` 는 임시 자리 | 알아서 옮겨라 | `Diadiction/datums/` 로 옮겼다(최종판 셋 + report · 앞 판은 `_old/`) · README 를 두었다 |
 | 2 | 종소명 대문자 넷 합치기 | 합쳐도 된다 | `MERGE_OK` 넷에 못 박았다 — 새 합침이 생기면 파서가 멈춘다 |
-| 3 | `S. tetraoestruppii var.` ↔ `T. tetraoestrupii reimeri` | **함부로 합치지 마라.** 반입 뒤 AlgaeBase 에서 전부 다시 확인한다 — 목록을 만들어 달라. 도판 논문에서 이미 확인한 종은 빼라 | 합치지 않았다. `--recheck` 가 `taxon_names.json` 에 판정이 없는 이름을 낸다 → **85 이름** · `Diadiction/datums/algaebase_recheck_20260918.md` |
+| 3 | `S. tetraoestruppii var.` ↔ `T. tetraoestrupii reimeri` | **함부로 합치지 마라.** 반입 뒤 AlgaeBase 에서 전부 다시 확인한다 — 목록을 만들어 달라. 도판 논문에서 이미 확인한 종은 빼라 | 합치지 않았다. `--recheck` 가 `taxon_names.json` 에 판정이 없는 이름을 낸다 → **85 이름** · 같은 날 저녁에 답이 와서 반입했다(아래 · `names/algaebase/biodatum_*_20260918.md`) |
 | 4 | 재인용 겹침 42행 | 넣고 숨기되 **참고문헌은 남겨라** | DB 에 다 넣고 그림은 기본 숨김 · 경유 문헌이 점·표·참고문헌 절에 남는다 · 「재인용 겹침도」 체크로 다 그린다 |
 | 5·6 | Winter & Iwai · 권역 | (답 없음 → 계획대로) | 넣고 흐리게 · 남극해 / 북서태평양·일본 |
 | + | 권역 거르개 | **체크박스로** — 태평양을 남극과 함께 볼 때가 있다 | 체크박스 둘. 둘 다 끄면 안 그리고 말한다 |
@@ -124,6 +124,45 @@ Warnock Table 2 가 옮긴 Cody 값 48행 중 (이름·기준면·연령) 이 �
 단계 · 파서(이름·note·MERGE_OK·어휘) · **저장소 JSON 이 그대로 들어온다**
 (14·728·43 · 겹침 41 · 13번 통과) · 검사가 어긋난 것을 잡는다.
 브라우저 밖 994개 통과. 헤드리스 크로미움으로 두 테마 캡처 — 콘솔 오류 0.
+
+## 같은 날 저녁 — AlgaeBase 답 85 이름을 반입했다 · `v0.30.0`
+
+낮에 넘긴 재확인 목록 85 이름이 18:47 에 답으로 돌아왔다(`_ANSWERED.md` ·
+정리 노트). **85행 전부 판정** — 그대로 유효 53 · AlgaeBase 도 "추가 조사
+필요" 9 · 이명 8 · 없음 7 · 철자·조합 교정 5 · 비공식 3. 이번엔 `filled.json`
+이 없고 마크다운 표뿐이라 `tools/parse_taxon_names.py` 에 `from_answered_md()`
+를 더했다 — 판정 문구를 읽는 규칙은 `_verdict()` 하나로 떼어 JSON 쪽과 같이
+쓴다. 답변 파일 셋은 다른 AlgaeBase 답과 같은 자리
+`Diadiction/names/algaebase/biodatum_{todo,answered,notes}_20260918.md` 로
+옮겼다(`datums/README` 가 가리킨다).
+
+**85행이 77 열쇠가 된다** — 비공식 셋은 열쇠가 없고(종소명 두 글자 이하 ·
+`split_name()` 과 같은 규칙 · 처음엔 `binomial()` 이 `Actinocyclus f` 를
+냈다), 변종·`s.l.`·`(plicate)` 다섯은 종으로 뭉뚱그려진다(같은 열쇠에 판정이
+갈리면 파서가 멈춘다 — 실측 0). `taxon_names.json` 2,031 → **2,108**, 더하기만.
+
+정리 노트가 짚은 것을 손으로 잡았다:
+
+- **`HOLD` — *Actinocyclus maccollumii*.** AlgaeBase 가 *Diploneis
+  mollenhaueri* 로 넘기는데 중심규조가 깃돌말의 이명일 수 없다 — 207 의
+  *N. denticuloides* 와 같은 동명이의 오연결. `unassessed` 로 두고 note 에 남겼다
+  (같은 종소명의 *Denticulopsis maccollumii* 가 2002 건에서 "확인 필요" 였다)
+- **`REMARK`** — *Rouxia antarctica* 는 AlgaeBase 가 종이 아니라 *R. peragalloi*
+  의 변종으로만 잡는다(판정은 그대로 synonym · 계급은 원기재로 확인할 것),
+  *S. tetraoestruppii* 는 p 하나 더 붙은 오식이고 `var.` 뒤가 비어 있어 합치지
+  않는다(absent 그대로)
+- *Cosmiodiscus insignis* → *Thalassiosira insigna* 는 표 안의 #62 와 같은 종 —
+  `TaxonName` 에서는 synonym 행이 accepted 행을 가리키는 것으로 이미 한 줄이다
+- *Thalassiosira* → *Shionodiscus* 재조합 넷은 종마다 판정 그대로(일괄 치환 없음)
+
+**그림에도 붙였다** — `biodatum_chart()` 가 `_taxon_names_by_binomial()` 을 한
+번 물어 종마다 `taxon` 을 들고, 표의 이름 칸에 「이명」 칩(현재 통용명)과
+「AlgaeBase 에 없다」 를 낸다(유효·미확인은 낼 것이 없다 — 도감 카드와 같은
+규칙). 도감에 있는 종은 카드 쪽 칩이 이미 있으니 도감에 없는 63종에서 이것이
+유일한 자리다. 시험 3 (22).
+
+이 판(`v0.30.0`)이 `0045` 와 함께 새 `taxon_names.json`(2,108)을 처음 싣는다 —
+배포 뒤 `import_biodatums.py` 와 `import_taxon_names.py`(기본 `--src`) 둘을 돌린다.
 
 ## 안 한 것
 
