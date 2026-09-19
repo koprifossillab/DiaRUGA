@@ -12,6 +12,10 @@
 - `규조_생층서_기준면_대조표_2.xlsx` — 같은 표의 사람용. **「대(zone)」
   시트만 읽는다** — Censarek 20·NPD 18 대가 JSON 에는 없다. 파일 이름이
   CP949 라 이름으로 안 짚고 `*.xlsx` 하나를 잡는다
+- `gersonde_burckle1990.json` — Gersonde & Burckle (1990) Table 1·2 (209 ·
+  2026-09-19). 같은 모양의 JSON 이고 **대(zone)는 자기 `zones` 에 든다**
+  (xlsx 시트가 아니다). 출처가 한 편 늘 때마다 `SRC_JSONS` 에 파일을 하나
+  더한다 — 원본 표 하나에 행을 덧붙이지 않는다(표를 만든 사람이 다르다)
 
 ## 표를 그대로 넣으면 안 되는 자리 (P28 §1.2 · 전부 실측)
 
@@ -51,6 +55,8 @@ from harvest_worms import DIADICTION, GENUS_FIX, binomial  # noqa: E402
 
 SRC_DIR = DIADICTION / "datums"
 SRC_JSON = SRC_DIR / "diatom_datums_1.json"
+# 출처 파일 — 앞엣것이 14편 표, 뒤가 논문 한 편씩. 순서가 `seq`·출력 순서다
+SRC_JSONS = (SRC_JSON, SRC_DIR / "gersonde_burckle1990.json")
 REPO = Path(__file__).resolve().parent.parent
 OUT = REPO / "atlas" / "biodatum" / "datums.json"
 TAXON_NAMES = REPO / "taxon_names.json"
@@ -103,6 +109,9 @@ ZONE_SCHEME = {
     "Censarek (2002) NSODZ": "censarek-nsodz",
     "NPD (Yanagisawa & Akiba 1998 / IODP 346)": "npd",
 }
+# JSON 의 `zones` 가 코드를 직접 든다 — 여기 없는 코드면 멈춘다
+# (`web/viewer/biodatum.AREA_OF_SCHEME` 이 같은 목록을 권역에 맨다)
+ZONE_CODES = set(ZONE_SCHEME.values()) | {"gersonde1990"}
 
 EPITHET = re.compile(r"^[a-zöäüéë\-]+$")
 
@@ -197,7 +206,31 @@ def read_zones(xlsx: Path) -> list[dict]:
     return out
 
 
-def convert(doc: dict) -> tuple[list[dict], list[dict], dict[str, set[str]]]:
+def read_zones_json(doc: dict, seq: dict[str, int]) -> list[dict]:
+    """JSON 안의 `zones` — 논문 한 편짜리 파일이 자기 대를 든다.
+    `seq` 는 체계별 번호를 파일 사이로 이어 간다."""
+    out: list[dict] = []
+    for z in doc.get("zones") or []:
+        scheme = z["scheme"]
+        if scheme not in ZONE_CODES:
+            raise SystemExit(f"모르는 대 코드다 — ZONE_CODES 에 더한다: {scheme!r}")
+        seq[scheme] = seq.get(scheme, 0) + 1
+        out.append({
+            "scheme": scheme, "seq": seq[scheme], "name": str(z["zone"]).strip(),
+            "top_ma": None if z.get("top_Ma") is None else float(z["top_Ma"]),
+            "base_ma": None if z.get("base_Ma") is None else float(z["base_Ma"]),
+            "top_def": (z.get("top_datum") or "").strip(),
+            "base_def": (z.get("base_datum") or "").strip(),
+            "author": (z.get("author") or "").strip(),
+        })
+    return out
+
+
+def convert(doc: dict, seq: dict[str, int] | None = None,
+            merged: dict[str, set[str]] | None = None
+            ) -> tuple[list[dict], list[dict], dict[str, set[str]]]:
+    """한 파일을 (refs, datums, merged) 로. `seq`·`merged` 를 넘기면 파일
+    사이로 이어 간다 — 합침 검사는 파일 전체를 한 벌로 본다."""
     refs = []
     for key, s in doc["sources"].items():
         authors, year = label_to_authors_year(s["label"])
@@ -210,8 +243,9 @@ def convert(doc: dict) -> tuple[list[dict], list[dict], dict[str, set[str]]]:
         })
     keys = {r["key"] for r in refs}
 
-    datums, merged = [], {}
-    seq: dict[str, int] = {}
+    datums = []
+    merged = merged if merged is not None else {}
+    seq = seq if seq is not None else {}
     for r in doc["rows"]:
         src = r["source"]
         if src not in keys:
@@ -284,9 +318,17 @@ def main() -> int:
     xlsx = sorted(SRC_DIR.glob("*.xlsx"))
     if len(xlsx) != 1:
         raise SystemExit(f"{SRC_DIR} 에 xlsx 가 하나여야 한다: {[p.name for p in xlsx]}")
-    doc = json.loads(SRC_JSON.read_text(encoding="utf-8"))
-    refs, datums, merged = convert(doc)
-    zones = read_zones(xlsx[0])
+    docs = [json.loads(p.read_text(encoding="utf-8")) for p in SRC_JSONS]
+    refs, datums, merged, zones = [], [], {}, read_zones(xlsx[0])
+    seq: dict[str, int] = {}
+    zseq: dict[str, int] = {z["scheme"]: z["seq"] for z in zones}
+    for doc in docs:
+        r, d, merged = convert(doc, seq, merged)
+        refs += r
+        datums += d
+        zones += read_zones_json(doc, zseq)
+    if len({r["key"] for r in refs}) != len(refs):
+        raise SystemExit("출처키가 파일 사이에 겹친다")
 
     if args.recheck:
         rows = recheck_list(datums)
@@ -318,11 +360,13 @@ def main() -> int:
         "generated": dt.date.today().isoformat(),
         "source": {"json": str(SRC_JSON.relative_to(DIADICTION)),
                    "json_sha256": sha256(SRC_JSON),
+                   "json_more": [{"path": str(p.relative_to(DIADICTION)), "sha256": sha256(p)}
+                                 for p in SRC_JSONS[1:]],
                    # NAS 의 파일 이름은 CP949 다 — 사람이 읽을 이름으로 적는다
                    "xlsx": xlsx[0].name.encode("utf-8", "surrogateescape").decode("cp949", "replace"),
                    "xlsx_sha256": sha256(xlsx[0])},
         "references": refs, "zones": zones, "datums": datums,
-        "mis_reference": doc.get("mis_reference", {}),
+        "mis_reference": docs[0].get("mis_reference", {}),
     }
     OUT.parent.mkdir(parents=True, exist_ok=True)
     OUT.write_text(json.dumps(out, ensure_ascii=False, indent=1) + "\n", encoding="utf-8")

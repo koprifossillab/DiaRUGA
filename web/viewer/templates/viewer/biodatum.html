@@ -9,7 +9,7 @@
   점의 벌어짐으로 보인다. 자리는 `viewer/biodatum.layout` 이 잡고 여기서는
   그린다(`core.html` 의 깊이 축과 같은 식 · JS 없이도 선다).
 
-  **색은 사건 종류(FO·LO·그 밖)이지 문헌이 아니다** — 문헌은 열넷이라 색으로
+  **색은 사건 종류(FO·LO·그 밖)이지 문헌이 아니다** — 문헌은 열다섯이라 색으로
   못 가른다. 문헌은 점에 마우스를 올리면 뜨고 아래 표에 전부 있다.
   세 색은 dataviz 팔레트의 1·2·3 슬롯이고 밝은·어두운 면 둘 다 검증했다.
 {% endcomment %}
@@ -58,6 +58,14 @@
   .bdsvg .bd-sp text { fill: var(--fg); font-style: italic; }
   .bdsvg .bd-sp.noatlas text { fill: var(--dim); }
   .bdsvg a text:hover { text-decoration: underline; }
+  /* 왼쪽 기둥 — 기·세·절은 ICS 공식 색(테마를 안 탄다 · gts.py 머리말)이라
+     글자는 늘 어두운 색. MIS 는 빙기(짝수)만 칠한다 */
+  .bdsvg .bd-gts rect { stroke: var(--panel); stroke-width: .8; }
+  .bdsvg .bd-gts text { fill: #222; font-size: 8.5px; }
+  .bdsvg .bd-gts.head text, .bdsvg .bd-mis.head text { fill: var(--dim); font-size: 8px; }
+  .bdsvg .bd-mis rect { fill: var(--panel); stroke: var(--line); stroke-width: .5; }
+  .bdsvg .bd-mis rect.glacial { fill: var(--dim); opacity: .32; }
+  .bdsvg .bd-mis text { fill: var(--dim); font-size: 6.5px; }
   .bdsvg .bd-mis line { stroke: var(--line); }
   .bdsvg .bd-term text { fill: var(--warn); }
   .bdlegend { display: flex; flex-wrap: wrap; gap: 14px; font-size: .85rem;
@@ -135,7 +143,7 @@
   <p class="bdnote">권역을 하나도 안 골랐습니다 — 남극해·북서태평양 중 적어도 하나를 켭니다.</p>
 {% elif not searched %}
   <p class="bdnote">속을 고르거나 이름을 넣으면 그 종들의 FO·LO 범위를 그립니다.
-    문헌 열넷 · 세로축은 아래가 오래된 쪽입니다. 같은 사건을 여러 문헌이 다르게
+    문헌 열다섯 · 세로축은 아래가 오래된 쪽입니다. 같은 사건을 여러 문헌이 다르게
     본 것은 점의 흩어짐으로 보입니다 — <b>연령은 시간척도에 종속되므로</b>(문헌마다
     Berggren 1995 · Gradstein 2004 · GTS2012 · 궤도조율) 점에 마우스를 올려 어느
     척도인지 함께 읽습니다.</p>
@@ -152,14 +160,51 @@
   <svg class="bdsvg" width="{{ L.width }}" height="{{ L.height }}"
        viewBox="0 0 {{ L.width }} {{ L.height }}" role="img"
        aria-label="생층서 기준면 범위 그림">
-    {% comment %}연령 축{% endcomment %}
+    {% comment %}연령 축 — 숫자(Ma){% endcomment %}
     <g class="bd-axis">
       {% for t in L.ticks %}
-        <line class="bd-grid" x1="{{ L.x0 }}" x2="{{ L.mis_x }}" y1="{{ t.y }}" y2="{{ t.y }}"/>
+        <line class="bd-grid" x1="{{ L.x0 }}" x2="{{ L.x_right }}" y1="{{ t.y }}" y2="{{ t.y }}"/>
         <text x="38" y="{{ t.y }}" text-anchor="end" dominant-baseline="middle">{{ t.ma }}</text>
       {% endfor %}
       <text x="2" y="{{ L.top|add:-12 }}" class="dim">Ma</text>
     </g>
+    {% comment %}기·세·절 — ICS 국제 층서 연대표 (gts.py · 209). 글자는 세로로 눕히고
+       띠에 안 들면 약자·빈 칸. 마우스 설명(title)에는 늘 전체 이름이 있다{% endcomment %}
+    <g class="bd-gts head">
+      {% for c in L.gts_cols %}
+        <text x="{{ c.x|add:2 }}" y="{{ L.top|add:-4 }}">{{ c.label }}</text>
+      {% endfor %}
+    </g>
+    <g class="bd-gts">
+      {% for b in L.gts_bands %}
+        <rect x="{{ b.x }}" y="{{ b.y1 }}" width="{{ b.w }}" height="{{ b.h }}" fill="{{ b.color }}"
+              {% if b.cut %}stroke-dasharray="3 3"{% endif %}>
+          <title>{{ b.name }} · {{ b.ko }} · {{ b.top_ma }}–{{ b.base_ma }} Ma{% if b.cut %} (축에서 잘림){% endif %} — ICS 2023</title>
+        </rect>
+        {% if b.label %}
+          <text x="{{ b.x|add:3 }}" y="{{ b.y2|add:-3 }}" transform="rotate(-90 {{ b.x|add:3 }} {{ b.y2|add:-3 }})"
+                dominant-baseline="hanging">{{ b.label }}</text>
+        {% endif %}
+      {% endfor %}
+    </g>
+    {% comment %}MIS 기둥 — LR04 단계 (mis.py). 빙기(짝수)를 칠하고 번호·종결면은 축이
+       1.5 Ma 이하일 때만 적는다. **값이 아니라 눈금이다**{% endcomment %}
+    {% if L.mis_bands %}
+      <g class="bd-mis head"><text x="{{ L.mis_x|add:1 }}" y="{{ L.top|add:-4 }}">MIS</text></g>
+      <g class="bd-mis">
+        {% for b in L.mis_bands %}
+          <rect x="{{ L.mis_x }}" y="{{ b.y1 }}" width="{{ L.mis_w }}" height="{{ b.h }}"{% if b.glacial %} class="glacial"{% endif %}>
+            <title>MIS {{ b.name }} · {{ b.top_ma }}–{{ b.base_ma }} Ma{% if b.glacial %} · 빙기{% else %} · 간빙기{% endif %} (LR04)</title>
+          </rect>
+          {% if b.label %}
+            <text x="{{ L.mis_x|add:2 }}" y="{{ b.y1|add:1 }}" dominant-baseline="hanging">{{ b.label }}</text>
+          {% endif %}
+        {% endfor %}
+        {% for t in L.terminations %}
+          <g class="bd-term"><text x="{{ L.mis_x|add:23 }}" y="{{ t.y }}" text-anchor="end" font-size="6" dominant-baseline="middle">{{ t.name }}</text></g>
+        {% endfor %}
+      </g>
+    {% endif %}
     {% comment %}대 띠 — 권역의 체계마다 한 기둥{% endcomment %}
     {% for s in L.schemes %}
       <text x="{{ s.x|add:4 }}" y="{{ L.top|add:-6 }}" fill="var(--dim)" font-size="8"
@@ -209,19 +254,6 @@
         {% endif %}
       </g>
     {% endfor %}
-    {% comment %}MIS 눈금 — 축이 1.5 Ma 이하일 때만 (값이 아니라 눈금이다 · mis.py){% endcomment %}
-    {% if L.mis_ticks %}
-      <g class="bd-mis">
-        {% for t in L.mis_ticks %}
-          <line x1="{{ L.mis_x }}" x2="{{ L.mis_x|add:5 }}" y1="{{ t.y }}" y2="{{ t.y }}"/>
-          <text x="{{ L.mis_x|add:7 }}" y="{{ t.y }}" font-size="8" dominant-baseline="middle">{{ t.boundary }}</text>
-        {% endfor %}
-        <text x="{{ L.mis_x }}" y="{{ L.top|add:-12 }}" font-size="9">MIS (LR04)</text>
-      </g>
-      {% for t in L.terminations %}
-        <g class="bd-term"><text x="{{ L.mis_x|add:-2 }}" y="{{ t.y }}" text-anchor="end" font-size="8" dominant-baseline="middle">{{ t.name }}</text></g>
-      {% endfor %}
-    {% endif %}
   </svg>
   </div>
   <div class="bdlegend">
@@ -232,6 +264,7 @@
     <span class="dim">흐린 점 = 원문 미대조(Winter &amp; Iwai 2002 — 교정 연령으로 인용하지 말 것)</span>
     <span class="dim">큰 점 = 원문이 주요 지시종·기준면으로 표시</span>
     <span class="dim">세로선 = 원문 연령 폭 · 막대 = 가장 젊은 LO~가장 오래된 FO</span>
+    <span class="dim">왼쪽 기둥 = ICS 2023 기·세·절 (Ma 는 문헌의 시간척도라 경계와 어긋날 수 있다) · MIS = LR04, 칠한 것이 빙기</span>
   </div>
   {% endwith %}
 

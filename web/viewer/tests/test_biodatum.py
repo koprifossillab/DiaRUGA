@@ -367,13 +367,14 @@ class ImportBiodatumsTests(DiaRUGATestCase):
         d = json.loads(src.read_text(encoding="utf-8"))
         nr, nd, nz = self.mod.put(d)
         self.assertEqual(self.mod.verify(d), [])
-        # 2026-09-18 의 표 — 출처 14 · 기준면 728 · 대 43
-        self.assertEqual((nr, nd, nz), (14, 728, 43))
+        # 2026-09-18 의 표 — 출처 14 · 기준면 728 · 대 43. **09-19 에 Gersonde &
+        # Burckle (1990) 한 편이 더 왔다**(209) — 기준면 61 · 대 16
+        self.assertEqual((nr, nd, nz), (15, 789, 59))
         self.assertEqual(Biodatum.objects.exclude(via="").count(), 102)
         # 두 번 넣어도 같다
         self.mod.put(d)
-        self.assertEqual(Biodatum.objects.count(), 728)
-        self.assertEqual(Reference.objects.count(), 14)
+        self.assertEqual(Biodatum.objects.count(), 789)
+        self.assertEqual(Reference.objects.count(), 15)
         # 재인용 겹침 — (모델까지) 값이 같은 것이 41. Warnock Table 2 가 Cody
         # 값을 옮긴 48행 중 42행이 연령이 같은데, 그중 LO Hemidiscus karstenii
         # 는 평균 모델이라 적고 전범위 모델 값을 옮긴 것이라 겹침이 아니다

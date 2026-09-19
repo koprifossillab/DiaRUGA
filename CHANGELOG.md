@@ -23,6 +23,27 @@
 
 ## 뷰어
 
+### `v0.30.1` — 09-19 (마이그레이션 없음 · 배포 대기 · 배포 뒤 `import_atlas.py`·`import_biodatums.py`)
+
+**웨델해 논문 하나(Gersonde & Burckle 1990)를 도판·기준면으로 반입하고, 기준면
+그림의 왼쪽 축에 기·세·절과 MIS 기둥을 세운다**
+([209](devlog/20260919_209_weddell-1990-and-gts-axis.md))
+
+- `atlas/1990-gersonde-weddell.json` — ODP Leg 113 (Maud Rise 689B·690B) 신제3기
+  규조 Plate 1~5 · 그림 99 · 항목 50. 크롭 99장은 `/data3/DiaRUGA/atlas/<key>/crops/`
+  에 미리 옮겨 뒀다 — **배포 뒤 `dbrun.sh import_atlas.py`**(도감 18 → 19 ·
+  항목 2,751 · 자리 3,400). `AREA_OF` 는 남극
+- 기준면 — NAS `Diadiction/datums/gersonde_burckle1990.json`(Table 1·2 · 기준면
+  61 · 대 16)을 둘째 출처 파일로, `tools/parse_biodatums.py` 가 `SRC_JSONS` 를
+  차례로 읽는다 — **배포 뒤 `dbrun.sh import_biodatums.py`**(문헌 15 · 기준면
+  789 · 대 59). 참고문헌 절에 「도판 →」
+- `/atlas/datums/` 왼쪽 축 — Ma 숫자 옆에 **ICS 2023 기·세·절 기둥**(`viewer/gts.py`
+  · 공식 색 · 글자는 띠에 들 때만, 약자 → 빈 칸 · 마우스 설명에 한글 이름과
+  경계)과 **MIS 기둥**(`mis.stage_bands` · 빙기 칠함 · 번호는 들 때만 · 종결면은
+  2.5 Ma 이하). 오른쪽 MIS 눈금은 걷었다. 축이 5 Ma 를 넘으면 길어진다(20 Ma
+  에서 1040px)
+- AlgaeBase 판정 없는 18종 목록 `names/algaebase/weddell1990_todo_20260919.md`
+
 ### `v0.30.0` — 09-18 (마이그레이션 `0045` · 더하기만 — 파이프라인은 안 굽는다 · 19:16 배포 · 배포 뒤 `import_biodatums.py`·`import_taxon_names.py` 돌림)
 
 **생층서 기준면(FO·LO) 층 — 논문 열넷의 연령 728행을 도감 종·속에 붙인다**

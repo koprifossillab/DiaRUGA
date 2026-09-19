@@ -53,6 +53,7 @@ REF_KEYS = {
     "censarek2002", "censarek704B", "zielinski2002b", "winter_iwai2002",
     "gersonde_barcena1998", "zielinski_gersonde2002", "kato2024", "winter2012",
     "fujiwara2008",
+    "gersonde1990",     # Gersonde & Burckle (1990) ODP Leg 113 — 209
 }
 
 KINDS = {k for k, _ in BIODATUM_KINDS}

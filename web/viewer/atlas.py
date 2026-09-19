@@ -82,6 +82,7 @@ AREA_OF = {
     "2001-park-bransfield": "antarctic",
     "2002-censarek-miocene": "antarctic",   # ODP 689·690·1088·1092 마이오세 (207)
     "2002-zielinski-rouxia": "antarctic",   # ODP Leg 177 (207)
+    "1990-gersonde-weddell": "antarctic",   # ODP Leg 113 웨델해 (209)
     "2017-yun-ulleung": "korea",
     # `working-names`(186) 는 여기 없다 — 도감이 아니라 사람이 적는 작업 이름이고
     # 권역이 없는 것이 맞다. `test_atlas_area` 7번이 그것만 봐준다

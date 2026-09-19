@@ -153,6 +153,15 @@ PAPER_META = {
         short="2002 Zielinski Rouxia",
         crop_prefix="2002zie",
     ),
+    # 남극 웨델해 ODP Leg 113 신제3기 규조 층서(209). 대 16 · 기준면 표(Table 1·2)
+    # 는 `Biodatum` 쪽으로 따로 간다(`Diadiction/datums/gersonde_burckle1990.json`)
+    "1990_gersonde_burckle_odp113_weddell": dict(
+        atlas_key="1990-gersonde-weddell",
+        title="Gersonde, R. & Burckle, L.H. (1990) 웨델해 ODP Leg 113 신제3기 규조 "
+              "생층서 (Proc. ODP Sci. Results 113:761–789)",
+        short="1990 Gersonde 웨델해",
+        crop_prefix="1990ger",
+    ),
 }
 
 

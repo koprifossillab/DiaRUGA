@@ -115,6 +115,14 @@ SOURCE = {
     "2002_zielinski_rouxia_lod": {
         1: (5, 5),
     },
+    # Gersonde & Burckle 1990 (Proc. ODP Sci. Results 113, ch.43 · pp.761–789).
+    # 도판 다섯이 마지막 다섯 쪽(pdf 25~29)이고 **캡션이 각 도판 아래 같은
+    # 쪽에 있다**(2017·Zielinski 와 같은 배치). 사진 격자·8비트 회색조라
+    # 깨끗한데 텍스트 레이어는 ABBYY OCR 이라 캡션 다섯을 220dpi 로 렌더해
+    # 대조했다 — `clementia` 를 `dementia` 로 읽은 것 하나를 잡았다(209)
+    "1990_gersonde_burckle_odp113_weddell": {
+        1: (25, 25), 2: (26, 26), 3: (27, 27), 4: (28, 28), 5: (29, 29),
+    },
 }
 
 # 논문 → 도판 → {그림 번호: 캡션에 찍힌 학명}
@@ -991,6 +999,70 @@ CAPTIONS = {
    **{k: "Rouxia constricta" for k in range(8, 15)},
   },
  },
+ # Gersonde & Burckle 1990 — 캡션을 렌더해 읽었다(OCR 은 `dementia`·
+ # `Nitzschiapraecurta`·`Crucidenticulapunctata` 로 틀렸다). `sp. 1` 류는
+ # 원문이 그렇게 세운 형태다 — 이름 없이 도판만 있다
+ "1990_gersonde_burckle_odp113_weddell": {
+  1: {
+   **{k: "Nitzschia interfrigidaria" for k in (1, 2, 3)},
+   **{k: "Nitzschia praeinterfrigidaria" for k in range(4, 11)},
+   **{k: "Nitzschia barronii" for k in (11, 12, 13)},
+   14: "Nitzschia lacrima", 15: "Nitzschia lacrima",
+   **{k: "Nitzschia donahuensis" for k in (16, 17, 18)},
+   19: "Nitzschia fossilis", 20: "Nitzschia fossilis",
+   **{k: "Nitzschia praecurta" for k in range(21, 25)},
+   25: "Nitzschia arcula", 26: "Nitzschia arcula",
+   27: "Nitzschia cylindrica",
+  },
+  2: {
+   1: "Nitzschia reinholdii",
+   2: "Nitzschia pseudokerguelensis",
+   **{k: "Nitzschia grossepunctata" for k in range(3, 7)},
+   7: "Nitzschia denticuloides", 8: "Nitzschia denticuloides",
+   9: "Nitzschia efferans",
+   **{k: "Nitzschia aurica" for k in (10, 11, 12)},
+   **{k: "Nitzschia maleinterpretaria" for k in range(13, 17)},
+   **{k: "Nitzschia pusilla" for k in (17, 18, 19)},
+   20: "Nitzschia claviceps", 21: "Nitzschia claviceps",
+   22: "Nitzschia clementia", 23: "Nitzschia clementia",
+  },
+  3: {
+   1: "Thalassiosira kolbei",
+   2: "Thalassiosira convexa var. aspinosa", 3: "Thalassiosira convexa var. aspinosa",
+   4: "Thalassiosira miocenica", 5: "Thalassiosira miocenica",
+   6: "Rhizosolenia costata",
+   7: "Thalassiosira spumellaroides",
+   8: "Thalassiosira majuramica-torokina group",
+   9: "Thalassiosira fraga", 10: "Thalassiosira fraga",
+   11: "Crucidenticula kanayae", 12: "Crucidenticula kanayae",
+   13: "Thalassiosira oestrupii", 14: "Thalassiosira oestrupii",
+   **{k: "Thalassiosira inura" for k in (15, 16, 17)},
+   18: "Crucidenticula nicobarica", 19: "Crucidenticula nicobarica",
+  },
+  4: {
+   1: "Thalassiosira complicata", 2: "Thalassiosira complicata",
+   3: "Thalassiosira spinosa", 4: "Thalassiosira spinosa",
+   5: "Hemidiscus sp. 1", 6: "Hemidiscus sp. 2", 7: "Hemidiscus sp. 3",
+   8: "Katathiraia aspera",
+   9: "Crucidenticula punctata",
+   **{k: "Denticulopsis dimorpha" for k in (10, 11, 12)},
+   13: "Cosmiodiscus intersectus",
+   14: "Mediaria splendida",
+   15: "Rouxia sp. 1",
+   16: "Rouxia naviculoides",
+  },
+  5: {
+   1: "Rouxia sp. 3",
+   2: "Rouxia heteropolara",
+   3: "Rouxia sp. 2",
+   4: "Actinocyclus ingens var. ovalis",
+   5: "Raphidodiscus marylandicus",
+   6: "Asteromphalus kennettii",
+   **{k: "Denticulopsis maccollumii" for k in (7, 8, 9)},
+   **{k: "Denticulopsis hustedtii" for k in range(10, 14)},
+   14: "Thalassiosira inura",
+  },
+ },
 }
 
 
@@ -1548,7 +1620,40 @@ ASSIGN = {
  # 2002 Zielinski — 8비트 사진 격자라 자동 상자 15개가 머리줄 + 그림 14개
  ("2002_zielinski_rouxia_lod", 5): [
    None, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 14, 13],
+ # 1990 Gersonde & Burckle — 사진 격자. `None` 은 축척 막대(p26 23 · p29 14),
+ # 그림의 조각(p25 18 · p26 24·25 는 fig 11 이 가로 띠로 둘로 갈렸다), 닿아서
+ # 하나가 된 쌍(p27 2+3·4+5·16+17, p28 1+2·3+4) — 그것들은 `MANUAL_BOXES`
+ ("1990_gersonde_burckle_odp113_weddell", 25): [
+   1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 20, 17, 18, 19, 16, 14, 15, None, 11, 12,
+   26, 24, 25, 27, 13, 23, 21, 22],
+ ("1990_gersonde_burckle_odp113_weddell", 26): [
+   1, 2, 3, 4, 5, 6, 7, 8, 21, 15, 20, 13, 17, 18, 23, 10, 12, 22, 9, 14,
+   16, 19, None, None, None],
+ ("1990_gersonde_burckle_odp113_weddell", 27): [
+   1, None, 6, None, 9, 8, 7, 12, 11, 10, 14, 19, 15, 18, 13, None],
+ ("1990_gersonde_burckle_odp113_weddell", 28): [
+   None, None, 7, 8, 6, 5, 9, 14, 15, 10, 13, 11, 12, 16],
+ ("1990_gersonde_burckle_odp113_weddell", 29): [
+   1, 3, 6, 2, 4, 5, 10, 11, 12, 13, 7, 8, 9, None, 14],
 }
+
+# 1990 Gersonde & Burckle — 닿아 있는 원반 쌍은 자동 상자 하나를 둘로 가른다
+# (겹치는 폭은 pad 로 이웃이 조금 들어오는 정도 · 207 과 같은 방침). 좌표는
+# 200dpi · margin 0.03,0.05,0.03,0.235 로 트림한 이미지 위다
+MANUAL_BOXES.update({
+    ("1990_gersonde_burckle_odp113_weddell", 26): {
+        11: (507, 1247, 594, 1510),     # 자동 상자 24+25
+    },
+    ("1990_gersonde_burckle_odp113_weddell", 27): {
+        2: (743, 174, 955, 445), 3: (925, 174, 1184, 445),
+        4: (764, 464, 960, 694), 5: (945, 464, 1136, 694),
+        16: (824, 1371, 988, 1546), 17: (968, 1371, 1143, 1546),
+    },
+    ("1990_gersonde_burckle_odp113_weddell", 28): {
+        1: (117, 153, 505, 619), 2: (430, 153, 892, 619),
+        3: (928, 151, 1210, 478), 4: (1180, 151, 1474, 478),
+    },
+})
 
 # **검출 설정이 쪽마다 다르다.** 도판마다 그림이 붙은 정도가 달라서 한 값으로
 # 안 된다 — PLATE IV 는 `grow=9` 로 여섯이 한 덩어리가 됐고, PLATE I 은
@@ -1618,6 +1723,12 @@ PARAMS = {
         dict(grow=3, min_area=3500, min_side=55),
     ("1996_lee_bransfield_cores", 19):
         dict(grow=3, min_area=3500, min_side=55),
+    # 1990 Gersonde & Burckle — 사진 격자(Zielinski 와 같은 모양). 캡션이 같은
+    # 쪽 아래에 있어 `margin` 으로 걷는다(아래 비율은 220dpi 렌더에서 쟀다).
+    # 그림 번호 활자는 `min_area` 가 거른다
+    **{("1990_gersonde_burckle_odp113_weddell", pg):
+       dict(grow=3, min_area=3000, min_side=40, margin=f"0.03,0.05,0.03,{b}")
+       for pg, b in ((25, 0.235), (26, 0.235), (27, 0.235), (28, 0.235), (29, 0.235))},
 }
 
 # 1985 는 쪽마다 머리말·쪽번호 폭이 달라 한 여백 값으로 안 된다. 없으면

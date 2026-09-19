@@ -7,7 +7,7 @@
 
 ## 권역 — `Site.area` 와 다른 축이다
 
-출처 열넷은 남극해(11)와 북서태평양·일본(3)으로 갈린다. 북서태평양은 한국
+출처 열다섯은 남극해(12)와 북서태평양·일본(3)으로 갈린다. 북서태평양은 한국
 도감 권역(`atlas.AREAS` 의 `korea`)이 아니라 이름을 섞지 않는다. **거르개는
 체크박스다** — 태평양 자료를 남극과 한 축에 놓고 볼 때가 있다(사용자,
 09-18). 둘 다 끄면 아무것도 안 그린다 — 조용히 전체를 내면 거르개가 죽은
@@ -15,7 +15,7 @@
 """
 from __future__ import annotations
 
-from . import mis
+from . import gts, mis
 
 AREAS = (
     ("antarctic", "남극해"),
@@ -28,17 +28,20 @@ AREA_OF_REF = {
     "zielinski2002b": "antarctic", "winter_iwai2002": "antarctic",
     "gersonde_barcena1998": "antarctic", "zielinski_gersonde2002": "antarctic",
     "kato2024": "antarctic", "winter2012": "antarctic",
+    "gersonde1990": "antarctic",    # ODP Leg 113 웨델해 (209)
     "yanagisawa1998": "npacific", "iodp346": "npacific", "fujiwara2008": "npacific",
 }
 # 대 체계 → 권역. 바탕띠를 그 권역이 켜졌을 때만 낸다
 AREA_OF_SCHEME = {
     "warnock2025": "antarctic", "censarek-ssodz": "antarctic",
-    "censarek-nsodz": "antarctic", "npd": "npacific",
+    "censarek-nsodz": "antarctic", "gersonde1990": "antarctic",
+    "npd": "npacific",
 }
 SCHEME_LABEL = {
     "warnock2025": "Winter 2012 / Warnock 2025",
     "censarek-ssodz": "SSODZ (Censarek 2002)",
     "censarek-nsodz": "NSODZ (Censarek 2002)",
+    "gersonde1990": "Gersonde & Burckle 1990",
     "npd": "NPD (Yanagisawa & Akiba 1998)",
 }
 # 출처 → 도감 키. 같은 논문의 도판이 도감 표에 있다(207). FK 가 아니다 —
@@ -46,6 +49,7 @@ SCHEME_LABEL = {
 ATLAS_OF_REF = {
     "censarek2002": "2002-censarek-miocene",
     "zielinski2002b": "2002-zielinski-rouxia",
+    "gersonde1990": "1990-gersonde-weddell",
 }
 # Cody (2008) 두 모델 중 기본은 평균 — Warnock Table 2 가 그것을 인용한다
 MODELS = (("average", "평균범위"), ("total", "전범위"), ("both", "둘 다"))
@@ -65,15 +69,30 @@ def area_keys(areas) -> set[str]:
 #
 # 세로 시간축 — **아래가 오래된 쪽**(층서 관례). 종마다 한 열. 폭은 종 수에
 # 따라 늘어나고 화면이 가로로 굴린다(뷰박스를 화면에 맞춰 찌그러뜨리지 않는다).
+#
+# 왼쪽 축은 숫자(Ma)만이 아니다(209) — 국제 층서 연대표의 기·세·절
+# (`gts.py`)과 LR04 MIS 단계(`mis.py`)가 기둥으로 나란히 선다. 숫자 하나로는
+# "이 기준면이 어느 절에 드는가" 를 사람이 매번 환산해야 했다.
 
 TOP = 70          # 위 여백 (연령 축 머리 · 대 체계 이름이 비스듬히 선다)
 BOTTOM = 16
-HEIGHT = 640      # 축 길이(px)
+HEIGHT = 640      # 축 길이(px) — 5 Ma 까지. 그보다 길면 `axis_height` 가 늘린다
+HEIGHT_MAX = 1040
 COL = 26          # 종 한 열의 폭
-AXIS_W = 44       # 왼쪽 연령 축
+AXIS_W = 44       # 왼쪽 연령 축(숫자)
+GTS_W = {"period": 14, "epoch": 18, "stage": 28}   # 기·세·절 기둥
+MIS_W = 24        # MIS 기둥 — 절 오른쪽
 ZONE_W = 26       # 대 띠 한 체계의 폭
-MIS_W = 30        # 오른쪽 MIS 눈금
 LABEL_H = 175     # 아래 종 이름 자리(회전 글자)
+LEFT_W = AXIS_W + sum(GTS_W.values()) + MIS_W + 6   # 대 띠가 시작하는 x
+
+
+def axis_height(y_max: float) -> int:
+    """축 길이 — 5 Ma 까지는 640px, 20 Ma 에서 1040px. 절(stage)이 짧은
+    쪽(젤라절 0.78 Ma)이 긴 축에서 글자 하나 못 넣는 띠가 되는 것을 막는다."""
+    if y_max <= 5:
+        return HEIGHT
+    return int(HEIGHT + (HEIGHT_MAX - HEIGHT) * min(1.0, (y_max - 5) / 15))
 
 
 def nice_max(v: float) -> float:
@@ -106,7 +125,8 @@ def layout(species: list[dict], zones: list[dict], y_max: float | None = None) -
     """
     ages = [p["age_max"] for s in species for p in s["points"]]
     y_max = y_max or nice_max(max(ages) if ages else 0)
-    scale = HEIGHT / y_max
+    height = axis_height(y_max)
+    scale = height / y_max
 
     def y(ma: float) -> float:
         return round(TOP + min(ma, y_max) * scale, 1)
@@ -115,8 +135,8 @@ def layout(species: list[dict], zones: list[dict], y_max: float | None = None) -
     for z in zones:
         if z["scheme"] not in schemes:
             schemes.append(z["scheme"])
-    x0 = AXIS_W + ZONE_W * len(schemes) + 8
-    width = x0 + COL * max(len(species), 1) + 8 + MIS_W
+    x0 = LEFT_W + ZONE_W * len(schemes) + 8
+    width = x0 + COL * max(len(species), 1) + 8
 
     cols = []
     for i, s in enumerate(species):
@@ -153,7 +173,7 @@ def layout(species: list[dict], zones: list[dict], y_max: float | None = None) -
             if top >= y_max:
                 break
             bands.append({
-                "scheme": sc, "x": AXIS_W + ZONE_W * si, "w": ZONE_W,
+                "scheme": sc, "x": LEFT_W + ZONE_W * si, "w": ZONE_W,
                 "y1": y(top), "y2": y(base), "h": max(1.0, round(y(base) - y(top), 1)),
                 "name": z["name"],
                 "short": _short_zone(z["name"]), "shade": k % 2,
@@ -163,18 +183,43 @@ def layout(species: list[dict], zones: list[dict], y_max: float | None = None) -
             prev_base = base
 
     ticks = [{"ma": t, "y": y(t)} for t in axis_ticks(y_max)]
-    # MIS 눈금은 축이 1.5 Ma 이하일 때만 — 그보다 길면 글자가 겹친다.
-    # **값이 아니라 눈금이다** (`mis.py` 머리말)
+
+    # 기·세·절 기둥 — ICS 표(`gts.py`). 글자는 띠에 들어갈 때만, 약자로도 안
+    # 들면 비운다(마우스 설명에는 늘 있다)
+    gx, gts_cols, gts_bands = AXIS_W, [], []
+    for col, label, _rows in gts.COLUMNS:
+        gts_cols.append({"key": col, "label": label, "x": gx, "w": GTS_W[col]})
+        gx += GTS_W[col]
+    col_x = {c["key"]: c["x"] for c in gts_cols}
+    for b in gts.bands(y_max):
+        y1, y2 = y(b["top_ma"]), y(b["base_ma"])
+        gts_bands.append(dict(b, x=col_x[b["col"]], w=GTS_W[b["col"]], y1=y1, y2=y2,
+                              h=max(1.0, round(y2 - y1, 1)),
+                              label=gts.label_for(b["name"], y2 - y1)))
+    # MIS 기둥 — 절 오른쪽. 빙기(짝수)를 칠하고, 번호는 띠에 글자가 들 때만
+    # (7px · 긴 축에서는 긴 단계 몇만 남는다), 종결면은 축이 2.5 Ma 이하일 때만.
+    # **값이 아니라 눈금이다**(`mis.py` 머리말) — LR04 끝(5.3 Ma)을 넘는 축은
+    # 거기까지만 칠한다
+    mis_x = gx
+    mis_bands = []
+    for b in mis.stage_bands(y_max):
+        y1, y2 = y(b["top_ma"]), y(b["base_ma"])
+        mis_bands.append(dict(b, y1=y1, y2=y2, h=max(0.5, round(y2 - y1, 1)),
+                              label=b["name"] if y2 - y1 >= 7 else ""))
+    # 경계 눈금(선)은 1.5 Ma 이하에서만 — 그보다 길면 띠의 칠로 충분하다
     mis_ticks = [dict(t, y=y(t["ma"])) for t in mis.stage_ticks(y_max)] if y_max <= 1.5 else []
     terms = [{"name": n, "ma": ka / 1000.0, "y": y(ka / 1000.0)}
-             for n, ka in mis.TERMINATIONS_KA if ka / 1000.0 <= y_max] if y_max <= 1.5 else []
+             for n, ka in mis.TERMINATIONS_KA if ka / 1000.0 <= y_max] if y_max <= 2.5 else []
     return {
-        "width": int(width), "height": int(TOP + HEIGHT + BOTTOM + LABEL_H),
-        "axis_bottom": y(y_max), "top": TOP, "y_max": y_max,
-        "x0": x0, "col": COL, "mis_x": width - MIS_W,
-        "ticks": ticks, "mis_ticks": mis_ticks, "terminations": terms,
+        "width": int(width), "height": int(TOP + height + BOTTOM + LABEL_H),
+        "axis_bottom": y(y_max), "top": TOP, "y_max": y_max, "axis_h": height,
+        "x0": x0, "col": COL, "x_right": int(width) - 8,
+        "ticks": ticks,
+        "gts_cols": gts_cols, "gts_bands": gts_bands,
+        "mis_x": mis_x, "mis_w": MIS_W, "mis_bands": mis_bands,
+        "mis_ticks": mis_ticks, "terminations": terms,
         "schemes": [{"key": s, "label": SCHEME_LABEL.get(s, s),
-                     "x": AXIS_W + ZONE_W * i} for i, s in enumerate(schemes)],
+                     "x": LEFT_W + ZONE_W * i} for i, s in enumerate(schemes)],
         "bands": bands, "cols": cols,
     }
 

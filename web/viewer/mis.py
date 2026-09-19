@@ -288,3 +288,26 @@ def stage_of(age_ma: float) -> str:
             return prev
         prev = name.split("/")[1]
     return ""
+
+
+def _stage_no(name: str) -> int:
+    """`5` → 5 · `G2` → 2 · `KM3` → 3. 짝수가 빙기다 — 문자 단계도 같다
+    (LR04 의 번호 규칙 · 짝수 = δ18O 무거운 쪽)."""
+    digits = "".join(ch for ch in name if ch.isdigit())
+    return int(digits) if digits else 0
+
+
+def stage_bands(max_ma: float) -> list[dict]:
+    """단계 하나하나를 띠로 — 그림의 왼쪽 MIS 기둥(209). `stage_ticks` 가
+    경계(선)라면 이것은 그 사이(면)이고, 빙기(짝수)를 칠해 가른다.
+    `max_ma` 가 LR04 끝(5.3 Ma)을 넘으면 거기까지만 낸다."""
+    out = []
+    prev_name, prev_ka = "1", 0.0
+    for name, ka in BOUNDARIES_KA:
+        top, base = prev_ka / 1000.0, ka / 1000.0
+        if top >= max_ma:
+            break
+        out.append({"name": prev_name, "top_ma": top, "base_ma": min(base, max_ma),
+                    "glacial": _stage_no(prev_name) % 2 == 0})
+        prev_name, prev_ka = name.split("/")[1], ka
+    return out
