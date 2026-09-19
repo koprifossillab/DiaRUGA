@@ -23,7 +23,7 @@
 
 ## 뷰어
 
-### `v0.30.1` — 09-19 (마이그레이션 없음 · 배포 대기 · 배포 뒤 `import_atlas.py`·`import_biodatums.py`)
+### `v0.30.1` — 09-19 (마이그레이션 없음 · 12:27 배포 · 배포 뒤 `import_atlas.py`·`import_biodatums.py` 돌림)
 
 **웨델해 논문 하나(Gersonde & Burckle 1990)를 도판·기준면으로 반입하고, 기준면
 그림의 왼쪽 축에 기·세·절과 MIS 기둥을 세운다**
