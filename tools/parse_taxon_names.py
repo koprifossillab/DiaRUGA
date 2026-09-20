@@ -43,7 +43,16 @@
   건너뛴다 — `parse_biodatums.split_name()` 이 `binomial` 을 비우는 것과
   같은 규칙이다(종소명이 두 글자 이하). 정리 노트가 짚은 것 하나를
   `HOLD` 에 더했다(*Actinocyclus maccollumii* — 중심규조를 깃돌말
-  *Diploneis* 로 넘긴 오연결) 
+  *Diploneis* 로 넘긴 오연결)
+
+- `Diadiction/names/algaebase/weddell1990_answered_20260920.md` — 웨델해
+  1990 논문(209)의 도판 이름 가운데 판정이 없던 18종(그중 9종은 기준면
+  표에도 든다)을 같은 방법으로 채운 표(2026-09-20 · `temp/algaebase_todo_
+  20260920_ANSWERED.md` 를 옮긴 것). 표가 다섯 칸이다 — `| [x] | 이름 |
+  자리 | 판정 | 비고 |` — 앞의 체크와 자리 칸은 안 읽는다. *Nitzschia*
+  화석종 열 가운데 아홉이 *Fragilariopsis* 로 재조합돼 있고, 넷(*lacrima*·
+  *praecurta*·*cylindrica*·*pusilla*)은 *Fragilariopsis* 조합이 AlgaeBase 에
+  없어 *Nitzschia* 쪽이 유효다. 2절의 원문 확인 셋은 그대로 남아 있다
 
 열쇠는 `tools/harvest_worms.binomial()` 로 정규화한다 — `var.`·`sp.`
 꼬리는 종 단위로 뭉뚱그려진다(예: `Actinocyclus ehrenbergii var.
@@ -74,6 +83,7 @@ WORMS_MASTER = DIADICTION / "names/worms/worms_master_20260814.tsv"
 PAPER_FILLED = DIADICTION / "names/algaebase/paper_plates_filled_20260831.json"
 PAPER_FILLED_2002 = DIADICTION / "names/algaebase/antarctic2002_filled_20260918.json"
 BIODATUM_ANSWERED = DIADICTION / "names/algaebase/biodatum_answered_20260918.md"
+WEDDELL_ANSWERED = DIADICTION / "names/algaebase/weddell1990_answered_20260920.md"
 
 # **판정을 그대로 반영하지 않는 이름** — 조회한 사람이 정리 노트에서 짚었다.
 # `Nitzschia denticuloides`: AlgaeBase 가 `N. amphibia f. frauenfeldii`(담수종의
@@ -220,7 +230,10 @@ def from_paper_plates(path: Path = PAPER_FILLED,
     return out
 
 
-MD_ROW_RE = re.compile(r"^\|\s*(\d+)\s*\|(.*?)\|(.*?)\|(.*?)\|\s*$")
+# `| # | 이름 | 판정 | 비고 |`(09-18 기준면) 과 `| [x] | 이름 | 자리 | 판정 |
+# 비고 |`(09-20 웨델해) — 앞 칸은 번호든 체크든 안 읽고(체크 안 된 `[ ]` 행은 답이 아니라 건너뛴다), 자리 칸은 건너뛴다
+MD_ROW_RE = re.compile(r"^\|\s*(?:\d+|\[x\])\s*\|(.*?)\|(.*?)\|(.*?)\|\s*$")
+MD_ROW5_RE = re.compile(r"^\|\s*(?:\d+|\[x\])\s*\|(.*?)\|(?:.*?)\|(.*?)\|(.*?)\|\s*$")
 
 
 def from_answered_md(path: Path = BIODATUM_ANSWERED,
@@ -233,10 +246,10 @@ def from_answered_md(path: Path = BIODATUM_ANSWERED,
     out: dict[str, dict] = {}
     clash: list[str] = []
     for line in path.read_text(encoding="utf-8").splitlines():
-        m = MD_ROW_RE.match(line)
+        m = MD_ROW5_RE.match(line) or MD_ROW_RE.match(line)
         if not m:
             continue
-        _n, name, verdict, note = m.groups()
+        name, verdict, note = m.groups()
         r = _verdict(name.strip().strip("*"), verdict, note, source)
         if not r:
             continue
@@ -309,6 +322,9 @@ def main() -> int:
         if b in paper3 and why not in paper3[b]["note"]:
             paper3[b]["note"] = (paper3[b]["note"] + " · " + why).strip(" ·")
     merged = merge(merged, paper3)
+    # 웨델해 1990 의 18종(09-20) — 같은 규칙
+    paper4 = from_answered_md(WEDDELL_ANSWERED, "weddell1990-answered-20260920")
+    merged = merge(merged, paper4)
     for b, why in {**HOLD, **REMARK}.items():
         if b in merged and why not in merged[b]["note"]:
             merged[b]["note"] = (merged[b]["note"] + " · " + why).strip(" ·")
@@ -320,6 +336,7 @@ def main() -> int:
     overlap = set(worms) & set(paper)
     print(f"worms_master {len(worms)} · paper_plates {len(paper)} "
           f"· 겹침 {len(overlap)} · 남극2002 {len(paper2)} · 기준면 {len(paper3)} "
+          f"· 웨델해 {len(paper4)} "
           f"· 덤 {len(EXTRA)} · 합계 {len(merged)}")
     print("  " + " · ".join(f"{k} {v}" for k, v in c.most_common()))
 

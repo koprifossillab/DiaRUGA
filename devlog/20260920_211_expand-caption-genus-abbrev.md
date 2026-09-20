@@ -98,3 +98,39 @@ C. centralis; …`. 169 가 그때 정했다: "캡션 표기는 고치지 않고
 `atlas/*.json` 은 이미지에 실려 가므로 판을 낸 뒤 **`dbrun.sh import_atlas.py`**
 — 통째로 갈아치우는 반입이라 옛 `C.` 항목은 저절로 빠진다(도감 19 · 항목
 2,748). `import_taxon_names.py` 는 안 돌려도 된다 — 13개가 이미 있다.
+
+## 배포 — `v0.31.1` · 18:37
+
+`main` push → CI 통과 → 태그 → CI 가 굽고 밀었다 → `backup_db.py --note
+before-211` → `deploy.sh v0.31.1`(smoke 통과) → `import_atlas.py`(도감 19 ·
+항목 **2,748** · 자리 3,400) → `check_db` — 경고는 "개체 종명이 도감에 없다
+2건"(`Centrales indet.` 2 개체) 하나이고 배포 전 사본에도 같은 2건이라
+새 것이 아니다. 슬라이드 18개 전수 네 화면과 도감·기준면 전부 200.
+`/atlas/?q=Coscinodiscus+centralis` 에 「원문 표기」 줄이 나고, `Fragilariopsis
+curta` 에 기준면 줄이, `Cocconeis fasciolata` 에 크롭 둘(fig.6·32)이 붙는다.
+속 필터에 `A.`·`C.`·`F.`·`T.`·`Th.` 가 없다. 테스트 인스턴스(`testdeploy.sh`)
+에도 올리고 같은 반입을 컨테이너 안에서 돌렸다(테스트 compose 엔 `dbtool`
+서비스가 없어 `docker exec diaruga-test-web-1 python ops/import_atlas.py`).
+
+## 덤 — 웨델해 1990 의 AlgaeBase 답 18종
+
+사용자가 배포 중에 `N:\DiaRUGA\Diadiction\temp\algaebase_todo_20260920_ANSWERED.md`
+를 두고 "하는 김에 이것도 반영해" 라 했다. 209 가 낸 조회 목록(18종)의 답이다
+— `names/algaebase/weddell1990_answered_20260920.md` 로 옮기고
+`tools/parse_taxon_names.py` 의 넷째 소스로 얹었다. 표가 **다섯 칸**이다
+(`| [x] | 이름 | 자리 | 판정 | 비고 |`) — 정규식을 하나 더 두고 자리 칸을
+건너뛴다. 체크 안 된 `[ ]` 행(2절 "원문에서 볼 것" 셋)은 답이 아니라 안
+읽는다 — 처음엔 읽혀서 21 이 나왔다.
+
+18종 전부 새 열쇠라 기존 판정은 하나도 안 바뀌었다(2,108 → **2,126**).
+*Nitzschia* 화석종 열넷 가운데 아홉이 *Fragilariopsis* 로 재조합(synonym),
+넷(*lacrima*·*praecurta*·*cylindrica*·*pusilla*)은 *Fragilariopsis* 조합이
+AlgaeBase 에 없어 *Nitzschia* 가 유효(accepted), *praeinterfrigidaria* 와
+*Katathiraia aspera* 는 없음(absent). 18종이 전부 `1990-gersonde-weddell`
+도감 항목의 `binomial` 과 맞는다. 원문 확인 셋(*Rouxia antarctica* 계급 ·
+*S. tetraoestruppii var.* · *A. maccollumii* 속)은 그대로 남았다.
+
+`import_taxon_names.py --src /data3/DiaRUGA/tmp/taxon_names_20260920.json`
+으로 운영·테스트에 넣었다 — **`v0.31.1` 이미지엔 2,108 짜리가 실려 있다.**
+다음 판이 저장소의 `taxon_names.json` 을 싣기 전까지 기본 `--src` 로 돌리면
+2,108 로 되돌아간다(207 때와 같은 자리 · HANDOFF 3.8).

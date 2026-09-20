@@ -5376,6 +5376,14 @@
   "checked": "2023"
  },
  {
+  "binomial": "Cosmiodiscus intersectus",
+  "status": "accepted",
+  "valid_name": "",
+  "source": "weddell1990-answered-20260920",
+  "note": "갱신 2023",
+  "checked": "2023"
+ },
+ {
   "binomial": "Cosmiodiscus marginulatus",
   "status": "absent",
   "valid_name": "",
@@ -5477,6 +5485,14 @@
   "valid_name": "",
   "source": "antarctic2002-filled-20260918",
   "note": "갱신 2026 · (원래 비고) 속째 대조표에 없음",
+  "checked": "2026"
+ },
+ {
+  "binomial": "Crucidenticula punctata",
+  "status": "accepted",
+  "valid_name": "",
+  "source": "weddell1990-answered-20260920",
+  "note": "갱신 2026",
   "checked": "2026"
  },
  {
@@ -8430,6 +8446,14 @@
   "source": "worms-master-20260814",
   "note": "그대로 유효 · algaebase_day19_0901-0950.md · (그대로 유효, Kützing)",
   "checked": "2005-07-06"
+ },
+ {
+  "binomial": "Katathiraia aspera",
+  "status": "absent",
+  "valid_name": "",
+  "source": "weddell1990-answered-20260920",
+  "note": "",
+  "checked": ""
  },
  {
   "binomial": "Kisseleviella ezoensis",
@@ -12552,6 +12576,22 @@
   "checked": "2005"
  },
  {
+  "binomial": "Nitzschia arcula",
+  "status": "synonym",
+  "valid_name": "Fragilariopsis arcula (Gersonde) Gersonde & Bárcena",
+  "source": "weddell1990-answered-20260920",
+  "note": "갱신 2026 · 09-18 남극2002 조회분 재사용",
+  "checked": "2026"
+ },
+ {
+  "binomial": "Nitzschia aurica",
+  "status": "synonym",
+  "valid_name": "Fragilariopsis aurica (Gersonde) Gersonde & Bárcena",
+  "source": "weddell1990-answered-20260920",
+  "note": "갱신 2026",
+  "checked": "2026"
+ },
+ {
   "binomial": "Nitzschia bacillariaeformis",
   "status": "accepted",
   "valid_name": "",
@@ -12568,6 +12608,14 @@
   "checked": "2021"
  },
  {
+  "binomial": "Nitzschia barronii",
+  "status": "synonym",
+  "valid_name": "Fragilariopsis barronii (Gersonde) Gersonde & Bárcena",
+  "source": "weddell1990-answered-20260920",
+  "note": "갱신 2026",
+  "checked": "2026"
+ },
+ {
   "binomial": "Nitzschia cireumsuta",
   "status": "synonym",
   "valid_name": "Tryblionella circumsuta",
@@ -12582,6 +12630,22 @@
   "source": "worms-master-20260814",
   "note": "그대로 유효 · algaebase_day29_1401-1450.md · (그대로 유효, Hantzsch)",
   "checked": "2018-01-31"
+ },
+ {
+  "binomial": "Nitzschia claviceps",
+  "status": "synonym",
+  "valid_name": "Fragilariopsis claviceps (Schrader) Censarek & Gersonde",
+  "source": "weddell1990-answered-20260920",
+  "note": "갱신 2019",
+  "checked": "2019"
+ },
+ {
+  "binomial": "Nitzschia clementia",
+  "status": "synonym",
+  "valid_name": "Fragilariopsis clementia (Gombos) Zielinski & Gersonde",
+  "source": "weddell1990-answered-20260920",
+  "note": "갱신 2026",
+  "checked": "2026"
  },
  {
   "binomial": "Nitzschia closterium",
@@ -12606,6 +12670,14 @@
   "source": "paper-plates-filled-20260831",
   "note": "갱신 2005 · Bacillariophyceae",
   "checked": "2005"
+ },
+ {
+  "binomial": "Nitzschia cylindrica",
+  "status": "accepted",
+  "valid_name": "",
+  "source": "weddell1990-answered-20260920",
+  "note": "갱신 2018 · *Fragilariopsis cylindrica* 조합은 AlgaeBase에 **없음** — *Nitzschia* 쪽이 유효 · 09-18 남극2002 조회분 재사용",
+  "checked": "2018"
  },
  {
   "binomial": "Nitzschia cylindrus",
@@ -12640,6 +12712,22 @@
   "checked": "2018-01-31"
  },
  {
+  "binomial": "Nitzschia donahuensis",
+  "status": "synonym",
+  "valid_name": "Fragilariopsis donahuensis (Schrader) Censarek & Gersonde",
+  "source": "weddell1990-answered-20260920",
+  "note": "갱신 2019 · 09-18 남극2002 조회분 재사용",
+  "checked": "2019"
+ },
+ {
+  "binomial": "Nitzschia efferans",
+  "status": "synonym",
+  "valid_name": "Fragilariopsis efferans (Schrader) Censarek & Gersonde",
+  "source": "weddell1990-answered-20260920",
+  "note": "갱신 2019",
+  "checked": "2019"
+ },
+ {
   "binomial": "Nitzschia filiformis",
   "status": "accepted",
   "valid_name": "",
@@ -12654,6 +12742,14 @@
   "source": "worms-master-20260814",
   "note": "이명 → 갈아탄다 · algaebase_day7_priority-148.md · 철자 교정 Nitzschia fonticula → Nitzschia fonticola · 표제 Nitzschia fonticola (Grunow) Grunow · 갱신 05 July 2022 · algaebase_day29_1401-1450.md 은 AlgaeBase에 없음",
   "checked": ""
+ },
+ {
+  "binomial": "Nitzschia fossilis",
+  "status": "accepted",
+  "valid_name": "",
+  "source": "weddell1990-answered-20260920",
+  "note": "갱신 2022 · 주의: *Fragilariopsis fossilis* 도 따로 유효로 있음 — 중복 확인 필요 · 09-18 남극2002 조회분 재사용",
+  "checked": "2022"
  },
  {
   "binomial": "Nitzschia frigida",
@@ -12704,6 +12800,14 @@
   "checked": "2026"
  },
  {
+  "binomial": "Nitzschia interfrigidaria",
+  "status": "synonym",
+  "valid_name": "Fragilariopsis interfrigidaria (McCollum) Gersonde & Bárcena",
+  "source": "weddell1990-answered-20260920",
+  "note": "갱신 2026",
+  "checked": "2026"
+ },
+ {
   "binomial": "Nitzschia kerguelensis",
   "status": "synonym",
   "valid_name": "Fragilariopsis kerguelensis",
@@ -12718,6 +12822,14 @@
   "source": "worms-master-20260814",
   "note": "이명 → 갈아탄다 · algaebase_day29_1401-1450.md · Nitzschia pusilla(종내 이명) · 도감 표기의 움라우트(ü)가 정상 검색됨(OCR 오류 아님)",
   "checked": "2005-07-15"
+ },
+ {
+  "binomial": "Nitzschia lacrima",
+  "status": "accepted",
+  "valid_name": "",
+  "source": "weddell1990-answered-20260920",
+  "note": "갱신 2022 · *Fragilariopsis lacrima* 조합은 AlgaeBase에 **없음** — *Nitzschia* 쪽이 유효 · 09-18 남극2002 조회분 재사용",
+  "checked": "2022"
  },
  {
   "binomial": "Nitzschia lacustris",
@@ -12766,6 +12878,14 @@
   "source": "worms-master-20260814",
   "note": "그대로 유효 · algaebase_day29_1401-1450.md · (그대로 유효, W.Gregory ex Greville) · WoRMS 일치(accepted)",
   "checked": "2009-10-06"
+ },
+ {
+  "binomial": "Nitzschia maleinterpretaria",
+  "status": "synonym",
+  "valid_name": "Fragilariopsis maleinterpretaria (Schrader) Censarek & Gersonde",
+  "source": "weddell1990-answered-20260920",
+  "note": "갱신 2019",
+  "checked": "2019"
  },
  {
   "binomial": "Nitzschia marginulata",
@@ -12840,12 +12960,36 @@
   "checked": "2017"
  },
  {
+  "binomial": "Nitzschia praecurta",
+  "status": "accepted",
+  "valid_name": "",
+  "source": "weddell1990-answered-20260920",
+  "note": "갱신 2022 · *Fragilariopsis praecurta* 조합은 AlgaeBase에 **없음** — *Nitzschia* 쪽이 유효 · 09-18 남극2002 조회분 재사용",
+  "checked": "2022"
+ },
+ {
+  "binomial": "Nitzschia praeinterfrigidaria",
+  "status": "absent",
+  "valid_name": "",
+  "source": "weddell1990-answered-20260920",
+  "note": "09-18 남극2002 조회분 재사용",
+  "checked": ""
+ },
+ {
   "binomial": "Nitzschia pseudokerguelensis",
   "status": "accepted",
   "valid_name": "",
   "source": "antarctic2002-filled-20260918",
   "note": "갱신 2026",
   "checked": "2026"
+ },
+ {
+  "binomial": "Nitzschia pusilla",
+  "status": "accepted",
+  "valid_name": "",
+  "source": "weddell1990-answered-20260920",
+  "note": "갱신 2022 · *Fragilariopsis pusilla* 조합은 AlgaeBase에 **없음** — *Nitzschia* 쪽이 유효 · 09-18 남극2002 조회분 재사용",
+  "checked": "2022"
  },
  {
   "binomial": "Nitzschia reinholdii",
