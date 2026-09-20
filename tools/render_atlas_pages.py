@@ -103,6 +103,10 @@ LEFT_PARITY = {
     "1986-lee-sekorea": "odd",
     "1996-lee-bransfield": "odd",
     "1991-lee-yeonil": "odd",
+    # 남극 셋(207·209)도 저널 낱장·학위논문 스캔 — "odd" 그대로
+    "2002-censarek-miocene": "odd",
+    "2002-zielinski-rouxia": "odd",
+    "1990-gersonde-weddell": "odd",
 }
 
 SOURCES = [
@@ -150,6 +154,16 @@ SOURCES = [
      PAPERS_NAS, "1996_lee_bransfield_cores.pdf"),
     ("1991-lee-yeonil", "1991 Lee 연일층군", "main", "본문",
      PAPERS_NAS, "1991_lee_yeonil_biostratigraphy.pdf"),
+    # 남극 셋(207·209). 크롭만 먼저 반입돼 있었고 쪽 전체는 여기서 뜬다 —
+    # 안 뜨면 색인 카드의 「해설 p.N」 이 404 로 가고 도감 목록에도 안 오른다
+    # (212). Censarek 는 학위논문 전체(176쪽)다 — 도감이 된 것은 2장뿐이지만
+    # 본문이 층서 근거라 다 뜬다
+    ("2002-censarek-miocene", "2002 Censarek 남극 마이오세", "main", "본문",
+     PAPERS_NAS, "2002_censarek_so_miocene_thesis.pdf"),
+    ("2002-zielinski-rouxia", "2002 Zielinski Rouxia", "main", "본문",
+     PAPERS_NAS, "2002_zielinski_rouxia_lod.pdf"),
+    ("1990-gersonde-weddell", "1990 Gersonde 웨델해", "main", "본문",
+     PAPERS_NAS, "1990_gersonde_burckle_odp113_weddell.pdf"),
 ]
 
 OUT = Path(os.environ.get("DIARUGA_ATLAS_ROOT", "/data3/DiaRUGA/atlas"))
