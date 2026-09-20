@@ -152,7 +152,16 @@ class AtlasImportTest(DiaRUGATestCase):
         # Censarek 2002 항목 49 · Zielinski 2002 항목 2) — 열여덟. **웨델해
         # 논문 하나가 더 왔다**(209 · Gersonde & Burckle 1990 항목 50) — 열아홉
         self.assertEqual(Atlas.objects.count(), 19)
-        self.assertEqual(total_e, 2751)
+        # 2,751 이었다가 **논문 캡션의 속명 약자를 펴면서 셋이 합쳐졌다**(211 ·
+        # 2001 브랜스필드의 `C. fasciolata`·`T. antarctica`·`F. ritscheri` 가
+        # 같은 논문의 온전한 이름과 한 항목이 됐다)
+        self.assertEqual(total_e, 2748)
+        # **속 자리에 약자가 남아 있으면 안 된다** (211). `C.` 가 속 필터에
+        # 속처럼 뜨고 `binomial` 이 `C. centralis` 라 학명·산출·기준면을 하나도
+        # 못 짚는다 — 14건이 그랬다. 파서가 못 편 것은 여기서 잡힌다
+        left = list(AtlasEntry.objects.filter(genus__endswith=".")
+                    .values_list("atlas__key", "name"))
+        self.assertEqual(left, [], "속명 약자가 안 펴진 항목")
 
 
 class CheckAtlasTest(DiaRUGATestCase):

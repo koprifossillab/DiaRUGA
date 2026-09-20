@@ -11,6 +11,8 @@
 3. `sp.` (속까지만 내려간 항목)과 **이름이 상해서 못 읽는 것**을 가른다
 4. **빈 것을 안 채운다** — 도판 없는 항목·깊이 빠진 그림
 5. **검산이 어긋나면 잡는다** — 실패할 수 없는 시험은 없는 것보다 나쁘다
+6. **논문 캡션의 속명 약자를 편다**(211, `parse_paper_atlas.expand_abbrev`) —
+   바로 앞의 같은 글자 속을 받고, 사람이 확인한 표와 어긋나면 멈춘다
 """
 import sys
 from pathlib import Path
@@ -171,6 +173,39 @@ check("자리를 빠뜨리면", bool(pa.check(spec, KOREAN, b)), True)
 b = copy.deepcopy(kr)
 b[0]["genus"] = "Zzz"
 check("속을 잘못 읽으면", bool(pa.check(spec, KOREAN, b)), True)
+
+print("\n9. 논문 캡션의 속명 약자 (211)")
+import parse_paper_atlas as ppa
+CAPS = {1: {"A": "Coscinodiscus asteromphalus", "B": "C. centralis",
+            "C": "Actinoptychus senarius", "D": "Actinocyclus curvatulus",
+            "E": "A. octonarius", "F": "Thalassiosira mala",
+            "G": "Thalassionema frauenfeldii", "H": "Th. nitzschioides",
+            "I": "__unnamed"}}
+TABLE = {"C.": "Coscinodiscus", "A.": "Actinocyclus", "Th.": "Thalassionema"}
+caps = {pl: dict(f) for pl, f in CAPS.items()}
+printed = ppa.expand_abbrev(caps, TABLE)
+check("약자를 편다", caps[1]["B"], "Coscinodiscus centralis")
+check("가장 가까운 같은 글자 속이다 (Actinoptychus 가 아니다)",
+      caps[1]["E"], "Actinocyclus octonarius")
+check("두 글자 약자도 가까운 쪽이다 (Thalassiosira 가 아니다)",
+      caps[1]["H"], "Thalassionema nitzschioides")
+check("원문 표기를 남긴다", printed, {(1, "B"): "C. centralis",
+                                     (1, "E"): "A. octonarius",
+                                     (1, "H"): "Th. nitzschioides"})
+check("온전한 이름은 안 건드린다", caps[1]["A"], CAPS[1]["A"])
+
+
+def stops(table):
+    try:
+        ppa.expand_abbrev({pl: dict(f) for pl, f in CAPS.items()}, table)
+    except SystemExit:
+        return True
+    return False
+
+
+check("표와 어긋나면 멈춘다", stops({**TABLE, "A.": "Actinoptychus"}), True)
+check("표에 없으면 멈춘다", stops({"C.": "Coscinodiscus", "A.": "Actinocyclus"}), True)
+check("표가 맞으면 돈다", stops(TABLE), False)
 
 print(f"\n{ok} passed, {fail} failed")
 sys.exit(1 if fail else 0)

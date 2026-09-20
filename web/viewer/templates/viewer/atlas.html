@@ -263,10 +263,16 @@
           </span>
         {% empty %}<span class="dim" data-en="No location recorded">자리가 안 적혀 있다</span>{% endfor %}
       </div>
-      {% if r.extra.ecology or r.extra.distribution %}
+      {% if r.extra.ecology or r.extra.distribution or r.extra.original_note %}
         <div class="entryextra">
           {% if r.extra.ecology %}<div><span class="dim" data-en="Ecology">생태</span> {{ r.extra.ecology }}</div>{% endif %}
           {% if r.extra.distribution %}<div><span class="dim" data-en="Distribution">분포</span> {{ r.extra.distribution }}</div>{% endif %}
+          {% comment %}
+            원문 표기 — 동남극 도판집의 오식 메모와, 논문 캡션의 속명 약자
+            (`C. centralis`, 211)가 여기 온다. `name` 은 편 이름이라 원문과
+            대조할 때 이 줄이 필요하다. 오프라인 도감(app.js)도 같은 줄을 낸다
+          {% endcomment %}
+          {% if r.extra.original_note %}<div><span class="dim" data-en="As printed">원문 표기</span> {{ r.extra.original_note }}</div>{% endif %}
         </div>
       {% endif %}
       {% if r.taxon %}

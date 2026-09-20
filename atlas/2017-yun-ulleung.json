@@ -59,9 +59,9 @@
   {
    "seq": 2,
    "item_no": null,
-   "name": "C. centralis",
-   "genus": "C.",
-   "binomial": "C. centralis",
+   "name": "Coscinodiscus centralis",
+   "genus": "Coscinodiscus",
+   "binomial": "Coscinodiscus centralis",
    "rank": "species",
    "infra": null,
    "authority": null,
@@ -90,7 +90,9 @@
      "crop_image": "atlas/2017-yun-ulleung/crops/pl1_figE.png"
     }
    ],
-   "extra": {},
+   "extra": {
+    "original_note": "`C. centralis` 로 적혀 있다 (pl.1 fig.D·E)"
+   },
    "line": 1
   },
   {
@@ -159,9 +161,9 @@
   {
    "seq": 5,
    "item_no": null,
-   "name": "A. octonarius",
-   "genus": "A.",
-   "binomial": "A. octonarius",
+   "name": "Actinocyclus octonarius",
+   "genus": "Actinocyclus",
+   "binomial": "Actinocyclus octonarius",
    "rank": "species",
    "infra": null,
    "authority": null,
@@ -190,7 +192,9 @@
      "crop_image": "atlas/2017-yun-ulleung/crops/pl1_figJ.png"
     }
    ],
-   "extra": {},
+   "extra": {
+    "original_note": "`A. octonarius` 로 적혀 있다 (pl.1 fig.I·J)"
+   },
    "line": 1
   },
   {
@@ -248,9 +252,9 @@
   {
    "seq": 8,
    "item_no": null,
-   "name": "T. eccentrica",
-   "genus": "T.",
-   "binomial": "T. eccentrica",
+   "name": "Thalassiosira eccentrica",
+   "genus": "Thalassiosira",
+   "binomial": "Thalassiosira eccentrica",
    "rank": "species",
    "infra": null,
    "authority": null,
@@ -268,15 +272,17 @@
      "crop_image": "atlas/2017-yun-ulleung/crops/pl1_figM.png"
     }
    ],
-   "extra": {},
+   "extra": {
+    "original_note": "`T. eccentrica` 로 적혀 있다 (pl.1 fig.M)"
+   },
    "line": 1
   },
   {
    "seq": 9,
    "item_no": null,
-   "name": "T. mala",
-   "genus": "T.",
-   "binomial": "T. mala",
+   "name": "Thalassiosira mala",
+   "genus": "Thalassiosira",
+   "binomial": "Thalassiosira mala",
    "rank": "species",
    "infra": null,
    "authority": null,
@@ -294,7 +300,9 @@
      "crop_image": "atlas/2017-yun-ulleung/crops/pl1_figN.png"
     }
    ],
-   "extra": {},
+   "extra": {
+    "original_note": "`T. mala` 로 적혀 있다 (pl.1 fig.N)"
+   },
    "line": 1
   },
   {
@@ -400,9 +408,9 @@
   {
    "seq": 13,
    "item_no": null,
-   "name": "Th. Nitzschioides",
-   "genus": "Th.",
-   "binomial": "Th. nitzschioides",
+   "name": "Thalassionema Nitzschioides",
+   "genus": "Thalassionema",
+   "binomial": "Thalassionema nitzschioides",
    "rank": "species",
    "infra": null,
    "authority": null,
@@ -420,7 +428,9 @@
      "crop_image": "atlas/2017-yun-ulleung/crops/pl1_figT.png"
     }
    ],
-   "extra": {},
+   "extra": {
+    "original_note": "`Th. Nitzschioides` 로 적혀 있다 (pl.1 fig.T)"
+   },
    "line": 1
   }
  ]

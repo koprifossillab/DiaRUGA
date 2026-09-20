@@ -13,6 +13,17 @@
 `__unnamed` 로 잘린 크롭(이름을 못 짚은 자리)은 담지 않는다 — 그림은 있지만
 종을 모르는 것이라 도감 항목이 될 수 없다.
 
+**속명 약자는 편다**(211). 캡션은 같은 속이 이어지면 `Coscinodiscus
+asteromphalus; C. centralis` 처럼 둘째부터 약자를 쓰는데, `CAPTIONS` 는 원문
+그대로 옮긴 표라 약자가 그대로 있다. 그것을 안 펴면 `genus` 가 `C.` 가 되어
+속 필터에 속처럼 뜨고, `binomial` 이 `C. centralis` 라 `TaxonName`·`Occurrence`·
+`Biodatum` 을 정확 일치로 짚는 자리에 하나도 안 걸린다 — 14건이 그랬다.
+규칙은 논문의 것 그대로다: **약자는 캡션 순서로 바로 앞에 나온, 같은 글자로
+시작하는 온전한 속을 받는다.** 그 결과를 `GENUS_ABBREV` 의 사람이 확인한
+표와 대조하고 **어긋나거나 표에 없으면 멈춘다** — Schmidt 색인에서 약자를
+그 쪽의 다른 속으로 잘못 편 것이 가장 큰 고장이었다(119·160). 원문 표기는
+`extra.original_note` 에 남긴다(동남극 도판집이 같은 칸을 쓴다).
+
 이름 검증 규칙(`binomial()`)은 여기서 새로 만들지 않는다 — `tools/parse_atlas.py`
 가 이미 갖고 있는 `name_fields`·`entry`·`place` 를 그대로 부른다.
 
@@ -164,6 +175,64 @@ PAPER_META = {
     ),
 }
 
+# 캡션의 속명 약자 → 온전한 속. **사람이 원문으로 확인한 것**이라 `build()` 의
+# "바로 앞의 같은 글자 속" 규칙과 대조하는 검산표다(둘 다 맞아야 쓴다).
+# 2017 은 devlog 169 가 부록 표(Table 1)로 검산했고, 2001 은 같은 논문의 다른
+# 그림이 온전한 이름으로 확인해 준다(pl.1 fig.32 `Cocconeis fasciolata` ·
+# pl.2 fig.1·3 `Thalassiosira antarctica`·`eccentrica` · pl.1 fig.25
+# `Fragilariopsis ritscheri`). 약자가 있는 논문만 적는다 — 없는 논문에서
+# 약자가 나오면 표에 없어 멈춘다
+GENUS_ABBREV = {
+    "2017_yun_ulleung_basin": {
+        "C.": "Coscinodiscus", "A.": "Actinocyclus",
+        "T.": "Thalassiosira", "Th.": "Thalassionema",
+    },
+    "2001_park_bransfield_paleoenv": {
+        "C.": "Cocconeis", "T.": "Thalassiosira", "F.": "Fragilariopsis",
+    },
+}
+
+# 속 자리의 약자 — 대문자로 시작해 점으로 끝나는 첫 낱말(`C.`·`Th.`)
+ABBREV = re.compile(r"^([A-Z][a-z]?)\.(?=\s)")
+
+
+def expand_abbrev(caps: dict, table: dict) -> dict[tuple[int, object], str]:
+    """(도판, 그림) → 원문 표기. **약자였던 자리만** 담고 `caps` 는 안 고친다.
+
+    같은 순서로 훑으며(`build()` 와 같다 — 도판 번호, 그림 번호) 온전한 속을
+    기억해 두고, 약자를 만나면 **가장 최근에 나온 같은 글자 속**을 편다.
+    `A.` 는 `Actinoptychus` 와 `Actinocyclus` 가 다 앞에 있어도 더 가까운
+    쪽이다 — 논문이 그렇게 읽히기를 바라고 쓴 규칙이다.
+    """
+    printed: dict[tuple[int, object], str] = {}
+    seen: list[str] = []          # 나온 순서의 온전한 속 (뒤가 최근)
+    for plate in sorted(caps):
+        for fig in sorted(caps[plate], key=fig_sort_key):
+            name = caps[plate][fig]
+            if not name or name == "__unnamed":
+                continue
+            m = ABBREV.match(name)
+            if not m:
+                seen.append(name.split()[0])
+                continue
+            stem = m.group(1)
+            near = next((g for g in reversed(seen) if g.startswith(stem)), None)
+            want = table.get(m.group(0))
+            if want is None or near != want:
+                raise SystemExit(
+                    f"속명 약자를 못 편다: pl{plate} fig{fig} {name!r} — "
+                    f"바로 앞 규칙은 {near!r}, 표는 {want!r}")
+            printed[(plate, fig)] = name
+            caps[plate][fig] = want + name[m.end():]
+    return printed
+
+
+def _by_plate(keys):
+    out: dict[int, list] = {}
+    for pl, fig in keys:
+        out.setdefault(pl, []).append(fig)
+    return {pl: sorted(fs, key=fig_sort_key) for pl, fs in sorted(out.items())}
+
 
 def fig_sort_key(f):
     if isinstance(f, int):
@@ -215,7 +284,10 @@ def build(paper: str) -> dict:
     def merge_comma(name: str) -> str:
         return COMMA_BEFORE_ACT.sub(r"\1", name).strip()
 
-    caps = CAPTIONS[paper]
+    # 약자를 편 사본으로 훑는다 — `CAPTIONS` 는 원문 그대로 두어야
+    # `source_sha256` 이 옮긴 표 자체를 가리킨다
+    caps = {pl: dict(figs) for pl, figs in CAPTIONS[paper].items()}
+    printed = expand_abbrev(caps, GENUS_ABBREV.get(paper, {}))
     src = SOURCE[paper]
 
     occurrences: dict[str, list[tuple[int, object]]] = {}
@@ -277,6 +349,16 @@ def build(paper: str) -> dict:
         e = entry(seq, first_plate, ACT_TAIL.sub("", name).strip(),
                    placements=placements)
         e["name"] = name          # 원문 그대로(n. sp./n. comb. 꼬리 포함) 되살린다
+        if e["genus"] and e["genus"].endswith("."):
+            raise SystemExit(f"속이 약자로 남았다: {name!r}")
+        abbr = [(pl, fig) for pl, fig in occurrences[name] if (pl, fig) in printed]
+        if abbr:
+            forms = sorted({printed[k] for k in abbr})
+            where = " · ".join(
+                f"pl.{pl} fig.{'·'.join(str(f) for f in fs)}"
+                for pl, fs in _by_plate(abbr).items())
+            e["extra"]["original_note"] = (
+                " / ".join(f"`{f}`" for f in forms) + f" 로 적혀 있다 ({where})")
         entries.append(e)
 
     if missing_crops:
@@ -289,7 +371,8 @@ def build(paper: str) -> dict:
     # `caps` 는 도판마다 정수·글자 딸린 키가 섞여 `sort_keys` 가 못 견딘다 —
     # 키를 문자열로 내려 우리가 직접 정렬한 튜플로 해시한다
     flat = sorted((plate, str(fig), name)
-                  for plate, figs in caps.items() for fig, name in figs.items())
+                  for plate, figs in CAPTIONS[paper].items()
+                  for fig, name in figs.items())
     digest = hashlib.sha256(
         json.dumps(flat, ensure_ascii=False).encode()
     ).hexdigest()

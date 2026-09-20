@@ -115,6 +115,18 @@ class AtlasSearchTests(DiaRUGATestCase):
         html = self.get(q="Navicula abrupta")
         self.assertIn("Verzeichnis", html)
 
+    # 3b) 원문 표기(`extra.original_note`)가 화면에 난다 (211). 논문 캡션의
+    #     속명 약자를 편 뒤로 `name` 이 원문과 달라져 이 줄이 대조의 근거다 —
+    #     동남극 도판집의 오식 메모 8건도 그동안 오프라인 도감에만 보였다
+    def test_original_note_is_shown(self):
+        e = AtlasEntry.objects.get(name="Navicula abrupta")
+        e.extra = {"original_note": "`N. abrupta` 로 적혀 있다 (pl.3 fig.1)"}
+        e.save()
+        html = self.body(self.get(q="Navicula abrupta"))
+        self.assertIn("원문 표기", html)
+        self.assertIn("`N. abrupta` 로 적혀 있다", html)
+        self.assertNotIn("원문 표기", self.body(self.get(q="Sceletonema")))
+
     # 4) `genus_guess` 는 있는 쪽만 말한다. "확정" 이라는 말을 안 쓴다
     def test_genus_guess_marked_but_never_confirmed(self):
         html = self.body(self.get(q="Navicula abrupta"))

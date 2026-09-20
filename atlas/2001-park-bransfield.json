@@ -5,7 +5,7 @@
   "short": "2001 Park 브랜스필드",
   "source": "tools/plate_figs.py 의 CAPTIONS (손으로 짚었다)",
   "source_sha256": "af17ce8fceb54eb63c73a595c2e599a2cd0f8892c222b83ffdc1f5d8e38b2f4c",
-  "note": "도판 2장 · 그림 45개 · 종 항목 41개"
+  "note": "도판 2장 · 그림 45개 · 종 항목 38개"
  },
  "entries": [
   {
@@ -148,9 +148,9 @@
   {
    "seq": 5,
    "item_no": null,
-   "name": "C. fasciolata (Ehrenberg) Brown",
-   "genus": "C.",
-   "binomial": "C. fasciolata",
+   "name": "Cocconeis fasciolata (Ehrenberg) Brown",
+   "genus": "Cocconeis",
+   "binomial": "Cocconeis fasciolata",
    "rank": "species",
    "infra": null,
    "authority": null,
@@ -166,9 +166,22 @@
      "volume": null,
      "note": null,
      "crop_image": "atlas/2001-park-bransfield/crops/pl1_fig06.png"
+    },
+    {
+     "plate": 1,
+     "plate_label": null,
+     "figures": "32",
+     "book_page": 11,
+     "pdf_page": 10,
+     "pdf_plate_page": null,
+     "volume": null,
+     "note": null,
+     "crop_image": "atlas/2001-park-bransfield/crops/pl1_fig32.png"
     }
    ],
-   "extra": {},
+   "extra": {
+    "original_note": "`C. fasciolata (Ehrenberg) Brown` 로 적혀 있다 (pl.1 fig.6)"
+   },
    "line": 1
   },
   {
@@ -445,9 +458,9 @@
   {
    "seq": 16,
    "item_no": null,
-   "name": "T. eccentrica (Ehrenberg) Cleve",
-   "genus": "T.",
-   "binomial": "T. eccentrica",
+   "name": "Thalassiosira eccentrica (Ehrenberg) Cleve",
+   "genus": "Thalassiosira",
+   "binomial": "Thalassiosira eccentrica",
    "rank": "species",
    "infra": null,
    "authority": null,
@@ -465,15 +478,17 @@
      "crop_image": "atlas/2001-park-bransfield/crops/pl1_fig17.png"
     }
    ],
-   "extra": {},
+   "extra": {
+    "original_note": "`T. eccentrica (Ehrenberg) Cleve` 로 적혀 있다 (pl.1 fig.17)"
+   },
    "line": 1
   },
   {
    "seq": 17,
    "item_no": null,
-   "name": "T. gracilis (Karsten) Hustedt",
-   "genus": "T.",
-   "binomial": "T. gracilis",
+   "name": "Thalassiosira gracilis (Karsten) Hustedt",
+   "genus": "Thalassiosira",
+   "binomial": "Thalassiosira gracilis",
    "rank": "species",
    "infra": null,
    "authority": null,
@@ -491,15 +506,17 @@
      "crop_image": "atlas/2001-park-bransfield/crops/pl1_fig18.png"
     }
    ],
-   "extra": {},
+   "extra": {
+    "original_note": "`T. gracilis (Karsten) Hustedt` 로 적혀 있다 (pl.1 fig.18)"
+   },
    "line": 1
   },
   {
    "seq": 18,
    "item_no": null,
-   "name": "T. antarctica Comber",
-   "genus": "T.",
-   "binomial": "T. antarctica",
+   "name": "Thalassiosira antarctica Comber",
+   "genus": "Thalassiosira",
+   "binomial": "Thalassiosira antarctica",
    "rank": "species",
    "infra": null,
    "authority": null,
@@ -515,9 +532,22 @@
      "volume": null,
      "note": null,
      "crop_image": "atlas/2001-park-bransfield/crops/pl1_fig19.png"
+    },
+    {
+     "plate": 2,
+     "plate_label": null,
+     "figures": "1",
+     "book_page": 13,
+     "pdf_page": 12,
+     "pdf_plate_page": null,
+     "volume": null,
+     "note": null,
+     "crop_image": "atlas/2001-park-bransfield/crops/pl2_fig01.png"
     }
    ],
-   "extra": {},
+   "extra": {
+    "original_note": "`T. antarctica Comber` 로 적혀 있다 (pl.1 fig.19)"
+   },
    "line": 1
   },
   {
@@ -645,9 +675,22 @@
      "volume": null,
      "note": null,
      "crop_image": "atlas/2001-park-bransfield/crops/pl1_fig25.png"
+    },
+    {
+     "plate": 2,
+     "plate_label": null,
+     "figures": "11",
+     "book_page": 13,
+     "pdf_page": 12,
+     "pdf_plate_page": null,
+     "volume": null,
+     "note": null,
+     "crop_image": "atlas/2001-park-bransfield/crops/pl2_fig11.png"
     }
    ],
-   "extra": {},
+   "extra": {
+    "original_note": "`F. ritscheri Hustedt` 로 적혀 있다 (pl.2 fig.11)"
+   },
    "line": 1
   },
   {
@@ -705,9 +748,9 @@
   {
    "seq": 26,
    "item_no": null,
-   "name": "F. obliquecostata (Van Heurck) Hasle",
-   "genus": "F.",
-   "binomial": "F. obliquecostata",
+   "name": "Fragilariopsis obliquecostata (Van Heurck) Hasle",
+   "genus": "Fragilariopsis",
+   "binomial": "Fragilariopsis obliquecostata",
    "rank": "species",
    "infra": null,
    "authority": null,
@@ -725,7 +768,9 @@
      "crop_image": "atlas/2001-park-bransfield/crops/pl1_fig28.png"
     }
    ],
-   "extra": {},
+   "extra": {
+    "original_note": "`F. obliquecostata (Van Heurck) Hasle` 로 적혀 있다 (pl.1 fig.28)"
+   },
    "line": 1
   },
   {
@@ -809,58 +854,6 @@
   {
    "seq": 30,
    "item_no": null,
-   "name": "Cocconeis fasciolata (Ehrenberg) Brown",
-   "genus": "Cocconeis",
-   "binomial": "Cocconeis fasciolata",
-   "rank": "species",
-   "infra": null,
-   "authority": null,
-   "genus_guess": false,
-   "placements": [
-    {
-     "plate": 1,
-     "plate_label": null,
-     "figures": "32",
-     "book_page": 11,
-     "pdf_page": 10,
-     "pdf_plate_page": null,
-     "volume": null,
-     "note": null,
-     "crop_image": "atlas/2001-park-bransfield/crops/pl1_fig32.png"
-    }
-   ],
-   "extra": {},
-   "line": 1
-  },
-  {
-   "seq": 31,
-   "item_no": null,
-   "name": "Thalassiosira antarctica Comber",
-   "genus": "Thalassiosira",
-   "binomial": "Thalassiosira antarctica",
-   "rank": "species",
-   "infra": null,
-   "authority": null,
-   "genus_guess": false,
-   "placements": [
-    {
-     "plate": 2,
-     "plate_label": null,
-     "figures": "1",
-     "book_page": 13,
-     "pdf_page": 12,
-     "pdf_plate_page": null,
-     "volume": null,
-     "note": null,
-     "crop_image": "atlas/2001-park-bransfield/crops/pl2_fig01.png"
-    }
-   ],
-   "extra": {},
-   "line": 2
-  },
-  {
-   "seq": 32,
-   "item_no": null,
    "name": "Thalassiosira eccentrica (Ehr.) Cleve",
    "genus": "Thalassiosira",
    "binomial": "Thalassiosira eccentrica",
@@ -885,7 +878,7 @@
    "line": 2
   },
   {
-   "seq": 33,
+   "seq": 31,
    "item_no": null,
    "name": "Actinocyclus octonarius",
    "genus": "Actinocyclus",
@@ -911,7 +904,7 @@
    "line": 2
   },
   {
-   "seq": 34,
+   "seq": 32,
    "item_no": null,
    "name": "Porosira glacialis (Grunow) Jorgensen",
    "genus": "Porosira",
@@ -937,7 +930,7 @@
    "line": 2
   },
   {
-   "seq": 35,
+   "seq": 33,
    "item_no": null,
    "name": "Fragilariopsis lineata Hasle",
    "genus": "Fragilariopsis",
@@ -963,11 +956,11 @@
    "line": 2
   },
   {
-   "seq": 36,
+   "seq": 34,
    "item_no": null,
-   "name": "F. kerguelensis (O'Meara) Hustedt",
-   "genus": "F.",
-   "binomial": "F. kerguelensis",
+   "name": "Fragilariopsis kerguelensis (O'Meara) Hustedt",
+   "genus": "Fragilariopsis",
+   "binomial": "Fragilariopsis kerguelensis",
    "rank": "species",
    "infra": null,
    "authority": null,
@@ -985,15 +978,17 @@
      "crop_image": "atlas/2001-park-bransfield/crops/pl2_fig08.png"
     }
    ],
-   "extra": {},
+   "extra": {
+    "original_note": "`F. kerguelensis (O'Meara) Hustedt` 로 적혀 있다 (pl.2 fig.8)"
+   },
    "line": 2
   },
   {
-   "seq": 37,
+   "seq": 35,
    "item_no": null,
-   "name": "F. cylindrus (Grunow) Krieger",
-   "genus": "F.",
-   "binomial": "F. cylindrus",
+   "name": "Fragilariopsis cylindrus (Grunow) Krieger",
+   "genus": "Fragilariopsis",
+   "binomial": "Fragilariopsis cylindrus",
    "rank": "species",
    "infra": null,
    "authority": null,
@@ -1011,15 +1006,17 @@
      "crop_image": "atlas/2001-park-bransfield/crops/pl2_fig09.png"
     }
    ],
-   "extra": {},
+   "extra": {
+    "original_note": "`F. cylindrus (Grunow) Krieger` 로 적혀 있다 (pl.2 fig.9)"
+   },
    "line": 2
   },
   {
-   "seq": 38,
+   "seq": 36,
    "item_no": null,
-   "name": "F. curta (V. Heurck) Hasle",
-   "genus": "F.",
-   "binomial": "F. curta",
+   "name": "Fragilariopsis curta (V. Heurck) Hasle",
+   "genus": "Fragilariopsis",
+   "binomial": "Fragilariopsis curta",
    "rank": "species",
    "infra": null,
    "authority": null,
@@ -1037,37 +1034,13 @@
      "crop_image": "atlas/2001-park-bransfield/crops/pl2_fig10.png"
     }
    ],
-   "extra": {},
+   "extra": {
+    "original_note": "`F. curta (V. Heurck) Hasle` 로 적혀 있다 (pl.2 fig.10)"
+   },
    "line": 2
   },
   {
-   "seq": 39,
-   "item_no": null,
-   "name": "F. ritscheri Hustedt",
-   "genus": "F.",
-   "binomial": "F. ritscheri",
-   "rank": "species",
-   "infra": null,
-   "authority": null,
-   "genus_guess": false,
-   "placements": [
-    {
-     "plate": 2,
-     "plate_label": null,
-     "figures": "11",
-     "book_page": 13,
-     "pdf_page": 12,
-     "pdf_plate_page": null,
-     "volume": null,
-     "note": null,
-     "crop_image": "atlas/2001-park-bransfield/crops/pl2_fig11.png"
-    }
-   ],
-   "extra": {},
-   "line": 2
-  },
-  {
-   "seq": 40,
+   "seq": 37,
    "item_no": null,
    "name": "Rhizosolenia styliformis Brightwell",
    "genus": "Rhizosolenia",
@@ -1093,7 +1066,7 @@
    "line": 2
   },
   {
-   "seq": 41,
+   "seq": 38,
    "item_no": null,
    "name": "Navicula directa Smith",
    "genus": "Navicula",
