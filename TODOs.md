@@ -32,8 +32,14 @@ DB 설계는 [devlog/20260730_P02_db-schema.md](devlog/20260730_P02_db-schema.md
       (P28 §5). 범위 그림은 그다음
 - [ ] 멸종 속 반입이 끝나면 `check_db` 13번의 "도감에 없는 기준종 63 · 속 6"
       이 줄어야 한다 — 안 줄면 이름이 다른 것이다
-- [ ] **`v0.31.0` 배포 뒤 `import_biodatums.py`** (210 · 문헌 15 · 기준면 804 ·
-      대 71). Winter & Iwai 2002 의 `low` 28행이 빠지고 시추지별 43행이 든다
+- [x] **`v0.31.0` 배포 뒤 `import_biodatums.py`** — 09-20 16:12 에 돌렸다
+      (210 · 문헌 15 · 기준면 804 · 대 71 · `check_db` 13번 OK)
+- [ ] **AlgaeBase 색인 — `Diadiction/temp/algaebase_todo_20260920.md`** (웨델해
+      1990 의 18종 + 원문 확인 셋). 답이 오면 `names/algaebase/` 로 옮기고
+      `parse_taxon_names.py` 소스 → `import_taxon_names.py`
+- [ ] `check_db` "개체 종명이 도감에 없다 1건 — `Centrales indet.`" (09-20).
+      검토자가 적은 작업 이름이다 — 186 의 `Chaetoceros spp.` 처럼 도감에
+      작업 이름으로 세우거나(`atlas/working-names.json`) 표기를 고친다
 - [ ] 다른 출처의 `page` — 지금은 Winter & Iwai 2002 만 쪽을 안다(43행).
       PDF 가 `papers/` 에 있는 문헌(Gersonde 1990 Table 1·2 · Cody 2008 ·
       Warnock 2025 …)은 표의 쪽을 찾아 NAS JSON 에 `page` 를 적으면 링크가
