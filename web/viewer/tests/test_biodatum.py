@@ -14,15 +14,25 @@
 9. **파서의 이름 정규화** — 종소명 소문자 · `var.` 유지 · 비공식 이름은 이명법 없음
 10. **학명 판정이 그림의 표에 붙는다** — 이명·없음만, 종마다 한 번
     (`taxon_names.json` 의 기준면 85 이름 답 · 09-18 저녁)
+11. **210** — 속 여럿 · 종 숨기기(숨긴 것도 목록에 남는다) · 슬라이드의 종만
+    (이명법 꼴만 맞추고 못 맞춘 표기는 말한다) · 점의 문헌 링크(쪽은 `#page=`)
+12. **210 · 세로축 창** — 창 밖의 점은 안 그리고 막대는 잘려 열린다 · 창에
+    안 걸치는 종은 열이 없다 · `MIS 5`–`MIS 11` 같은 이름도 읽는다 · 뒤집힌
+    범위는 바로 세운다 · 눈금 간격은 창의 폭이 정한다
+13. **210 · 오른쪽 여백** — 마지막 열의 기울인 이름이 뷰박스 안에 든다
+    (`RIGHT_PAD` 를 0 으로 하면 죽는다)
+14. **210 · `supersedes`** — 뒤 파일이 앞 파일의 출처를 대신하면 앞 행이 빠진다
 """
 import importlib.util
 import json
 import sys
 from pathlib import Path
 
+from . import factories as fx
 from .base import DiaRUGATestCase
 from .. import biodatum as bd, data, mis
-from ..models import Atlas, AtlasEntry, Biodatum, Biozone, Reference, TaxonName
+from ..models import (Atlas, AtlasEntry, Biodatum, Biozone, DiatomObject, Reference,
+                      TaxonName)
 
 _ROOT = Path(__file__).resolve().parents[3]
 
@@ -200,6 +210,80 @@ class BiodatumChartTests(DiaRUGATestCase):
         self.assertTrue(g["Rouxia"]["in_atlas"])
 
 
+    def test_속_여럿과_종_숨기기(self):
+        """210. `genus` 목록 → 두 속이 한 그림에. `hide` 는 열만 빼고 목록에는
+        남는다 — `all_species` 에서 숨긴 것을 빼면 다시 켤 체크박스가 없다."""
+        datum(self.cody, "Thalassiosira kolbei", "LO", 1.9, variant="average")
+        got = data.biodatum_chart(areas=["antarctic"], genus=["Rouxia", "thalassiosira"])
+        names = [s["name"] for s in got["species"]]
+        self.assertIn("Thalassiosira kolbei", names)
+        self.assertIn("Rouxia antarctica", names)
+        got = data.biodatum_chart(areas=["antarctic"], genus=["Rouxia", "Thalassiosira"],
+                                  hide=["Rouxia antarctica", "없는 이름"])
+        self.assertNotIn("Rouxia antarctica", [s["name"] for s in got["species"]])
+        self.assertEqual(got["n_hidden"], 1)
+        self.assertEqual([x["name"] for x in got["all_species"] if x["hidden"]],
+                         ["Rouxia antarctica"])
+        # 화면 — 체크박스 둘 다 있고, 숨긴 것은 꺼진 채 `hide` 를 나른다
+        body = self.client.get("/atlas/datums/?area=antarctic&genus=Rouxia&genus=Thalassiosira"
+                               "&hide=Rouxia+antarctica&f=1").content.decode()
+        self.assertIn('name="genus" value="Rouxia" form="bdq"', body)
+        self.assertIn('<input type="hidden" name="hide" value="Rouxia antarctica" form="bdq">', body)
+        self.assertIn("종 1 숨김", body)
+        self.assertNotIn("Rouxia antarctica</i>{% if", body)
+
+    def test_슬라이드의_종만(self):
+        """210. 슬라이드에서 사람이 적은 종명(`DiatomObject.species`)의 이명법만
+        남긴다. `sp.`·명명자 붙은 것은 못 맞춘 표기로 말한다."""
+        w = fx.make_world(slug="rs23-bd", site_code="RSBD")
+        DiatomObject.objects.create(viewpoint=w.vp, species="Rouxia antarctica Heiden")
+        DiatomObject.objects.create(viewpoint=w.vp, species="Rouxia antarctica")
+        DiatomObject.objects.create(viewpoint=w.vp, species="Thalassiosira sp.")
+        got = data.biodatum_slide_species("rs23-bd")
+        self.assertEqual(got["binomials"], {"Rouxia antarctica"})
+        self.assertEqual(got["unmatched"], ["Thalassiosira sp."])
+        chart = data.biodatum_chart(areas=["antarctic", "npacific"], binomials=got["binomials"])
+        self.assertEqual([s["name"] for s in chart["species"]], ["Rouxia antarctica"])
+        # 빈 집합은 "아무것도 없다" 다 — 전체를 내면 안 된다
+        self.assertEqual(data.biodatum_chart(areas=["antarctic"], binomials=set())["species"], [])
+        body = self.client.get("/atlas/datums/?slide=rs23-bd").content.decode()
+        self.assertIn("이명법으로 맞춘 것 1", body)
+        self.assertIn("<i>Thalassiosira sp.</i>", body)
+        self.assertIn("Rouxia antarctica", body)
+        self.assertNotIn("Rouxia californica", body)
+        self.assertIn("그런 슬라이드가 없습니다",
+                      self.client.get("/atlas/datums/?slide=nope").content.decode())
+
+    def test_점이_문헌의_쪽을_연다(self):
+        """210. 쪽을 아는 행은 `url#page=N`, 모르는 행은 문헌 주소, 주소가 없으면
+        링크가 없다."""
+        datum(self.cody, "Rouxia peragalloi", "FO", 3.0, page=12)
+        nourl = Reference.objects.create(key="kato2024", authors="Kato", year=2024)
+        datum(nourl, "Rouxia peragalloi", "LO", 1.0)
+        got = data.biodatum_chart(areas=["antarctic"], q="peragalloi")
+        links = {(p["ref"], p["datum"]): p["link"] for s in got["species"] for p in s["points"]}
+        self.assertEqual(links[("cody2008", "FO")], "https://doi.org/10.1/cody2008#page=12")
+        self.assertEqual(links[("kato2024", "LO")], "")
+        body = self.client.get("/atlas/datums/?q=peragalloi").content.decode()
+        self.assertIn('<a href="https://doi.org/10.1/cody2008#page=12" target="_blank"', body)
+        self.assertIn("누르면 문헌 p.12 을 연다", body)
+
+    def test_축_창을_화면에서_고른다(self):
+        """210. `from`·`to` 가 창이 되고, 왼쪽 기둥의 띠가 그 범위로 가는 링크다."""
+        body = self.client.get("/atlas/datums/?area=antarctic&genus=Rouxia&f=1"
+                               "&from=MIS+5&to=MIS+11").content.decode()
+        self.assertIn("축 0.071–0.424 Ma", body)
+        # 창 밖의 점(1.495 · 4.5 — 막대 1.26–4.57 도 창에 안 걸친다)은 표에 없고,
+        # 안의 점(0.24)은 있다. 종 체크박스 목록에는 둘 다 남는다(창은 보기다)
+        self.assertIn("<td><i>Rouxia constricta</i>", body)
+        self.assertNotIn("<td><i>Rouxia antarctica</i>", body)
+        self.assertIn("<i>Rouxia antarctica</i></label>", body)
+        self.assertIn("&amp;from=", body)
+        self.assertIn(">전체</a>", body)
+        # 띠 링크는 지금 거르개를 그대로 든다
+        self.assertRegex(body, r'href="/atlas/datums/\?[^"]*genus=Rouxia[^"]*&amp;from=0\.0?&amp;to=')
+
+
 class LayoutTests(DiaRUGATestCase):
     def test_하한만_있는_대는_위_대의_하한이_상한이다(self):
         zones = [
@@ -233,6 +317,53 @@ class LayoutTests(DiaRUGATestCase):
         sp[0]["points"] = sp[0]["points"][:2]
         self.assertTrue(bd.layout(sp, [], y_max=5.0)["cols"][0]["bar"]["open_base"])
         self.assertEqual(col["label"], "A. b")
+
+    def test_창_밖은_안_그리고_막대는_잘려_열린다(self):
+        """210. 12번. 창(1–3 Ma)에 LO(0.9–1.1)는 걸치고 FO(4.0)는 안 걸친다 —
+        점은 하나, 막대는 아래가 잘려 열린다. 창(5–6)에는 아무것도 없다."""
+        sp = [{"name": "Aaaa b", "binomial": "Aaaa b", "genus": "Aaaa", "infra": "", "in_atlas": True,
+               "points": [{"datum": "LO", "age": 1.0, "age_min": 0.9, "age_max": 1.1},
+                          {"datum": "FO", "age": 4.0, "age_min": 3.9, "age_max": 4.2}]}]
+        L = bd.layout(sp, [], y_max=3.0, y_min=1.0)
+        col = L["cols"][0]
+        self.assertEqual([p["datum"] for p in col["points"]], ["LO"])
+        self.assertEqual(col["points"][0]["y1"], L["top"])          # 0.9 는 창 위에서 잘린다
+        self.assertTrue(col["bar"]["open_base"])
+        self.assertTrue(col["bar"]["open_top"])      # 막대 위끝 0.9 도 창 위라 잘렸다
+        self.assertEqual(col["bar"]["y2"], L["axis_bottom"])
+        self.assertFalse(bd.layout(sp, [], y_max=3.0, y_min=0.5)["cols"][0]["bar"]["open_top"])
+        self.assertEqual((L["n_species"], L["n_points"]), (1, 1))
+        self.assertEqual(L["ticks"][0]["ma"], 1.0)
+        self.assertEqual(L["ticks"][1]["ma"], 1.25)
+        self.assertEqual(bd.layout(sp, [], y_max=6.0, y_min=5.0)["cols"], [])
+        # 기·세·절·MIS 띠도 창 위쪽 것은 없다
+        L = bd.layout([], [], y_max=0.8, y_min=0.4)
+        self.assertTrue(all(b["base_ma"] > 0.4 for b in L["gts_bands"]))
+        self.assertTrue(all(b["base_ma"] > 0.4 for b in L["mis_bands"]))
+        self.assertAlmostEqual(L["ticks"][1]["ma"] - L["ticks"][0]["ma"], 0.05)
+        # 좁힌 창은 눈금이 촘촘하고 종결면·MIS 경계선이 창 안의 것만이다
+        self.assertTrue(all(0.4 <= t["ma"] <= 0.8 for t in L["mis_ticks"]))
+
+    def test_창_읽기(self):
+        self.assertEqual(bd.window("MIS 5", "MIS 11"), (0.071, 0.424))
+        self.assertEqual(bd.window("3", "1"), (1.0, 3.0))       # 뒤집힌 것은 바로 세운다
+        self.assertEqual(bd.window("", "2"), (None, 2.0))
+        self.assertEqual(bd.window("모름", ""), (None, None))
+        self.assertEqual(bd.window("2", "2"), (2.0, 2.01))      # 폭 0 은 안 된다
+        self.assertEqual(mis.stage_span("G2"), (2.638, 2.652))
+        self.assertIsNone(mis.stage_span("MIS 999"))
+
+    def test_마지막_열의_이름이_잘리지_않는다(self):
+        """210. 13번. 뷰박스 오른쪽이 마지막 열 + 기울인 이름의 가로 길이
+        이상이어야 한다. `RIGHT_PAD` 를 0 으로 되돌리면 죽는다."""
+        import math
+        sp = [{"name": f"Aaaa b{i}", "binomial": "", "genus": "Aaaa", "infra": "", "in_atlas": True,
+               "points": [{"datum": "LO", "age": 1.0, "age_min": 1.0, "age_max": 1.0}]}
+              for i in range(3)]
+        L = bd.layout(sp, [], y_max=2.0)
+        overhang = bd.LABEL_H / math.tan(math.radians(L["label_deg"]))
+        self.assertGreaterEqual(L["width"], L["cols"][-1]["x"] + overhang)
+        self.assertLess(L["x_right"], L["width"])
 
     def test_MIS_단계(self):
         self.assertEqual(mis.stage_of(0.121), "5")
@@ -298,6 +429,36 @@ class ParserTests(DiaRUGATestCase):
              "age_text": "1.0", "confidence": "높음(원문 대조)", "note": "", "code": ""}
         r.update(kw)
         return r
+
+
+    def test_supersedes_가_앞_파일의_출처를_뺀다(self):
+        """210. 14번. 뒤 파일이 같은 출처키를 `supersedes` 로 들면 앞 파일의
+        그 행·출처는 빠지고 `seq` 도 안 센다. 앞에 없는 키면 멈춘다."""
+        m = self.mod
+        row = lambda src, sp: {"source": src, "species": sp, "species_printed": sp, "datum": "FO",
+                               "age": 1.0, "age_min": 1.0, "age_max": 1.0, "age_text": "1.0",
+                               "confidence": "높음(원문 대조)", "note": ""}
+        src = lambda key: {key: {"label": f"{key.title()} (2002)"}}
+        first = {"sources": {**src("aaa"), **src("bbb")},
+                 "rows": [row("aaa", "Rouxia antarctica"), row("bbb", "Rouxia antarctica")]}
+        second = {"sources": src("bbb"), "supersedes": ["bbb"],
+                  "rows": [row("bbb", "Rouxia constricta"), row("bbb", "Rouxia peragalloi")]}
+        dropped = m.superseded([first, second])
+        self.assertEqual(dropped, {"bbb": 1})
+        seq, merged, refs, datums = {}, {}, [], []
+        for i, doc in enumerate([first, second]):
+            skip = {k for k, j in dropped.items() if j > i}
+            r, d, merged = m.convert(doc, seq, merged, skip)
+            refs += r
+            datums += d
+        self.assertEqual([r["key"] for r in refs], ["aaa", "bbb"])
+        self.assertEqual([(d["reference"], d["seq"], d["name"]) for d in datums],
+                         [("aaa", 1, "Rouxia antarctica"), ("bbb", 1, "Rouxia constricta"),
+                          ("bbb", 2, "Rouxia peragalloi")])
+        with self.assertRaises(SystemExit):
+            m.superseded([first, {"sources": src("ccc"), "supersedes": ["ccc"], "rows": []}])
+        with self.assertRaises(SystemExit):
+            m.superseded([first, {"sources": src("zzz"), "supersedes": ["bbb"], "rows": []}])
 
 
 class TaxonNamesAnswerTests(DiaRUGATestCase):
@@ -368,12 +529,22 @@ class ImportBiodatumsTests(DiaRUGATestCase):
         nr, nd, nz = self.mod.put(d)
         self.assertEqual(self.mod.verify(d), [])
         # 2026-09-18 의 표 — 출처 14 · 기준면 728 · 대 43. **09-19 에 Gersonde &
-        # Burckle (1990) 한 편이 더 왔다**(209) — 기준면 61 · 대 16
-        self.assertEqual((nr, nd, nz), (15, 789, 59))
+        # Burckle (1990) 한 편이 더 왔다**(209) — 기준면 61 · 대 16. **09-20 에
+        # Winter & Iwai (2002) 를 원문 표로 갈아 끼웠다**(210) — 웹 요약 28행이
+        # 빠지고 시추공별 43행 · 대 12 가 들어왔다: 789 − 28 + 43 = 804
+        self.assertEqual((nr, nd, nz), (15, 804, 71))
         self.assertEqual(Biodatum.objects.exclude(via="").count(), 102)
+        # 원문 미대조(low) 행은 이제 없다 — 다시 생기면 누가 웹 요약을 넣은 것이다
+        self.assertEqual(Biodatum.objects.filter(confidence="low").count(), 0)
+        wi = Biodatum.objects.filter(reference__key="winter_iwai2002")
+        self.assertEqual(wi.count(), 43)
+        self.assertEqual(set(wi.values_list("variant", flat=True)),
+                         {"Site 1095", "Site 1096", "Site 1101"})
+        self.assertEqual(set(wi.values_list("page", flat=True)), {14, 17, 22})
+        self.assertEqual(Biozone.objects.filter(scheme="winter2002").count(), 12)
         # 두 번 넣어도 같다
         self.mod.put(d)
-        self.assertEqual(Biodatum.objects.count(), 789)
+        self.assertEqual(Biodatum.objects.count(), 804)
         self.assertEqual(Reference.objects.count(), 15)
         # 재인용 겹침 — (모델까지) 값이 같은 것이 41. Warnock Table 2 가 Cody
         # 값을 옮긴 48행 중 42행이 연령이 같은데, 그중 LO Hemidiscus karstenii

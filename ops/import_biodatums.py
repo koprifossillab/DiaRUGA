@@ -21,6 +21,8 @@
 - **`AtlasEntry` 에 FK 를 매달지 않는다.** `binomial`·`genus` 는 문자열이고
   도감과 맞추는 것은 질의가 한다 (P28 §1.3)
 - 한 트랜잭션. 넣고 나서 JSON 과 세어 맞지 않으면 되돌린다
+- `page`(원문 PDF 쪽 · 210)는 없는 행이 대부분이라 `get` 으로 읽는다 — 옛
+  JSON 도 그대로 들어온다
 """
 import argparse
 import json
@@ -110,7 +112,7 @@ def put(doc: dict) -> tuple[int, int, int]:
             zone=d["zone"], code=d["code"], chron=d["chron"],
             scheme=d["scheme"], timescale=d["timescale"], region=d["region"],
             confidence=d["confidence"], primary=bool(d["primary"]),
-            mis_stated=d["mis_stated"], note=d["note"]))
+            mis_stated=d["mis_stated"], page=d.get("page"), note=d["note"]))
     Biodatum.objects.bulk_create(rows)
 
     Biozone.objects.bulk_create([

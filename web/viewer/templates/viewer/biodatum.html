@@ -27,6 +27,14 @@
   .bdrefs { font-size: .88rem; margin: -4px 0 12px; }
   .bdrefs summary { cursor: pointer; color: var(--dim); }
   .bdrefs .list { display: flex; flex-wrap: wrap; gap: 6px 14px; padding: 6px 0; }
+  .bdrefs label { display: inline-flex; gap: 5px; align-items: center; }
+  .bdq input.bdrange { width: 6em; }
+  .bdsp .list label.off { color: var(--dim); text-decoration: line-through; }
+  /* 띠·점은 누르면 간다 — 띠는 그 범위로 좁히고, 점은 문헌의 그 쪽을 연다(210) */
+  .bdsvg a rect { cursor: pointer; }
+  .bdsvg a .bd-hit { cursor: pointer; }
+  /* 띠 위의 글자는 링크 밖에 있다 — 글자를 눌러도 아래 띠가 받게 한다 */
+  .bdsvg .bd-gts text, .bdsvg .bd-mis text, .bdsvg .bd-band text { pointer-events: none; }
   .bdsum { font-size: .9rem; color: var(--dim); margin-bottom: 8px; }
   .bdwrap { overflow-x: auto; border: 1px solid var(--line); border-radius: 8px;
             background: var(--panel); padding: 8px; }
@@ -47,8 +55,8 @@
   .bdsvg .bd-pt.FO { fill: var(--bd-fo); stroke: var(--bd-fo); }
   .bdsvg .bd-pt.LO { fill: var(--bd-lo); stroke: var(--bd-lo); }
   .bdsvg .bd-pt.X  { fill: var(--bd-x);  stroke: var(--bd-x); }
-  /* 재인용은 속이 빈 점, 신뢰도 낮음(Winter & Iwai)은 흐리게 —
-     색만으로 가르지 않는다 */
+  /* 재인용은 속이 빈 점, 신뢰도 낮음(원문 미대조)은 흐리게 —
+     색만으로 가르지 않는다 (210 뒤로 낮음 행은 없다 — 규칙은 남긴다) */
   .bdsvg .bd-pt.via { fill: var(--panel); }
   .bdsvg .bd-pt.low { opacity: .4; }
   .bdsvg .bd-err { stroke-width: 1.5; }
@@ -105,16 +113,31 @@
              {% if key in area_on %}checked{% endif %}> {{ label }}</label>
     {% endfor %}
   </fieldset>
-  <select name="genus" aria-label="속으로 거른다" title="속으로 거른다 — 고르면 바로 그린다"
-          onchange="document.getElementById('bdq').requestSubmit()">
-    <option value="">속을 고른다</option>
-    {% for g in genera %}
-      <option value="{{ g.genus }}"{% if g.genus|lower == genus|lower and genus %} selected{% endif %}
-        >{{ g.genus }} ({{ g.n }}){% if not g.in_atlas %} · 도감에 없다{% endif %}</option>
-    {% endfor %}
-  </select>
   <input type="text" name="q" value="{{ q }}" placeholder="이름으로 찾는다 (예: kolbei)"
          aria-label="이름으로 찾는다">
+  {% comment %}세로축 창(210) — Ma 숫자 또는 MIS 단계 이름. 왼쪽 기둥의 띠를 눌러도
+     같은 칸이 채워진다{% endcomment %}
+  <fieldset title="세로축을 이 범위로 좁힌다 — Ma 숫자(예: 0.4) 또는 MIS 단계 이름(예: MIS 5 · G2). 왼쪽 기둥의 기·세·절·MIS·대 띠를 눌러도 된다">
+    <legend>축 범위</legend>
+    <input type="text" class="bdrange" name="from" value="{{ y_from }}" placeholder="0 Ma" aria-label="축 위쪽(젊은 쪽) — Ma 또는 MIS">
+    –
+    <input type="text" class="bdrange" name="to" value="{{ y_to }}" placeholder="Ma · MIS" aria-label="축 아래쪽(오래된 쪽) — Ma 또는 MIS">
+    {% if windowed %}<a href="{% url 'biodatum' %}?{{ qs_base }}">전체</a>{% endif %}
+  </fieldset>
+  {% comment %}슬라이드로 좁히기(210) — 그 슬라이드에서 사람이 적은 종명만 남긴다{% endcomment %}
+  {% if slide_groups %}
+  <select name="slide" aria-label="슬라이드의 종만" title="우리 자료의 슬라이드 하나를 고르면 거기서 동정된 종만 그린다 — 고르면 바로 그린다"
+          onchange="document.getElementById('bdq').requestSubmit()">
+    <option value="">슬라이드의 종만</option>
+    {% for grp in slide_groups %}
+      <optgroup label="{{ grp.site }} {{ grp.core }}">
+      {% for sl in grp.slides %}
+        <option value="{{ sl.slug }}"{% if sl.on %} selected{% endif %}>{{ sl.label }}</option>
+      {% endfor %}
+      </optgroup>
+    {% endfor %}
+  </select>
+  {% endif %}
   <fieldset><legend>Cody 2008 모델</legend>
     {% for key, label in models %}
       <label><input type="radio" name="model" value="{{ key }}"
@@ -125,6 +148,19 @@
     <input type="checkbox" name="via" value="1" {% if include_via %}checked{% endif %}> 재인용 겹침도</label>
   <button type="submit">그린다</button>
 </form>
+{% comment %}속은 체크박스다(210) — 여럿을 한 축에 놓고 비교한다. 고르면 바로 그린다
+   (예전의 셀렉트와 같은 버릇). 접어 두면 고른 것만 이름으로 남는다{% endcomment %}
+<details class="bdrefs bdgen"{% if not genus %} open{% endif %}>
+  <summary>속을 고른다{% if genus %} · {{ genus|join:" · " }}{% endif %}</summary>
+  <div class="list">
+    {% for g in genera %}
+      <label><input type="checkbox" name="genus" value="{{ g.genus }}" form="bdq"
+             onchange="document.getElementById('bdq').requestSubmit()"
+             {% if g.genus in genus %}checked{% endif %}> {{ g.genus }}
+        <span class="dim">({{ g.n }}){% if not g.in_atlas %} · 도감에 없다{% endif %}</span></label>
+    {% endfor %}
+  </div>
+</details>
 <details class="bdrefs"{% if refs_on %} open{% endif %}>
   <summary>출처로 거른다{% if refs_on %} · {{ refs_on|length }}편{% endif %}</summary>
   <div class="list">
@@ -141,21 +177,43 @@
     기준면이 아직 안 들어와 있습니다 — <code>import_biodatums.py</code> 로 넣습니다 (P28).</p>
 {% elif not area_on %}
   <p class="bdnote">권역을 하나도 안 골랐습니다 — 남극해·북서태평양 중 적어도 하나를 켭니다.</p>
+{% elif slide and not slide.label %}
+  <p class="bdnote">그런 슬라이드가 없습니다 — <code>{{ slide.slug }}</code>.</p>
 {% elif not searched %}
-  <p class="bdnote">속을 고르거나 이름을 넣으면 그 종들의 FO·LO 범위를 그립니다.
+  <p class="bdnote">속을 고르거나 이름을 넣으면(또는 슬라이드를 고르면) 그 종들의 FO·LO 범위를 그립니다.
     문헌 열다섯 · 세로축은 아래가 오래된 쪽입니다. 같은 사건을 여러 문헌이 다르게
     본 것은 점의 흩어짐으로 보입니다 — <b>연령은 시간척도에 종속되므로</b>(문헌마다
     Berggren 1995 · Gradstein 2004 · GTS2012 · 궤도조율) 점에 마우스를 올려 어느
     척도인지 함께 읽습니다.</p>
 {% elif not chart.species %}
   <p class="bdnote">이 거르개로는 기준면이 없습니다
-    {% if genus %}— 속 <b>{{ genus }}</b>{% endif %}{% if q %} · <b>{{ q }}</b>{% endif %}
+    {% if genus %}— 속 <b>{{ genus|join:" · " }}</b>{% endif %}{% if q %} · <b>{{ q }}</b>{% endif %}
+    {% if slide %} · 슬라이드 <b>{{ slide.label }}</b>{% if not slide.binomials %} (거기서 적은 종명 가운데 이명법 꼴이 없다){% endif %}{% endif %}
     {% if refs_on %} · 출처 {{ refs_on|length }}편{% endif %}.</p>
 {% else %}
+  {% if slide %}
+    <p class="bdnote">슬라이드 <b>{{ slide.label }}</b> 에서 적은 종명 {{ slide.names|length }} ·
+      이명법으로 맞춘 것 {{ slide.binomials|length }} · 기준면이 있는 것 {{ chart.all_species|length }}
+      {% if slide.unmatched %}· 못 맞춘 표기: {% for n in slide.unmatched %}<i>{{ n }}</i>{% if not forloop.last %}, {% endif %}{% endfor %}{% endif %}</p>
+  {% endif %}
   {% with L=chart.layout %}
   <div class="bdsum">이름 {{ chart.n_species }} · 점 {{ chart.n_points }}
+    {% if chart.n_hidden %} · 종 {{ chart.n_hidden }} 숨김{% endif %}
     {% if chart.n_hidden_via %} · 재인용 겹침 {{ chart.n_hidden_via }}건 숨김{% endif %}
-    · 축 0–{{ L.y_max }} Ma</div>
+    · 축 {{ L.y_min }}–{{ L.y_max }} Ma{% if windowed %} (<a href="{% url 'biodatum' %}?{{ qs_base }}">전체</a>){% endif %}</div>
+  {% comment %}종 숨기기(210) — 체크가 켜진 것이 보이는 것. 끄면 그 이름을 `hide` 로
+     보낸다(체크박스는 꺼지면 아무것도 안 보내므로 숨은 칸이 대신 나른다){% endcomment %}
+  <details class="bdrefs bdsp"{% if chart.n_hidden %} open{% endif %}>
+    <summary>종을 고른다 · {{ chart.all_species|length }}{% if chart.n_hidden %} (숨김 {{ chart.n_hidden }}){% endif %}</summary>
+    <div class="list">
+      {% for sp in chart.all_species %}
+        <label{% if sp.hidden %} class="off"{% endif %}>
+          <input type="checkbox" class="bdsp-cb" {% if not sp.hidden %}checked{% endif %}>
+          <input type="hidden" name="hide" value="{{ sp.name }}" form="bdq"{% if not sp.hidden %} disabled{% endif %}>
+          <i>{{ sp.name }}</i></label>
+      {% endfor %}
+    </div>
+  </details>
   <div class="bdwrap">
   <svg class="bdsvg" width="{{ L.width }}" height="{{ L.height }}"
        viewBox="0 0 {{ L.width }} {{ L.height }}" role="img"
@@ -177,10 +235,12 @@
     </g>
     <g class="bd-gts">
       {% for b in L.gts_bands %}
+        <a href="{% url 'biodatum' %}?{{ qs_base }}&amp;from={{ b.top_ma }}&amp;to={{ b.full_base_ma }}">
         <rect x="{{ b.x }}" y="{{ b.y1 }}" width="{{ b.w }}" height="{{ b.h }}" fill="{{ b.color }}"
               {% if b.cut %}stroke-dasharray="3 3"{% endif %}>
-          <title>{{ b.name }} · {{ b.ko }} · {{ b.top_ma }}–{{ b.base_ma }} Ma{% if b.cut %} (축에서 잘림){% endif %} — ICS 2023</title>
+          <title>{{ b.name }} · {{ b.ko }} · {{ b.top_ma }}–{{ b.full_base_ma }} Ma{% if b.cut %} (축에서 잘림){% endif %} — ICS 2023 · 누르면 이 범위로 좁힌다</title>
         </rect>
+        </a>
         {% if b.label %}
           <text x="{{ b.x|add:3 }}" y="{{ b.y2|add:-3 }}" transform="rotate(-90 {{ b.x|add:3 }} {{ b.y2|add:-3 }})"
                 dominant-baseline="hanging">{{ b.label }}</text>
@@ -193,9 +253,11 @@
       <g class="bd-mis head"><text x="{{ L.mis_x|add:1 }}" y="{{ L.top|add:-4 }}">MIS</text></g>
       <g class="bd-mis">
         {% for b in L.mis_bands %}
+          <a href="{% url 'biodatum' %}?{{ qs_base }}&amp;from={{ b.top_ma }}&amp;to={{ b.full_base_ma }}">
           <rect x="{{ L.mis_x }}" y="{{ b.y1 }}" width="{{ L.mis_w }}" height="{{ b.h }}"{% if b.glacial %} class="glacial"{% endif %}>
-            <title>MIS {{ b.name }} · {{ b.top_ma }}–{{ b.base_ma }} Ma{% if b.glacial %} · 빙기{% else %} · 간빙기{% endif %} (LR04)</title>
+            <title>MIS {{ b.name }} · {{ b.top_ma }}–{{ b.full_base_ma }} Ma{% if b.glacial %} · 빙기{% else %} · 간빙기{% endif %} (LR04) · 누르면 이 단계로 좁힌다</title>
           </rect>
+          </a>
           {% if b.label %}
             <text x="{{ L.mis_x|add:2 }}" y="{{ b.y1|add:1 }}" dominant-baseline="hanging">{{ b.label }}</text>
           {% endif %}
@@ -212,10 +274,12 @@
     {% endfor %}
     {% for b in L.bands %}
       <g class="bd-band s{{ b.shade }}">
+        <a href="{% url 'biodatum' %}?{{ qs_base }}&amp;from={{ b.top_ma }}&amp;to={{ b.base_ma }}">
         <rect class="bd-band s{{ b.shade }}" x="{{ b.x }}" y="{{ b.y1 }}" width="{{ b.w }}"
               height="{{ b.h }}"{% if b.open_top %} stroke-dasharray="3 3"{% endif %}>
-          <title>{{ b.name }}{% if b.base_def %} · 하한 {{ b.base_def }}{% endif %}{% if b.top_def %} · 상한 {{ b.top_def }}{% endif %}</title>
+          <title>{{ b.name }} · {{ b.top_ma }}–{{ b.base_ma }} Ma{% if b.base_def %} · 하한 {{ b.base_def }}{% endif %}{% if b.top_def %} · 상한 {{ b.top_def }}{% endif %} · 누르면 이 대로 좁힌다</title>
         </rect>
+        </a>
         {% if b.h > 34 %}<text x="{{ b.x|add:17 }}" y="{{ b.y1|add:3 }}" transform="rotate(90 {{ b.x|add:17 }} {{ b.y1|add:3 }})">{{ b.short }}</text>{% endif %}
       </g>
     {% endfor %}
@@ -227,7 +291,8 @@
                 x="{{ c.x|add:-4 }}" y="{{ c.bar.y1 }}" width="8" height="{{ c.bar.h }}"/>
         {% endif %}
         {% for p in c.points %}
-          <g class="bd-ptg" data-tip="{{ p.datum }} <i>{{ p.name }}</i> · <b>{{ p.age }} Ma</b>{% if p.age_differs %} (원문 {{ p.age_text }}){% endif %}{% if p.variant %} · {{ p.variant_label }}{% endif %}&#10;{{ p.ref_label }}{% if p.via_label %} — {{ p.via_label }} 경유{% endif %}{% if p.timescale %}&#10;시간척도 {{ p.timescale }}{% endif %}{% if p.zone %}&#10;{{ p.zone }}{% endif %}{% if p.code %} {{ p.code }}{% endif %}{% if p.chron %} · {{ p.chron }}{% endif %}&#10;신뢰도 {{ p.confidence }}{% if p.primary %} · 주요{% endif %}{% if p.mis_stated %}&#10;{{ p.mis_stated }}{% endif %}{% if p.note %}&#10;{{ p.note }}{% endif %}">
+          {% if p.link %}<a href="{{ p.link }}" target="_blank" rel="noopener">{% endif %}
+          <g class="bd-ptg" data-tip="{{ p.datum }} <i>{{ p.name }}</i> · <b>{{ p.age }} Ma</b>{% if p.age_differs %} (원문 {{ p.age_text }}){% endif %}{% if p.variant %} · {{ p.variant_label }}{% endif %}&#10;{{ p.ref_label }}{% if p.via_label %} — {{ p.via_label }} 경유{% endif %}{% if p.timescale %}&#10;시간척도 {{ p.timescale }}{% endif %}{% if p.zone %}&#10;{{ p.zone }}{% endif %}{% if p.code %} {{ p.code }}{% endif %}{% if p.chron %} · {{ p.chron }}{% endif %}&#10;신뢰도 {{ p.confidence }}{% if p.primary %} · 주요{% endif %}{% if p.mis_stated %}&#10;{{ p.mis_stated }}{% endif %}{% if p.note %}&#10;{{ p.note }}{% endif %}{% if p.link %}&#10;누르면 문헌{% if p.page %} p.{{ p.page }}{% endif %} 을 연다{% endif %}">
             {% if p.y1 != p.y2 %}
               <line class="bd-err {% if p.datum == 'FO' or p.datum == 'LO' %}{{ p.datum }}{% else %}X{% endif %}"
                     x1="{{ c.x }}" x2="{{ c.x }}" y1="{{ p.y1 }}" y2="{{ p.y2 }}"/>
@@ -242,15 +307,16 @@
             {% endif %}
             <circle class="bd-hit" cx="{{ c.x }}" cy="{{ p.cy }}" r="8"/>
           </g>
+          {% if p.link %}</a>{% endif %}
         {% endfor %}
         {% if c.binomial %}
           <a href="{% url 'atlas' %}?q={{ c.binomial|urlencode }}">
             <text x="{{ c.x|add:4 }}" y="{{ L.axis_bottom|add:10 }}"
-                  transform="rotate(60 {{ c.x|add:4 }} {{ L.axis_bottom|add:10 }})">{{ c.label }}{% if not c.in_atlas %} ⁽도감에 없다⁾{% endif %}</text>
+                  transform="rotate({{ L.label_deg }} {{ c.x|add:4 }} {{ L.axis_bottom|add:10 }})">{{ c.label }}{% if not c.in_atlas %} ⁽도감에 없다⁾{% endif %}</text>
           </a>
         {% else %}
           <text x="{{ c.x|add:4 }}" y="{{ L.axis_bottom|add:10 }}"
-                transform="rotate(60 {{ c.x|add:4 }} {{ L.axis_bottom|add:10 }})">{{ c.label }}</text>
+                transform="rotate({{ L.label_deg }} {{ c.x|add:4 }} {{ L.axis_bottom|add:10 }})">{{ c.label }}</text>
         {% endif %}
       </g>
     {% endfor %}
@@ -261,7 +327,7 @@
     <span><span class="sw" style="background:var(--bd-lo)"></span>LO 최종 산출</span>
     <span><span class="sw" style="background:var(--bd-x);border-radius:0;transform:rotate(45deg)"></span>FCO · LCO · 극대</span>
     <span><span class="sw via"></span>재인용(경유)</span>
-    <span class="dim">흐린 점 = 원문 미대조(Winter &amp; Iwai 2002 — 교정 연령으로 인용하지 말 것)</span>
+    <span class="dim">점·출처를 누르면 문헌(쪽을 아는 행은 그 쪽)을 연다 · 왼쪽 기둥의 띠를 누르면 그 범위로 좁힌다</span>
     <span class="dim">큰 점 = 원문이 주요 지시종·기준면으로 표시</span>
     <span class="dim">세로선 = 원문 연령 폭 · 막대 = 가장 젊은 LO~가장 오래된 FO</span>
     <span class="dim">왼쪽 기둥 = ICS 2023 기·세·절 (Ma 는 문헌의 시간척도라 경계와 어긋날 수 있다) · MIS = LR04, 칠한 것이 빙기</span>
@@ -273,13 +339,13 @@
     <thead><tr><th>이름</th><th>기준면</th><th class="num">Ma</th><th>원문 표기</th>
       <th>출처</th><th>모델·대</th><th>시간척도</th><th>신뢰도</th><th>비고</th></tr></thead>
     <tbody>
-    {% for s in chart.species %}{% for p in s.points %}
+    {% for s in chart.layout.cols %}{% for p in s.points %}
       <tr{% if p.confidence == 'low' %} class="low"{% endif %}>
         <td><i>{{ p.name }}</i>{% if not s.in_atlas and s.binomial %} <span class="pnote">도감에 없다</span>{% endif %}{% if s.taxon.status == 'synonym' %} <span class="chip warnchip" title="AlgaeBase 확인 — 이 표기는 이명이다{% if s.taxon.note %} · {{ s.taxon.note }}{% endif %}">이명</span> <i class="dim">{{ s.taxon.valid_name }}</i>{% elif s.taxon.status == 'absent' %} <span class="pnote" title="{{ s.taxon.note }}">AlgaeBase 에 없다</span>{% endif %}</td>
         <td>{{ p.datum }}{% if p.primary %} <b title="원문이 주요 지시종·기준면으로 표시">+</b>{% endif %}</td>
         <td class="num">{{ p.age }}{% if p.uncertainty %} ± {{ p.uncertainty }}{% endif %}</td>
         <td>{{ p.age_text }}{% if p.name_printed != p.name %} <span class="dim">{{ p.name_printed }}</span>{% endif %}</td>
-        <td>{{ p.ref_label }}{% if p.via_label %} <span class="dim">— {{ p.via_label }} 경유</span>{% endif %}</td>
+        <td>{% if p.link %}<a href="{{ p.link }}" target="_blank" rel="noopener" title="문헌을 연다{% if p.page %} — p.{{ p.page }}{% endif %}">{{ p.ref_label }}</a>{% else %}{{ p.ref_label }}{% endif %}{% if p.via_label %} <span class="dim">— {{ p.via_label }} 경유</span>{% endif %}</td>
         <td>{{ p.variant_label }}{% if p.zone %} {{ p.zone }}{% endif %}{% if p.code %} <span class="dim">{{ p.code }}</span>{% endif %}{% if p.chron %} {{ p.chron }}{% endif %}</td>
         <td>{{ p.timescale }}</td>
         <td>{{ p.confidence }}</td>
@@ -323,6 +389,13 @@
     g.addEventListener('mouseenter', show);
     g.addEventListener('mousemove', move);
     g.addEventListener('mouseleave', function () { tip.hidden = true; });
+  });
+  // 종 체크박스(210) — 끄면 옆의 숨은 칸(`hide`)을 살려 보내고 바로 그린다
+  document.querySelectorAll('.bdsp-cb').forEach(function (cb) {
+    cb.addEventListener('change', function () {
+      cb.nextElementSibling.disabled = cb.checked;
+      document.getElementById('bdq').requestSubmit();
+    });
   });
 })();
 </script>

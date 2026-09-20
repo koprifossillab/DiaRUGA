@@ -23,6 +23,24 @@
 
 ## 뷰어
 
+### `v0.31.0` — 09-20 (마이그레이션 `0046` · 더하기만 — 파이프라인은 안 굽는다 · 배포 뒤 `import_biodatums.py` 돌린다)
+
+**Winter & Iwai (2002) 를 원문 표로 갈아 끼우고, 기준면 그림에 창·속 여럿·종
+숨기기·문헌 링크·슬라이드 연동을 단다**
+([210](devlog/20260920_210_winter2002-and-datum-chart-controls.md))
+
+- 기준면 — NAS `Diadiction/datums/winter_iwai2002.json`(Table T2·T4·T8 ·
+  시추지 1095·1096·1101 마다 행 · 43행 · 대 12 `winter2002`)이 셋째 출처
+  파일. 열넷 표의 웹 요약 28행(`low`)은 파일의 **`supersedes`** 로 빠진다 —
+  `low` 행 0. **배포 뒤 `dbrun.sh import_biodatums.py`**(문헌 15 · 기준면
+  804 · 대 71)
+- `Biodatum.page`(0046 · nullable) — 문헌 PDF 의 쪽. **점·표의 출처를 누르면
+  문헌을 연다**(쪽을 알면 `#page=N`)
+- `/atlas/datums/` — 세로축 창 `?from=&to=`(Ma 또는 MIS 이름 · 왼쪽 기둥의
+  기·세·절·MIS·대 띠를 누르면 그 범위) · 속 체크박스 여럿(`genus` 반복) ·
+  종 숨기기(`hide`) · 슬라이드 하나의 종만(`slide=<slug>` — 못 맞춘 표기를
+  말한다) · 오른쪽 끝 종 이름 잘림 고침(`RIGHT_PAD`)
+
 ### `v0.30.1` — 09-19 (마이그레이션 없음 · 12:27 배포 · 배포 뒤 `import_atlas.py`·`import_biodatums.py` 돌림)
 
 **웨델해 논문 하나(Gersonde & Burckle 1990)를 도판·기준면으로 반입하고, 기준면

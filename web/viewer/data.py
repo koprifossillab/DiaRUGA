@@ -5457,6 +5457,12 @@ _VARIANT_LABEL = {"average": "평균범위", "total": "전범위", "composite": 
                   "SSODZ": "SSODZ", "NSODZ": "NSODZ"}
 
 
+def _paper_link(url: str, page) -> str:
+    if not url:
+        return ""
+    return f"{url}#page={page}" if page else url
+
+
 def _biodatum_dict(b, refs: dict) -> dict:
     """`b.reference` 는 미리 떠 왔고(`select_related`), 경유 문헌은 `refs`
     (key → Reference) 에서 짚는다. **`Reference` 의 열쇠는 `key` 이고 pk 가
@@ -5473,6 +5479,9 @@ def _biodatum_dict(b, refs: dict) -> dict:
         # 원문 표기가 값과 다른 모양이면(`∼ 13–13.37` · `6430 ka`) 화면이 함께 낸다
         "age_differs": b.age_text not in ("", str(b.age), f"{b.age:g}"),
         "ref": ref.key, "ref_label": _ref_label(ref), "ref_url": ref.url,
+        # 점을 누르면 여는 곳(210) — 문헌 주소에, 쪽을 아는 행은 `#page=` 를
+        # 단다(PDF 뷰어가 그 쪽을 편다 · DOI 가 출판사 화면으로 가면 무시된다)
+        "page": b.page, "link": _paper_link(ref.url, b.page),
         "via": b.via, "via_label": _ref_label(via) if via else "",
         "confidence": b.confidence, "primary": b.primary,
         "zone": b.zone, "code": b.code, "chron": b.chron,
@@ -5530,15 +5539,24 @@ def biodatum_counts_by_genus() -> dict[str, int]:
             Biodatum.objects.values("genus").annotate(n=Count("id"))}
 
 
-def biodatum_chart(areas=("antarctic", "npacific"), genus: str = "", q: str = "",
-                   refs=(), include_via: bool = False, model: str = "average") -> dict:
+def biodatum_chart(areas=("antarctic", "npacific"), genus="", q: str = "",
+                   refs=(), include_via: bool = False, model: str = "average",
+                   hide=(), binomials=None) -> dict:
     """범위 그림에 그릴 것 — 종 열 · 점 · 대 띠 · 문헌 (P28 §4.2).
 
     **무엇을 그릴지는 여기서 정하고 자리는 `biodatum.layout` 이 잡는다.**
     권역이 비면 아무것도 안 그린다(거르개가 죽은 것을 조용히 숨기지 않는다).
     `include_via` 가 꺼져 있으면 원문 행과 값이 같은 재인용만 뺀다 —
     값이 다른 재인용과 원문이 없는 재인용은 늘 남는다(`_dedupe_via`).
+
+    `genus` 는 하나(문자열)든 여럿(목록)이든 받는다(210 — 속을 체크박스로
+    여럿 고른다). `hide` 는 숨길 종 이름(`Biodatum.name`) — 거르개는 그대로
+    두고 열만 뺀다. 숨기기 전의 이름 전부는 `all_species` 로 돌려준다(화면의
+    체크박스가 그것을 그린다 — 숨긴 것도 다시 켤 수 있어야 한다).
+    `binomials` 가 오면(슬라이드의 종 목록) 그 이명법만 남긴다 — 빈 집합은
+    "아무것도 없다" 이지 "거르지 않는다" 가 아니다.
     """
+    from django.db.models import Q
     from . import biodatum as bd
     from .models import AtlasEntry, Biodatum, Biozone, Reference
     areas = [a for a in areas if a in bd.AREA_LABEL]
@@ -5546,10 +5564,17 @@ def biodatum_chart(areas=("antarctic", "npacific"), genus: str = "", q: str = ""
     if refs:
         keys &= set(refs)
     qs = Biodatum.objects.filter(reference__key__in=keys).select_related("reference")
-    if genus:
-        qs = qs.filter(genus__iexact=genus)
+    genera = [genus] if isinstance(genus, str) else list(genus)
+    genera = [g for g in genera if g]
+    if genera:
+        cond = Q()
+        for g in genera:
+            cond |= Q(genus__iexact=g)
+        qs = qs.filter(cond)
     if q:
         qs = qs.filter(name__icontains=q)
+    if binomials is not None:
+        qs = qs.filter(binomial__in=list(binomials))
     if model in ("average", "total"):
         qs = qs.exclude(variant="total" if model == "average" else "average")
     rows = list(qs.order_by("genus", "name", "datum", "age"))
@@ -5580,6 +5605,12 @@ def biodatum_chart(areas=("antarctic", "npacific"), genus: str = "", q: str = ""
         fo = [p["age_max"] for p in s["points"] if p["datum"] == "FO"]
         return -(max(fo) if fo else max(p["age_max"] for p in s["points"]))
     species.sort(key=lambda s: (oldest(s), s["name"]))
+    # 종 숨기기(210) — 정렬한 뒤에 뺀다. 체크박스 목록은 그림의 열 순서다
+    hidden = {h for h in hide if h in by_name}
+    all_species = [{"name": s["name"], "hidden": s["name"] in hidden} for s in species]
+    if hidden:
+        species = [s for s in species if s["name"] not in hidden]
+        rows = [r for r in rows if r.name not in hidden]
 
     schemes = {sc for sc, a in bd.AREA_OF_SCHEME.items() if a in areas}
     zones = list(Biozone.objects.filter(scheme__in=schemes).values(
@@ -5596,8 +5627,40 @@ def biodatum_chart(areas=("antarctic", "npacific"), genus: str = "", q: str = ""
         "n_via": sum(1 for r in rows if r.via == k),
     } for k in used]
     return {"species": species, "zones": zones, "references": references,
+            "all_species": all_species, "n_hidden": len(hidden),
             "n_points": len(rows), "n_species": len(species),
             "n_hidden_via": 0 if include_via else _n_hidden_via(qs)}
+
+
+_BINOMIAL_RX = re.compile(r"^([A-Z][a-z]+)\s+([a-z][a-z\-]{2,})")
+_NOT_EPITHET = {"sp", "spp", "cf", "aff", "var", "gen", "indet"}
+
+
+def biodatum_slide_species(slug: str) -> dict:
+    """슬라이드 하나에서 사람이 적은 종명(`DiatomObject.species`)을 이명법
+    두 낱말로 — 기준면 그림을 그 슬라이드의 종으로 좁힐 때 (210).
+
+    종명은 자유 입력이라(`DiatomObject` 머리말) `Thalassiosira sp.`·`cf.`·
+    명명자 붙은 것이 섞여 있다 — 앞 두 낱말이 `속 종소명` 꼴인 것만 집고,
+    나머지는 `unmatched` 로 돌려줘 화면이 "이건 못 맞췄다" 를 말한다.
+    반환: {slug, label, names: [원문 종명], binomials: {…}, unmatched: […]}.
+    없는 슬러그면 `label` 이 빈 칸이다.
+    """
+    from .models import DiatomObject, Slide
+    slide = Slide.objects.filter(slug=slug).first()
+    if slide is None:
+        return {"slug": slug, "label": "", "names": [], "binomials": set(), "unmatched": []}
+    names = sorted(set(DiatomObject.objects.filter(viewpoint__slide=slide)
+                       .exclude(species="").values_list("species", flat=True)))
+    binomials, unmatched = set(), []
+    for n in names:
+        m = _BINOMIAL_RX.match(n.strip())
+        if m and m.group(2) not in _NOT_EPITHET:
+            binomials.add(f"{m.group(1)} {m.group(2)}")
+        else:
+            unmatched.append(n)
+    return {"slug": slug, "label": slide.name, "names": names,
+            "binomials": binomials, "unmatched": unmatched}
 
 
 def _n_hidden_via(qs) -> int:

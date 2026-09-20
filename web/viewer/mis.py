@@ -290,6 +290,21 @@ def stage_of(age_ma: float) -> str:
     return ""
 
 
+def stage_span(name: str) -> tuple[float, float] | None:
+    """단계 이름(`5`·`11`·`G2`·`MIS 5`·`mis11`) → (상한 Ma, 하한 Ma). 축 범위를
+    "MIS 5 부터 MIS 11 까지" 로 좁힐 때 쓴다(210). 모르는 이름이면 None —
+    조용히 0 으로 앉으면 사람이 좁힌 줄 알고 전체를 본다."""
+    key = name.strip().upper().replace("MIS", "").strip()
+    if not key:
+        return None
+    prev_name, prev_ka = "1", 0.0
+    for bname, ka in BOUNDARIES_KA:
+        if prev_name.upper() == key:
+            return prev_ka / 1000.0, ka / 1000.0
+        prev_name, prev_ka = bname.split("/")[1], ka
+    return None
+
+
 def _stage_no(name: str) -> int:
     """`5` → 5 · `G2` → 2 · `KM3` → 3. 짝수가 빙기다 — 문자 단계도 같다
     (LR04 의 번호 규칙 · 짝수 = δ18O 무거운 쪽)."""
@@ -308,6 +323,6 @@ def stage_bands(max_ma: float) -> list[dict]:
         if top >= max_ma:
             break
         out.append({"name": prev_name, "top_ma": top, "base_ma": min(base, max_ma),
-                    "glacial": _stage_no(prev_name) % 2 == 0})
+                    "full_base_ma": base, "glacial": _stage_no(prev_name) % 2 == 0})
         prev_name, prev_ka = name.split("/")[1], ka
     return out

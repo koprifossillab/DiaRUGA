@@ -1714,9 +1714,13 @@ def biodatum_chart(request):
     — 같은 사건을 여러 문헌이 다르게 본 것이 점의 흩어짐으로 보인다.
 
     **권역은 체크박스다** — 태평양 자료를 남극과 한 축에 놓고 볼 때가 있다.
-    둘 다 끄면 아무것도 안 그리고 화면이 그렇게 말한다. 속·검색어 없이는
-    결과를 안 낸다(도감 화면과 같은 규칙 · 196) — 170 이름을 한 번에 그리면
-    가로 4 m 다.
+    둘 다 끄면 아무것도 안 그리고 화면이 그렇게 말한다. 속·검색어·슬라이드
+    없이는 결과를 안 낸다(도감 화면과 같은 규칙 · 196) — 170 이름을 한 번에
+    그리면 가로 4 m 다.
+
+    210 에서 더한 것 — 속을 여럿(`genus` 반복) · 종 숨기기(`hide`) · 세로축
+    창(`from`·`to` — Ma 또는 MIS 이름 · 왼쪽 기둥의 띠를 눌러도 잡힌다) ·
+    슬라이드 하나로 좁히기(`slide` — 그 슬라이드에서 사람이 적은 종명만).
     """
     g = request.GET
     areas = [a for a in g.getlist("area") if a in bd_mod.AREA_LABEL]
@@ -1725,27 +1729,56 @@ def biodatum_chart(request):
     # 것**은 `f` 로만 가려진다
     if g.get("f") != "1":
         areas = [a for a, _ in bd_mod.AREAS]
-    genus = (g.get("genus") or "").strip()
+    genera = data.biodatum_genera(areas)
+    # 속은 여럿이다(210 — 체크박스). 카드의 링크는 하나만 준다. 목록에 있는
+    # 표기로 맞춘다 — 대소문자가 달라도 같은 속이다
+    canon = {x["genus"].lower(): x["genus"] for x in genera}
+    genus = []
+    for v in g.getlist("genus"):
+        c = canon.get((v or "").strip().lower())
+        if c and c not in genus:
+            genus.append(c)
     q = (g.get("q") or "").strip()
     refs = [r for r in g.getlist("ref") if r in bd_mod.AREA_OF_REF]
     include_via = g.get("via") == "1"
     model = g.get("model") or "average"
     if model not in dict(bd_mod.MODELS):
         model = "average"
-    searched = bool(genus or q)
+    hide = [h for h in g.getlist("hide") if h]
+    # 슬라이드 하나로 좁힌다(210) — 그 슬라이드에서 사람이 적은 종명만.
+    # 속·검색어 없이도 그린다(슬라이드가 곧 거르개다)
+    slide = None
+    if (g.get("slide") or "").strip():
+        slide = data.biodatum_slide_species(g["slide"].strip())
+    # 세로축 창(210) — Ma 숫자 또는 MIS 단계 이름. 못 읽는 쪽은 자료가 정한다
+    y_min, y_max = bd_mod.window(g.get("from", ""), g.get("to", ""))
+    searched = bool(genus or q or (slide and slide["label"]))
 
     chart = None
     if searched and areas:
         got = data.biodatum_chart(areas=areas, genus=genus, q=q, refs=refs,
-                                  include_via=include_via, model=model)
-        got["layout"] = bd_mod.layout(got["species"], got["zones"])
+                                  include_via=include_via, model=model, hide=hide,
+                                  binomials=slide["binomials"] if slide else None)
+        got["layout"] = bd_mod.layout(got["species"], got["zones"],
+                                      y_max=y_max, y_min=y_min or 0.0)
+        # 창 밖의 종·점은 그림에도 표에도 없다 — 요약 수도 그림을 따른다
+        got["n_species"] = got["layout"]["n_species"]
+        got["n_points"] = got["layout"]["n_points"]
         chart = got
     references = data.biodatum_references()
+    # 띠를 눌러 범위를 바꾸는 링크 — 지금 거르개는 그대로, 창만 바꾼다
+    base = g.copy()
+    for k in ("from", "to"):
+        base.pop(k, None)
     ctx = {
         "areas": bd_mod.AREAS, "area_on": areas, "genus": genus, "q": q,
         "refs_on": refs, "include_via": include_via, "model": model,
         "models": bd_mod.MODELS,
-        "genera": data.biodatum_genera(areas),
+        "genera": genera, "hide": hide, "slide": slide,
+        "slide_groups": data.compare_picker([slide["slug"]] if slide else []),
+        "y_from": g.get("from", ""), "y_to": g.get("to", ""),
+        "windowed": y_min is not None or y_max is not None,
+        "qs_base": base.urlencode(),
         "references": references,
         "searched": searched, "chart": chart,
         # 반입 전이면 거르개도 그림도 빈다 — 화면이 그 사실을 말한다

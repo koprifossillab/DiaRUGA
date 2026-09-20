@@ -1695,6 +1695,9 @@ class Biodatum(models.Model):
     # 원문이 직접 말한 MIS (2행뿐). 연령→LR04 환산은 저장하지 않는다 —
     # 시간척도가 다른 자로 잰 것이라 표 스스로 "참고용" 이라 했다
     mis_stated = models.CharField(max_length=80, blank=True, default="", db_default="")
+    # `Reference.url` 이 가리키는 PDF 의 쪽 (1부터 · **인쇄 쪽이 아니라 파일
+    # 쪽**) — 화면이 `#page=` 로 그 쪽을 연다. 원문을 직접 본 행만 있다(210)
+    page = models.PositiveIntegerField(null=True, blank=True)
     # 나머지 — 모델 기록 수·misfit·환산 근거·원문 오식
     note = models.TextField(blank=True, default="", db_default="")
 

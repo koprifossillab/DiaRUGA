@@ -16,6 +16,15 @@
   2026-09-19). 같은 모양의 JSON 이고 **대(zone)는 자기 `zones` 에 든다**
   (xlsx 시트가 아니다). 출처가 한 편 늘 때마다 `SRC_JSONS` 에 파일을 하나
   더한다 — 원본 표 하나에 행을 덧붙이지 않는다(표를 만든 사람이 다르다)
+- `winter_iwai2002.json` — Winter & Iwai (2002) Table T2·T4·T8 (210 ·
+  2026-09-20). 열넷 표에 **같은 출처키의 행 28 이 이미 있었다**(웹 요약 ·
+  원문 미대조 · `low`). 원문을 본 뒤에는 그 행이 남으면 안 되는데 앞 표를
+  고치지도 않는다 — 파일 최상위 **`supersedes: [출처키…]`** 가 앞선 파일들의
+  그 키 `sources`·`rows` 를 파서에서 빼고, 이 파일의 `sources` 가 그 키를
+  다시 든다. 앞 파일에 그 키가 없으면 멈춘다(오타가 조용히 아무것도 안
+  빼는 것을 막는다). 시추공(Site)마다 행이 따로라 `code` 가 Site 이고
+  `variant` 로 올라간다(Censarek 의 SSODZ/NSODZ 와 같은 규칙). `page` 는
+  `url` 의 PDF 쪽 — 화면이 `#page=` 로 연다
 
 ## 표를 그대로 넣으면 안 되는 자리 (P28 §1.2 · 전부 실측)
 
@@ -56,7 +65,8 @@ from harvest_worms import DIADICTION, GENUS_FIX, binomial  # noqa: E402
 SRC_DIR = DIADICTION / "datums"
 SRC_JSON = SRC_DIR / "diatom_datums_1.json"
 # 출처 파일 — 앞엣것이 14편 표, 뒤가 논문 한 편씩. 순서가 `seq`·출력 순서다
-SRC_JSONS = (SRC_JSON, SRC_DIR / "gersonde_burckle1990.json")
+SRC_JSONS = (SRC_JSON, SRC_DIR / "gersonde_burckle1990.json",
+             SRC_DIR / "winter_iwai2002.json")
 REPO = Path(__file__).resolve().parent.parent
 OUT = REPO / "atlas" / "biodatum" / "datums.json"
 TAXON_NAMES = REPO / "taxon_names.json"
@@ -70,7 +80,8 @@ VARIANT_OF = {
     "Total Range Model": "total",
     "Composite mid-age": "composite",
 }
-CODE_VARIANT = {"SSODZ", "NSODZ"}
+# Winter & Iwai (2002) 는 시추공마다 행이 따로다 — Site 가 variant 다 (210)
+CODE_VARIANT = {"SSODZ", "NSODZ", "Site 1095", "Site 1096", "Site 1101"}
 
 # 재인용 경유 — 표 전체에서 경유 문헌은 Warnock 하나뿐이다. 다른 문구가
 # `경유`·`재인용` 을 달고 나오면 멈춘다
@@ -111,7 +122,7 @@ ZONE_SCHEME = {
 }
 # JSON 의 `zones` 가 코드를 직접 든다 — 여기 없는 코드면 멈춘다
 # (`web/viewer/biodatum.AREA_OF_SCHEME` 이 같은 목록을 권역에 맨다)
-ZONE_CODES = set(ZONE_SCHEME.values()) | {"gersonde1990"}
+ZONE_CODES = set(ZONE_SCHEME.values()) | {"gersonde1990", "winter2002"}
 
 EPITHET = re.compile(r"^[a-zöäüéë\-]+$")
 
@@ -227,12 +238,15 @@ def read_zones_json(doc: dict, seq: dict[str, int]) -> list[dict]:
 
 
 def convert(doc: dict, seq: dict[str, int] | None = None,
-            merged: dict[str, set[str]] | None = None
+            merged: dict[str, set[str]] | None = None, skip: set[str] = frozenset()
             ) -> tuple[list[dict], list[dict], dict[str, set[str]]]:
     """한 파일을 (refs, datums, merged) 로. `seq`·`merged` 를 넘기면 파일
-    사이로 이어 간다 — 합침 검사는 파일 전체를 한 벌로 본다."""
+    사이로 이어 간다 — 합침 검사는 파일 전체를 한 벌로 본다. `skip` 의
+    출처키는 뒤 파일이 `supersedes` 로 대신하는 것이라 여기서 안 낸다."""
     refs = []
     for key, s in doc["sources"].items():
+        if key in skip:
+            continue
         authors, year = label_to_authors_year(s["label"])
         refs.append({
             "key": key, "label": s["label"], "authors": authors, "year": year,
@@ -248,6 +262,8 @@ def convert(doc: dict, seq: dict[str, int] | None = None,
     seq = seq if seq is not None else {}
     for r in doc["rows"]:
         src = r["source"]
+        if src in skip:
+            continue
         if src not in keys:
             raise SystemExit(f"sources 에 없는 출처키다: {src!r}")
         if r["datum"] not in DATUM_KINDS:
@@ -278,6 +294,7 @@ def convert(doc: dict, seq: dict[str, int] | None = None,
             "timescale": r.get("timescale") or "", "region": r.get("region") or "",
             "confidence": conf, "primary": primary,
             "mis_stated": r.get("mis_stated") or "",
+            "page": int(r["page"]) if r.get("page") not in (None, "") else None,
             "note": note,
         })
 
@@ -287,6 +304,20 @@ def convert(doc: dict, seq: dict[str, int] | None = None,
             print(f"  합쳐진다: {k!r} ← {sorted(v)}", file=sys.stderr)
         raise SystemExit("MERGE_OK 에 없는 합침이다 — 표를 만든 사람이 확인한 뒤 MERGE_OK 에 더한다")
     return refs, datums, merged
+
+
+def superseded(docs: list[dict]) -> dict[str, int]:
+    """`supersedes` — 출처키 → 그 키를 대신하는 파일의 번호. 앞선 파일 어디에도
+    그 키가 없으면 멈춘다(오타면 아무것도 안 빠진 채 조용히 지나간다)."""
+    out: dict[str, int] = {}
+    for i, doc in enumerate(docs):
+        for key in doc.get("supersedes") or []:
+            if key not in doc["sources"]:
+                raise SystemExit(f"{key!r} 를 대신한다면서 자기 sources 에 없다 (파일 {i})")
+            if not any(key in d["sources"] for d in docs[:i]):
+                raise SystemExit(f"supersedes 의 {key!r} 가 앞선 파일에 없다 — 오타인가")
+            out[key] = i
+    return out
 
 
 def recheck_list(datums: list[dict]) -> list[dict]:
@@ -319,11 +350,13 @@ def main() -> int:
     if len(xlsx) != 1:
         raise SystemExit(f"{SRC_DIR} 에 xlsx 가 하나여야 한다: {[p.name for p in xlsx]}")
     docs = [json.loads(p.read_text(encoding="utf-8")) for p in SRC_JSONS]
+    dropped = superseded(docs)
     refs, datums, merged, zones = [], [], {}, read_zones(xlsx[0])
     seq: dict[str, int] = {}
     zseq: dict[str, int] = {z["scheme"]: z["seq"] for z in zones}
-    for doc in docs:
-        r, d, merged = convert(doc, seq, merged)
+    for i, doc in enumerate(docs):
+        skip = {k for k, j in dropped.items() if j > i}
+        r, d, merged = convert(doc, seq, merged, skip)
         refs += r
         datums += d
         zones += read_zones_json(doc, zseq)

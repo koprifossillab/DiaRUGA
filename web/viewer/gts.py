@@ -71,7 +71,8 @@ def bands(max_ma: float) -> list[dict]:
                 break
             out.append({"col": col, "name": name, "ko": ko, "color": color,
                         "top_ma": top, "base_ma": min(base, max_ma),
-                        "cut": base > max_ma})
+                        # 축에서 자르기 전의 하한 — 띠를 눌러 그 절로 좁힐 때의 값(210)
+                        "full_base_ma": base, "cut": base > max_ma})
     return out
 
 
