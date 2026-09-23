@@ -1,12 +1,15 @@
 from django.urls import path
 
-from . import views
+from . import gate, views
 
 urlpatterns = [
     path("", views.index, name="index"),
     path("img", views.image, name="image"),
     path("crop", views.crop, name="crop"),
     path("healthz", views.healthz, name="healthz"),
+    # 잠금 화면 (gate.py). `DIARUGA_GATE_CODE` 가 비어 있으면 들어와도 목록으로 보낸다
+    path("gate/", gate.gate, name="gate"),
+    path("gate/<str:name>", gate.gate_asset, name="gate_asset"),
     path("review", views.save_review, name="save_review"),
     # 지점 하나 — 위치 방향으로 본 화면. **지점 코드는 지역마다 겹칠 수 있다**
     # (`Locality` 의 unique 가 `(site, code)` 다). 주소도 그 짝이어야 한다.
