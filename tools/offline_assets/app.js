@@ -21,6 +21,9 @@
   // 이명 판정(P24) · 출현 기록(P20) — 뷰어가 항목에 붙여 내는 둘 (v1.2.0)
   var TAXA = window.DIA_TAXA || {};
   var OCC = window.DIA_OCC || {};
+  // 생층서 기준면(P28) — 카드 줄 · 속마다의 수 (v1.3.0)
+  var BD = (window.DIA_BD || {}).card || {};
+  var BD_GENUS = (window.DIA_BD || {}).genus || {};
   var SUGGEST_MAX = 20;  // 자동완성 (뷰어 `atlas_suggest` 와 같은 수)
   var PER = 50;        // 검색 한 판 (뷰어 `ATLAS_PER_PAGE`)
   var GRID = 60;       // 격자 한 판 (뷰어 `atlas.PER_PAGE`)
@@ -209,7 +212,8 @@
       + '<option value="">속 전체</option>');
     genera.forEach(function (g) {
       h.push('<option value="' + esc(g) + '"' + (fold(g) === fg && fg ? ' selected' : '')
-        + '>' + esc(g) + ' (' + gc[g] + ')</option>');
+        + '>' + esc(g) + ' (' + gc[g] + (BD_GENUS[g] ? ' · 기준면 ' + BD_GENUS[g] : '')
+        + ')</option>');
     });
     h.push('</select>'
       + '<button type="submit">찾는다</button>'
@@ -384,6 +388,20 @@
         return '<span class="occ">' + esc(o.region) + ' <span class="dim">(' + esc(o.authors)
           + ', ' + esc(o.year) + ')</span>'
           + (o.note ? ' <span class="pnote">' + esc(o.note) + '</span>' : '') + '</span>';
+      }).join(' · '));
+      h.push('</div>');
+    }
+    // 생층서 기준면 (P28) — 이 종의 FO·LO 를 어느 문헌이 몇 Ma 로 봤나. 없으면
+    // 줄을 안 낸다. 뷰어 카드와 같은 모양이고 범위 그림 링크만 없다(서버 화면이다).
+    var bd = e.binomial ? (BD[e.binomial] || []) : [];
+    if (bd.length) {
+      h.push('<div class="entryextra biodatums"><span class="dim">기준면</span> ');
+      h.push(bd.map(function (b) {
+        return '<span class="bdm">' + esc(b.datum) + ' ' + esc(b.age)
+          + (b.uncertainty ? '±' + esc(b.uncertainty) : '') + ' Ma <span class="dim">('
+          + esc(b.ref_label) + (b.via_label ? ' — ' + esc(b.via_label) + ' 경유' : '')
+          + (b.infra ? ' · ' + esc(b.infra) : '')
+          + (b.variant_label ? ' · ' + esc(b.variant_label) : '') + ')</span></span>';
       }).join(' · '));
       h.push('</div>');
     }
@@ -729,6 +747,9 @@
       + '건 (AlgaeBase) · 출현 기록 ' + (META.occurrences || 0) + '건.'
       + ' 색인 결과의 항목마다 이명이면 <b>현재 통용 학명</b>을, 분포 문장이 있으면'
       + ' <b>출현</b>(지역 × 문헌)을 함께 낸다 — 서버의 도감 화면과 같다.</dd>');
+    h.push('<dt>기준면</dt><dd>생층서 기준면 ' + (META.biodatums || 0) + '행.'
+      + ' 종마다 FO·LO 를 어느 문헌이 몇 Ma 로 봤는지 항목 아래에 낸다(전범위 모델은'
+      + ' 빼고 평균만). 범위 그림은 서버 화면에만 있다.</dd>');
     h.push('<dt>인용</dt><dd>색인은 OCR 산물이라 <b>표제어를 그대로 인용하지 않는다</b>.'
       + ' 원문 표기가 필요하면 도판 쪽을 열어 눈으로 확인한다.</dd>');
     h.push('<dt>단축키</dt><dd>쪽 보기에서 <kbd>←</kbd> <kbd>→</kbd> 넘기기 ·'
