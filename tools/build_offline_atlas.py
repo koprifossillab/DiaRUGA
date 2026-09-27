@@ -23,6 +23,7 @@
 
     atlas/*.json                     색인 (저장소 · `tools/parse_atlas.py` 산물)
     atlas/occurrence/*.json          출현 기록 (P20 · `tools/parse_occurrence.py`)
+    atlas/biodatum/datums.json       생층서 기준면 (P28 · `tools/parse_biodatums.py`)
     taxon_names.json                 학명 유효성 판정 (P24 · `tools/parse_taxon_names.py`)
     /data3/DiaRUGA/atlas/            쪽 PNG (`tools/render_atlas_pages.py` 산물)
     …/names/worms/worms_master_*.tsv 학명 대조표 (WoRMS·AlgaeBase)
@@ -35,6 +36,8 @@
 v1.2.0). v1.1.0 은 색인만 실어 **이명 판정(P24)과 출현 기록(P20)이 빠져
 있었다** — 같은 항목이 서버에서는 "이명 · 현재 통용 학명 …" 을 달고 나오는데
 꾸러미에서는 안 달려 있어 두 화면이 다른 말을 했다. 권역(196)도 같이 간다.
+v1.3.0 은 **생층서 기준면(P28)** 의 카드 줄과 속 목록의 `· 기준면 N` 을
+더한다. 범위 그림(`/atlas/datums/`)은 서버 SVG 를 JS 로 옮겨야 해서 안 싣는다.
 
 사용:
 
@@ -218,6 +221,49 @@ def read_occurrences(paths: list[Path]) -> dict:
     return out
 
 
+_VARIANT_LABEL = {"average": "평균범위", "total": "전범위", "composite": "복합",
+                  "SSODZ": "SSODZ", "NSODZ": "NSODZ"}   # 뷰어 `data._VARIANT_LABEL`
+
+
+def read_biodatums(path: Path) -> tuple[dict, dict, int]:
+    """생층서 기준면 → ({이명법: [카드 줄 하나…]}, {속: 기준면 수}, 전체 행 수) (P28).
+
+    **뷰어 `data._biodatums_by_binomial` 과 같은 규칙이다** — 전범위(`total`)는
+    카드에 안 낸다(Cody 의 두 모델 중 평균만) · 원문 행과 값이 같은 재인용은
+    뺀다(`_dedupe_via`) · 이름 → 기준면 → 연령 차례. 속 수는
+    `biodatum_counts_by_genus` 처럼 **거르지 않은 전부**를 센다.
+
+    연령은 **문자열로 싣는다** — 템플릿이 `13.0` 으로 찍는 것을 JS 는 `13` 으로
+    찍어 두 화면이 갈린다.
+    """
+    if not path.exists():
+        return {}, {}, 0
+    doc = json.loads(path.read_text(encoding="utf-8"))
+    label = {r["key"]: f"{r['authors'][:64]} ({int(r['year'])})" for r in doc["references"]}
+    rows = doc["datums"]
+    genus_n: dict[str, int] = {}
+    for d in rows:
+        genus_n[d["genus"]] = genus_n.get(d["genus"], 0) + 1
+    card = [d for d in rows if d["binomial"] and d["variant"] != "total"]
+    card.sort(key=lambda d: (d["name"], d["datum"], d["age"]))
+    direct = {(d["reference"], d["name"], d["datum"], d["variant"], d["age"])
+              for d in card if not d["via"]}
+    out: dict[str, list] = {}
+    for d in card:
+        if d["via"] and (d["reference"], d["name"], d["datum"], d["variant"], d["age"]) in direct:
+            continue
+        out.setdefault(d["binomial"], []).append({
+            "datum": d["datum"], "age": str(d["age"]),
+            "uncertainty": "" if d["uncertainty"] is None else str(d["uncertainty"]),
+            "ref_label": label[d["reference"]],
+            "via_label": label.get(d["via"], "") if d["via"] else "",
+            "infra": d["infra"] or "",
+            "variant_label": (_VARIANT_LABEL.get(d["variant"], d["variant"])
+                              if d["variant"] else ""),
+        })
+    return out, genus_n, len(rows)
+
+
 def read_names(tsv: Path) -> dict:
     """학명 대조표 → {cols, rows}. **칸을 안 고른다** — 오프라인에서 되물을 곳이
     없으니 표를 통째로 들고 간다."""
@@ -326,6 +372,8 @@ def main() -> int:
                     help="학명 유효성 판정 JSON (P24)")
     ap.add_argument("--occurrence-dir", default=str(REPO / "atlas" / "occurrence"),
                     help="출현 기록 JSON (P20)")
+    ap.add_argument("--biodatums", default=str(REPO / "atlas" / "biodatum" / "datums.json"),
+                    help="생층서 기준면 JSON (P28)")
     ap.add_argument("--names", default="", help="학명 대조표 TSV (없으면 최신을 찾는다)")
     ap.add_argument("--names-dir", default="/nfs/temp-share/DiaRUGA/Diadiction/names/worms")
     ap.add_argument("--quality", type=int, default=80, help="쪽 JPEG 품질")
@@ -374,6 +422,13 @@ def main() -> int:
     occ = read_occurrences(occ_paths)
     print(f"이명 판정 {len(taxa)}건 (이명 {sum(1 for t in taxa.values() if t['status'] == 'synonym')})"
           f" · 출현 기록 {sum(len(v) for v in occ.values())}건 / 종 {len(occ)}")
+
+    # 2-3) 생층서 기준면 — 카드 줄과 속 목록의 수 (v1.3.0)
+    bd_path = Path(args.biodatums)
+    bd, bd_genus, bd_total = read_biodatums(bd_path)
+    if not bd:
+        print(f"생층서 기준면이 없다: {bd_path} — 기준면 줄이 빈다", file=sys.stderr)
+    print(f"기준면 {bd_total}행 · 카드 줄 {sum(len(v) for v in bd.values())}개 / 종 {len(bd)}")
 
     # 3) 학명 대조표
     names_path = Path(args.names) if args.names else None
@@ -441,6 +496,7 @@ def main() -> int:
                      "area": atlas_mod.area_of(b["key"])}
                     for b in books],
         "taxa": len(taxa), "occurrences": sum(len(v) for v in occ.values()),
+        "biodatums": bd_total,
     }
 
     # 5) 이미지
@@ -461,6 +517,7 @@ def main() -> int:
                   ("entries.js", "DIA_ENTRIES", entries),
                   ("taxa.js", "DIA_TAXA", taxa),
                   ("occurrence.js", "DIA_OCC", occ),
+                  ("biodatum.js", "DIA_BD", {"card": bd, "genus": bd_genus}),
                   ("names.js", "DIA_NAMES", names))
     for name, var, obj in data_files:
         (data_dir / name).write_text(js_var(var, obj), encoding="utf-8")
@@ -477,7 +534,9 @@ def main() -> int:
         inline = "<script>\n" + "".join(
             js_var(v, o) for v, o in (("DIA_META", tmeta), ("DIA_BOOKS", {}),
                                       ("DIA_ENTRIES", entries), ("DIA_TAXA", taxa),
-                                      ("DIA_OCC", occ), ("DIA_NAMES", names))
+                                      ("DIA_OCC", occ),
+                                      ("DIA_BD", {"card": bd, "genus": bd_genus}),
+                                      ("DIA_NAMES", names))
         ) + "</script>"
         single.write_text(
             render_html(f"Diadiction 도감 색인 (글자만) v{args.version}", css, js, inline),
@@ -497,6 +556,7 @@ def main() -> int:
         "index_sha256": idx_hashes,
         "taxa_sha256": sha256(taxa_path) if taxa_path.exists() else "",
         "occurrence_sha256": {p.name: sha256(p) for p in occ_paths},
+        "biodatum_sha256": sha256(bd_path) if bd_path.exists() else "",
         "names_source": names_src,
         "names_sha256": sha256(names_path) if names_path and names_path.exists() else "",
         "git": git_head(),
@@ -544,6 +604,7 @@ def readme(meta, books, dia_books, names_src) -> str:
     lines += [
         f"  · 학명 유효성 판정 {meta.get('taxa', 0)}건 (AlgaeBase — 이명이면 현재 통용 학명을 함께 낸다)",
         f"  · 출현 기록 {meta.get('occurrences', 0)}건 (도감·논문의 분포 문장을 지역 × 문헌으로 가른 것)",
+        f"  · 생층서 기준면 {meta.get('biodatums', 0)}행 (종마다 FO·LO 를 어느 문헌이 몇 Ma 로 봤나)",
         f"  · 학명 대조표 {names_src} (WoRMS·AlgaeBase 대조)",
         f"  · 도판 {meta['page_count']}쪽 · 300 dpi JPEG (품질 {meta['quality']})"
         if meta["images"] else "  · 도판 없음 (글자만)",
