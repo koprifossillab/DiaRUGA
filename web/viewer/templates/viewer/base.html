@@ -1651,22 +1651,88 @@
   .detview .layers label.off { opacity: .4; cursor: default; }
   .detview .layers label.off input { cursor: default; }
 
-  /* --- 스케일바 (사진 우하단) ---
+  /* --- 스케일바 (기본은 사진 우하단) ---
      canvas 가 아니라 detview 의 자식이라 확대/이동 변환을 받지 않는다.
-     그래서 어디로 끌고 가든 늘 같은 자리에 보이고, 길이만 배율에 맞춰 바뀐다. */
+     그래서 어디로 끌고 가든 늘 같은 자리에 보이고, 길이만 배율에 맞춰 바뀐다.
+
+     **모양은 안의 `<canvas>` 가 그린다** (214) — 바탕 상자까지 그 안이다.
+     이미지로 내보낼 때 같은 함수가 다시 그리므로 여기에는 자리만 둔다.
+     두 번 누르면 모양을 고르는 창이 열려야 해서 마우스를 받는다.
+
+     **자리 여섯 중 위·왼쪽 아래·가운데 아래는 화면에서만 비켜 선다** —
+     좌상 교정 도구·우상 레이어·좌하 배율·하단 가운데 검토 완료가 거기 있다.
+     내보낸 파일에는 그것들이 없으므로 가장자리에 붙는다. */
   .detview .scalebar {
     position: absolute; right: 10px; bottom: 10px; z-index: 5;
-    padding: 6px 9px 5px; border-radius: 6px; background: rgba(0,0,0,.62);
-    color: #fff; pointer-events: none; text-align: center;
+    line-height: 0; cursor: pointer;
   }
-  .detview .scalebar i {
-    display: block; height: 4px; background: #fff; border-radius: 1px;
-    min-width: 20px; margin: 0 auto 4px;
+  .detview .scalebar canvas { display: block; }
+  .detview .scalebar.pos-bl { right: auto; left: 10px; bottom: 38px; }
+  .detview .scalebar.pos-bc { right: auto; left: 50%; bottom: 66px; transform: translateX(-50%); }
+  .detview .scalebar.pos-tl { right: auto; left: 10px; bottom: auto; top: 46px; }
+  .detview .scalebar.pos-tc { right: auto; left: 50%; bottom: auto; top: 46px; transform: translateX(-50%); }
+  .detview .scalebar.pos-tr { bottom: auto; top: 46px; }
+
+  /* --- 스케일바 모양 고르기 · 이미지 내보내기 (214) ---
+     창 둘이 같은 뼈대를 쓴다. 테마 토큰만 쓴다(107) — 미리보기 칸의 바탕만
+     사진을 흉내 내는 색으로 박는다: 거기는 테마가 아니라 현미경 사진이다. */
+  .sbdlg {
+    position: fixed; inset: 0; z-index: 80; display: flex;
+    align-items: center; justify-content: center;
+    background: rgba(0,0,0,.45); padding: 16px;
   }
-  .detview .scalebar span {
-    display: block; font-size: 11px; line-height: 1.1;
-    font-family: ui-monospace, "SF Mono", Menlo, monospace; letter-spacing: .2px;
+  .sbdlg[hidden] { display: none; }
+  .sbdlg .sbbox {
+    background: var(--panel); color: var(--fg); border: 1px solid var(--line);
+    border-radius: 11px; box-shadow: 0 12px 40px rgba(0,0,0,.5);
+    width: min(620px, 100%); max-height: calc(100vh - 32px); overflow: auto;
+    padding: 14px 16px 12px; font-size: 13px; line-height: 1.45;
   }
+  .sbdlg h3 { margin: 0 0 10px; font-size: 15px; }
+  .sbdlg .sbrow { margin: 11px 0 0; }
+  .sbdlg .sbrow > .k { display: block; font-size: 12px; color: var(--dim); margin-bottom: 5px; }
+  .sbdlg .sbstyles {
+    display: grid; grid-template-columns: repeat(auto-fill, minmax(104px, 1fr)); gap: 7px;
+  }
+  .sbdlg .sbstyles button {
+    display: flex; flex-direction: column; align-items: stretch; gap: 4px;
+    padding: 5px; font: inherit; font-size: 12px; color: var(--fg); cursor: pointer;
+    background: none; border: 1px solid var(--line); border-radius: 8px;
+  }
+  .sbdlg .sbstyles canvas {
+    display: block; width: 100%; height: 58px; border-radius: 5px;
+    background: linear-gradient(135deg, #3b4652, #151a20 60%, #6b7784);
+  }
+  .sbdlg .sbchips { display: flex; flex-wrap: wrap; gap: 6px; }
+  .sbdlg .sbchips button, .sbdlg .sbfoot button {
+    font: inherit; font-size: 12.5px; padding: 4px 10px; cursor: pointer;
+    background: none; color: var(--fg); border: 1px solid var(--line); border-radius: 7px;
+  }
+  .sbdlg .sbchips .sw {
+    display: inline-block; width: 12px; height: 12px; border-radius: 50%;
+    vertical-align: -1px; margin-right: 5px; border: 1px solid var(--dim);
+  }
+  .sbdlg .sbpos { display: grid; grid-template-columns: repeat(3, auto); gap: 5px; justify-content: start; }
+  .sbdlg .sbstyles button:hover, .sbdlg .sbchips button:hover,
+  .sbdlg .sbfoot button:hover { border-color: var(--accent); }
+  .sbdlg .sbstyles button.on, .sbdlg .sbchips button.on {
+    border-color: var(--accent); color: var(--accent); box-shadow: 0 0 0 1px var(--accent) inset;
+  }
+  .sbdlg label.chk { display: inline-flex; align-items: center; gap: 5px; margin-right: 14px; cursor: pointer; }
+  .sbdlg label.chk.off { opacity: .45; cursor: default; }
+  .sbdlg .sbnote { font-size: 12px; color: var(--dim); margin-top: 10px; }
+  .sbdlg .sbfoot { display: flex; gap: 8px; align-items: center; margin-top: 14px; }
+  .sbdlg .sbfoot .sp { flex: 1 1 auto; }
+  .sbdlg .sbfoot button.go { border-color: var(--accent); color: var(--accent); font-weight: 600; }
+  .sbdlg .sbfoot button:disabled { opacity: .5; cursor: default; }
+  .sbdlg .sbsay { font-size: 12px; color: var(--dim); }
+  .sbdlg .sbsay.bad { color: var(--danger); }
+  /* `.dettabs button` 보다 특이도가 높아(0,2,0) 탭 밑줄 규칙을 덮는다 */
+  .dettabs .exportbtn {
+    margin: 0 0 0 6px; border: 1px solid var(--line); border-radius: 7px;
+    padding: 3px 9px; font-size: 12px; align-self: center;
+  }
+  .dettabs .exportbtn:hover { border-color: var(--accent); color: var(--accent); }
 
   /* --- 사진 캐러셀 --- */
   .shotcap {

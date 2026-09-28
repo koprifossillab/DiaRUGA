@@ -37,6 +37,13 @@
   </div>
   {% endif %}
   <button type="button" data-pane="list">개체 목록 <span class="dim" id="tabcount-{{ uid }}">{{ det.n_candidates }}</span></button>
+  {% comment %}
+    사진 내보내기 (214). **사진 위가 아니라 여기 둔다** — 내보낼 것 위에 단추를
+    얹으면 그 자리가 가려지고, 읽기 전용 화면은 사진 위 도구를 통째로 감춘다
+    (`group.html`). 보는 일이라 읽기 전용에서도 된다.
+  {% endcomment %}
+  {% if base %}<button type="button" class="exportbtn" id="export-{{ uid }}"
+          title="지금 보는 사진을 PNG 로 내려받습니다 — 도구·체크박스는 빼고, 스케일바는 넣거나 뺄 수 있습니다">⤓ 이미지</button>{% endif %}
   <span class="tabmeta">
     {% comment %}
       분류 이름을 여기 적지 않는다 — ClassDef 에 속을 더해도 이 줄만 옛 목록으로
@@ -199,7 +206,14 @@
             class="{% if det.review_done %}on{% endif %}"></button>
   </div>
 
-  <div class="scalebar" id="sb-{{ uid }}"><i></i><span></span></div>
+  {% comment %}
+    스케일바는 **캔버스에 그린다** (214). 모양이 다섯이고, 이미지로 내보낼 때
+    같은 함수가 같은 모양을 원본 해상도로 다시 그린다 — CSS 로 그리면 화면과
+    내려받은 파일이 두 벌이 되어 어긋난다. **두 번 누르면 모양을 고르는 창이
+    열린다.**
+  {% endcomment %}
+  <div class="scalebar" id="sb-{{ uid }}"
+       title="두 번 누르면 스케일바의 모양·색·자리를 고릅니다"><canvas></canvas></div>
 </div>
 
 {% comment %}

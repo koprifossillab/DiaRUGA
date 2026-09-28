@@ -38,6 +38,394 @@ if (!window.DiaRUGA.env) {
   };
 }
 
+/* --- 스케일바 모양 (214) ------------------------------------------------------
+
+   **그리는 함수가 하나다.** 화면의 스케일바도, 이미지로 내보낸 파일의
+   스케일바도 `layout()` 이 그린다 — CSS 로 화면을 그리고 파일은 캔버스로
+   따로 그리면 두 벌이 되어 조용히 어긋난다(내려받은 것이 화면과 다르면
+   그 파일을 믿을 수 없다).
+
+   치수는 전부 `u` 배다. 화면에서는 `u` = 크기 배율, 내보낼 때는 거기에
+   "화면 1px 이 파일에서 몇 px 인가" 를 곱한다 — 그래서 파일에서도 사진에
+   대한 비율이 화면과 같다.
+
+   **설정은 브라우저에만 둔다**(`diaruga.scalebar`). 밝기·대비·레이어와 같은
+   자리다 — 보는 방식이지 자료가 아니다. 시야를 옮겨도, 오프라인 파일의 여러
+   시야에도 같이 걸린다. */
+window.DiaRUGA.sb = window.DiaRUGA.sb || (function () {
+  var KEY = 'diaruga.scalebar';
+  var DEF = { style: 'box', color: 'white', pos: 'br', size: 'm', label: true };
+  var STYLES = [
+    { key: 'box', name: '상자', note: '지금까지의 모양' },
+    { key: 'plain', name: '도판식', note: '막대 위에 숫자' },
+    { key: 'ticks', name: '끝 눈금', note: '양 끝을 세운 선' },
+    { key: 'ruler', name: '눈금자', note: '0 · 가운데 · 끝' },
+    { key: 'checker', name: '흑백 칸', note: '지도식 교차 막대' }
+  ];
+  var COLORS = [
+    { key: 'white', name: '흰색', fg: '#ffffff' },
+    { key: 'black', name: '검정', fg: '#000000' },
+    { key: 'yellow', name: '노랑', fg: '#ffd23f' },
+    { key: 'cyan', name: '하늘', fg: '#5ac8fa' },
+    { key: 'red', name: '빨강', fg: '#ff5f5f' }
+  ];
+  var POS = [
+    { key: 'tl', name: '왼쪽 위' }, { key: 'tc', name: '가운데 위' }, { key: 'tr', name: '오른쪽 위' },
+    { key: 'bl', name: '왼쪽 아래' }, { key: 'bc', name: '가운데 아래' }, { key: 'br', name: '오른쪽 아래' }
+  ];
+  var SIZES = [
+    { key: 's', name: '작게', f: 0.8 }, { key: 'm', name: '보통', f: 1 },
+    { key: 'l', name: '크게', f: 1.35 }, { key: 'xl', name: '아주 크게', f: 1.8 }
+  ];
+  function pick(list, k) {
+    for (var i = 0; i < list.length; i++) if (list[i].key === k) return list[i];
+    return null;
+  }
+
+  // 모르는 값은 기본값으로 — 판이 바뀌어 모양 하나가 빠져도 화면이 안 죽는다
+  function read() {
+    var v = {};
+    try { v = JSON.parse(localStorage.getItem(KEY) || '{}') || {}; } catch (e) { v = {}; }
+    return {
+      style: pick(STYLES, v.style) ? v.style : DEF.style,
+      color: pick(COLORS, v.color) ? v.color : DEF.color,
+      pos: pick(POS, v.pos) ? v.pos : DEF.pos,
+      size: pick(SIZES, v.size) ? v.size : DEF.size,
+      label: v.label === false ? false : true
+    };
+  }
+  function save(o) {
+    try { localStorage.setItem(KEY, JSON.stringify(o)); }
+    catch (e) { /* 사생활 모드 — 바뀌기는 하고 기억만 안 된다 */ }
+    // 한 화면에 시야가 여럿일 수 있다(오프라인 검토기) — 다 같이 다시 그린다
+    window.dispatchEvent(new CustomEvent('diaruga:scalebar'));
+  }
+  function sizeF(o) { return (pick(SIZES, o.size) || SIZES[1]).f; }
+  function fgOf(o) { return (pick(COLORS, o.color) || COLORS[0]).fg; }
+
+  // 1·2·5 계열로 떨어뜨린다 — 눈금이 읽기 좋은 값이어야 한다.
+  function niceLength(v) {
+    var e = Math.pow(10, Math.floor(Math.log(v) / Math.LN10));
+    var m = v / e;
+    return (m < 1.5 ? 1 : m < 3.5 ? 2 : m < 7.5 ? 5 : 10) * e;
+  }
+  function fmtNum(v) {
+    return v < 1 ? String(+v.toFixed(2)) : v < 10 ? String(+v.toFixed(1)) : String(Math.round(v));
+  }
+  function fmtUm(v) {
+    return (v < 1 ? v.toFixed(2) : v < 10 ? v.toFixed(1) : String(Math.round(v))) + ' µm';
+  }
+  // 눈금자·흑백 칸을 몇 칸으로 나누나. 칸 하나가 읽기 좋은 값이 되게 —
+  // 10 은 다섯 칸(2씩), 20 은 네 칸(5씩), 50 은 다섯 칸(10씩).
+  function divisions(um) {
+    var e = Math.pow(10, Math.floor(Math.log(um) / Math.LN10 + 1e-9));
+    var m = Math.round(um / e);
+    return m === 2 ? 4 : 5;
+  }
+  // 밝은 색 위에는 검은 테두리, 검정 위에는 흰 테두리 — 사진은 어디든 밝을 수 있다
+  function isDark(hex) {
+    var n = parseInt(hex.slice(1), 16);
+    return (0.299 * (n >> 16) + 0.587 * ((n >> 8) & 255) + 0.114 * (n & 255)) < 110;
+  }
+
+  var MONO = 'ui-monospace, "SF Mono", Menlo, monospace';
+  var SANS = 'system-ui, -apple-system, "Segoe UI", sans-serif';
+
+  function rrect(ctx, x, y, w, h, r) {
+    ctx.beginPath();
+    ctx.moveTo(x + r, y);
+    ctx.arcTo(x + w, y, x + w, y + h, r);
+    ctx.arcTo(x + w, y + h, x, y + h, r);
+    ctx.arcTo(x, y + h, x, y, r);
+    ctx.arcTo(x, y, x + w, y, r);
+    ctx.closePath();
+  }
+
+  /* 모양 하나를 잰다. 돌려주는 `paint(x, y)` 가 (x, y) 를 왼쪽 위로 그린다.
+     o = { style, fg, u, bar(막대 길이 px), um(막대가 뜻하는 µm), label(bool) } */
+  function layout(ctx, o) {
+    var u = o.u, bar = Math.max(1, o.bar), fg = o.fg;
+    var dark = isDark(fg);
+    var halo = dark ? 'rgba(255,255,255,.85)' : 'rgba(0,0,0,.78)';
+    var txt = fmtUm(o.um);
+
+    function text(font, s, x, y, align) {
+      ctx.font = font;
+      ctx.textAlign = align || 'center';
+      ctx.textBaseline = 'top';
+      ctx.lineJoin = 'round';
+      if (o.style !== 'box') {
+        ctx.strokeStyle = halo;
+        ctx.lineWidth = 3 * u;
+        ctx.strokeText(s, x, y);
+      }
+      ctx.fillStyle = fg;
+      ctx.fillText(s, x, y);
+    }
+    function tw(font, s) { ctx.font = font; return ctx.measureText(s).width; }
+
+    if (o.style === 'plain') {
+      var fP = '600 ' + (13 * u) + 'px ' + SANS;
+      var pad = 3 * u, th = o.label ? 14 * u : 0, gap = o.label ? 3 * u : 0, bh = 5 * u;
+      var w = Math.max(bar, o.label ? tw(fP, txt) : 0) + 2 * pad;
+      var h = pad + th + gap + bh + pad;
+      return { w: w, h: h, paint: function (x, y) {
+        var bx = x + (w - bar) / 2, by = y + pad + th + gap;
+        ctx.fillStyle = halo;
+        ctx.fillRect(bx - 1.2 * u, by - 1.2 * u, bar + 2.4 * u, bh + 2.4 * u);
+        ctx.fillStyle = fg;
+        ctx.fillRect(bx, by, bar, bh);
+        if (o.label) text(fP, txt, x + w / 2, y + pad);
+      } };
+    }
+
+    if (o.style === 'ticks') {
+      var fT = '600 ' + (12 * u) + 'px ' + SANS;
+      var padT = 3 * u, thT = o.label ? 13 * u : 0, gapT = o.label ? 3 * u : 0;
+      var tk = 11 * u, lw = 2 * u;
+      var wT = Math.max(bar + lw, o.label ? tw(fT, txt) : 0) + 2 * padT;
+      var hT = padT + thT + gapT + tk + padT;
+      return { w: wT, h: hT, paint: function (x, y) {
+        var x0 = x + (wT - bar) / 2, x1 = x0 + bar;
+        var y0 = y + padT + thT + gapT, ym = y0 + tk / 2;
+        function path() {
+          ctx.beginPath();
+          ctx.moveTo(x0, y0); ctx.lineTo(x0, y0 + tk);
+          ctx.moveTo(x1, y0); ctx.lineTo(x1, y0 + tk);
+          ctx.moveTo(x0, ym); ctx.lineTo(x1, ym);
+        }
+        ctx.lineCap = 'square';
+        path(); ctx.strokeStyle = halo; ctx.lineWidth = lw + 2.4 * u; ctx.stroke();
+        path(); ctx.strokeStyle = fg; ctx.lineWidth = lw; ctx.stroke();
+        if (o.label) text(fT, txt, x + wT / 2, y + padT);
+      } };
+    }
+
+    if (o.style === 'ruler' || o.style === 'checker') {
+      var n = divisions(o.um);
+      var fR = '600 ' + (11 * u) + 'px ' + SANS;
+      var padR = 4 * u, thR = o.label ? 12 * u : 0, gapR = o.label ? 3 * u : 0;
+      // 숫자는 눈금 위에 가운데로 앉으므로 막대 밖으로 비어져 나간다 — 그만큼 넓힌다
+      var endS = o.style === 'ruler' ? fmtNum(o.um) : txt;
+      var unitS = o.style === 'ruler' ? ' µm' : '';
+      var leftOver = 0, rightOver = 0;
+      if (o.label) {
+        if (o.style === 'ruler') {
+          leftOver = tw(fR, '0') / 2;
+          rightOver = tw(fR, endS) / 2 + tw(fR, unitS);
+        } else {
+          // 흑백 칸은 "0" 을 왼쪽 끝에, "N µm" 을 오른쪽 끝에 맞춘다
+          var need = tw(fR, '0') + tw(fR, endS) + 10 * u;
+          if (need > bar) rightOver = need - bar;
+        }
+      }
+      var wR = padR + leftOver + bar + rightOver + padR;
+      var bodyH = o.style === 'ruler' ? 10 * u : 7 * u;
+      var hR = padR + thR + gapR + bodyH + padR;
+      return { w: wR, h: hR, paint: function (x, y) {
+        var x0 = x + padR + leftOver, x1 = x0 + bar;
+        var yb = y + padR + thR + gapR;
+        if (o.style === 'ruler') {
+          var base = yb + bodyH, lwR = 1.6 * u;
+          var path = function () {
+            ctx.beginPath();
+            ctx.moveTo(x0, base); ctx.lineTo(x1, base);
+            for (var i = 0; i <= n; i++) {
+              var xi = x0 + bar * i / n;
+              var major = (i === 0 || i === n || (n % 2 === 0 && i === n / 2));
+              ctx.moveTo(xi, base); ctx.lineTo(xi, base - (major ? bodyH : bodyH * 0.55));
+            }
+          };
+          ctx.lineCap = 'square';
+          path(); ctx.strokeStyle = halo; ctx.lineWidth = lwR + 2.4 * u; ctx.stroke();
+          path(); ctx.strokeStyle = fg; ctx.lineWidth = lwR; ctx.stroke();
+          if (o.label) {
+            var ty = y + padR;
+            text(fR, '0', x0, ty);
+            if (n % 2 === 0) text(fR, fmtNum(o.um / 2), x0 + bar / 2, ty);
+            text(fR, endS, x1, ty);
+            text(fR, unitS, x1 + tw(fR, endS) / 2, ty, 'left');
+          }
+        } else {
+          var alt = dark ? '#ffffff' : '#000000';
+          for (var j = 0; j < n; j++) {
+            ctx.fillStyle = (j % 2 === 0) ? fg : alt;
+            var sx = x0 + bar * j / n;
+            ctx.fillRect(sx, yb, bar / n + 0.5, bodyH);
+          }
+          ctx.strokeStyle = halo; ctx.lineWidth = 1.2 * u;
+          ctx.strokeRect(x0, yb, bar, bodyH);
+          if (o.label) {
+            text(fR, '0', x0, y + padR, 'left');
+            text(fR, endS, x1 + rightOver, y + padR, 'right');
+          }
+        }
+      } };
+    }
+
+    // box — 지금까지의 모양. 어두운 상자에 흰 막대, 아래 숫자.
+    var fB = (11 * u) + 'px ' + MONO;
+    var bw = Math.max(bar, 20 * u);
+    var wB = Math.max(bw, o.label ? tw(fB, txt) : 0) + 18 * u;
+    var hB = 6 * u + 4 * u + (o.label ? 4 * u + 12 * u : 0) + 5 * u;
+    return { w: wB, h: hB, paint: function (x, y) {
+      rrect(ctx, x, y, wB, hB, 6 * u);
+      ctx.fillStyle = dark ? 'rgba(255,255,255,.72)' : 'rgba(0,0,0,.62)';
+      ctx.fill();
+      ctx.fillStyle = fg;
+      rrect(ctx, x + (wB - bw) / 2, y + 6 * u, bw, 4 * u, 1 * u);
+      ctx.fill();
+      if (o.label) text(fB, txt, x + wB / 2, y + 14 * u);
+    } };
+  }
+
+  /* 캔버스 요소 하나에 그린다 — 화면의 스케일바와 고르기 창의 미리보기가 쓴다.
+     `box` 가 있으면 그 폭·높이 안 가운데에, 없으면 캔버스를 모양 크기로 맞춘다. */
+  function paintInto(cv, o, box) {
+    var dpr = window.devicePixelRatio || 1;
+    var ctx = cv.getContext('2d');
+    var L = layout(ctx, o);
+    var cw = box ? box.w : Math.ceil(L.w), ch = box ? box.h : Math.ceil(L.h);
+    cv.width = Math.max(1, Math.round(cw * dpr));
+    cv.height = Math.max(1, Math.round(ch * dpr));
+    if (!box) { cv.style.width = cw + 'px'; cv.style.height = ch + 'px'; }
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    ctx.clearRect(0, 0, cw, ch);
+    L = layout(ctx, o);                 // 크기를 바꾸면 상태가 지워진다 — 다시 잰다
+    L.paint(Math.round((cw - L.w) / 2), Math.round((ch - L.h) / 2));
+  }
+
+  // --- 고르기 창 (문서에 하나) ---------------------------------------------
+  var dlg = null;
+  function el(tag, cls, txt) {
+    var e = document.createElement(tag);
+    if (cls) e.className = cls;
+    if (txt != null) e.textContent = txt;
+    return e;
+  }
+  function openPicker() {
+    if (!dlg) {
+      dlg = el('div', 'sbdlg');
+      dlg.id = 'sbpicker';
+      dlg.setAttribute('role', 'dialog');
+      dlg.setAttribute('aria-label', '스케일바 모양');
+      var box = el('div', 'sbbox');
+      box.appendChild(el('h3', null, '스케일바 모양'));
+
+      var r1 = el('div', 'sbrow'); r1.appendChild(el('span', 'k', '모양'));
+      var st = el('div', 'sbstyles');
+      STYLES.forEach(function (s) {
+        var b = el('button'); b.type = 'button'; b.dataset.style = s.key;
+        b.title = s.note;
+        b.appendChild(el('canvas'));
+        b.appendChild(el('span', null, s.name));
+        st.appendChild(b);
+      });
+      r1.appendChild(st); box.appendChild(r1);
+
+      function chips(label, list, attr, extra) {
+        var r = el('div', 'sbrow'); r.appendChild(el('span', 'k', label));
+        var c = el('div', 'sbchips' + (extra ? ' ' + extra : ''));
+        list.forEach(function (it) {
+          var b = el('button'); b.type = 'button'; b.dataset[attr] = it.key;
+          if (it.fg) {
+            var sw = el('span', 'sw'); sw.style.background = it.fg; b.appendChild(sw);
+          }
+          b.appendChild(document.createTextNode(it.name));
+          c.appendChild(b);
+        });
+        r.appendChild(c); box.appendChild(r);
+      }
+      chips('색', COLORS, 'color');
+      chips('자리', POS, 'pos', 'sbpos');
+      chips('크기', SIZES, 'size');
+
+      var r5 = el('div', 'sbrow');
+      var lab = el('label', 'chk'); var cb = el('input'); cb.type = 'checkbox';
+      cb.dataset.k = 'label';
+      lab.appendChild(cb); lab.appendChild(document.createTextNode('숫자(µm) 보이기'));
+      r5.appendChild(lab); box.appendChild(r5);
+
+      box.appendChild(el('div', 'sbnote',
+        '길이는 배율에 맞춰 1·2·5 단위로 저절로 정해집니다. 이 브라우저에만 기억되고, ' +
+        '사진을 내려받을 때도 이 모양이 들어갑니다. 위·왼쪽 아래·가운데 아래는 ' +
+        '화면에서만 도구를 비켜 조금 안쪽에 놓입니다.'));
+      var foot = el('div', 'sbfoot');
+      var rst = el('button', null, '처음 모양으로'); rst.type = 'button'; rst.dataset.act = 'reset';
+      var cls = el('button', 'go', '닫기'); cls.type = 'button'; cls.dataset.act = 'close';
+      foot.appendChild(rst); foot.appendChild(el('span', 'sp')); foot.appendChild(cls);
+      box.appendChild(foot);
+      dlg.appendChild(box);
+      document.body.appendChild(dlg);
+
+      dlg.addEventListener('click', function (e) {
+        if (e.target === dlg) { closePicker(); return; }
+        var b = e.target.closest('button');
+        if (!b) return;
+        var o = read();
+        if (b.dataset.style) o.style = b.dataset.style;
+        else if (b.dataset.color) o.color = b.dataset.color;
+        else if (b.dataset.pos) o.pos = b.dataset.pos;
+        else if (b.dataset.size) o.size = b.dataset.size;
+        else if (b.dataset.act === 'reset') o = JSON.parse(JSON.stringify(DEF));
+        else if (b.dataset.act === 'close') { closePicker(); return; }
+        else return;
+        save(o); sync();
+      });
+      cb.addEventListener('change', function () {
+        var o = read(); o.label = cb.checked; save(o); sync();
+      });
+    }
+    // 내보내기 창에서 열 수도 있다 — 문서 끝으로 옮겨 그 위에 뜨게 한다
+    document.body.appendChild(dlg);
+    dlg.hidden = false;
+    sync();
+    var go = dlg.querySelector('button.go');
+    if (go) go.focus();
+  }
+  function closePicker() { if (dlg) dlg.hidden = true; }
+  // 창의 눌린 표시와 미리보기를 지금 설정에 맞춘다
+  function sync() {
+    if (!dlg) return;
+    var o = read();
+    dlg.querySelectorAll('button[data-style]').forEach(function (b) {
+      b.classList.toggle('on', b.dataset.style === o.style);
+      var cv = b.querySelector('canvas');
+      var r = cv.getBoundingClientRect();
+      paintInto(cv, { style: b.dataset.style, fg: fgOf(o), u: 1, bar: 60, um: 20,
+                      label: o.label }, { w: r.width || 100, h: r.height || 58 });
+    });
+    ['color', 'pos', 'size'].forEach(function (k) {
+      dlg.querySelectorAll('button[data-' + k + ']').forEach(function (b) {
+        b.classList.toggle('on', b.dataset[k] === o[k]);
+      });
+    });
+    dlg.querySelector('input[data-k="label"]').checked = o.label;
+  }
+
+  /* **창이 떠 있는 동안 검토 단축키가 돌면 안 된다.** 창의 단추에 초점이 있어도
+     키는 문서까지 올라가 Space(되살리기)·숫자(분류)·D(그리기)를 부른다 —
+     창 너머의 사진에 보이지 않는 교정이 쌓인다. 가장 바깥(window, 붙잡기)에서
+     끊는다. 끊어도 단추를 누르는 기본 동작(Space·Enter)과 Tab 은 그대로다.
+     Esc 는 맨 위 창 하나를 닫는다(모양 창이 내보내기 창 위에 뜬다). */
+  window.addEventListener('keydown', function (e) {
+    var open = Array.prototype.filter.call(document.querySelectorAll('.sbdlg'),
+      function (d) { return !d.hidden; });
+    if (!open.length) return;
+    e.stopPropagation();
+    if (e.key === 'Escape') {
+      var top = (dlg && !dlg.hidden) ? dlg : open[open.length - 1];
+      top.hidden = true;
+      e.preventDefault();
+    }
+  }, true);
+
+  return { read: read, save: save, layout: layout, paintInto: paintInto,
+           niceLength: niceLength, fmtUm: fmtUm, sizeF: sizeF, fgOf: fgOf,
+           openPicker: openPicker, closePicker: closePicker,
+           STYLES: STYLES, COLORS: COLORS, POS: POS, SIZES: SIZES };
+})();
+
 window.initDetView = function (uid) {
   var env = window.DiaRUGA.env;
   var view = document.getElementById('dv-' + uid);
@@ -280,18 +668,15 @@ window.initDetView = function (uid) {
 
   // --- 스케일바 ------------------------------------------------------------
   // 확대해도 "화면에서 이만큼이 몇 µm 인가" 는 계속 달라지므로 매번 다시 잰다.
+  // 모양은 `DiaRUGA.sb` 가 그린다(214) — 내보내기가 같은 함수를 쓴다.
+  var SB = window.DiaRUGA.sb;
   var umPerImgPx = JSON.parse(document.getElementById('umpp-' + uid).textContent || '0');
   var sb = document.getElementById('sb-' + uid);
-  var sbBar = sb.querySelector('i'), sbLabel = sb.querySelector('span');
+  var sbCanvas = sb.querySelector('canvas');
 
-  function niceLength(v) {
-    // 1·2·5 계열로 떨어뜨린다 — 눈금이 읽기 좋은 값이어야 한다.
-    var e = Math.pow(10, Math.floor(Math.log(v) / Math.LN10));
-    var m = v / e;
-    return (m < 1.5 ? 1 : m < 3.5 ? 2 : m < 7.5 ? 5 : 10) * e;
-  }
-  function fmtUm(v) {
-    return (v < 1 ? v.toFixed(2) : v < 10 ? v.toFixed(1) : String(Math.round(v))) + ' µm';
+  // 목표 길이(화면 px) — 사진 폭의 16% 를 70~170 px 안으로. 크기를 고르면 함께 는다
+  function sbTarget(vw0, o) {
+    return Math.max(70, Math.min(170, vw0 * 0.16)) * SB.sizeF(o);
   }
   function updateScaleBar() {
     // 배율을 모르면 눈금을 그리지 않는다 — 틀린 스케일바는 없느니만 못하다.
@@ -302,11 +687,23 @@ window.initDetView = function (uid) {
     // 화면에 그려진 이미지의 폭(CSS px). canvas 가 그 폭을 꽉 채우고 k 배 확대된다.
     var shownW = vw0 * k;
     var umPerScreenPx = umPerImgPx * W / shownW;
-    var target = Math.max(70, Math.min(170, vw0 * 0.16));
-    var nice = niceLength(umPerScreenPx * target);
-    sbBar.style.width = Math.round(nice / umPerScreenPx) + 'px';
-    sbLabel.textContent = fmtUm(nice);
+    var o = SB.read();
+    var nice = SB.niceLength(umPerScreenPx * sbTarget(vw0, o));
+    sb.className = 'scalebar pos-' + o.pos;
+    SB.paintInto(sbCanvas, { style: o.style, fg: SB.fgOf(o), u: SB.sizeF(o),
+                             bar: nice / umPerScreenPx, um: nice, label: o.label });
   }
+  // 모양을 바꾸면 이 화면의 스케일바도 곧바로 바뀐다
+  window.addEventListener('diaruga:scalebar', function () { updateScaleBar(); });
+  // 두 번 누르면 고르는 창. 사진 위에 있으므로 캔버스가 이 누름을
+  // 선택·범위선택·확대로 받으면 안 된다(도구 단추들과 같은 이유).
+  ['wheel', 'mousedown', 'contextmenu', 'click'].forEach(function (ev) {
+    sb.addEventListener(ev, function (e) { e.stopPropagation(); });
+  });
+  sb.addEventListener('dblclick', function (e) {
+    e.stopPropagation(); e.preventDefault();
+    SB.openPicker();
+  });
 
   // --- 확대 / 이동 ---------------------------------------------------------
   var k = 1, tx = 0, ty = 0;
@@ -3818,6 +4215,335 @@ window.initDetView = function (uid) {
 
   tools.addEventListener('click', onTool);
   if (drawTool) drawTool.addEventListener('click', onTool);
+
+  // --- 이미지로 내보내기 (214) ---------------------------------------------
+  //
+  // **화면을 찍는 것이 아니라 원본으로 다시 그린다.** 화면에 뜬 것은 1600 px
+  // 축소본이고 창 크기만큼만 선명하다. 원본 판을 받아 그 위에 마스크·bbox·
+  // 스케일바를 원본 해상도로 다시 그리고, PNG(무손실)로 내린다.
+  //
+  // **모양은 화면과 같다** — 선 굵기·스케일바 크기가 사진에 대한 비율로 화면과
+  // 같게 나온다. 그래서 굵기를 여기 또 적지 않고 **화면의 계산된 스타일**을
+  // 읽는다(분류 색을 두 벌로 두면 어긋난다 — 039). 도구·체크박스·배율 표시·
+  // 검토 완료 단추는 캔버스 밖 요소라 애초에 안 들어간다.
+  //
+  // **고른 표시는 뺀다.** 노란 선택·커서 강조·링크로 짚어 온 표시는 지금
+  // 조작의 흔적이지 사진의 내용이 아니다. 지운 개체(유령)와 그리는 중인 선도
+  // 안 넣는다.
+  var exportBtn = document.getElementById('export-' + uid);
+  var exDlg = null;
+  var EX_KEY = 'diaruga.export';
+
+  function exPrefs() {
+    try { return JSON.parse(localStorage.getItem(EX_KEY) || '{}') || {}; }
+    catch (e) { return {}; }
+  }
+  function layerOn(name) {
+    var cb = layers.querySelector('input[data-layer="' + name + '"]');
+    return !!(cb && cb.checked);
+  }
+  // 지금 띄운 판의 원본 주소. 캐러셀이 없는 화면은 축소본 주소에서 `w` 를 뗀다
+  // (`image` 뷰는 `w` 가 없으면 원본을 준다). 오프라인은 파일에 든 그림 그대로다.
+  function fullSrc() {
+    var s = shots[current];
+    if (s && s.dataset.full) return s.dataset.full;
+    var src = imgEl.getAttribute('src') || '';
+    if (/^data:/.test(src)) return src;
+    try {
+      var u = new URL(src, location.href);
+      u.searchParams.delete('w');
+      return u.pathname + u.search;
+    } catch (e) { return src; }
+  }
+  function shotName() {
+    var s = shots[current];
+    var n = (s && (s.dataset.short || s.dataset.title)) || '';
+    return n.replace(/^Snap-/, '');
+  }
+  // 파일 이름 — 슬라이드·시야·판. 운영체제가 싫어하는 글자는 밑줄로
+  function exName(o) {
+    var parts = [vpSlug || stem || 'view', vpGid ? 'g' + vpGid : '', shotName(),
+                 o.region === 'view' ? 'zoom' : '', o.scalebar ? '' : 'nobar'];
+    return parts.filter(Boolean).join('_').replace(/[\\/:*?"<>|\s]+/g, '_') + '.png';
+  }
+
+  // 보이는 자리(원본 좌표 W×H 단위). 사진 밖으로 나간 부분은 자른다.
+  function visibleRect() {
+    var b = canvasBox();
+    var vwv = view.clientWidth, vhv = view.clientHeight;
+    function fx(sx) { return (sx - b.ox - tx) / (k * b.w); }
+    function fy(sy) { return (sy - b.oy - ty) / (k * b.h); }
+    var x0 = Math.max(0, fx(0)), x1 = Math.min(1, fx(vwv));
+    var y0 = Math.max(0, fy(b.oy)), y1 = Math.min(1, fy(vhv));
+    if (x1 <= x0 || y1 <= y0) return { x: 0, y: 0, w: W, h: H };
+    return { x: x0 * W, y: y0 * H, w: (x1 - x0) * W, h: (y1 - y0) * H };
+  }
+
+  /* 내보낼 크기를 정한다. `vs` 는 "화면에서 원본 1단위가 몇 px 인가" 다 —
+     보이는 자리면 지금 배율, 사진 전체면 확대하지 않은 화면(k=1)이다. 선 굵기와
+     스케일바는 이 화면을 기준으로 비율을 맞춘다.
+
+     해상도는 **원본 화소보다 줄이지 않는다.** 원본보다 크게 확대해 보고 있으면
+     화면 선명도(× devicePixelRatio)까지 늘린다 — 원본 1:1 로 내면 확대해 본
+     작은 자리가 수백 px 짜리 파일이 되어 스케일바 글자가 안 읽힌다. */
+  function exGeometry(o, nat) {
+    var vw0 = canvasBox().w || 1;
+    var r = o.region === 'view' ? visibleRect() : { x: 0, y: 0, w: W, h: H };
+    var vs = (o.region === 'view' ? k : 1) * vw0 / W;
+    var natScale = nat ? nat / W : 1;
+    var dpr = window.devicePixelRatio || 1;
+    var f = Math.max(natScale, vs * dpr);
+    // 브라우저 캔버스 상한(한 변 16384 · 넓이 약 1.2억) 안으로
+    var MAXS = 16384, MAXA = 120e6;
+    f = Math.min(f, MAXS / r.w, MAXS / r.h, Math.sqrt(MAXA / (r.w * r.h)));
+    return { r: r, vs: vs, f: f, vw0: vw0, natScale: natScale,
+             ow: Math.max(1, Math.round(r.w * f)), oh: Math.max(1, Math.round(r.h * f)),
+             up: f > natScale * 1.01 };
+  }
+
+  var natCache = {};
+  function loadFull(src) {
+    return new Promise(function (ok, bad) {
+      if (natCache[src]) { ok(natCache[src]); return; }
+      var im = new Image();
+      im.onload = function () { natCache[src] = im; ok(im); };
+      im.onerror = function () { bad(new Error('원본을 받지 못했습니다')); };
+      im.src = src;
+    });
+  }
+
+  // 화면의 계산된 스타일을 읽어 캔버스에 옮긴다. 레이어는 **창에서 고른 대로**
+  // 잠시 바꿔 읽고 되돌린다 — 화면에서 꺼 둔 레이어도 파일에는 넣을 수 있다.
+  function paintOverlays(ctx, o, g) {
+    var keepView = view.className;
+    var touched = [];
+    function strip(el) {
+      touched.push([el, el.getAttribute('class')]);
+      ['sel', 'hot', 'hl', 'linkflash'].forEach(function (c) { el.classList.remove(c); });
+    }
+    view.classList.toggle('hide-mask', !o.mask);
+    view.classList.toggle('hide-box', !o.box);
+    view.classList.toggle('hide-reject', !o.reject);
+    polys.forEach(strip); rejPolys.forEach(strip); els.forEach(strip);
+    try {
+      // 원본 좌표 → 파일 px
+      ctx.setTransform(g.f, 0, 0, g.f, -g.r.x * g.f, -g.r.y * g.f);
+      // 화면 px 로 적힌 굵기(non-scaling-stroke · --inv 를 곱한 테두리)를 원본 단위로
+      var perScreenPx = 1 / g.vs;
+
+      function drawPoly(el) {
+        var cs = getComputedStyle(el);
+        if (cs.display === 'none' || cs.visibility === 'hidden') return;
+        var pts = (el.getAttribute('points') || '').trim().split(/[\s,]+/).map(Number);
+        if (pts.length < 6) return;
+        ctx.beginPath();
+        ctx.moveTo(pts[0], pts[1]);
+        for (var j = 2; j + 1 < pts.length; j += 2) ctx.lineTo(pts[j], pts[j + 1]);
+        ctx.closePath();
+        ctx.globalAlpha = parseFloat(cs.opacity) || 1;
+        if (cs.fill && cs.fill !== 'none') { ctx.fillStyle = cs.fill; ctx.fill(); }
+        var sw = parseFloat(cs.strokeWidth) || 0;
+        if (cs.stroke && cs.stroke !== 'none' && sw > 0) {
+          var nonScaling = cs.vectorEffect === 'non-scaling-stroke';
+          var m = nonScaling ? perScreenPx : 1;
+          ctx.lineWidth = sw * m;
+          var dash = (cs.strokeDasharray && cs.strokeDasharray !== 'none')
+            ? cs.strokeDasharray.split(/[\s,]+/).map(function (v) { return parseFloat(v) * m; })
+            : [];
+          ctx.setLineDash(dash);
+          ctx.lineJoin = 'round';
+          ctx.strokeStyle = cs.stroke;
+          ctx.stroke();
+          ctx.setLineDash([]);
+        }
+        ctx.globalAlpha = 1;
+      }
+      if (o.reject) rejPolys.forEach(drawPoly);
+      if (o.mask) polys.forEach(drawPoly);
+
+      if (o.box) {
+        // 상자는 canvas 안의 % 자리이고, 테두리는 canvas 안 px(= 화면 px ÷ k)이다
+        var boxPx = k * perScreenPx;
+        els.forEach(function (el) {
+          if (el.classList.contains('gone')) return;
+          var cs = getComputedStyle(el);
+          if (cs.display === 'none' || cs.borderTopStyle === 'none') return;
+          var bw = (parseFloat(cs.borderTopWidth) || 0) * boxPx;
+          if (!bw) return;
+          var x = parseFloat(el.style.left) / 100 * W, y = parseFloat(el.style.top) / 100 * H;
+          var w = parseFloat(el.style.width) / 100 * W, h = parseFloat(el.style.height) / 100 * H;
+          ctx.globalAlpha = parseFloat(cs.opacity) || 1;
+          ctx.lineWidth = bw;
+          ctx.setLineDash(cs.borderTopStyle === 'dashed' ? [bw * 3, bw * 2]
+                          : cs.borderTopStyle === 'dotted' ? [bw, bw] : []);
+          ctx.strokeStyle = cs.borderTopColor;
+          // CSS 테두리는 상자 바깥으로 두께만큼 붙는다 — 선의 가운데를 거기 둔다
+          ctx.strokeRect(x - bw / 2, y - bw / 2, w + bw, h + bw);
+          ctx.setLineDash([]);
+          ctx.globalAlpha = 1;
+        });
+      }
+    } finally {
+      view.className = keepView;
+      touched.forEach(function (t) {
+        if (t[1] == null) t[0].removeAttribute('class'); else t[0].setAttribute('class', t[1]);
+      });
+      ctx.setTransform(1, 0, 0, 1, 0, 0);
+    }
+  }
+
+  function paintScaleBar(ctx, g) {
+    if (!umPerImgPx) return;
+    var so = SB.read();
+    var sOut = g.f / g.vs;                       // 화면 1px 이 파일에서 몇 px 인가
+    var umPerScreenPx = umPerImgPx / g.vs;
+    var nice = SB.niceLength(umPerScreenPx * sbTarget(g.vw0, so));
+    var L = SB.layout(ctx, { style: so.style, fg: SB.fgOf(so), u: SB.sizeF(so) * sOut,
+                             bar: nice / umPerImgPx * g.f, um: nice, label: so.label });
+    var m = 10 * sOut;
+    var x = so.pos.charAt(1) === 'l' ? m : so.pos.charAt(1) === 'r' ? g.ow - m - L.w : (g.ow - L.w) / 2;
+    var y = so.pos.charAt(0) === 't' ? m : g.oh - m - L.h;
+    L.paint(Math.round(x), Math.round(y));
+  }
+
+  function exportPng(o) {
+    var src = fullSrc();
+    return loadFull(src).then(function (im) {
+      var g = exGeometry(o, im.naturalWidth);
+      var cv = document.createElement('canvas');
+      cv.width = g.ow; cv.height = g.oh;
+      var ctx = cv.getContext('2d');
+      ctx.imageSmoothingEnabled = true;
+      ctx.imageSmoothingQuality = 'high';
+      // 밝기·대비 — 화면에서 사진에만 건 그 값을 사진에만 건다
+      var flt = imgEl.style.filter || '';
+      if (o.adjust && flt && 'filter' in ctx) ctx.filter = flt;
+      var ns = g.natScale;
+      ctx.drawImage(im, g.r.x * ns, g.r.y * ns, g.r.w * ns, g.r.h * ns, 0, 0, g.ow, g.oh);
+      ctx.filter = 'none';
+      if (o.mask || o.box || o.reject) paintOverlays(ctx, o, g);
+      if (o.scalebar) paintScaleBar(ctx, g);
+      return new Promise(function (ok, bad) {
+        cv.toBlob(function (blob) {
+          if (!blob) { bad(new Error('PNG 를 만들지 못했습니다 (크기 ' + g.ow + '×' + g.oh + ')')); return; }
+          var a = document.createElement('a');
+          a.href = URL.createObjectURL(blob);
+          a.download = exName(o);
+          document.body.appendChild(a);
+          a.click();
+          setTimeout(function () { URL.revokeObjectURL(a.href); a.remove(); }, 4000);
+          ok({ w: g.ow, h: g.oh, name: a.download, bytes: blob.size });
+        }, 'image/png');
+      });
+    });
+  }
+
+  function openExport() {
+    closeMenu(); closeSpread(); hideTip();
+    if (!exDlg) {
+      exDlg = document.createElement('div');
+      exDlg.className = 'sbdlg';
+      exDlg.id = 'exdlg-' + uid;
+      exDlg.setAttribute('role', 'dialog');
+      exDlg.setAttribute('aria-label', '이미지로 내보내기');
+      exDlg.innerHTML =
+        '<div class="sbbox">' +
+        '<h3>이미지로 내보내기</h3>' +
+        '<div class="sbrow"><span class="k">범위</span>' +
+        '<label class="chk"><input type="radio" name="exr-' + uid + '" value="view"> 지금 보이는 자리</label>' +
+        '<label class="chk"><input type="radio" name="exr-' + uid + '" value="full"> 사진 전체</label></div>' +
+        '<div class="sbrow"><span class="k">넣을 것</span>' +
+        '<label class="chk"><input type="checkbox" data-o="scalebar"> 스케일바</label>' +
+        '<label class="chk"><input type="checkbox" data-o="mask"> 마스크</label>' +
+        '<label class="chk"><input type="checkbox" data-o="box"> bbox</label>' +
+        '<label class="chk"><input type="checkbox" data-o="reject"> 탈락 후보</label>' +
+        '<label class="chk"><input type="checkbox" data-o="adjust"> 밝기·대비</label></div>' +
+        '<div class="sbnote" data-k="size"></div>' +
+        '<div class="sbnote">PNG(무손실)로 원본 판을 다시 받아 그립니다. 도구·체크박스·' +
+        '배율 표시는 들어가지 않고, 고른 표시(노란 테두리)와 지운 개체도 뺍니다. ' +
+        '스케일바 모양은 사진 위 스케일바를 두 번 눌러 고릅니다.</div>' +
+        '<div class="sbfoot"><button type="button" data-act="style">스케일바 모양…</button>' +
+        '<span class="sp"></span><span class="sbsay" data-k="say"></span>' +
+        '<button type="button" data-act="cancel">닫기</button>' +
+        '<button type="button" class="go" data-act="go">내려받기</button></div>' +
+        '</div>';
+      document.body.appendChild(exDlg);
+      exDlg.addEventListener('click', function (e) {
+        if (e.target === exDlg) { exDlg.hidden = true; return; }
+        var b = e.target.closest('button');
+        if (!b) return;
+        if (b.dataset.act === 'cancel') exDlg.hidden = true;
+        else if (b.dataset.act === 'style') SB.openPicker();
+        else if (b.dataset.act === 'go') exRun(b);
+      });
+      exDlg.addEventListener('change', function () { exSave(); exSize(); });
+    }
+    // 처음 여는 값: 확대해 보고 있으면 그 자리, 아니면 전체. 스케일바는 지난번
+    // 고른 것, 레이어는 **지금 화면대로**
+    var p = exPrefs();
+    var region = k > 1.001 ? 'view' : 'full';
+    exDlg.querySelectorAll('input[type=radio]').forEach(function (r) { r.checked = r.value === region; });
+    var adjOn = !!imgEl.style.filter;
+    var init = { scalebar: p.scalebar !== false && !!umPerImgPx, mask: layerOn('mask'),
+                 box: layerOn('box'), reject: layerOn('reject'), adjust: adjOn };
+    exDlg.querySelectorAll('input[data-o]').forEach(function (cb) {
+      cb.checked = init[cb.dataset.o];
+      var dis = (cb.dataset.o === 'scalebar' && !umPerImgPx) || (cb.dataset.o === 'adjust' && !adjOn);
+      cb.disabled = dis;
+      cb.parentNode.classList.toggle('off', dis);
+      if (cb.dataset.o === 'scalebar' && !umPerImgPx) cb.parentNode.title = '배율(µm/px)을 모르는 시야입니다';
+      if (cb.dataset.o === 'adjust') cb.parentNode.title = adjOn ? imgEl.style.filter : '밝기·대비를 바꾸지 않았습니다';
+    });
+    var say = exDlg.querySelector('[data-k="say"]');
+    say.textContent = ''; say.className = 'sbsay';
+    exDlg.hidden = false;
+    exSize();
+    // 원본을 미리 받아 둔다 — 크기를 적고, 내려받기를 누를 때 기다리지 않게
+    loadFull(fullSrc()).then(function () { if (!exDlg.hidden) exSize(); }, function (err) {
+      say.className = 'sbsay bad'; say.textContent = err.message;
+    });
+    exDlg.querySelector('button.go').focus();
+  }
+  function exOpts() {
+    var o = {};
+    var r = exDlg.querySelector('input[type=radio]:checked');
+    o.region = r ? r.value : 'full';
+    exDlg.querySelectorAll('input[data-o]').forEach(function (cb) { o[cb.dataset.o] = cb.checked && !cb.disabled; });
+    return o;
+  }
+  function exSave() {
+    var o = exOpts();
+    try { localStorage.setItem(EX_KEY, JSON.stringify({ scalebar: o.scalebar })); }
+    catch (e) { /* 사생활 모드 */ }
+  }
+  // 받을 파일의 크기를 미리 적는다. **원본을 받은 뒤에야 적는다** — 원본 폭은
+  // 검출 크기(W)와 다를 수 있어 짐작으로 적으면 받은 파일과 어긋난다(시험이
+  // 실제로 그렇게 잡았다: 1102×827 이라 적고 2000×1500 을 내렸다).
+  function exSize() {
+    var o = exOpts();
+    var im = natCache[fullSrc()];
+    var out = exDlg.querySelector('[data-k="size"]');
+    if (!im) { out.textContent = '받을 크기: 원본을 받는 중…'; return; }
+    var g = exGeometry(o, im.naturalWidth);
+    out.textContent = '받을 크기: ' + g.ow + ' × ' + g.oh + ' px' +
+      (g.up ? ' — 원본 화소보다 크게 확대해 보고 있어 화면 선명도로 늘려 그립니다' : ' — 원본 화소 그대로');
+  }
+  function exRun(btn) {
+    var say = exDlg.querySelector('[data-k="say"]');
+    var o = exOpts();
+    btn.disabled = true;
+    say.className = 'sbsay';
+    say.textContent = '원본을 받아 그리는 중…';
+    exportPng(o).then(function (res) {
+      say.textContent = res.w + '×' + res.h + ' · ' + (res.bytes / 1048576).toFixed(1) + ' MB 내려받음';
+      exSize();
+    }, function (err) {
+      // 못 한 것은 오류로 말한다 — 아무 일 없이 닫히면 된 줄 안다
+      say.className = 'sbsay bad';
+      say.textContent = (err && err.message) || '내보내지 못했습니다';
+    }).then(function () { btn.disabled = false; });
+  }
+  if (exportBtn) exportBtn.addEventListener('click', openExport);
 
   // --- 검토 완료 -----------------------------------------------------------
   // 교정이 하나도 없어도 켤 수 있어야 한다 — 고칠 것이 없는 시야와 아직 보지
