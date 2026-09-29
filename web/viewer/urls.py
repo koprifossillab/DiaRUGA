@@ -119,5 +119,7 @@ urlpatterns = [
     # 시야 가르기. POST 전용이고 confirm=1 인 두 번째 POST 만 실제로 고친다.
     path("d/<slug:slug>/g/<int:gid>/split", views.split_group,
          name="split_group"),
+    path("d/<slug:slug>/g/<int:gid>/merge", views.merge_group,
+         name="merge_group"),
     path("api/d/<slug:slug>.json", views.api_dataset, name="api_dataset"),
 ]

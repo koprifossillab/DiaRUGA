@@ -31,12 +31,13 @@
       {% if s.reviewed %}· <span class="hot">검토가 끝난 시야였습니다</span>{% endif %}
       {% if s.stack %}· 합성본{% endif %}
     </div>
-    <div class="rg-make">
-      새 시야
-      {% for p in s.pieces %}
-        <span class="piece">{% for n in p %}{{ n|cut:"Snap-" }}{% if not forloop.last %} {% endif %}{% endfor %}</span>
-      {% endfor %}
+    <div class="rg-make">새 시야 {{ s.piece_rows|length }}개가 생깁니다</div>
+    {% for rows in s.piece_rows %}
+    <div class="rg-piece">
+      <div class="rg-piece-h">{{ forloop.counter }}번째 조각 · 사진 {{ rows|length }}장</div>
+      {% include "viewer/_regroup_rows.html" %}
     </div>
+    {% endfor %}
   </div>
   {% endfor %}
 
@@ -63,15 +64,11 @@
 <style>
   .rg-h { font-size: 17px; margin: 4px 0 14px; }
   .rg-card { border: 1px solid var(--line); border-radius: 6px;
-             background: var(--panel); padding: 10px 14px; margin: 0 0 10px;
-             max-width: 720px; }
+             background: var(--panel); padding: 10px 14px; margin: 0 0 10px; }
   .rg-tag { font-size: 13px; margin-bottom: 6px; }
   .rg-lose, .rg-make { font-size: 13px; line-height: 1.6; }
   .rg-lose { color: var(--warn); }
   .rg-lose .hot { color: var(--danger); }
-  .rg-make .piece { display: inline-block; font-family: ui-monospace, monospace;
-                    font-size: 12px; border: 1px solid var(--line);
-                    border-radius: 4px; padding: 1px 7px; margin: 2px 4px 2px 0; }
   .rg-sum { max-width: 720px; margin: 16px 0; font-size: 13px; line-height: 1.6; }
   .rg-sum .ok { color: var(--good); }
   .rg-sum .dim { color: var(--dim); }
@@ -85,4 +82,5 @@
                          border-radius: 5px; padding: 9px 16px; font-size: 13px;
                          cursor: pointer; }
 </style>
+{% include "viewer/_regroup_strip_css.html" %}
 {% endblock %}

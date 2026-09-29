@@ -1,0 +1,17 @@
+{% load viewer_extras %}{% comment %}
+  프레임 줄 하나 — 확인 화면이 쓴다(누르는 칸이 없다). `rows` 는
+  `regroup.frame_rows` 가 만든다. 사진 사이에 앞 사진과의 촬영 간격을 적는다.
+{% endcomment %}<div class="rg-strip">
+  {% for r in rows %}
+    {% if not forloop.first %}
+    <span class="rg-gap{% if r.gap_warn %} far{% endif %}{% if r.joint %} joint{% endif %}"
+          {% if r.joint %}title="여기서 두 시야가 붙습니다"{% endif %}>
+      {% if r.joint %}＋{% endif %}{{ r.gap_label|default:"?" }}</span>
+    {% endif %}
+    <figure class="rg-fr">
+      <img loading="lazy" src="{% thumb r.rel 200 %}" alt="{{ r.short }}">
+      <figcaption>{{ r.short }}{% if r.is_sharpest %} ★{% endif %}
+        {% if r.at %}<time>{{ r.at|date:"H:i:s" }}</time>{% endif %}</figcaption>
+    </figure>
+  {% endfor %}
+</div>

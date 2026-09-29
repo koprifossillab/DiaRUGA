@@ -1,0 +1,81 @@
+{% extends "viewer/base.html" %}
+{% block title %}시야 합치기 — {{ label }} g{{ id }} — DiaRUGA{% endblock %}
+{% comment %}
+  합치기 확인 화면 (2026-09-29). `regroup_confirm.html`(가르기)의 짝이고 두 걸음의
+  두 번째다 — 아래 단추를 눌러야 `confirm=1` 이 실린 POST 가 나간다.
+
+  합친 뒤의 모습을 **썸네일 한 줄**로 먼저 보인다. 붙는 자리에 초록 선과 "＋" 를
+  두고 그 자리의 촬영 간격을 적는다 — 몇 분씩 벌어져 있으면 합칠 것이 아닐 수 있다.
+{% endcomment %}
+{% block subtitle %}<a href="{% url 'index' %}">데이터셋</a> /
+  <a href="{% url 'dataset' slug %}">{{ label }}</a> /
+  <a href="{{ back_url }}">g{{ id }}</a> / <b>시야 합치기</b>{% endblock %}
+
+{% block content %}
+{% if not preview.ok %}
+  <div class="rg-err">
+    <b>합칠 수 없습니다</b>
+    <ul>{% for e in preview.errors %}<li>{{ e }}</li>{% endfor %}</ul>
+    <p>아무것도 고치지 않았습니다.</p>
+  </div>
+  <p><a href="{{ back_url }}">← g{{ id }} 로 돌아갑니다</a></p>
+{% else %}
+  <h2 class="rg-h">시야 {{ preview.before }}개 → {{ preview.after }}개</h2>
+
+  {% for m in preview.merged %}
+  <div class="rg-card">
+    <div class="rg-tag">g{{ m.idx }} <span class="mono">{{ m.tag }}</span> · 사진 {{ m.rows|length }}장</div>
+    <div class="rg-lose">
+      사라진다 — 검출 <b>{{ m.detections }}</b> · 교정 <b>{{ m.object_reviews }}</b>
+      {% if m.reviewed %}· <span class="hot">검토가 끝난 시야였습니다</span>{% endif %}
+    </div>
+  </div>
+  {% endfor %}
+
+  <div class="rg-piece">
+    <div class="rg-piece-h">합친 시야 · 사진 {{ preview.rows|length }}장 —
+      <span class="joint-key">＋</span> 가 두 시야가 붙는 자리입니다</div>
+    {% with rows=preview.rows %}{% include "viewer/_regroup_rows.html" %}{% endwith %}
+  </div>
+
+  <div class="rg-sum">
+    <p>시야 <b>{{ preview.totals.merged }}</b>개를 하나로 합칩니다.
+       검출 <b>{{ preview.totals.detections }}</b>건 · 교정
+       <b>{{ preview.totals.object_reviews }}</b>건이 사라집니다.</p>
+    <p class="ok">나머지 시야 <b>{{ preview.untouched }}</b>개는 건드리지 않습니다.</p>
+    <p class="dim">합친 뒤 합성과 검출이 다시 돌아갑니다(1분 안에 자동으로 시작합니다).
+       그동안 이 슬라이드의 검토는 잠깁니다.</p>
+  </div>
+
+  <form method="post" action="{% url 'merge_group' slug id %}" class="rg-go">
+    {% csrf_token %}
+    <input type="hidden" name="confirm" value="1">
+    <input type="hidden" name="with" value="{{ other }}">
+    <button type="submit" class="danger">합친다</button>
+    <a href="{{ back_url }}">그만둡니다</a>
+  </form>
+{% endif %}
+
+<style>
+  .rg-h { font-size: 17px; margin: 4px 0 14px; }
+  .rg-card { border: 1px solid var(--line); border-radius: 6px;
+             background: var(--panel); padding: 10px 14px; margin: 0 0 10px; }
+  .rg-tag { font-size: 13px; margin-bottom: 6px; }
+  .rg-lose { font-size: 13px; line-height: 1.6; color: var(--warn); }
+  .rg-lose .hot { color: var(--danger); }
+  .joint-key { color: var(--good); font-weight: 600; }
+  .rg-sum { max-width: 720px; margin: 16px 0; font-size: 13px; line-height: 1.6; }
+  .rg-sum .ok { color: var(--good); }
+  .rg-sum .dim { color: var(--dim); }
+  .rg-err { max-width: 720px; padding: 12px 16px; border-radius: 6px;
+            background: var(--err-bg); color: var(--err-fg);
+            border: 1px solid var(--err-line); }
+  .rg-err b { display: block; margin-bottom: 6px; }
+  .rg-err ul { margin: 4px 0 8px 18px; padding: 0; font-size: 13px; }
+  .rg-go { display: flex; align-items: center; gap: 16px; margin-top: 18px; }
+  .rg-go button.danger { background: var(--danger); color: #fff; border: 0;
+                         border-radius: 5px; padding: 9px 16px; font-size: 13px;
+                         cursor: pointer; }
+</style>
+{% include "viewer/_regroup_strip_css.html" %}
+{% endblock %}

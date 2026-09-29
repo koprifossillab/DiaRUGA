@@ -21,7 +21,7 @@ from django.views.decorators.http import require_POST
 from . import (antarctica, atlas as atlas_mod, biodatum as bd_mod, data, korea,
                ross, manage_data, offline, outcrop, regroup, thresholds as th)
 from .models import (Candidate, Detection, DiatomObject,  # noqa: E501
-                     Image as ImageModel,
+                     Frame, Image as ImageModel,
                      Locality,
                      ObjectReview, Run,
                      Sample, Site,
@@ -546,6 +546,11 @@ def group(request, slug, gid):
     ctx["off"] = (None if (slide is None or ctx.get("review_blocked")
                            or ctx.get("readonly"))
                   else offline_pick_ctx(slide, "review", str(gid)))
+    # 가르기·합치기 칸이 그리는 프레임 줄 — 썸네일과 촬영 간격 (2026-09-29)
+    if slide is not None and not ctx.get("readonly"):
+        ctx["regroup_rows"] = regroup.frame_rows(
+            Frame.objects.filter(slide=slide, viewpoint__idx=gid)
+            .order_by("seq"))
     return render(request, "viewer/group.html", ctx)
 
 
@@ -591,6 +596,39 @@ def split_group(request, slug, gid):
 
     ctx["preview"] = regroup.preview(slide, cuts)
     return render(request, "viewer/regroup_confirm.html", ctx,
+                  status=200 if ctx["preview"]["ok"] else 400)
+
+
+@require_POST
+def merge_group(request, slug, gid):
+    """이웃한 시야와 합친다. **두 걸음이다 — 미리보기 다음에 확인.**
+
+    `split_group` 의 짝이고 막는 것도 같다 — 읽기 전용 화면에는 이 길이 없고,
+    처리 중인 슬라이드는 서버가 거절한다. `with` 가 합칠 이웃의 번호다.
+    """
+    slide = Slide.objects.filter(slug=slug).first()
+    if slide is None:
+        raise Http404(f"unknown dataset: {slug}")
+    if data.review_blocked(slide):
+        return HttpResponse("자동 처리가 끝나기 전에는 시야를 합칠 수 없습니다.",
+                            status=409)
+
+    other = (request.POST.get("with") or "").strip()
+    idxs = [gid, other]
+    ctx = {"slug": slug, "label": slide.name, "id": gid, "other": other,
+           "back_url": reverse("group", args=[slug, gid])}
+
+    if request.POST.get("confirm") == "1":
+        try:
+            r = regroup.apply_merge(slide, idxs, source="viewer")
+        except ValueError as e:
+            ctx["preview"] = {"ok": False, "errors": [str(e)]}
+            return render(request, "viewer/regroup_merge.html", ctx,
+                          status=400)
+        return redirect("group", slug=slug, gid=r["idx"])
+
+    ctx["preview"] = regroup.merge_preview(slide, idxs)
+    return render(request, "viewer/regroup_merge.html", ctx,
                   status=200 if ctx["preview"]["ok"] else 400)
 
 

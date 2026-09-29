@@ -13,6 +13,10 @@
         --after 22131 --after 22155 --after 22159 --after 22170 --apply
 
 `--after` 는 **그 프레임 뒤에서 자른다**. 이름(`Snap-22131`)도 번호(`22131`)도 받는다.
+
+이웃한 시야를 합칠 때는 `--merge` 에 시야 번호를 준다 (2026-09-29):
+
+    python resplit.py --slide 260928_rs14-gc04_6cm --merge 1 --merge 2 --apply
 DB 를 만지므로 `deploy/host/dbrun.sh` 로 들어간다 (HANDOFF 9.2).
 
 > 화면이 있는데 CLI 를 남겨 두는 이유: 여러 시야를 한 번에 가를 때는 이쪽이 낫고,
@@ -55,6 +59,8 @@ def main():
     ap.add_argument("--slide", required=True, help="슬라이드 slug")
     ap.add_argument("--after", action="append", default=[], metavar="프레임",
                     help="이 프레임 **뒤에서** 자른다. 여러 번 줄 수 있다")
+    ap.add_argument("--merge", action="append", default=[], metavar="시야",
+                    help="이웃한 시야를 합친다 (g 번호). 둘 이상 준다")
     ap.add_argument("--apply", action="store_true",
                     help="실제로 고친다 (기본은 미리보기)")
     args = ap.parse_args()
@@ -62,6 +68,11 @@ def main():
     slide = Slide.objects.filter(slug=args.slide).first()
     if slide is None:
         raise SystemExit(f"그런 슬라이드가 없다: {args.slide}")
+
+    if args.merge and args.after:
+        raise SystemExit("--after 와 --merge 는 한 번에 하나만 한다")
+    if args.merge:
+        return merge(slide, args)
 
     p = regroup.preview(slide, args.after)
     if not p["ok"]:
@@ -95,6 +106,31 @@ def main():
           f"--slide {slide.slug} --scale 1.0 --points-per-side 48 "
           f"--min-um 10 --max-um 150 --batch sam2-전수")
     print(f"  가른 시야 {r['created']}개는 검토가 비어 있다 — 사람이 다시 봐야 한다.")
+
+
+def merge(slide, args):
+    p = regroup.merge_preview(slide, args.merge)
+    if not p["ok"]:
+        for e in p["errors"]:
+            print(f"  {e}", file=sys.stderr)
+        raise SystemExit("합칠 시야가 옳지 않다 — 아무것도 고치지 않았다")
+
+    print(f"슬라이드 {slide.slug} · 시야 {p['before']}개 → {p['after']}개")
+    for m in p["merged"]:
+        print(f"  g{m['idx']} {m['tag']} · 사진 {len(m['rows'])}장 · "
+              f"지운다 검출 {m['detections']} · 교정 {m['object_reviews']}"
+              f"{' · 검토 완료였다' if m['reviewed'] else ''}")
+    joint = [f"{r['short']}(+{r['gap_label'] or '?'})"
+             for r in p["rows"] if r.get("joint")]
+    print(f"  붙는 자리 {' · '.join(joint)}")
+
+    if not args.apply:
+        print("\n미리보기다 — 고치려면 --apply")
+        return
+
+    r = regroup.apply_merge(slide, args.merge, source="resplit.py")
+    print(f"\n고쳤다 — 시야 {r['after']}개 · 합친 시야 g{r['idx']} · "
+          f"Run #{r['run_id']}. 폴러가 1분 안에 합성·검출을 이어서 한다.")
 
 
 if __name__ == "__main__":

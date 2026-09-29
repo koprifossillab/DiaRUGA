@@ -214,45 +214,74 @@
   시야이므로 정당한 요청이다). 여기서 감추는 것으로 충분하다: 읽기 전용은
   "저장이 안 되는 화면" 이지 "쓰기가 봉인된 시야" 가 아니다.
 {% endcomment %}
-{% if frames|length > 1 and not review_blocked and not readonly %}
+{% if regroup_rows and not review_blocked and not readonly %}
 <details class="resplit">
-  <summary>시야 가르기</summary>
+  <summary>시야 가르기 · 합치기</summary>
   <div class="resplit-body">
-    <p>이 시야의 사진들이 <b>사실은 서로 다른 시야</b>라면 여기서 가릅니다.
-       초점만 바뀐 사진들은 배치가 같고, 스테이지가 움직였으면 그림이 달라집니다 —
-       위 캐러셀에서 넘겨 보며 비교하십시오.</p>
-    <p class="warn">가른 시야의 <b>검출과 교정은 사라집니다.</b> 다시 검토해야 합니다.
-       다른 시야는 건드리지 않습니다.</p>
+    <p class="warn">가르거나 합친 시야의 <b>검출과 교정은 사라지고</b> 합성·검출이
+       다시 돕니다. 검토를 시작하기 전에 합니다. 다른 시야는 건드리지 않습니다.</p>
+
+    {% if regroup_rows|length > 1 %}
+    <h4>가르기 — 이 시야가 사실은 여러 시야일 때</h4>
+    <p>자를 자리는 <b>사진과 사진 사이</b>에 있습니다. ✂ 칸을 켜면 그 왼쪽까지가
+       한 시야, 오른쪽부터가 다음 시야가 됩니다. 칸에 적힌 것은 <b>앞 사진과의
+       촬영 간격</b>이고, 1분이 넘게 벌어진 자리는 붉게 표시합니다 — 스테이지를
+       옮긴 자리는 대개 거기입니다.</p>
     <form method="post" action="{% url 'split_group' slug id %}">
       {% csrf_token %}
-      <ol class="cuts">
-        {% for f in frames %}
-        <li>
-          <span class="fname">{{ f.name|cut:"Snap-" }}{% if f.is_sharpest %} ★{% endif %}</span>
-          {% if not forloop.last %}
-          <label class="cut">
-            <input type="checkbox" name="after" value="{{ f.name }}">
-            여기서 가른다
+      <div class="rg-strip">
+        {% for r in regroup_rows %}
+          {% if not forloop.first %}
+          <label class="rg-cut{% if r.gap_warn %} far{% endif %}"
+                 title="{{ r.prev_name|cut:'Snap-' }} 와 {{ r.short }} 사이에서 가른다">
+            <input type="checkbox" name="after" value="{{ r.prev_name }}">
+            <span class="sc">✂</span>
+            <span class="gap">{{ r.gap_label|default:"?" }}</span>
           </label>
           {% endif %}
-        </li>
+          <figure class="rg-fr">
+            <img loading="lazy" src="{% thumb r.rel 200 %}" alt="{{ r.short }}">
+            <figcaption>{{ r.short }}{% if r.is_sharpest %} ★{% endif %}
+              {% if r.at %}<time>{{ r.at|date:"H:i:s" }}</time>{% endif %}</figcaption>
+          </figure>
         {% endfor %}
-      </ol>
+      </div>
       <button type="submit">가르기 — 무엇이 사라지는지 먼저 봅니다</button>
     </form>
+    {% endif %}
+
+    {% if prev_id is not None or next_id is not None %}
+    <h4>합치기 — 이웃 시야가 사실은 같은 시야일 때</h4>
+    <p>바로 앞이나 뒤 시야와 하나로 합칩니다. 떨어진 시야는 사이의 것부터 합칩니다.</p>
+    <div class="rg-merge">
+      {% if prev_id is not None %}
+      <form method="post" action="{% url 'merge_group' slug id %}">
+        {% csrf_token %}<input type="hidden" name="with" value="{{ prev_id }}">
+        <button type="submit">← 앞 시야 g{{ prev_id }} 와 합치기</button>
+      </form>
+      {% endif %}
+      {% if next_id is not None %}
+      <form method="post" action="{% url 'merge_group' slug id %}">
+        {% csrf_token %}<input type="hidden" name="with" value="{{ next_id }}">
+        <button type="submit">뒤 시야 g{{ next_id }} 와 합치기 →</button>
+      </form>
+      {% endif %}
+      <span class="dim">누르면 합친 모습을 먼저 보여 줍니다.</span>
+    </div>
+    {% endif %}
   </div>
 </details>
 <style>
   .resplit { margin: 18px 0 0; border: 1px solid var(--line); border-radius: 6px; }
   .resplit > summary { padding: 8px 12px; cursor: pointer; font-size: 13px; opacity: .8; }
-  .resplit-body { padding: 4px 14px 14px; max-width: 640px; }
-  .resplit p { font-size: 13px; line-height: 1.55; margin: 6px 0; }
+  .resplit-body { padding: 4px 14px 14px; }
+  .resplit h4 { font-size: 13px; margin: 16px 0 4px; }
+  .resplit p { font-size: 13px; line-height: 1.55; margin: 6px 0; max-width: 720px; }
   .resplit p.warn { color: var(--warn); }
-  .cuts { list-style: none; margin: 12px 0; padding: 0; }
-  .cuts li { display: flex; align-items: center; gap: 12px; padding: 3px 0; }
-  .cuts .fname { font-family: ui-monospace, monospace; font-size: 13px; min-width: 84px; }
-  .cuts .cut { font-size: 12px; opacity: .75; cursor: pointer; }
-  .cuts .cut input { margin-right: 5px; }
+  .resplit .dim { font-size: 12px; color: var(--dim); }
+  .rg-merge { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; margin: 8px 0; }
+  .rg-merge form { margin: 0; }
 </style>
+{% include "viewer/_regroup_strip_css.html" %}
 {% endif %}
 {% endblock %}

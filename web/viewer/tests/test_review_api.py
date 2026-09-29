@@ -213,6 +213,7 @@ class PostOnlyTest(DiaRUGATestCase):
             reverse("save_review"),
             reverse("mark_all", args=[w.slug]),
             reverse("split_group", args=[w.slug, w.vp.idx]),
+            reverse("merge_group", args=[w.slug, w.vp.idx]),
             reverse("outcrop_edit", args=[w.site.code, w.locality.code]),
         ]
         for url in urls:
