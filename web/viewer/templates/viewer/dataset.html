@@ -84,6 +84,17 @@
   코멘트 {{ n_noted }}{% if n_group_notes %} (+시야 {{ n_group_notes }}){% endif %}
 </p>
 
+{% comment %}관찰 합치기·가르기 뒤, 또는 합쳐진 관찰의 옛 주소로 왔을 때 (216){% endcomment %}
+{% if obs_done == "merged" %}
+<div class="okbar">시야 {{ marked_n }}개를 이 관찰로 합쳤습니다. 검출과 교정은 그대로 따라왔습니다.</div>
+{% elif obs_done == "split" %}
+<div class="okbar">시야 {{ marked_n }}개를 <code class="mono">{{ came_from }}</code> 에서 이 관찰로 옮겼습니다.
+  검출과 교정은 그대로 따라왔습니다.</div>
+{% elif came_from %}
+<div class="okbar"><code class="mono">{{ came_from }}</code> 은(는) 이 관찰에 합쳐졌습니다 —
+  그 시야는 여기 있습니다.</div>
+{% endif %}
+
 {% if marked %}
 <div class="okbar">
   {% if marked == "blocked" %}자동 처리가 끝나지 않아 표시하지 않았습니다.

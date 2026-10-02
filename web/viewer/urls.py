@@ -74,6 +74,11 @@ urlpatterns = [
     path("d/<slug:slug>/offline/", views.offline_page, name="offline_slide"),
     path("d/<slug:slug>/", views.dataset, name="dataset"),
     path("d/<slug:slug>/edit/", views.dataset_edit, name="dataset_edit"),
+    # 관찰 합치기·가르기 (216). POST 전용, 미리보기 → 확인 두 걸음
+    path("d/<slug:slug>/obs/merge", views.merge_observation,
+         name="merge_observation"),
+    path("d/<slug:slug>/obs/split", views.split_observation,
+         name="split_observation"),
     # 시야 전체를 검토/미검토로. **POST 전용이다** — 주소를 누르는 것만으로
     # 슬라이드 하나의 판단이 뒤집히면 안 된다.
     path("d/<slug:slug>/mark-all/", views.mark_all, name="mark_all"),

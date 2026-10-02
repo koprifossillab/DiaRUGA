@@ -20,6 +20,7 @@ from django.views.decorators.http import require_POST
 
 from . import (antarctica, atlas as atlas_mod, biodatum as bd_mod, data, korea,
                ross, manage_data, offline, outcrop, regroup, thresholds as th)
+from . import observations as obs
 from .models import (Candidate, Detection, DiatomObject,  # noqa: E501
                      Frame, Image as ImageModel,
                      Locality,
@@ -263,7 +264,21 @@ def system_settings_dataset(request):
     })
 
 
+def _merged_away(slug):
+    """합쳐진 관찰의 옛 주소면 받은 관찰의 주소를, 아니면 `None` (216).
+
+    시야 번호는 옮기면서 바뀌므로 시야 주소(`g/<n>`)도 관찰 첫 화면으로 보낸다 —
+    엉뚱한 시야를 여는 것보다 목록에서 고르게 하는 편이 낫다.
+    """
+    sl = (Slide.objects.filter(slug=slug, merged_into__isnull=False)
+          .select_related("merged_into").first())
+    return reverse("dataset", args=[sl.merged_into.slug]) if sl else None
+
+
 def dataset(request, slug):
+    to = _merged_away(slug)
+    if to:
+        return redirect(f"{to}?from={slug}")
     ctx = data.dataset_detail(slug)
     if ctx is None:
         raise Http404(f"unknown dataset: {slug}")
@@ -271,6 +286,8 @@ def dataset(request, slug):
     # POST 뒤에 redirect 하므로(뒤로 가기가 다시 쓰지 않게) 이 길밖에 없다.
     ctx["marked"] = request.GET.get("marked") or ""
     ctx["marked_n"] = request.GET.get("n") or ""
+    ctx["obs_done"] = request.GET.get("obs") or ""
+    ctx["came_from"] = request.GET.get("from") or ""
     return render(request, "viewer/dataset.html", ctx)
 
 
@@ -499,6 +516,9 @@ def group(request, slug, gid):
     **현재 검출(SAM2)일 때만 교정이 저장된다.** 다른 묶음을 고르면 읽기 전용이고
     화면 가운데 위에 그렇게 적힌다. 근거는 `data.group_detail` 머리말.
     """
+    to = _merged_away(slug)
+    if to:
+        return redirect(f"{to}?from={slug}")
     # 이 시야에 쌓인 묶음들. 검토 화면이 그리는 현재 검출도 그중 하나로 나온다.
     raw = (request.GET.get("batch") or "").strip()
     try:
@@ -632,6 +652,61 @@ def merge_group(request, slug, gid):
                   status=200 if ctx["preview"]["ok"] else 400)
 
 
+@require_POST
+def merge_observation(request, slug):
+    """같은 시료의 다른 관찰을 이 관찰로 합친다 (216). **미리보기 다음에 확인.**
+
+    시야를 지우지 않고 옮기므로 교정이 안 사라진다(`observations` 머리말).
+    그래도 두 걸음인 것은 **주소와 카탈로그 번호가 바뀌기** 때문이다 — 어느
+    관찰이 받고 어느 시야가 몇 번이 되는지를 보고 누르게 한다.
+    """
+    slide = Slide.objects.filter(slug=slug).first()
+    if slide is None:
+        raise Http404(f"unknown dataset: {slug}")
+    other = (request.POST.get("other") or "").strip()
+    back = reverse("dataset_edit", args=[slug])
+    ctx = {"slug": slug, "label": slide.name, "slide": slide, "mode": "merge",
+           "other": other, "back_url": back}
+    if request.POST.get("confirm") == "1":
+        try:
+            r = obs.apply_merge(slide, other, source="viewer")
+        except ValueError as e:
+            ctx["preview"] = {"ok": False, "errors": [str(e)]}
+            return render(request, "viewer/observation_confirm.html", ctx,
+                          status=400)
+        return redirect(reverse("dataset", args=[slug])
+                        + f"?obs=merged&n={r['moved']}")
+    ctx["preview"] = obs.merge_preview(slide, other)
+    return render(request, "viewer/observation_confirm.html", ctx,
+                  status=200 if ctx["preview"]["ok"] else 400)
+
+
+@require_POST
+def split_observation(request, slug):
+    """고른 시야를 새 관찰로 떼거나, 합쳐졌던 관찰로 되돌린다 (216)."""
+    slide = Slide.objects.filter(slug=slug).first()
+    if slide is None:
+        raise Http404(f"unknown dataset: {slug}")
+    idxs = [i for i in request.POST.getlist("idx") if i.strip()]
+    target = (request.POST.get("target") or obs.NEW).strip()
+    back = reverse("dataset_edit", args=[slug])
+    ctx = {"slug": slug, "label": slide.name, "slide": slide, "mode": "split",
+           "idxs": idxs, "target": target, "back_url": back}
+    if request.POST.get("confirm") == "1":
+        try:
+            r = obs.apply_split(slide, idxs, target, source="viewer")
+        except ValueError as e:
+            ctx["preview"] = {"ok": False, "errors": [str(e)]}
+            return render(request, "viewer/observation_confirm.html", ctx,
+                          status=400)
+        # 옮겨 간 쪽을 연다 — 사람이 한 일을 눈으로 확인해야 한다
+        return redirect(reverse("dataset", args=[r["to"]])
+                        + f"?obs=split&n={r['moved']}&from={slug}")
+    ctx["preview"] = obs.split_preview(slide, idxs, target)
+    return render(request, "viewer/observation_confirm.html", ctx,
+                  status=200 if ctx["preview"]["ok"] else 400)
+
+
 def _num(raw, cast=float):
     """빈 칸은 None 으로. 잘못된 값은 예외를 올려 보낸다 — 조용히 0 이 되면 안 된다."""
     raw = (raw or "").strip()
@@ -655,6 +730,9 @@ def dataset_edit(request, slug):
     아무것도 못 붙이는데(실제로 `BP09-0901` 이 그랬다), 여기서 만들 수 없으면
     영영 붙일 길이 없다 — 지역이 없는 관찰은 어느 권역 탭에도 안 나온다.
     """
+    to = _merged_away(slug)
+    if to:
+        return redirect(f"{to}?from={slug}")
     slide = (Slide.objects.filter(slug=slug)
              .select_related("sample__locality__site").first())
     if slide is None:
@@ -823,7 +901,7 @@ def dataset_edit(request, slug):
                 "loc_code": sm.locality.code,
                 "code": sm.code,
                 "label": sm.locality.site.region or sm.locality.site.name or "",
-                "n_slides": sm.slides.count(),
+                "n_slides": sm.slides.live().count(),
             })
         # 같은 시료의 다른 관찰이 이미 어딘가 붙어 있으면 그것이 답이다.
         sibling = next((s for s in slide.sibling_observations() if s.sample_id),
@@ -844,12 +922,18 @@ def dataset_edit(request, slug):
         "core_code": loc.code if loc else "-",
         "site_code": site.code if site else "-",
         "sample_code": sample.code if sample else "-",
-        "n_slides_sample": sample.slides.count() if sample and sample.pk else 0,
+        "n_slides_sample": (sample.slides.live().count()
+                            if sample and sample.pk else 0),
         "n_samples_loc": loc.samples.count() if loc and loc.pk else 0,
-        "n_slides_site": (Slide.objects.filter(
+        "n_slides_site": (Slide.objects.live().filter(
             sample__locality__site=site).count() if site and site.pk else 0),
         "n_viewpoints": slide.viewpoints.count(),
         "n_frames": slide.frames.count(),
+        # 관찰 합치기·가르기 (216)
+        "merge_candidates": obs.merge_candidates(slide),
+        "split_targets": obs.split_targets(slide),
+        "split_rows": obs.split_rows(slide),
+        "absorbed": list(slide.absorbed.order_by("slug")),
         "site_areas": Site.AREA,
         "um_per_pixel": scales.get(slug),
         "errors": errors,

@@ -19,7 +19,7 @@ from collections import Counter
 from pathlib import Path
 
 from django.db import transaction
-from django.db.models import Count
+from django.db.models import Count, Q
 
 from . import data
 from .models import (CorePoint, CoreSeries,
@@ -33,23 +33,25 @@ def overview() -> dict:
                  .order_by("area", "code"))
     for s in sites:
         s.n_samples = Sample.objects.filter(locality__site=s).count()
-        s.n_slides = Slide.objects.filter(sample__locality__site=s).count()
+        s.n_slides = Slide.objects.live().filter(sample__locality__site=s).count()
 
     locs = list(Locality.objects.select_related("site")
                 .annotate(n_samples=Count("samples", distinct=True))
                 .order_by("site__code", "code"))
     for c in locs:
-        c.n_slides = Slide.objects.filter(sample__locality=c).count()
+        c.n_slides = Slide.objects.live().filter(sample__locality=c).count()
 
     samples = list(Sample.objects.select_related("locality__site")
-                   .annotate(n_slides=Count("slides", distinct=True))
+                   .annotate(n_slides=Count(
+                       "slides", distinct=True,
+                       filter=Q(slides__merged_into__isnull=True)))
                    .order_by("locality__site__code", "locality__code",
                              "depth_cm", "sample_no", "code"))
 
     # 소속을 잃은 관찰. **이 화면이 있어야 하는 첫째 이유다** — 다른 어느 화면에도
     # 안 나온다(어느 권역 탭에도 안 걸린다). 붙일 곳을 추천까지 해서 낸다.
     orphans = []
-    for sl in (Slide.objects.filter(sample__isnull=True)
+    for sl in (Slide.objects.live().filter(sample__isnull=True)
                .order_by("name")):
         sib = next((s for s in sl.sibling_observations() if s.sample_id), None)
         orphans.append({"slide": sl, "suggest": sib.sample if sib else None,
@@ -58,7 +60,7 @@ def overview() -> dict:
             "orphans": orphans,
             "n_sites": len(sites), "n_locs": len(locs),
             "n_samples": len(samples),
-            "n_slides": Slide.objects.count()}
+            "n_slides": Slide.objects.live().count()}
 
 
 def deletable(kind: str, pk: int) -> tuple[object | None, list[str]]:
@@ -135,9 +137,13 @@ def move_slide(slide_id: int, sample_id: int | None) -> tuple[bool, str]:
             return False, "시료를 찾지 못했습니다."
         sl.sample = sm
         sl.save(update_fields=["sample"])
+        # 이 관찰에 합쳐진 빈 행도 따라간다 — 남겨 두면 되돌릴 때 시료가 다른
+        # 관찰로 돌아온다 (216)
+        sl.absorbed.update(sample=sm)
         return True, f"{sl.name} 을(를) {sm} 에 붙였습니다."
     sl.sample = None
     sl.save(update_fields=["sample"])
+    sl.absorbed.update(sample=None)
     return True, f"{sl.name} 의 소속을 뗐습니다."
 
 

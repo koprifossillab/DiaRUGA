@@ -392,10 +392,24 @@ def check_layers(slug=None):
         qs = qs.filter(slug=slug)
     sl = list(qs.select_related("sample__locality__site"))
 
-    orphan = [s for s in sl if not s.sample_id]
+    # 합쳐진 빈 행(216)은 목록에서 빠지므로 소속을 잃어도 화면에 안 드러난다 —
+    # 그 대신 아래에서 따로 센다
+    orphan = [s for s in sl if not s.sample_id and not s.merged_into_id]
     report("관찰에 시료가 붙어 있다", len(orphan), len(sl),
            "어느 권역 탭에도 안 나와 화면에서 사라진다",
            [s.slug for s in orphan])
+
+    # 합쳐진 관찰은 빈 행이어야 하고 받은 관찰과 시료가 같아야 한다 (216).
+    # 시야가 남아 있으면 목록에서 빠진 채로 그 시야가 아무 데서도 안 보인다.
+    merged = [s for s in sl if s.merged_into_id]
+    if merged:
+        bad = [s.slug for s in merged
+               if s.viewpoints.exists() or s.frames.exists()
+               or s.merged_into.merged_into_id
+               or s.sample_id != s.merged_into.sample_id]
+        report("합쳐진 관찰이 빈 행이고 받은 관찰과 시료가 같다", len(bad),
+               len(merged), "시야가 남아 있으면 목록에서 빠진 채 화면에서 사라진다",
+               bad)
 
     # 지점 유형과 시료의 위치 칸이 맞는가. 노두인데 깊이가 있거나 그 반대면
     # 정렬이 엉키고 축이 없는 값을 그리려 든다.

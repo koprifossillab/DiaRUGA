@@ -299,8 +299,25 @@ class Sample(models.Model):
         return self.depth_cm if self.depth_cm is not None else self.sample_no
 
 
+class SlideQuerySet(models.QuerySet):
+    def live(self):
+        """다른 관찰에 합쳐진 빈 행을 뺀다 (216). **목록·집계는 이것을 쓴다.**
+
+        기본 관리자에서 빼지 않는 이유: 폴러(`scan_nas`)는 그 행의 `image_dir`
+        를 봐야 폴더를 다시 반입하지 않고, 옛 주소(`/d/<slug>/`)는 그 행을 찾아야
+        받은 관찰로 보낼 수 있다. 감춰 버리면 그 둘이 조용히 틀린다.
+        """
+        return self.filter(merged_into__isnull=True)
+
+
 class Slide(models.Model):
     """관찰 하나 = 폴더 하나 = 슬라이드글라스 하나. 그 안에 여러 시야가 있다.
+
+    **폴더 하나가 관찰 둘 이상으로 갈리거나, 폴더 둘이 관찰 하나로 합쳐질 수
+    있다** (216 · `observations.py`). 같은 시료를 같은 조건으로 이틀에 나눠
+    찍으면 폴더가 둘이다. 합쳐진 쪽은 시야 없는 행으로 남아(`merged_into`)
+    폴더를 안다. 사진이 어디 있는지는 `Frame.path` 가 말한다 — `image_dir` 는
+    처음 반입된 폴더다.
 
     **이 표는 관찰만 담는다.** 시료가 어느 지점의 몇 cm 인가는 `Sample` 이
     안다 — 예전에는 `core`·`depth_cm`·`sample_kind` 가 여기 앉아 있어서 같은
@@ -321,6 +338,15 @@ class Slide(models.Model):
     # 관리 화면이 잡아낸다.
     sample = models.ForeignKey("Sample", null=True, blank=True,
                                on_delete=models.SET_NULL, related_name="slides")
+    # 이 관찰의 시야·사진을 다른 관찰로 옮겼으면 그 관찰 (216). **채워져 있으면
+    # 빈 행이다** — 목록·집계에서 빼고(`objects.live()`), 옛 주소는 그쪽으로
+    # 보낸다. 행을 안 지우는 이유는 `observations` 머리말에 있다.
+    #
+    # `SET_NULL` 이다 — 받은 관찰을 지우면 그 시야도 함께 사라지고, 이 행은
+    # 시야 없는 관찰로 다시 보인다. 사실 그대로다.
+    merged_into = models.ForeignKey("self", null=True, blank=True,
+                                    on_delete=models.SET_NULL,
+                                    related_name="absorbed")
 
     # --- 관찰 -------------------------------------------------------------
     # 시료 하나를 **처리 방법이나 관찰 회차를 달리해 여러 번 본 것**.
@@ -383,6 +409,8 @@ class Slide(models.Model):
     # 옮겼는지를 구분하지는 못한다 — "언제 마지막으로 손댔나" 만 답한다.
     # **이 칸이 생기기 전의 행은 비어 있다.** 지난 일을 지어내지 않는다.
     updated_at = models.DateTimeField(auto_now=True, null=True, blank=True)
+
+    objects = SlideQuerySet.as_manager()
 
     class Meta:
         verbose_name = "관찰"
@@ -448,12 +476,12 @@ class Slide(models.Model):
         어디에 붙일지 추천해야 하는데, 그때는 이름밖에 근거가 없다.
         """
         if self.sample_id:
-            return list(self.sample.slides.exclude(pk=self.pk)
+            return list(self.sample.slides.live().exclude(pk=self.pk)
                         .order_by("obs_no", "id"))
         base = self.base_name
         if not base:
             return []
-        qs = (Slide.objects.filter(name__startswith=base).exclude(pk=self.pk)
+        qs = (Slide.objects.live().filter(name__startswith=base).exclude(pk=self.pk)
               .select_related("sample__locality__site").order_by("obs_no", "id"))
         return [s for s in qs if s.base_name == base]
 

@@ -626,7 +626,10 @@ def map_points(area: str | None = None,
              .prefetch_related("localities__samples__slides"))
 
     def visible(qs):
-        return [sl for sl in qs if with_hidden or not sl.hide_in_list]
+        # 합쳐진 빈 행은 숨김 보기로도 안 낸다 — 시야가 없고, 그 시야는 받은
+        # 관찰 쪽에 이미 놓였다 (216)
+        return [sl for sl in qs if sl.merged_into_id is None
+                and (with_hidden or not sl.hide_in_list)]
 
     def slides_of(loc):
         """지점 아래의 관찰 전부. **시료를 한 겹 거친다** (P07)."""
@@ -2638,7 +2641,7 @@ def datasets(area: str | None = None) -> list[dict]:
     #
     # **`sample_no` 를 함께 태운다.** 노두는 깊이가 없어 그것만으로는 한 지점의
     # 시료들이 순서 없이 놓인다.
-    slides = (Slide.objects.select_related("sample__locality__site")
+    slides = (Slide.objects.live().select_related("sample__locality__site")
               .order_by("sample__locality__site__code",
                         "sample__locality__code", "sample__depth_cm",
                         "sample__sample_no", "obs_no", "name"))
@@ -2696,12 +2699,13 @@ def area_tabs(selected: str | None = None) -> dict:
     있어야 하는 이유다 — 새로 반입된 슬라이드는 지역이 정해지기 전까지 한국에도
     남극에도 없어서, 있다는 것만 알리고 열어 볼 길이 없었다.
     """
-    counts = dict(Slide.objects.filter(sample__locality__site__isnull=False)
+    counts = dict(Slide.objects.live()
+                  .filter(sample__locality__site__isnull=False)
                   .values_list("sample__locality__site__area")
                   .annotate(n=Count("id")))
     tabs = [{"key": k, "label": v, "n": counts.get(k, 0)} for k, v in Site.AREA]
     tabs.append({"key": AREA_ALL, "label": "전체",
-                 "n": Slide.objects.count()})
+                 "n": Slide.objects.live().count()})
     keys = [t["key"] for t in tabs]
     if selected not in keys:
         selected = AREA_ALL
@@ -2714,7 +2718,7 @@ def area_tabs(selected: str | None = None) -> dict:
         # 권역을 물을 곳이 없는 슬라이드. 한국·남극 어느 탭에도 안 나오므로
         # 세어서 알리고 **전체 탭으로 가는 길을 함께 준다** — 알리기만 하고
         # 갈 곳이 없으면 안내가 아니라 막다른 길이다.
-        "orphans": Slide.objects.filter(sample__isnull=True).count(),
+        "orphans": Slide.objects.live().filter(sample__isnull=True).count(),
     }
 
 
@@ -2845,7 +2849,7 @@ def compare_picker(picked: set) -> list[dict]:
     화면처럼 슬라이드마다 세면 고르기도 전에 그 값을 다 치른다(060 의 자리).
     """
     groups: list[dict] = []
-    for sl in _slides_in_order(Slide.objects.all()):
+    for sl in _slides_in_order(Slide.objects.live()):
         head = _slide_head(sl)
         key = (head["site_code"], head["core"])
         g = groups[-1] if groups and groups[-1]["key"] == key else None
@@ -3381,7 +3385,7 @@ def locality_detail(site_code: str, loc_code: str,
     # 같은 시료에 관찰이 여럿이면 번호순 (`Slide.Meta.ordering` 과 같은 규칙).
     slides = sorted(
         (sl for sm in loc.samples.select_related("locality").all()
-         for sl in sm.slides.all()), key=_slide_order)
+         for sl in sm.slides.live()), key=_slide_order)
     all_rows = [{
         "slug": sl.slug,
         "label": sl.name,

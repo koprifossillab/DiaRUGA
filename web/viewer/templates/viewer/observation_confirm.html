@@ -1,0 +1,107 @@
+{% extends "viewer/base.html" %}
+{% block title %}관찰 {% if mode == "merge" %}합치기{% else %}가르기{% endif %} — {{ label }} — DiaRUGA{% endblock %}
+{% comment %}
+  관찰 합치기·가르기 확인 화면 (216). 두 걸음의 두 번째다 — 아래 단추를 눌러야
+  `confirm=1` 이 실린 POST 가 나간다.
+
+  시야 가르기·합치기(`regroup_*.html`)와 달리 **사라지는 것이 없다.** 그래서 이
+  화면이 보이는 것은 잃는 수가 아니라 **어디로 가고 몇 번이 되는가**다.
+{% endcomment %}
+{% block subtitle %}<a href="{% url 'index' %}">데이터셋</a> /
+  <a href="{% url 'dataset' slug %}">{{ label }}</a> /
+  <a href="{{ back_url }}#obsops">정보 편집</a> /
+  <b>관찰 {% if mode == "merge" %}합치기{% else %}가르기{% endif %}</b>{% endblock %}
+
+{% block content %}
+{% if not preview.ok %}
+  <div class="ob-err">
+    <b>{% if mode == "merge" %}합칠{% else %}가를{% endif %} 수 없습니다</b>
+    <ul>{% for e in preview.errors %}<li>{{ e }}</li>{% endfor %}</ul>
+    <p>아무것도 고치지 않았습니다.</p>
+  </div>
+  <p><a href="{{ back_url }}#obsops">← 정보 편집으로 돌아갑니다</a></p>
+{% else %}
+
+{% if mode == "merge" %}
+  <h2 class="ob-h"><code class="mono">{{ preview.other.slug }}</code> →
+    <code class="mono">{{ slug }}</code></h2>
+  <p class="ob-sum">시야 {{ preview.keep_n }}개인 이 관찰 뒤에 시야
+    <b>{{ preview.rows|length }}</b>개 · 사진 <b>{{ preview.n_frames }}</b>장이 붙어
+    시야 <b>{{ preview.after }}</b>개가 됩니다. 이 관찰의 시야 번호는 그대로입니다.</p>
+  {% if preview.out_of_order %}
+  <p class="ob-warn">들어오는 관찰이 이 관찰보다 먼저 찍혔습니다. 시야가 뒤에 붙으므로
+    목록에서 촬영 순서가 뒤집힙니다 — 순서를 지키려면
+    <code class="mono">{{ preview.other.slug }}</code> 쪽에서 이 관찰을 합치세요.</p>
+  {% endif %}
+  {% if preview.unassigned %}
+  <p class="dim">시야에 안 묶인 사진 {{ preview.unassigned }}장도 함께 옮깁니다.</p>
+  {% endif %}
+{% else %}
+  <h2 class="ob-h"><code class="mono">{{ slug }}</code> → {{ preview.dest_label }}</h2>
+  <p class="ob-sum">시야 <b>{{ preview.rows|length }}</b>개를 옮깁니다. 이 관찰은
+    시야 {{ preview.before }}개 → <b>{{ preview.after }}</b>개가 되고,
+    {% if preview.renumbered %}남는 시야 중 <b>{{ preview.renumbered }}</b>개는 번호가
+    앞으로 당겨집니다.{% else %}남는 시야의 번호는 그대로입니다.{% endif %}
+    {% if preview.revive %}합쳐 두었던 관찰이 다시 목록에 나옵니다.{% endif %}</p>
+{% endif %}
+
+  <table class="ob-t">
+    <thead><tr><th>지금</th>{% if mode == "merge" %}<th>옮긴 뒤</th>{% endif %}
+      <th>시야</th><th>사진</th><th>첫 촬영</th><th>폴더</th><th>검출</th><th>교정</th></tr></thead>
+    <tbody>
+    {% for r in preview.rows %}
+      <tr><td>g{{ r.idx }}</td>{% if mode == "merge" %}<td>g{{ r.new_idx }}</td>{% endif %}
+        <td class="mono">{{ r.tag }}</td><td>{{ r.n_frames }}</td>
+        <td>{% if r.acquired %}{{ r.acquired|date:"Y-m-d H:i" }}{% endif %}</td>
+        <td class="mono dim">{{ r.folder }}</td>
+        <td>{{ r.detections }}</td>
+        <td>{{ r.object_reviews }}{% if r.reviewed %} <span class="ok">완료</span>{% endif %}</td></tr>
+    {% endfor %}
+    </tbody>
+  </table>
+
+  <div class="ob-sum">
+    <p class="ok">검출 <b>{{ preview.detections }}</b>건 · 교정 <b>{{ preview.object_reviews }}</b>건이
+      시야를 따라갑니다. 사라지는 것은 없고 합성·검출을 다시 돌리지 않습니다.</p>
+    <p class="dim">옮긴 시야는 주소와 카탈로그 번호가 바뀝니다. 이 관찰을 다른 창에서
+      열어 두었다면 닫고 다시 여세요.</p>
+  </div>
+
+  <form method="post" class="ob-go"
+        action="{% if mode == "merge" %}{% url 'merge_observation' slug %}{% else %}{% url 'split_observation' slug %}{% endif %}">
+    {% csrf_token %}
+    <input type="hidden" name="confirm" value="1">
+    {% if mode == "merge" %}
+      <input type="hidden" name="other" value="{{ other }}">
+      <button type="submit" class="go">합친다</button>
+    {% else %}
+      {% for i in idxs %}<input type="hidden" name="idx" value="{{ i }}">{% endfor %}
+      <input type="hidden" name="target" value="{{ target }}">
+      <button type="submit" class="go">가른다</button>
+    {% endif %}
+    <a href="{{ back_url }}#obsops">그만둡니다</a>
+  </form>
+{% endif %}
+
+<style>
+  .ob-h { font-size: 17px; margin: 4px 0 10px; }
+  .ob-sum { max-width: 760px; margin: 12px 0; font-size: 13px; line-height: 1.6; }
+  .ob-sum .ok, .ob-t .ok { color: var(--good); }
+  .ob-sum .dim, .dim { color: var(--dim); }
+  .ob-warn { max-width: 760px; font-size: 13px; padding: 9px 13px; border-radius: 6px;
+             background: var(--warn-bg); color: var(--warn-fg); }
+  .ob-t { border-collapse: collapse; font-size: 12.5px; margin: 8px 0; }
+  .ob-t th, .ob-t td { padding: 4px 10px; border-bottom: 1px solid var(--line);
+                       text-align: left; }
+  .ob-t th { color: var(--dim); font-weight: normal; }
+  .ob-err { max-width: 720px; padding: 12px 16px; border-radius: 6px;
+            background: var(--err-bg); color: var(--err-fg);
+            border: 1px solid var(--err-line); }
+  .ob-err b { display: block; margin-bottom: 6px; }
+  .ob-err ul { margin: 4px 0 8px 18px; padding: 0; font-size: 13px; }
+  .ob-go { display: flex; align-items: center; gap: 16px; margin-top: 18px; }
+  .ob-go button.go { background: var(--accent); color: #fff; border: 0;
+                     border-radius: 5px; padding: 9px 16px; font-size: 13px;
+                     cursor: pointer; }
+</style>
+{% endblock %}
