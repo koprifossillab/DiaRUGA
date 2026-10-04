@@ -67,7 +67,7 @@
   개체가 0개인 검출을 넘기면 그대로 돈다 (data.preview_detection).
   없앨 것은 화면이 아니라 도구다 — 눌러도 서버가 409 로 거절한다.
 {% endcomment %}
-{% if review_blocked or stack.detection.preview_only %}
+{% if review_blocked or stack.detection.preview_only or base_det.preview_only %}
 <style>
   /* 사진과 캐러셀은 그대로 두고 도구만 감춘다.
      `.detview` 를 붙여야 먹는다 — base.html 이 세 가지 모두 `display: flex` 로
@@ -80,7 +80,7 @@
   .dettabs [data-pane="list"], .dettabs .tabmeta { display: none; }
 </style>
 {% endif %}
-{% if stack.detection.preview_only %}
+{% if stack.detection.preview_only or base_det.preview_only %}
 {% comment %}
   **왜 비었는지 갈라 적는다** (P10 4단계). 검출이 아예 없는 것과 **지금 보는
   묶음에만 없는 것**은 다른 말이다 — 뒤엣것을 "검출은 아직입니다" 라고 적으면

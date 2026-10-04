@@ -1770,7 +1770,7 @@ def scales_by_slide() -> dict:
     return {slug: c.most_common(1)[0][0] for slug, c in per.items()}
 
 
-def preview_detection(vp: Viewpoint) -> dict | None:
+def preview_detection(vp: Viewpoint, frame=None) -> dict | None:
     """검출 전에도 같은 화면을 쓰려고 만드는 빈 검출.
 
     자동 처리가 도는 동안에도 사람은 "무엇이 찍혔나" 를 봐야 한다. 그렇다고 화면을
@@ -1780,28 +1780,40 @@ def preview_detection(vp: Viewpoint) -> dict | None:
 
     크기는 합성본에서 읽는다. `Frame.width/height` 는 아직 비어 있고, 겹쳐 그릴
     개체가 없으므로 못 읽어도 화면은 멀쩡하다.
+
+    `frame` 을 주면 **그 사진 한 장**으로 만든다 (218). 사진 한 장짜리 시야는
+    합성본이 없어서, 검출까지 없으면 검토 화면이 띄울 판을 못 골라 사진 칸을
+    통째로 건너뛰었다 — 엔진 라디오도 그 칸 안이라 SAM 쪽으로 갈 길도 없었다.
     """
     st = getattr(vp, "stack", None)
-    if st is None or not st.focused_path:
+    if frame is not None:
+        path, scale = frame.path, 1.0       # 프레임은 원본 해상도 그대로다
+        um = native = frame.um_per_pixel
+        src = frame.um_per_pixel_source
+    elif st is not None and st.focused_path:
+        path, scale = st.focused_path, st.resize_scale or 1.0
+        um, native = st.um_per_pixel, st.native_um_per_pixel
+        src = st.um_per_pixel_source
+    else:
         return None
 
     w = h = None
     try:
         from PIL import Image                                 # noqa: PLC0415
-        with Image.open(Path(settings.DATA_ROOT) / st.focused_path) as im:
+        with Image.open(Path(settings.DATA_ROOT) / path) as im:
             w, h = im.size          # 헤더만 읽는다 — 픽셀을 디코딩하지 않는다
     except (OSError, ValueError):
         pass
 
     done, note = review_state(vp)
     return {
-        "image": st.focused_path,
-        "stem": Path(st.focused_path).stem,
+        "image": path,
+        "stem": Path(path).stem,
         "size": [w, h],
-        "scale": st.resize_scale or 1.0,
-        "um_per_pixel": st.um_per_pixel,
-        "um_per_pixel_native": st.native_um_per_pixel,
-        "um_per_pixel_source": st.um_per_pixel_source or None,
+        "scale": scale,
+        "um_per_pixel": um,
+        "um_per_pixel_native": native,
+        "um_per_pixel_source": src or None,
         "um_per_pixel_backfilled": None,
         "n_raw_masks": 0, "n_sized": 0, "n_auto": 0, "n_candidates": 0,
         "counts": {}, "thresholds": {},
@@ -3831,6 +3843,15 @@ def group_detail(slug: str, gid: int, run_id: int | None = None) -> dict | None:
     if best is None and stack:
         best = {"key": STACK_KEY, "rel": st.focused_path,
                 "det": stack["detection"], "image": None, "name": "합성본"}
+    # 합성본도 없는 시야(사진 한 장짜리)면 **그 사진**으로 같은 화면을 쓴다 (218).
+    # 이 갈래가 없으면 `base_det` 가 비어 사진 칸이 통째로 빠지고, 화면에는
+    # 아무 안내도 없이 펼침판만 남는다 — "아직 합성하지 않았습니다" 는 사진이
+    # 없을 때만 뜬다.
+    if best is None and vp.frames.exists():
+        f = vp.sharpest_frame or vp.frames.order_by("seq").first()
+        best = {"key": f.name, "rel": f.path,
+                "det": preview_detection(vp, frame=f), "image": None,
+                "name": f.name}
     det = best["det"] if best else None
 
     return {

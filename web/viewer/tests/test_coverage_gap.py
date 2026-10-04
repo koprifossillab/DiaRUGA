@@ -119,3 +119,39 @@ class CoverageGapTest(DiaRUGATestCase):
         body = self.c.get(
             reverse("dataset", args=[w.slide.slug])).content.decode()
         self.assertNotIn("의 검출 없음", body)
+
+
+class SingletonWithoutDetectionTest(DiaRUGATestCase):
+    """**사진 한 장짜리 시야도 검출이 없을 때 사진은 보인다** (218).
+
+    합성본이 있는 시야는 검출이 없으면 합성본을 빈 검출로 띄운다. 한 장짜리는
+    합성본이 없어 띄울 판을 못 골랐고, 검토 화면이 사진 칸을 통째로 건너뛰었다
+    — 운영 `260928_rs14-gc04_6cm` g12. 엔진 라디오도 그 칸 안이라 갇혔다.
+    """
+
+    @classmethod
+    def setUpTestData(cls):
+        fx.make_classes()
+        cls.w = fx.make_world(slug="rs23", n_viewpoints=1, n_frames=1,
+                              with_stack=False)
+        cls.vp = cls.w.vp
+        cls.other = fx.add_other_engine(cls.vp)
+        Detection.objects.filter(run=cls.other).update(is_current=True)
+        Detection.objects.filter(viewpoint=cls.vp).exclude(
+            run=cls.other).delete()
+
+    def test_사진_한_장을_빈_검출로_띄운다(self):
+        d = data.group_detail("rs23", self.vp.idx)
+        self.assertIsNone(d["stack"])
+        frame = self.vp.frames.get()
+        self.assertEqual(d["base_rel"], frame.path)
+        self.assertTrue(d["base_det"]["preview_only"])
+        self.assertEqual(d["base_det"]["candidates"], [])
+
+    def test_화면에_사진과_이유가_나온다(self):
+        r = Client().get(reverse("group", args=["rs23", self.vp.idx]))
+        body = r.content.decode()
+        self.assertEqual(r.status_code, 200)
+        self.assertIn('class="detview', body, "사진 칸이 빠졌다")
+        self.assertIn("의 검출이 없습니다", body)
+        self.assertIn(self.other.batch.label, body)
