@@ -216,10 +216,10 @@
 {% endcomment %}
 {% if regroup_rows and not review_blocked and not readonly %}
 <details class="resplit">
-  <summary>시야 가르기 · 합치기</summary>
+  <summary>시야 가르기 · 합치기 · 지우기</summary>
   <div class="resplit-body">
-    <p class="warn">가르거나 합친 시야의 <b>검출과 교정은 사라지고</b> 합성·검출이
-       다시 돕니다. 검토를 시작하기 전에 합니다. 다른 시야는 건드리지 않습니다.</p>
+    <p class="warn">가르거나 합치거나 지운 시야의 <b>검출과 교정은 사라지고</b>,
+       가르거나 합친 시야는 합성·검출이 다시 돕니다. 검토를 시작하기 전에 합니다. 다른 시야는 건드리지 않습니다.</p>
 
     {% if regroup_rows|length > 1 %}
     <h4>가르기 — 이 시야가 사실은 여러 시야일 때</h4>
@@ -268,6 +268,16 @@
       {% endif %}
       <span class="dim">누르면 합친 모습을 먼저 보여 줍니다.</span>
     </div>
+
+    <h4>지우기 — 이 시야가 쓸모없을 때</h4>
+    <p>촬영 순서가 어긋나 생긴 묶음 같은 것을 지웁니다. 일부 사진만 버리려면
+       먼저 가르고 나서 떨어진 쪽을 지웁니다. 사진 파일은 그대로 두고, 이 시야에
+       들었던 사진은 어느 시야에도 안 든 채로 남습니다.</p>
+    <form method="post" action="{% url 'delete_group' slug id %}" class="rg-merge">
+      {% csrf_token %}
+      <button type="submit">g{{ id }} 지우기</button>
+      <span class="dim">누르면 무엇이 사라지는지 먼저 보여 줍니다.</span>
+    </form>
     {% endif %}
   </div>
 </details>

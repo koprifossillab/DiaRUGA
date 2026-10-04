@@ -1,0 +1,74 @@
+{% extends "viewer/base.html" %}
+{% block title %}시야 지우기 — {{ label }} g{{ id }} — DiaRUGA{% endblock %}
+{% comment %}
+  지우기 확인 화면 (2026-10-04, 217). 가르기·합치기 확인 화면의 짝이고 두 걸음의
+  두 번째다 — 아래 단추를 눌러야 `confirm=1` 이 실린 POST 가 나간다.
+
+  지울 시야의 사진을 **썸네일 한 줄**로 보인다. 번호만으로는 엉뚱한 시야를
+  골랐는지 여기서 못 잡는다(215 에서 가르기 칸이 그렇게 헷갈렸다).
+{% endcomment %}
+{% block subtitle %}<a href="{% url 'index' %}">데이터셋</a> /
+  <a href="{% url 'dataset' slug %}">{{ label }}</a> /
+  <a href="{{ back_url }}">g{{ id }}</a> / <b>시야 지우기</b>{% endblock %}
+
+{% block content %}
+{% if not preview.ok %}
+  <div class="rg-err">
+    <b>지울 수 없습니다</b>
+    <ul>{% for e in preview.errors %}<li>{{ e }}</li>{% endfor %}</ul>
+    <p>아무것도 고치지 않았습니다.</p>
+  </div>
+  <p><a href="{{ back_url }}">← g{{ id }} 로 돌아갑니다</a></p>
+{% else %}
+  <h2 class="rg-h">시야 {{ preview.before }}개 → {{ preview.after }}개</h2>
+
+  <div class="rg-card">
+    <div class="rg-tag">g{{ preview.idx }} <span class="mono">{{ preview.tag }}</span> · 사진 {{ preview.rows|length }}장</div>
+    <div class="rg-lose">
+      사라진다 — 검출 <b>{{ preview.detections }}</b> · 교정 <b>{{ preview.object_reviews }}</b>
+      {% if preview.reviewed %}· <span class="hot">검토가 끝난 시야였습니다</span>{% endif %}
+    </div>
+    <div class="rg-piece">
+      {% with rows=preview.rows %}{% include "viewer/_regroup_rows.html" %}{% endwith %}
+    </div>
+  </div>
+
+  <div class="rg-sum">
+    <p>시야 g{{ preview.idx }} 를 지웁니다. 검출 <b>{{ preview.detections }}</b>건 · 교정
+       <b>{{ preview.object_reviews }}</b>건이 사라집니다.</p>
+    <p class="ok">사진 파일은 지우지 않습니다. 나머지 시야는 건드리지 않고 번호만
+       빈틈없이 다시 매깁니다.</p>
+    <p class="dim">되돌리는 단추는 없습니다. 사진 기록은 남아 있지만 화면에서 다시
+       시야로 묶는 길은 아직 없습니다.</p>
+  </div>
+
+  <form method="post" action="{% url 'delete_group' slug id %}" class="rg-go">
+    {% csrf_token %}
+    <input type="hidden" name="confirm" value="1">
+    <button type="submit" class="danger">지운다</button>
+    <a href="{{ back_url }}">그만둡니다</a>
+  </form>
+{% endif %}
+
+<style>
+  .rg-h { font-size: 17px; margin: 4px 0 14px; }
+  .rg-card { border: 1px solid var(--line); border-radius: 6px;
+             background: var(--panel); padding: 10px 14px; margin: 0 0 10px; }
+  .rg-tag { font-size: 13px; margin-bottom: 6px; }
+  .rg-lose { font-size: 13px; line-height: 1.6; color: var(--warn); }
+  .rg-lose .hot { color: var(--danger); }
+  .rg-sum { max-width: 720px; margin: 16px 0; font-size: 13px; line-height: 1.6; }
+  .rg-sum .ok { color: var(--good); }
+  .rg-sum .dim { color: var(--dim); }
+  .rg-err { max-width: 720px; padding: 12px 16px; border-radius: 6px;
+            background: var(--err-bg); color: var(--err-fg);
+            border: 1px solid var(--err-line); }
+  .rg-err b { display: block; margin-bottom: 6px; }
+  .rg-err ul { margin: 4px 0 8px 18px; padding: 0; font-size: 13px; }
+  .rg-go { display: flex; align-items: center; gap: 16px; margin-top: 18px; }
+  .rg-go button.danger { background: var(--danger); color: #fff; border: 0;
+                         border-radius: 5px; padding: 9px 16px; font-size: 13px;
+                         cursor: pointer; }
+</style>
+{% include "viewer/_regroup_strip_css.html" %}
+{% endblock %}

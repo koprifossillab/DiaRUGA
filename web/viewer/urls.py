@@ -126,5 +126,7 @@ urlpatterns = [
          name="split_group"),
     path("d/<slug:slug>/g/<int:gid>/merge", views.merge_group,
          name="merge_group"),
+    path("d/<slug:slug>/g/<int:gid>/delete", views.delete_group,
+         name="delete_group"),
     path("api/d/<slug:slug>.json", views.api_dataset, name="api_dataset"),
 ]

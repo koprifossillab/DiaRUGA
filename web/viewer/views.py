@@ -653,6 +653,38 @@ def merge_group(request, slug, gid):
 
 
 @require_POST
+def delete_group(request, slug, gid):
+    """시야 하나를 지운다 (217). **두 걸음이다 — 미리보기 다음에 확인.**
+
+    `split_group`·`merge_group` 의 짝이고 막는 것도 같다 — 읽기 전용 화면에는
+    이 길이 없고, 처리 중인 슬라이드는 서버가 거절한다. 사진 행은 남는다
+    (`regroup.apply_delete` 머리말).
+    """
+    slide = Slide.objects.filter(slug=slug).first()
+    if slide is None:
+        raise Http404(f"unknown dataset: {slug}")
+    if data.review_blocked(slide):
+        return HttpResponse("자동 처리가 끝나기 전에는 시야를 지울 수 없습니다.",
+                            status=409)
+
+    ctx = {"slug": slug, "label": slide.name, "id": gid,
+           "back_url": reverse("group", args=[slug, gid])}
+
+    if request.POST.get("confirm") == "1":
+        try:
+            r = regroup.apply_delete(slide, gid, source="viewer")
+        except ValueError as e:
+            ctx["preview"] = {"ok": False, "errors": [str(e)]}
+            return render(request, "viewer/regroup_delete.html", ctx,
+                          status=400)
+        return redirect("group", slug=slug, gid=r["idx"])
+
+    ctx["preview"] = regroup.delete_preview(slide, gid)
+    return render(request, "viewer/regroup_delete.html", ctx,
+                  status=200 if ctx["preview"]["ok"] else 400)
+
+
+@require_POST
 def merge_observation(request, slug):
     """같은 시료의 다른 관찰을 이 관찰로 합친다 (216). **미리보기 다음에 확인.**
 

@@ -15,6 +15,8 @@
 3. **이웃한 시야만 합친다**, 거절하면 아무것도 안 바뀐다
 4. **갈랐다 합치면 프레임 묶음이 제자리로 온다**, 번호는 빈틈없이 다시 매긴다
 5. **읽기 전용 화면에는 칸이 없다** (027·051)
+6. **시야를 지우면 그 시야만 사라지고 사진 행은 남는다** (217). 번호는
+   빈틈없이 다시 매기고, 검토를 잠그지 않는다. 마지막 시야는 못 지운다
 """
 import re
 
@@ -153,5 +155,60 @@ class RegroupTest(DiaRUGATestCase):
         self.assertEqual(r.status_code, 200)
         html = r.content.decode()
         self.assertNotIn("merge_group", html)
+        self.assertNotIn(reverse("delete_group", args=[self.w.slug, 0]), html)
         self.assertNotIn(reverse("merge_group", args=[self.w.slug, 0]), html)
         self.assertNotIn(reverse("split_group", args=[self.w.slug, 0]), html)
+
+    # 6 ------------------------------------------------------------------
+    def test_화면의_지우기_단추로_미리보고_지운다(self):
+        html = self._page(1)
+        url = reverse("delete_group", args=[self.w.slug, 1])
+        self.assertIn(url, html)
+        before = _frame_sets(self.slide)
+        r = self.c.post(url)
+        self.assertEqual(r.status_code, 200)
+        self.assertIn("사진 4장", r.content.decode())
+        self.assertEqual(_frame_sets(self.slide), before, "미리보기가 DB 를 고쳤다")
+
+        r = self.c.post(url, {"confirm": "1"})
+        self.assertRedirects(r, reverse("group", args=[self.w.slug, 1]),
+                             fetch_redirect_response=False)
+        self.assertEqual(_frame_sets(self.slide), [before[0], before[2]])
+        self.assertEqual(list(self.slide.viewpoints.order_by("idx")
+                              .values_list("idx", flat=True)), [0, 1])
+        # 사진 행은 남고 어느 시야에도 안 든다 — 이미지 행도 시야를 놓는다
+        gone = Frame.objects.filter(slide=self.slide, name__in=before[1])
+        self.assertEqual(gone.count(), 4)
+        self.assertFalse(gone.filter(viewpoint__isnull=False).exists())
+        self.assertFalse(Image.objects.filter(frame__in=gone,
+                                              viewpoint__isnull=False).exists())
+        # 새로 만들 시야가 없으니 검토를 잠그지 않는다
+        self.slide.refresh_from_db()
+        self.assertEqual(self.slide.state, "done")
+        run = Run.objects.latest("pk")
+        self.assertEqual(run.params["tool"], "regroup.apply_delete")
+        self.assertEqual(run.params["frames"], before[1])
+
+    def test_끝_시야를_지우면_앞_시야로_간다(self):
+        r = self.c.post(reverse("delete_group", args=[self.w.slug, 2]),
+                        {"confirm": "1"})
+        self.assertRedirects(r, reverse("group", args=[self.w.slug, 1]),
+                             fetch_redirect_response=False)
+
+    def test_마지막_시야는_못_지운다(self):
+        regroup.apply_delete(self.slide, 0)
+        regroup.apply_delete(self.slide, 0)
+        n_run = Run.objects.count()
+        r = self.c.post(reverse("delete_group", args=[self.w.slug, 0]),
+                        {"confirm": "1"})
+        self.assertEqual(r.status_code, 400)
+        self.assertEqual(self.slide.viewpoints.count(), 1)
+        self.assertEqual(Run.objects.count(), n_run)
+
+    def test_처리_중인_슬라이드는_거절한다(self):
+        self.slide.state = "processing"
+        self.slide.save(update_fields=["state"])
+        r = self.c.post(reverse("delete_group", args=[self.w.slug, 1]),
+                        {"confirm": "1"})
+        self.assertEqual(r.status_code, 409)
+        self.assertEqual(self.slide.viewpoints.count(), 3)

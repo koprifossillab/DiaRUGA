@@ -1,4 +1,4 @@
-"""시야를 프레임 경계에서 다시 가르고, 이웃한 시야를 합친다.
+"""시야를 프레임 경계에서 다시 가르고, 이웃한 시야를 합치고, 시야를 지운다.
 
 **그룹핑이 틀렸을 때 고치는 길은 여기 하나다** — 화면(`/d/<slug>/g/<n>/`)도
 CLI(`resplit.py`)도 이 모듈을 부른다. 두 벌로 두면 한쪽만 고쳐지고, 그 종류의
@@ -369,6 +369,91 @@ def apply_merge(slide, idxs, source: str = "") -> dict:
             "detections_lost": lost_det, "object_reviews_lost": lost_rev,
             "run_id": run.pk,
             "idx": next(i for i, (k, _, _) in enumerate(plan) if k == "new")}
+
+
+def resolve_delete(slide, idx):
+    """지울 시야를 푼다. → (`Viewpoint` 또는 None, 문제 목록)
+
+    **마지막 시야는 못 지운다.** 시야가 0개인 슬라이드는 `done` 인 채로 검토할
+    것이 없는 빈 관찰이 되고, 폴러는 `pending` 일 때만 다시 묶으므로 되돌릴 길도
+    없다. 관찰째 없애려면 정보 편집 화면의 일이다.
+    """
+    try:
+        idx = int(str(idx).strip())
+    except ValueError:
+        return None, [f"{idx}: 시야 번호가 아니다"]
+    vp = slide.viewpoints.filter(idx=idx).first()
+    if vp is None:
+        return None, [f"그런 시야가 없다: g{idx}"]
+    if slide.viewpoints.count() < 2:
+        return None, ["마지막 시야는 지울 수 없다"]
+    return vp, []
+
+
+def delete_preview(slide, idx) -> dict:
+    """무엇이 사라지는지. **DB 를 건드리지 않는다.** (`preview` 의 짝)"""
+    vp, bad = resolve_delete(slide, idx)
+    if bad:
+        return {"ok": False, "errors": bad}
+    before = slide.viewpoints.count()
+    return {
+        "ok": True, "errors": [],
+        "before": before, "after": before - 1,
+        "idx": vp.idx, "tag": vp.tag,
+        "rows": frame_rows(vp.frames.order_by("seq")),
+        "detections": vp.detections.count(),
+        "object_reviews": vp.object_reviews.count(),
+        "reviewed": vp.reviews.filter(done=True).exists(),
+    }
+
+
+@transaction.atomic
+def apply_delete(slide, idx, source: str = "") -> dict:
+    """시야 하나를 지운다. 한 트랜잭션이다. (2026-10-04, 217)
+
+    촬영 순서를 잘못해 쓸모없는 묶음이 생겼을 때 쓴다. 가르기로 떼어 낸 뒤
+    지우면 시야 안의 일부 사진만 버릴 수도 있다.
+
+    **사진(`Frame`) 행은 남는다** — `SET_NULL` 이라 시야만 떨어져 나가 "어느
+    시야에도 안 든 사진" 이 된다(그룹핑 전 사진과 같은 모양). 지우지 않는 것은
+    폴더에 파일이 그대로 있기 때문이다: 행이 있어야 디스크와 테이블이 맞고,
+    `check_db` 의 "원본 프레임 파일이 있다" 도 그대로 성립한다. 폴러는 폴더
+    단위(`Slide.image_dir`)로만 새것을 가리므로 다시 반입하지 않는다.
+
+    다른 시야는 그대로 두고 번호만 빈틈없이 다시 매긴다. 새로 만들 시야가 없어
+    슬라이드를 `processing` 으로 돌리지 않는다 — 검토가 잠기지 않는다.
+    """
+    vp, bad = resolve_delete(slide, idx)
+    if bad:
+        raise ValueError(" · ".join(bad))
+
+    before = slide.viewpoints.count()
+    frames = list(vp.frames.order_by("seq").values_list("name", flat=True))
+    lost_det = vp.detections.count()
+    lost_rev = vp.object_reviews.count()
+
+    run = Run.objects.create(
+        kind="group", status="running", slide=slide,
+        params={"tool": "regroup.apply_delete", "slide": slide.slug,
+                "delete": vp.tag, "frames": frames, "source": source})
+
+    plan = [("keep", v, None) for v in slide.viewpoints.order_by("idx")
+            if v.pk != vp.pk]
+    gone = vp.idx
+    _rebuild(slide, plan, [vp], run)
+
+    run.status = "done"
+    run.finished_at = timezone.now()
+    run.counts = {"viewpoints_before": before, "viewpoints_after": len(plan),
+                  "deleted": 1, "frames_unassigned": len(frames),
+                  "detections_lost": lost_det, "object_reviews_lost": lost_rev}
+    run.save()
+
+    return {"before": before, "after": len(plan), "frames": len(frames),
+            "detections_lost": lost_det, "object_reviews_lost": lost_rev,
+            "run_id": run.pk,
+            # 지운 자리에 이제 놓인 시야로 — 끝을 지웠으면 그 앞 시야로
+            "idx": min(gone, len(plan) - 1)}
 
 
 def _rebuild(slide, plan, doomed, run):
