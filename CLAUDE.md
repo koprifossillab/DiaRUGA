@@ -100,7 +100,7 @@
 | 판정 기준·문턱을 만진다 | `pipeline/judge.py` 머리말, `devlog/20260731_007_*.md` |
 | 검출기를 학습시킨다 | `devlog/20260803_P04_yolo-training.md`, `023`(자료 꾸러미), `025`(첫 판 성적) |
 | 이미지·검출·교정의 관계를 만진다 | `devlog/20260805_P06_*`(계획·결정), `055`(실행), `models.py` 의 `Image` |
-| 데스크탑 앱을 만든다 | `devlog/20260805_P05_desktop-app.md` (계획), `docs/20260805_desktop-app-review.md` (근거), `049`(CPU 실측), `.guides/desktop/` |
+| 데스크탑 앱을 만든다 | `devlog/20260805_P05_desktop-app.md` (계획), `docs/20260805_desktop-app-review.md` (근거), `049`(CPU 실측), jikhanjung/devdocs `guides/desktop/` (`../devdocs/guides/desktop/` — kopri 판에는 아직 없다, `.guides/desktop/README.md`) |
 | 판을 내보낸다 | **`docs/20260813_release-flow.md`** (절차 · 태그가 이미지를 만든다) |
 | 배포·백업을 만진다 | `.guides/web/`, `devlog/20260803_019_*`, `20260804_034_smoke-and-sentinel.md` |
 | 파이프라인 알고리즘 | `docs/20260811_pipeline-rationale.md` (스크립트마다 "왜 이렇게 했는가" · 판정 기준·실측·성능이 함께 있다) |
@@ -116,9 +116,10 @@
 있다 — MIT → 여기는 되고, 여기 → Modan2 는 안 된다.**
 
 배포·데이터 안전 규약은 `.guides/web/README.md` (형제 프로젝트들이 같은 사고를
-겪고 도달한 표준). **없으면 devdocs 클론이 안 걸린 것이다** — `../devdocs` 를
-형제로 두고 `ln -s ../devdocs/guides .guides`. 이 저장소에는 커밋하지 않는다
-(devdocs 는 private, 여기는 public).
+겪고 도달한 표준 — kopri-devdocs `guides/`). **없으면 kopri-devdocs 클론이 안 걸린 것이다** —
+`../kopri-devdocs` 를 형제로 두고 `ln -s ../kopri-devdocs/guides .guides`. 이 저장소에는
+커밋하지 않는다 (kopri-devdocs 는 private, 여기는 public). 2026-10-07 전에는
+`../devdocs/guides`(jikhanjung/devdocs)를 가리켰다 — 절 번호는 그대로다.
 
 ## 환경
 
