@@ -163,8 +163,15 @@
     `_detview_js.html` 이 두 자리를 함께 듣고, 눌린 표시(`syncDrawBtn`)도
     `.detview` 안에서 찾는다 — 한쪽만 고치면 **켜 놓고 잊는 실수**를 막으려고
     둔 그 표시가 조용히 안 붙는다.
+
+    **옆에 「검출 전부 오검출로」 를 둔다** (220 · 사용자 2026-10-08). 검출이
+    시원찮은 판은 전부 지우고 다시 그리는 편이 빠르고, 그 두 조작이 늘 이어서
+    온다. 읽기 전용에서는 연필과 함께 감춰진다(`group.html` 이 `.drawtool` 을
+    통째로 감추고, 함수도 `readOnly` 에서 멈춘다).
   {% endcomment %}
   <div class="drawtool" id="drawtool-{{ uid }}">
+    <button type="button" data-act="wipe" title="이 판의 검출 전부 오검출로 (S) — 그린 개체는 남긴다 · Ctrl+Z 로 되돌림"
+            aria-label="이 판의 검출 전부 오검출로">⊘</button>
     <button type="button" data-act="draw" title="마스크 그리기 (D)"
             aria-label="마스크 그리기">✎</button>
   </div>
@@ -402,6 +409,7 @@
   <kbd>Space</kbd>&nbsp;<span title="오검출로 삭제 · 지운 것을 고르고 다시 누르면 되살립니다">삭제</span>{% if hk.groups %} ·
   {% for h in hk.groups %}<kbd>{{ h.hotkey|upper }}</kbd>&nbsp;{% for c in h.classes %}{% if not forloop.first %} → {% endif %}<span title="{{ c.label }}">{{ c.short }}</span>{% endfor %}{% if not forloop.last %} · {% endif %}{% endfor %}{% if hk.cycles %}
   <span class="dim">(→ 는 같은 키를 다시 누르면 넘어간다는 뜻)</span>{% endif %}{% endif %}
+  · 고르지 않고 <kbd>S</kbd>&nbsp;<span title="그린 개체는 남긴다 · Ctrl+Z 로 되돌림">이 판의 검출 전부 삭제</span>
 </p>
 </section>
 

@@ -2418,6 +2418,7 @@ window.initDetView = function (uid) {
       return;
     }
     if (e.key === 'd') { e.preventDefault(); drawStart(); return; }
+    if (e.key === 's') { e.preventDefault(); removeAllDetected(); return; }
 
     var ring = HOTKEYS[(e.key || '').toLowerCase()];
     if (!ring || !ring.length) return;
@@ -3393,6 +3394,33 @@ window.initDetView = function (uid) {
     save();
   }
 
+  // --- 검출 전부 오검출로 (S) (220) ----------------------------------------
+  //
+  // **다시 그리는 편이 빠른 판이 있다** (사용자 2026-10-08 · yolo-3차). 검출을
+  // 하나씩 지우고 나서 그리기 시작하던 것을 한 번에 한다. 지금 보는 **판 하나**
+  // 의 것만이다 — 판마다 상태가 따로이고(`shotState`), 저장도 판 단위다.
+  //
+  // **사람이 그린 개체는 안 지운다.** "검출" 을 비우는 것이지 방금 그린 것을
+  // 비우는 것이 아니다 — 그리다가 한 번 더 누르면 그린 것까지 사라진다.
+  //
+  // `removeKeys` 를 그대로 탄다 — `history` 한 칸이라 Ctrl+Z 한 번에 전부
+  // 돌아온다. 그래서 확인 창을 띄우지 않는다.
+  function removeAllDetected() {
+    if (readOnly) return;
+    // 그리는 중이면 그 조작이 먼저다 (키 갈래와 같은 규칙)
+    if (drawing || editing) return;
+    // **캐러셀을 스치는 중에는 전역이 지나가는 판의 것이다** (074) — 여기서
+    // 지우면 고른 판이 아닌 판의 상태를 고친다.
+    if (previewing) return;
+    var idxs = [];
+    cands.forEach(function (c, i) {
+      if (!isManual(c) && !removed.has(keyOf(c))) idxs.push(i);
+    });
+    if (!idxs.length) { saveState.textContent = '지울 검출이 없습니다'; return; }
+    removeKeys(idxs);          // sel 을 비우고 build·save 까지 한다
+    saveState.textContent = '검출 전부 오검출로 — ' + idxs.length + '개 (Ctrl+Z 로 되돌림)';
+  }
+
   function openMenu(e, d) {
     closeMenu();
     closeSpread();
@@ -4197,6 +4225,7 @@ window.initDetView = function (uid) {
       // 누르면 켜고 다시 누르면 끈다 — 켜 놓고 잊는 것이 가장 흔한 실수다.
       if (drawing) drawCancel(); else drawStart();
     }
+    else if (act === 'wipe') { removeAllDetected(); }
     else if (act === 'ghosts') {
       showGone = !showGone;
       e.target.textContent = showGone ? '삭제분 숨기기' : '삭제분 보기';

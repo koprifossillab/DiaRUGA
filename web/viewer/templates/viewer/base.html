@@ -1604,7 +1604,10 @@
   /* --- 마스크 그리기 (사진 우상단) --- (194)
      검토하는 동안 손이 자주 가는 유일한 도구라 홀로 세운다. 레이어 토글이
      같은 모서리에 있어 그만큼 왼쪽으로 물러난다(아래 `.layers`). */
-  .detview .drawtool { position: absolute; right: 8px; top: 8px; z-index: 6; }
+  .detview .drawtool {
+    position: absolute; right: 8px; top: 8px; z-index: 6;
+    display: flex; gap: 4px;          /* 지우기(⊘)가 연필 왼쪽에 붙는다 (220) */
+  }
   .detview .drawtool button {
     font: inherit; font-size: 16px; line-height: 1; padding: 7px 11px;
     cursor: pointer; background: rgba(0,0,0,.62); color: #fff;
@@ -1636,8 +1639,10 @@
      끄더라도 .box 요소는 남긴다 — 클릭 판정을 bbox 가 하므로 지우면 선택이 죽는다.
      테두리만 투명하게 만들고, 선택·hover 표시는 남겨 조작감을 유지한다. */
   .detview .layers {
-    /* 연필(`.drawtool`)이 모서리를 쓴다 — 그만큼 물러난다 (194) */
-    position: absolute; right: 54px; top: 8px; z-index: 5;
+    /* 연필(`.drawtool`)이 모서리를 쓴다 — 그만큼 물러난다 (194). 단추가 둘이
+       된 뒤로(220) 두 개 몫이다 — 지우기 단추가 없는 읽기 전용에서도 같은
+       자리에 둔다(엔진 라디오로 오가며 토글이 흔들리지 않게) */
+    position: absolute; right: 100px; top: 8px; z-index: 5;
     display: flex; gap: 11px; padding: 5px 10px; border-radius: 7px;
     background: rgba(0,0,0,.62); line-height: 1.2; cursor: default;
   }
