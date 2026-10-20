@@ -1351,6 +1351,28 @@ def catalog_rows(slug: str, gone: bool = False) -> list[dict]:
             r["link_id"] = oid
         rows.append(r)
 
+    # **장축·단축은 개체를 이루는 판 중 가장 크게 잡힌 판에서 잰다** (222).
+    # 카드의 다른 지표는 고른 줄(대표)의 것인데, 동정키인 길이는 판을 골라
+    # 재야 한다 — 대표가 합성본이면 윤곽이 프레임보다 좁게 잡히는 일이 있다.
+    # 저장하지 않고 그때그때 잰다(`_orphan_dict` 와 같은 줄 — 폴리곤이 원본이다).
+    # 배율은 **그 판의** 검출에서 읽는다 — 합성본을 줄여 돌렸으면 프레임과 다르다.
+    # 판마다의 값은 이미 `raw` 에 실려 있다 — 다시 물으면 검토 대상 묶음을 한 번
+    # 더 묻게 된다(105). 그 판에 현재 검출이 없으면 카드의 값으로 떨어진다.
+    umpp = {r.get("image_id"): r.get("um_per_pixel")
+            for r in raw if r.get("um_per_pixel")}
+    for r in rows:
+        big = facts[r["obj_id"]]["big"]
+        r["axes"] = None
+        if big:
+            um = umpp.get(big[0]) or r.get("um_per_pixel")
+            m = shape.measure(big[1], um)
+            if m.get("major_um") is not None:
+                # **어느 판에서 쟀는지 적는다** — 그림(대표)과 다른 판이면
+                # 카드의 그림을 재면 다른 숫자가 나온다(`no_from` 과 같은 자리).
+                r["axes"] = {"major": m["major_um"], "minor": m["minor_um"],
+                             "here": big[0] == (r.get("view") or r).get("image_id"),
+                             "seq": big[2]}
+
     rows.sort(key=lambda r: (r["group_id"],
                              (r.get("bbox_xywh") or [0, 0])[1],
                              (r.get("bbox_xywh") or [0, 0])[0]))
@@ -1367,7 +1389,7 @@ def _member_view(m):
     box = geom_box(geom) or _key_bbox(m.mask_key)
     if not (box and geom.get("polygon")):
         return None
-    return {"rel": m.image.path, "bbox_xywh": list(box),
+    return {"rel": m.image.path, "image_id": m.image_id, "bbox_xywh": list(box),
             "polygon": list(geom["polygon"])}
 
 
@@ -1411,8 +1433,19 @@ def object_facts(slide, viewpoint=None) -> dict:
             anchor = None
         if anchor is None:
             anchor = min(members, key=lambda m: m.pk)
+        # **가장 크게 잡힌 판** (222) — 카드의 장축·단축이 이 판의 폴리곤에서
+        # 나온다. 초점이 맞은 판일수록 윤곽이 넓게 잡히고, 동정키로 적는 길이는
+        # 개체가 가장 온전히 드러난 판의 것이어야 한다. 면적은 폴리곤에서 잰다
+        # — `geom.area_px` 는 손그림·앉히기에 빠져 있는 행이 있다.
+        big, big_a = None, 0.0
+        for m in members:
+            poly = (m.geom or {}).get("polygon") or []
+            a = shape.area(shape.points(poly))
+            if a > big_a:
+                big, big_a = (m.image_id, poly, seqs.get(m.image_id)), a
         out[obj.pk] = {
             "n": len(members),
+            "big": big,
             "rep": (rep.image_id, rep.mask_key) if rep else None,
             # **대표를 그릴 재료.** 대표 판에 현재 검출이 없으면 후보 줄이 없어
             # 카드가 다른 판의 줄로 떨어지는데, 그때도 **그림은 대표여야 한다**

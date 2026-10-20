@@ -2061,6 +2061,21 @@
   .dettip table { width: 100%; font-size: 11.5px; }
   .dettip td { padding: 1px 0; border: 0; }
   .dettip td:last-child { text-align: right; font-family: ui-monospace, Menlo, monospace; }
+  /* 그린 개체를 닫자마자 한 번 뜨는 장축·단축 창 (222). 말풍선(`.dettip`)과
+     같은 모양이되 **누를 수 있다**(× 단추) — 6초 뒤에 저절로 걷힌다. */
+  .axestip {
+    position: fixed; z-index: 50;
+    background: var(--panel); color: var(--fg);
+    border: 1px solid var(--line); border-radius: 7px;
+    padding: 6px 10px; font-size: 12px; line-height: 1.6;
+    box-shadow: 0 6px 22px rgba(0,0,0,.35);
+  }
+  .axestip b { margin-right: 14px; }
+  .axestip button {
+    float: right; border: 0; background: none; color: var(--dim);
+    padding: 0 0 0 6px; font-size: 13px; line-height: 1; cursor: pointer;
+  }
+  .axestip span { font-family: ui-monospace, Menlo, monospace; margin-left: 6px; }
   .detbar {
     display: flex; gap: 14px; align-items: center; flex-wrap: wrap;
     margin: 9px 0 2px; font-size: 12.5px;

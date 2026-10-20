@@ -3825,6 +3825,7 @@ window.initDetView = function (uid) {
   function drawStart() {
     if (readOnly) return;
     drawing = { pts: [], at: null };
+    hideAxes();
     view.classList.add('drawing');
     sel.clear();
     closeMenu(); closeSpread();
@@ -3870,6 +3871,69 @@ window.initDetView = function (uid) {
     sel.clear(); sel.add(cands.length - 1);
     redraw(); syncDrawBtn();
     save();
+    showAxes(c);
+  }
+
+  // --- 그린 개체의 장축·단축 (222) ------------------------------------------
+  //
+  // 닫자마자 한 번 띄운다. **잰 값은 화면에만 쓴다** — 서버가 `shape.measure` 로
+  // 다시 잰 것이 말풍선·카탈로그에 놓인다. 그래서 계산을 `shape.fit_ellipse`
+  // (면적 모멘트가 같은 타원)와 **같은 식으로** 옮겨 왔다 — 식이 다르면 방금
+  // 본 숫자와 말풍선의 숫자가 갈린다. 거기를 고치면 여기도 함께 고친다.
+  function polyAxes(poly) {
+    var n = poly.length >> 1;
+    if (n < 3) return null;
+    var a2 = 0, sxx = 0, syy = 0, sxy = 0, cx = 0, cy = 0;
+    for (var i = 0; i < n; i++) {
+      var x0 = poly[2 * i], y0 = poly[2 * i + 1];
+      var j = (i + 1) % n, x1 = poly[2 * j], y1 = poly[2 * j + 1];
+      var cr = x0 * y1 - x1 * y0;
+      a2 += cr;
+      cx += (x0 + x1) * cr;
+      cy += (y0 + y1) * cr;
+      sxx += cr * (x0 * x0 + x0 * x1 + x1 * x1);
+      syy += cr * (y0 * y0 + y0 * y1 + y1 * y1);
+      sxy += cr * (2 * x0 * y0 + x0 * y1 + x1 * y0 + 2 * x1 * y1);
+    }
+    var ar = a2 / 2;
+    if (Math.abs(ar) < 1e-9) return null;
+    cx /= 6 * ar; cy /= 6 * ar;
+    var m20 = sxx / (12 * ar) - cx * cx, m02 = syy / (12 * ar) - cy * cy;
+    var m11 = sxy / (24 * ar) - cx * cy;
+    var diff = Math.hypot(m20 - m02, 2 * m11);
+    var l1 = (m20 + m02 + diff) / 2, l2 = (m20 + m02 - diff) / 2;
+    if (l1 <= 1e-9) return null;
+    // 장반경 a = 2√λ₁ 이고 화면에 내는 것은 지름(2a)이다 — `major_um` 과 같다
+    return { major: 4 * Math.sqrt(l1), minor: 4 * Math.sqrt(Math.max(l2, 0)) };
+  }
+
+  var axesTip = null, axesTimer = null;
+  function hideAxes() {
+    clearTimeout(axesTimer);
+    if (axesTip) { axesTip.remove(); axesTip = null; }
+  }
+  function showAxes(c) {
+    hideAxes();
+    var ax = polyAxes(c.polygon);
+    if (!ax) return;
+    // **배율을 모르면 px 로 적는다.** µm 을 지어내지 않는다 — 스케일바를 안
+    // 그리는 것(`updateScaleBar`)과 같은 줄이다.
+    var u = umPerImgPx ? ' µm' : ' px', f = umPerImgPx || 1;
+    axesTip = document.createElement('div');
+    axesTip.className = 'axestip';
+    axesTip.innerHTML = '<b>그린 개체</b><button type="button" title="닫기">×</button>' +
+      '<div>장축 <span>' + (ax.major * f).toFixed(1) + u + '</span></div>' +
+      '<div>단축 <span>' + (ax.minor * f).toFixed(1) + u + '</span></div>';
+    axesTip.querySelector('button').addEventListener('click', hideAxes);
+    document.body.appendChild(axesTip);
+    // 개체의 오른쪽 위에 둔다. 화면 밖으로 나가면 왼쪽으로 옮긴다.
+    var box = svg.getBoundingClientRect(), s = W ? box.width / W : 1;
+    var b = c.bbox_xywh, w = axesTip.offsetWidth, h = axesTip.offsetHeight;
+    var x = box.left + (b[0] + b[2]) * s + 10, y = box.top + b[1] * s;
+    if (x + w > window.innerWidth - 6) x = box.left + b[0] * s - w - 10;
+    axesTip.style.left = Math.max(4, Math.min(x, window.innerWidth - w - 4)) + 'px';
+    axesTip.style.top = Math.max(4, Math.min(y, window.innerHeight - h - 4)) + 'px';
+    axesTimer = setTimeout(hideAxes, 6000);
   }
 
   function drawPoint(p) {
