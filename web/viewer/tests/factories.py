@@ -33,7 +33,7 @@ from django.db.models import Count
 from .base import write_image
 from .. import data
 from ..images import ensure_frame_image, ensure_stack_images
-from ..models import (Candidate, ClassDef, Detection, Frame, Image, Locality,
+from ..models import (Candidate, ClassDef, ClassGroup, Detection, Frame, Image, Locality,
                       DiatomObject, ObjectReview, Run, RunBatch, Sample, Site,
                       Slide, Stack,
                       ThresholdSet, Viewpoint, ViewpointReview)
@@ -118,7 +118,15 @@ CLASSES = [
     ("eucampia",    "Eucampia",   "Euc",  "euc",  "255,110,190",  "e",   True,   True),
     ("chaetoceros", "Chaetoceros", "Cha",  "cha",  "150,225,75",   "r",   True,   True),
     ("rhizosolenia", "Rhizosolenia", "RHZ", "rhi", "185,130,255",  "t",   True,   True),
+    ("dactyliosolen", "Dactyliosolen", "DAC", "dac", "185,130,255", "t",   True,   True),
+    ("cylinder_frag", "원통상 파편", "원통파편", "cylf", "213,180,255", "t", False,  False),
 ]
+
+# 분류 묶음 (224) — 열쇠 → (이름, 약칭, 안의 분류). 운영은 `0049` 가 넣는다
+GROUPS = {
+    "cylinder": ("원통상", "원통",
+                 ("rhizosolenia", "dactyliosolen", "cylinder_frag")),
+}
 
 
 def make_classes():
@@ -133,6 +141,11 @@ def make_classes():
             defaults={"label": label, "short": short, "badge": badge,
                       "color": color, "hotkey": hot, "counted": counted,
                       "is_taxon": taxon, "sort_order": i, "active": True})
+    for i, (gkey, (label, short, members)) in enumerate(GROUPS.items()):
+        g, _ = ClassGroup.objects.update_or_create(
+            key=gkey, defaults={"label": label, "short": short,
+                                "sort_order": i})
+        ClassDef.objects.filter(key__in=members).update(group=g)
     data.invalidate_classes()
 
 

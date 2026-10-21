@@ -119,7 +119,8 @@ def index(request):
         "n_hidden": sum(1 for r in rows if r["hidden"]),
         # 표의 분류 열. 줄이 아니라 여기서 정한다 — 슬라이드마다 0인 분류를
         # 빼면 열 수가 달라져 세로로 안 맞는다.
-        "count_classes": data.counted_classes(),
+        # 묶음 열이 끼어 있다 (224) — "검출" 칸의 합은 여전히 분류만 더한다
+        "count_classes": data.with_groups(data.counted_classes()),
         # **표의 "검출" 칸이 어느 묶음의 것인가** (088). 이 목록의 숫자는 전부
         # 검토 대상 묶음에서 나온다(`_kept_masks`·`datasets` 가 `reviewing()` 을
         # 지난다) — 묶음을 갈면 통째로 달라지므로 화면이 그것을 말해야 한다.
@@ -1277,8 +1278,13 @@ def catalog(request, slug):
     if not show_frag and not data.is_fragment(cls):
         rows = [r for r in rows if not data.is_fragment(r.get("cls"))]
 
+    members = data.group_members(cls)
     if cls in data.CLASSES:
         rows = [r for r in rows if r.get("cls") == cls]
+    elif members is not None:
+        # 묶음(원통상) — 안의 분류를 함께 낸다 (224). 파편은 위의 규칙대로
+        # 감춰져 있다가 「파편」 을 켜면 함께 나온다
+        rows = [r for r in rows if r.get("cls") in members]
     elif cls in CATALOG_FILTERS:
         rows = [r for r in rows if CATALOG_FILTERS[cls][1](r)]
 

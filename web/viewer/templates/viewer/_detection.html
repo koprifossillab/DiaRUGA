@@ -49,7 +49,7 @@
       분류 이름을 여기 적지 않는다 — ClassDef 에 속을 더해도 이 줄만 옛 목록으로
       남는다(Chaetoceros 를 넣고 실제로 그랬다). data.py 가 표 순서대로 만든다.
     {% endcomment %}
-    후보 {{ det.n_candidates }}개{% if det.counts_list %} ({% for c in det.counts_list %}{{ c.label }} {{ c.n }}{% if not forloop.last %}, {% endif %}{% endfor %}){% endif %} ·
+    후보 {{ det.n_candidates }}개{% if det.counts_list %} ({% for c in det.counts_list %}{{ c.label }} {{ c.n }}{% if c.parts %} ({{ c.parts }}){% endif %}{% if not forloop.last %}, {% endif %}{% endfor %}){% endif %} ·
     원시 {{ det.n_raw_masks }}{% if det.n_sized %} → 크기통과 {{ det.n_sized }}{% endif %} ·
     {{ det.um_per_pixel|floatformat:4 }} µm/px{% if det.um_per_pixel_source %}<span class="dim"> ({{ det.um_per_pixel_source }})</span>{% endif %}
   </span>
@@ -170,7 +170,7 @@
     통째로 감추고, 함수도 `readOnly` 에서 멈춘다).
   {% endcomment %}
   <div class="drawtool" id="drawtool-{{ uid }}">
-    <button type="button" data-act="wipe" title="이 판의 검출 전부 오검출로 (S) — 그린 개체는 남긴다 · Ctrl+Z 로 되돌림"
+    <button type="button" data-act="wipe" title="두 번 누르면 이 판의 검출 전부 오검출로 (S 두 번) — 그린 개체는 남긴다 · Ctrl+Z 로 되돌림"
             aria-label="이 판의 검출 전부 오검출로">⊘</button>
     <button type="button" data-act="draw" title="마스크 그리기 (D)"
             aria-label="마스크 그리기">✎</button>
@@ -409,7 +409,7 @@
   <kbd>Space</kbd>&nbsp;<span title="오검출로 삭제 · 지운 것을 고르고 다시 누르면 되살립니다">삭제</span>{% if hk.groups %} ·
   {% for h in hk.groups %}<kbd>{{ h.hotkey|upper }}</kbd>&nbsp;{% for c in h.classes %}{% if not forloop.first %} → {% endif %}<span title="{{ c.label }}">{{ c.short }}</span>{% endfor %}{% if not forloop.last %} · {% endif %}{% endfor %}{% if hk.cycles %}
   <span class="dim">(→ 는 같은 키를 다시 누르면 넘어간다는 뜻)</span>{% endif %}{% endif %}
-  · 고르지 않고 <kbd>S</kbd>&nbsp;<span title="그린 개체는 남긴다 · Ctrl+Z 로 되돌림">이 판의 검출 전부 삭제</span>
+  · 고르지 않고 <kbd>S</kbd><kbd>S</kbd>&nbsp;<span title="그린 개체는 남긴다 · Ctrl+Z 로 되돌림">이 판의 검출 전부 삭제</span>
 </p>
 </section>
 

@@ -2417,8 +2417,17 @@ window.initDetView = function (uid) {
       }
       return;
     }
-    if (e.key === 'd') { e.preventDefault(); drawStart(); return; }
-    if (e.key === 's') { e.preventDefault(); removeAllDetected(); return; }
+    if (e.key === 'd') { disarmWipe(); e.preventDefault(); drawStart(); return; }
+    // **`S` 는 두 번 연속으로 눌러야 지운다** (223 · 사용자 2026-10-21). 한 번에
+    // 지우면 스치듯 눌러도 판의 검출이 날아간다. 처음 누르면 ⊘ 에 빨간 불만
+    // 들어오고, 다른 키를 누르거나 잠시 두면 꺼진다.
+    if (e.key === 's') {
+      e.preventDefault();
+      if (wipeTimer) { disarmWipe(); removeAllDetected(); }
+      else armWipe();
+      return;
+    }
+    disarmWipe();
 
     var ring = HOTKEYS[(e.key || '').toLowerCase()];
     if (!ring || !ring.length) return;
@@ -3405,6 +3414,36 @@ window.initDetView = function (uid) {
   //
   // `removeKeys` 를 그대로 탄다 — `history` 한 칸이라 Ctrl+Z 한 번에 전부
   // 돌아온다. 그래서 확인 창을 띄우지 않는다.
+  // `S` 한 번 — ⊘ 에 불을 켜고 다음 `S` 를 기다린다 (223)
+  var wipeTimer = null;
+  var WIPE_ARM_MS = 1500;
+  function wipeButton() {
+    return view && view.querySelector('button[data-act="wipe"]');
+  }
+  function armWipe() {
+    if (readOnly || drawing || editing || previewing) return;
+    var n = cands.filter(function (c) {
+      return !isManual(c) && !removed.has(keyOf(c));
+    }).length;
+    if (!n) { saveState.textContent = '지울 검출이 없습니다'; return; }
+    var b = wipeButton();
+    if (b) b.classList.add('armed');
+    var msg = 'S(또는 ⊘)를 한 번 더 누르면 이 판의 검출 ' + n + '개를 전부 오검출로 지웁니다';
+    saveState.textContent = msg;
+    wipeTimer = setTimeout(function () {
+      disarmWipe();
+      // 그 사이 저장 상태가 바뀌었으면 그쪽을 남긴다
+      if (saveState.textContent === msg) saveState.textContent = '';
+    }, WIPE_ARM_MS);
+  }
+  function disarmWipe() {
+    if (!wipeTimer) return;
+    clearTimeout(wipeTimer);
+    wipeTimer = null;
+    var b = wipeButton();
+    if (b) b.classList.remove('armed');
+  }
+
   function removeAllDetected() {
     if (readOnly) return;
     // 그리는 중이면 그 조작이 먼저다 (키 갈래와 같은 규칙)
@@ -4289,7 +4328,11 @@ window.initDetView = function (uid) {
       // 누르면 켜고 다시 누르면 끈다 — 켜 놓고 잊는 것이 가장 흔한 실수다.
       if (drawing) drawCancel(); else drawStart();
     }
-    else if (act === 'wipe') { removeAllDetected(); }
+    else if (act === 'wipe') {
+      // 단추도 `S` 와 같다 — 한 번은 불만, 이어서 한 번 더 눌러야 지운다 (223)
+      if (wipeTimer) { disarmWipe(); removeAllDetected(); }
+      else armWipe();
+    }
     else if (act === 'ghosts') {
       showGone = !showGone;
       e.target.textContent = showGone ? '삭제분 숨기기' : '삭제분 보기';

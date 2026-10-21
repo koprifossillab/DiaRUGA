@@ -25,18 +25,21 @@ class CountLineTest(DiaRUGATestCase):
         cls.w = fx.make_world(slug="rs23", n_viewpoints=1, n_candidates=3)
 
     def test_표의_분류를_손으로_적지_않는다(self):
-        """표에만 있는 분류를 세어도 개수 줄에 낀다 — 코드를 안 고쳐도."""
+        """표에만 있는 분류를 세어도 개수 줄에 낀다 — 코드를 안 고쳐도.
+
+        묶음(224)에 든 세는 분류는 묶음 토막의 괄호 안에 든다 — 그것까지
+        펴서 **하나도 안 빠졌는지** 본다.
+        """
         counts = {k: 3 for k in data.CLASSES}
-        parts = data._count_parts(counts)
-        keys = [p.split()[0] for p in parts]
-        # `data.CLASSES` 는 표의 차례 그대로다. **하나도 안 빠져야 한다.**
-        self.assertEqual(keys, list(data.CLASSES))
+        line = " ".join(data._count_parts(counts))
+        for k in data.CLASSES:
+            self.assertRegex(line, rf"(^|[ (·]){k} 3", f"{k} 가 개수 줄에 없다")
 
     def test_새로_넣은_속도_센다(self):
-        """`Rhizosolenia` — 0037 로 들어온 분류다."""
+        """`Rhizosolenia` — 0037 로 들어온 분류다. 원통상 묶음 안에 든다."""
         self.assertIn("rhizosolenia", data.CLASSES)
         parts = data._count_parts({"rhizosolenia": 2, "rod": 1})
-        self.assertIn("rhizosolenia 2", parts)
+        self.assertIn("cylinder 2 (rhizosolenia 2)", parts)
 
     def test_안_센_분류는_안_적는다(self):
         """0 이거나 없는 것은 줄에 안 낀다 — 빈 이름이 늘어서면 못 읽는다."""
@@ -96,10 +99,20 @@ class HotkeyTest(DiaRUGATestCase):
 
         `Eucampia` 와 같은 키를 주면 한 번 더 눌러야 닿는데, 그 순환은 원래
         *온전한 것과 깨진 것*을 가르려고 둔 것이다(039·0016).
+
+        **같은 묶음 안의 속은 예외다** (224 · 사용자 2026-10-21) — 원통상의
+        Rhizosolenia·Dactyliosolen 은 `t` 를 나눠 갖는다. 순환이 가르는 것이
+        "같은 형태 안의 갈래" 로 넓어졌다.
         """
         taxa = ClassDef.objects.filter(active=True, is_taxon=True)
-        keys = [t.hotkey for t in taxa if t.hotkey]
-        self.assertEqual(len(keys), len(set(keys)), f"속끼리 겹친다: {keys}")
+        seen = {}
+        for t in taxa:
+            if not t.hotkey:
+                continue
+            owner = t.group_id or t.key
+            seen.setdefault(t.hotkey, set()).add(owner)
+        bad = {k: v for k, v in seen.items() if len(v) > 1}
+        self.assertEqual(bad, {}, f"묶음이 다른 속끼리 겹친다: {bad}")
 
     def test_예약된_키를_안_쓴다(self):
         """`d` 는 그리기다 (`_detection.html`). 스페이스·화살표도 이미 쓰인다.
@@ -118,6 +131,10 @@ class HotkeyTest(DiaRUGATestCase):
             rings.setdefault(c.hotkey, []).append(c.key)
         for hot, keys in rings.items():
             if len(keys) < 2:
+                continue
+            # 같은 묶음(224)이면 한 형태다 — 원통상의 속 둘과 그 파편
+            groups = {c.group_id for c in ClassDef.objects.filter(key__in=keys)}
+            if len(groups) == 1 and None not in groups:
                 continue
             stems = {k.removesuffix("_frag") for k in keys}
             self.assertEqual(len(stems), 1,

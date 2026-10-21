@@ -25,7 +25,7 @@ from django.utils import timezone
 
 from . import antarctica, catalog, korea, outcrop
 from . import shape
-from .models import (Candidate, ClassDef, CorePoint, CoreSeries, Detection,
+from .models import (Candidate, ClassDef, ClassGroup, CorePoint, CoreSeries, Detection,
                      DiatomObject, Frame,
                      Image, Locality, ObjectReview,
                      Run, RunBatch, Site, Slide, Stack, Viewpoint,
@@ -35,6 +35,7 @@ from .models import (Candidate, ClassDef, CorePoint, CoreSeries, Detection,
 # ClassDef 테이블이 원본이다. 다만 매 요청마다 읽을 값이 아니라(거의 바뀌지 않고
 # 템플릿·클라이언트가 여러 번 묻는다) 프로세스 수명 동안 캐시한다.
 _classes = None
+_groups = None
 
 
 def _class_rows():
@@ -42,18 +43,83 @@ def _class_rows():
     if _classes is None:
         _classes = list(ClassDef.objects.filter(active=True)
                         .values("key", "label", "short", "badge", "color",
-                                "hotkey", "is_taxon", "counted", "sort_order"))
+                                "hotkey", "is_taxon", "counted", "sort_order",
+                                "group__key"))
         # 약칭이 비면 전체 이름으로 메운다. **읽는 쪽마다 이 판단을 되풀이하지
         # 않게 여기서 한 번만 한다** — 한 곳이라도 빠뜨리면 그 화면만 빈칸이 된다.
         for r in _classes:
             r["short"] = r["short"] or r["label"]
+            r["group"] = r.pop("group__key") or ""
     return _classes
+
+
+def _group_rows() -> dict:
+    """묶음 열쇠 → {label, short} (224). 활성 분류가 하나라도 든 것만."""
+    global _groups
+    if _groups is None:
+        used = {r["group"] for r in _class_rows() if r["group"]}
+        _groups = {g["key"]: {"label": g["label"],
+                              "short": g["short"] or g["label"]}
+                   for g in ClassGroup.objects.values("key", "label", "short")
+                   if g["key"] in used}
+    return _groups
+
+
+GROUP_PREFIX = "group:"
+
+
+def group_members(cls: str) -> set | None:
+    """`group:<열쇠>` 면 그 묶음의 분류들, 아니면 None (카탈로그 거르기)."""
+    if not cls.startswith(GROUP_PREFIX):
+        return None
+    g = cls[len(GROUP_PREFIX):]
+    if g not in _group_rows():
+        return None
+    return {r["key"] for r in _class_rows() if r["group"] == g}
+
+
+def with_groups(items: list[dict]) -> list[dict]:
+    """세는 분류의 줄에 **묶음 칸을 끼운다** (224) — 목록 표의 열·카드 숫자.
+
+    묶음은 그 첫 분류 바로 앞에 놓이고, 수는 **이 목록에 든 분류만** 더한다.
+    세지 않는 분류(원통상 파편)는 애초에 `counted_classes()` 에 없어 안 든다.
+    끼운 칸은 `is_group`, 묶음에 든 분류는 `in_group` 을 달고 나간다.
+
+    **합계에 쓰지 않는다.** 묶음 칸은 분류의 수를 다시 더한 것이라, 이 결과를
+    더하면 원통상이 두 번 들어간다 — `counted` 는 그대로 두고 화면에 놓을
+    `counted_cols` 만 이것으로 만든다.
+    """
+    groups = _group_rows()
+    if not groups:
+        return items
+    grp = {r["key"]: r["group"] for r in _class_rows()}
+    members: dict[str, list] = {}
+    for c in items:
+        g = grp.get(c["key"])
+        if g in groups:
+            members.setdefault(g, []).append(c)
+    out, done = [], set()
+    for c in items:
+        g = grp.get(c["key"])
+        if g in groups and g not in done:
+            done.add(g)
+            ms = members[g]
+            col = {"key": GROUP_PREFIX + g, "short": groups[g]["short"],
+                   "label": (groups[g]["label"] + " — "
+                             + "·".join(m["label"] for m in ms)),
+                   "is_group": True}
+            if all("n" in m for m in ms):
+                col["n"] = sum(m["n"] for m in ms)
+            out.append(col)
+        out.append({**c, "in_group": g in groups})
+    return out
 
 
 def invalidate_classes():
     """분류 정의를 고쳤을 때 부른다."""
-    global _classes
+    global _classes, _groups
     _classes = None
+    _groups = None
 
 
 def class_list() -> list[dict]:
@@ -64,10 +130,21 @@ def class_list() -> list[dict]:
     한다 — 카탈로그 화면은 `counted_keys` 를 따로 받아 쓰지만, 이쪽은 분류를
     **화면에서 바꿔 가며** 보므로 목록에 같이 실려야 한다.
     """
-    return [{"key": r["key"], "label": r["label"], "short": r["short"],
+    out, seen = [], set()
+    groups = _group_rows()
+    for r in _class_rows():
+        g = r["group"] if r["group"] in groups else ""
+        d = {"key": r["key"], "label": r["label"], "short": r["short"],
              "badge": r["badge"], "color": r["color"], "taxon": r["is_taxon"],
-             "hotkey": r["hotkey"], "counted": bool(r["counted"])}
-            for r in _class_rows()]
+             "hotkey": r["hotkey"], "counted": bool(r["counted"]),
+             "group": g}
+        # 카탈로그가 묶음 칩을 그 첫 분류 앞에 놓는다 (224)
+        if g and g not in seen:
+            seen.add(g)
+            d["group_first"] = {"key": GROUP_PREFIX + g,
+                                "label": groups[g]["label"]}
+        out.append(d)
+    return out
 
 
 def hotkey_groups() -> dict:
@@ -164,7 +241,25 @@ def _count_parts(counts: dict) -> list[str]:
 
     표의 차례(`sort_order`)를 그대로 따르므로 새 분류를 넣으면 저절로 낀다.
     """
-    return [f"{k} {counts[k]}" for k in _class_rows_keys() if counts.get(k)]
+    groups = _group_rows()
+    out, at = [], {}
+    for r in _class_rows():
+        k = r["key"]
+        if not counts.get(k):
+            continue
+        g = r["group"] if r["counted"] else ""
+        if g not in groups:
+            out.append(f"{k} {counts[k]}")
+            continue
+        # 묶음은 한 토막 — "cylinder 5 (rhizosolenia 3·dactyliosolen 2)" (224)
+        if g not in at:
+            at[g] = (len(out), [])
+            out.append(None)
+        at[g][1].append((k, counts[k]))
+    for g, (i, ms) in at.items():
+        out[i] = (f"{g} {sum(n for _, n in ms)} ("
+                  + "·".join(f"{k} {n}" for k, n in ms) + ")")
+    return out
 
 
 def _class_rows_keys():
@@ -383,7 +478,34 @@ def _class_counts(kept: list[dict]) -> tuple[dict, list]:
              + [("manual", "수동"), ("labeled", "사람지정")])
     counts_list = [{"key": k, "label": lb, "n": counts[k]}
                    for k, lb in order if counts.get(k)]
-    return counts, counts_list
+    return counts, _fold_group_counts(counts_list)
+
+
+def _fold_group_counts(items: list[dict]) -> list[dict]:
+    """개수 줄에서 묶음에 든 **세는** 분류를 한 토막으로 접는다 (224).
+
+    "원통상 5 (RHZ 3·DAC 2)" — 묶음 수를 앞에 두고 안의 것을 괄호에 적는다.
+    세지 않는 것(원통상 파편)은 묶음 수에 안 들어 제 토막으로 남는다.
+    """
+    groups = _group_rows()
+    if not groups:
+        return items
+    grp = {r["key"]: r["group"] for r in _class_rows() if r["counted"]}
+    out, at = [], {}
+    for c in items:
+        g = grp.get(c["key"])
+        if g not in groups:
+            out.append(c)
+            continue
+        if g not in at:
+            at[g] = {"key": GROUP_PREFIX + g, "label": groups[g]["short"],
+                     "n": 0, "_parts": []}
+            out.append(at[g])
+        at[g]["n"] += c["n"]
+        at[g]["_parts"].append(f"{c['label']} {c['n']}")
+    for e in at.values():
+        e["parts"] = "·".join(e.pop("_parts"))
+    return out
 
 
 def fold_object_cls(dets: list[dict]) -> None:
@@ -2615,6 +2737,7 @@ def _slide_summary(slide: Slide) -> dict:
     # 0 인 분류도 자리를 남긴다 — 목록 표의 열이 줄마다 같아야 세로로 맞는다.
     counted = [{**c, "n": per_cls.get(c["key"], 0)} for c in counted_classes()]
     n_counted = sum(c["n"] for c in counted)
+    counted_cols = with_groups(counted)
     return {
         "n_groups": n_groups,
         "n_images": n_img,
@@ -2630,6 +2753,7 @@ def _slide_summary(slide: Slide) -> dict:
         "n_counted": n_counted,
         "mean_counted": (round(n_counted / len(counts), 1) if counts else None),
         "counted": counted,
+        "counted_cols": counted_cols,
         "class_counts": class_counts,
         "n_removed": agg["removed"],
         "n_accepted": agg["accepted"],
@@ -2794,6 +2918,7 @@ def datasets_total(rows: list[dict]) -> dict:
             if c["key"] in per:
                 per[c["key"]] += c["n"]
     total["counted"] = [{**c, "n": per[c["key"]]} for c in counted_classes()]
+    total["counted_cols"] = with_groups(total["counted"])
     # 화면이 각주를 붙일 근거. **0 이면 아무것도 안 낸다** — 관찰이 하나뿐인
     # 지금까지의 자료는 화면이 그대로 남는다.
     total["n_excluded"] = len(rows) - len(counted_rows)
@@ -3086,7 +3211,27 @@ def compare_slides(slugs: list[str]) -> dict:
                                    is_counted)}
             srow["total"] = sum(x["n"] for x in srow["cells"])
             row["species"].append(srow)
+        row["in_group"] = bool(is_counted and cd["group"] in _group_rows())
         (rows if is_counted else extra).append(row)
+
+    # **묶음 줄** (224) — 원통상처럼 묶인 세는 분류의 합을 그 첫 줄 앞에 놓는다.
+    # 비율은 같은 분모(`n_counted`)라 안의 줄들의 비율을 더한 값이 된다.
+    # "검출" 줄은 `n_counted` 를 그대로 쓰므로 이 줄이 두 번 더해질 일은 없다.
+    groups = _group_rows()
+    for g, gd in groups.items():
+        keys = [cd["key"] for cd in _class_rows()
+                if cd["counted"] and cd["group"] == g]
+        at = next((i for i, r in enumerate(rows) if r["key"] in keys), None)
+        if at is None:
+            continue
+        grow = {"key": GROUP_PREFIX + g, "label": gd["label"],
+                "short": gd["short"], "badge": "", "color": rows[at]["color"],
+                "counted": True, "is_group": True, "species": [],
+                "cells": cells(lambda c, keys=keys:
+                               sum(c["_per_cls"].get(k, 0) for k in keys),
+                               True)}
+        grow["total"] = sum(x["n"] for x in grow["cells"])
+        rows.insert(at, grow)
 
     # 분류가 없는 개체. `ClassDef` 에 없는 열쇠(빈 문자열 포함)가 전부 여기다.
     known = {cd["key"] for cd in _class_rows()}

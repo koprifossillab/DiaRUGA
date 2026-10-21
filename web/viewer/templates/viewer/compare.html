@@ -90,6 +90,9 @@
   .cmp tr.cls td:first-child { font-weight: 600; }
   .cmp tr.sp td:first-child { padding-left: 28px; font-style: italic; }
   .cmp tr.sp td { color: var(--dim); }
+  /* 묶음(원통상) 줄과 그 안의 분류 (224) — 안의 것을 한 칸 들인다 */
+  .cmp tr.cls.grp td { font-weight: 700; }
+  .cmp tr.cls.ingrp td:first-child { padding-left: 20px; }
   .cmp tr.off { display: none; }
   .cmp tr.sum td { font-weight: 700; border-top: 2px solid var(--line); }
   .cmp tr.sec td { color: var(--dim); font-size: 11px; padding-top: 12px;
@@ -192,8 +195,8 @@
   </thead>
   <tbody>
     {% for r in rows %}
-      <tr class="cls" data-cls="{{ r.key }}">
-        <td><span class="badge {{ r.badge }}">{{ r.short }}</span> {{ r.label }}</td>
+      <tr class="cls{% if r.is_group %} grp{% elif r.in_group %} ingrp{% endif %}" data-cls="{{ r.key }}">
+        <td>{% if r.is_group %}<b title="묶음 — 아래 분류의 합 (검출 줄에는 한 번만 든다)">{{ r.label }}</b>{% else %}<span class="badge {{ r.badge }}">{{ r.short }}</span> {{ r.label }}{% endif %}</td>
         {% for x in r.cells %}
           <td class="{% if x.n %}v{% else %}zero{% endif %}"{% if x.pct %} style="--w: {{ x.pct }}%{% if r.color %}; --c: {{ r.color }}{% endif %}"{% endif %}>{{ x.n }}<span class="pct">{% if x.pct is not None %}{{ x.pct }}%{% endif %}</span></td>
         {% endfor %}

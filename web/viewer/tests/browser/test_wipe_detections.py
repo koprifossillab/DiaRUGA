@@ -1,7 +1,8 @@
 """판의 검출을 한 번에 오검출로 돌린다 (220).
 
 검출이 시원찮은 판은 전부 지우고 다시 그리는 편이 빠르다(사용자 2026-10-08 ·
-yolo-3차). 연필 옆 단추(⊘)와 `S` 가 같은 함수를 부른다.
+yolo-3차). 연필 옆 단추(⊘)와 `S` 가 같은 함수를 부른다. **`S` 는 두 번 연속이어야
+지운다**(223) — 한 번 누르면 ⊘ 에 빨간 불만 들어온다. 단추도 같다.
 
 **밟기 쉬운 자리가 둘이다.**
 
@@ -38,14 +39,54 @@ class WipeDetectionsTest(BrowserTestCase):
         self.page.keyboard.press(key)
         self.page.wait_for_timeout(wait)            # 지연 저장 400 ms
 
-    def test_S_는_판의_검출을_전부_지운다(self):
+    def press_ss(self, wait=1200):
+        self.page.keyboard.press("s")
+        self.page.wait_for_timeout(100)
+        self.press("s", wait)
+
+    def armed(self):
+        return self.page.eval_on_selector(
+            '#dv-stack button[data-act="wipe"]',
+            "b => b.classList.contains('armed')")
+
+    def test_S_두_번이면_판의_검출을_전부_지운다(self):
         self.open_review()
         self.assertEqual(self.removed_engine(), 0)
-        self.press("s")
+        self.press_ss()
         self.assertEqual(self.removed_engine(), 3, "검출이 전부 지워지지 않았다")
+        self.assertFalse(self.armed(), "지운 뒤에도 불이 켜져 있다")
 
-    def test_단추도_같은_일을_한다(self):
+    def test_S_한_번은_불만_켜고_안_지운다(self):
         page = self.open_review()
+        self.press("s", 300)
+        self.assertTrue(self.armed(), "S 한 번에 ⊘ 에 불이 안 들어왔다")
+        bg = page.eval_on_selector('#dv-stack button[data-act="wipe"]',
+                                   "b => getComputedStyle(b).backgroundColor")
+        self.assertNotEqual(bg, "rgba(0, 0, 0, 0.62)", "불이 CSS 에서 안 먹었다")
+        page.wait_for_timeout(1600)                 # 기다리면 꺼진다
+        self.assertFalse(self.armed(), "기다려도 불이 안 꺼진다")
+        self.assertEqual(self.removed_engine(), 0, "S 한 번에 지워졌다")
+
+    def test_사이에_다른_키를_누르면_풀린다(self):
+        self.open_review()
+        self.press("s", 100)
+        self.press("x", 100)
+        self.assertFalse(self.armed(), "다른 키에 불이 안 꺼졌다")
+        self.press("s")
+        self.assertEqual(self.removed_engine(), 0, "S·x·S 로 지워졌다")
+
+    def test_너무_늦게_누른_두_번째는_다시_불만_켠다(self):
+        self.open_review()
+        self.press("s", 1700)
+        self.press("s")
+        self.assertEqual(self.removed_engine(), 0, "늦게 누른 S 로 지워졌다")
+
+    def test_단추도_두_번_눌러야_지운다(self):
+        page = self.open_review()
+        page.click('#dv-stack button[data-act="wipe"]')
+        page.wait_for_timeout(300)
+        self.assertTrue(self.armed(), "단추 한 번에 불이 안 들어왔다")
+        self.assertEqual(self.removed_engine(), 0, "단추 한 번에 지워졌다")
         page.click('#dv-stack button[data-act="wipe"]')
         page.wait_for_timeout(1200)
         self.assertEqual(self.removed_engine(), 3)
@@ -70,14 +111,14 @@ class WipeDetectionsTest(BrowserTestCase):
         page.wait_for_timeout(900)
         self.assertEqual(ObjectReview.objects.filter(source="manual").count(), 1)
 
-        self.press("s")
+        self.press_ss()
         self.assertEqual(self.removed_engine(), 3)
         m = ObjectReview.objects.get(source="manual")
         self.assertFalse(m.removed, "S 가 사람이 그린 개체까지 지웠다")
 
     def test_Ctrl_Z_한_번에_전부_돌아온다(self):
         self.open_review()
-        self.press("s")
+        self.press_ss()
         self.assertEqual(self.removed_engine(), 3)
         self.press("Control+z")
         self.assertEqual(self.removed_engine(), 0,

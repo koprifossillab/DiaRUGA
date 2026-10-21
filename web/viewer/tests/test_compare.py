@@ -72,9 +72,9 @@ class CompareRowsTest(DiaRUGATestCase):
 
     def test_종명_없는_나머지_줄은_안_낸다(self):
         """204 — 「종명 없음」 줄을 걷었다. 분류 수에서 종명 줄을 빼면 그 수다."""
-        # 후보 여덟 = 분류 일곱을 한 바퀴 돌고 round 가 한 번 더 → round 둘.
+        # 분류를 한 바퀴 돌고 round 가 한 번 더 → round 둘.
         c = fx.make_world(slug="c", depth_cm=300.0, sample_code="300cm",
-                          n_candidates=8)
+                          n_candidates=len(fx.CLASSES) + 1)
         fx.add_review(c.vp, c.keys()[0], species="Eucampia antarctica")
         ctx = data.compare_slides(["c"])
         rnd = _row(ctx, "round")

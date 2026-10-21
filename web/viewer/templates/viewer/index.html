@@ -167,9 +167,9 @@
         뺀다. 열은 ClassDef 가 정하므로 분류를 더해도 여기를 고칠 일이 없고,
         옆에 분류별 칸이 함께 있어 합이 맞는지 그 자리에서 보인다.
       {% endcomment %}
-      <th title="{% for c in count_classes %}{{ c.label }}{% if not forloop.last %}·{% endif %}{% endfor %}만 셉니다 (파편·미분류 제외)">검출</th>
+      <th title="{% for c in count_classes %}{% if not c.is_group %}{{ c.label }}{% if not forloop.last %}·{% endif %}{% endif %}{% endfor %}만 셉니다 (파편·미분류 제외)">검출</th>
       <th>시야당</th>
-      {% for c in count_classes %}<th title="{{ c.label }}">{{ c.short }}</th>{% endfor %}
+      {% for c in count_classes %}<th title="{{ c.label }}"{% if c.is_group %} class="grpcol"{% elif c.in_group %} class="ingrp"{% endif %}>{{ c.short }}</th>{% endfor %}
       <th class="revcol">검토</th>
       <th></th>
     </tr>
@@ -207,7 +207,7 @@
       <td></td>
       <td>{{ g.totals.n_counted }}</td>
       <td></td>
-      {% for c in g.totals.counted %}<td>{{ c.n }}</td>{% endfor %}
+      {% for c in g.totals.counted_cols %}<td{% if c.is_group %} class="grpcol"{% elif c.in_group %} class="ingrp"{% endif %}>{{ c.n }}</td>{% endfor %}
       <td class="revcol">
         <div class="revnum">{{ g.totals.reviewed_groups }}<span class="dim">/{{ g.totals.n_groups }}</span></div>
         <div class="bar"><i style="width:{% widthratio g.totals.reviewed_groups g.totals.n_groups 100 %}%"></i></div>
@@ -268,7 +268,7 @@
         <td{% if d.detected_groups < d.n_groups %} class="partial" title="{{ d.n_groups }}개 시야 중 {{ d.detected_groups }}개만 검출됨 — 평균은 그 시야들 기준"{% endif %}>
           {{ d.mean_counted }}{% if d.detected_groups < d.n_groups %}<span class="dim">*</span>{% endif %}
         </td>
-        {% for c in d.counted %}<td>{{ c.n }}</td>{% endfor %}
+        {% for c in d.counted_cols %}<td{% if c.is_group %} class="grpcol"{% elif c.in_group %} class="ingrp"{% endif %}>{{ c.n }}</td>{% endfor %}
       {% else %}
         <td colspan="{{ count_classes|length|add:2 }}" class="dim nodet">검출 결과 없음</td>
       {% endif %}
@@ -295,7 +295,7 @@
       <td></td>
       <td>{{ totals.n_counted }}</td>
       <td></td>
-      {% for c in totals.counted %}<td>{{ c.n }}</td>{% endfor %}
+      {% for c in totals.counted_cols %}<td{% if c.is_group %} class="grpcol"{% elif c.in_group %} class="ingrp"{% endif %}>{{ c.n }}</td>{% endfor %}
       <td class="revcol">
         <div class="revnum">{{ totals.reviewed_groups }}<span class="dim">/{{ totals.n_groups }}</span></div>
         <div class="bar"><i style="width:{% widthratio totals.reviewed_groups totals.n_groups 100 %}%"></i></div>
@@ -384,7 +384,7 @@
     </div>
     {% if d.mean_counted is not None %}
     <div class="stat-row cardstats2">
-      {% for c in d.counted %}<div class="stat" title="{{ c.label }}"><b>{{ c.n }}</b><span>{{ c.short }}</span></div>{% endfor %}
+      {% for c in d.counted_cols %}<div class="stat{% if c.is_group %} grpcol{% elif c.in_group %} ingrp{% endif %}" title="{{ c.label }}"><b>{{ c.n }}</b><span>{{ c.short }}</span></div>{% endfor %}
     </div>
     {% endif %}
     {% if d.mean_counted is not None and d.detected_groups < d.n_groups %}

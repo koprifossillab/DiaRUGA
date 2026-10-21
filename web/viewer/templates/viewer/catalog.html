@@ -320,6 +320,11 @@
      href="?{% if q %}q={{ q }}{% endif %}{% if show_frag %}&frag=1{% endif %}{% if show_gone %}&gone=1{% endif %}">전체</a>
   {% class_list as classes %}
   {% for d in classes %}
+    {% if d.group_first %}{% with g=d.group_first %}
+    <a class="chip grp{% if cls == g.key %} on{% endif %}"
+       title="{{ g.label }} — 묶음 안의 분류를 함께 봅니다"
+       href="?cls={{ g.key }}{% if q %}&q={{ q }}{% endif %}{% if show_frag %}&frag=1{% endif %}{% if show_gone %}&gone=1{% endif %}">{{ g.label }}</a>
+    {% endwith %}{% endif %}
     <a class="chip{% if cls == d.key %} on{% endif %}"
        href="?cls={{ d.key }}{% if q %}&q={{ q }}{% endif %}{% if show_frag %}&frag=1{% endif %}{% if show_gone %}&gone=1{% endif %}">{{ d.label }}</a>
   {% endfor %}

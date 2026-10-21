@@ -724,6 +724,8 @@ class ClassDef(models.Model):
         sort_order  열·메뉴·단축키 순환의 차례
 
     `check_db.py` 의 "4. 분류" 가 hotkey·color 가 빈 것을 잡는다.
+
+    **묶음(`group`)은 아홉째 칸이다** (224). 비어 있어도 되고, 대부분 비어 있다.
     """
 
     key = models.CharField(max_length=32, unique=True)
@@ -748,6 +750,38 @@ class ClassDef(models.Model):
     hotkey = models.CharField(max_length=8, blank=True)
     sort_order = models.IntegerField(default=0)
     active = models.BooleanField(default=True)
+    # 어느 묶음에 드는가 (224). 원통상(Rhizosolenia·Dactyliosolen·원통상 파편)
+    # 처럼 형태가 같은 분류를 화면이 합쳐 셀 때 쓴다 — 개체에는 안 붙는다.
+    group = models.ForeignKey("ClassGroup", null=True, blank=True,
+                              on_delete=models.SET_NULL, related_name="classes")
+
+    class Meta:
+        ordering = ["sort_order", "key"]
+
+    def __str__(self):
+        return self.label
+
+
+class ClassGroup(models.Model):
+    """분류 묶음 — 분류 몇을 합쳐 부르는 이름 (224 · 사용자 2026-10-21).
+
+    **개체에 붙는 분류가 아니다.** 개체는 늘 `ClassDef` 하나를 받고, 묶음은
+    목록 표·개수 줄·카탈로그·산출 비교가 그 분류들을 **합쳐 셀 때만** 쓴다.
+    원통상이 첫 묶음이다 — Rhizosolenia 와 Dactyliosolen 은 원형도 봉상도
+    아니고, 둘을 가르면서도 함께 보고 싶다.
+
+    **합계에 두 번 들어가면 안 된다.** 묶음의 수는 분류의 수를 더한 것이라
+    "검출" 칸은 여전히 분류만 더한다. 세지 않는 분류(파편)는 묶음에 들어
+    있어도 묶음의 수에 안 든다 — 원형 파편이 원형 수에 안 드는 것과 같다.
+
+    학습 자료(`ops/export_yolo.py`)는 이 표를 안 본다. 학습에서 합칠지 가를지는
+    그때 정한다 — 라벨은 가장 잘게 남겨 두면 합치는 쪽은 언제든 된다.
+    """
+
+    key = models.CharField(max_length=32, unique=True)
+    label = models.CharField(max_length=64)
+    short = models.CharField(max_length=16, blank=True)
+    sort_order = models.IntegerField(default=0)
 
     class Meta:
         ordering = ["sort_order", "key"]
