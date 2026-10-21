@@ -5,9 +5,9 @@
   "tag": "g013_Snap-22149-22150",
   "done": true,
   "note": "",
-  "n_images": 1,
-  "n_objects": 1,
-  "n_links": 0,
+  "n_images": 4,
+  "n_objects": 4,
+  "n_links": 1,
   "images": [
     {
       "image": "stacked/g013_Snap-22149-22150_focused.jpg",
@@ -17,7 +17,44 @@
       "objects": [
         {"key": "1072_492_111_178", "removed": false, "accepted": false, "label": "rod_frag", "note": "", "bind": "exact", "bind_score": 1.0, "geom": {"bbox": [1072, 492, 111, 178], "polygon": [1154, 492, 1144, 495, 1135, 502, 1100, 546, 1073, 590, 1072, 601, 1086, 644, 1090, 669, 1101, 666, 1112, 651, 1117, 635, 1131, 616, 1141, 593, 1179, 529, 1182, 513, 1177, 497]}}
       ]
+    },
+    {
+      "image": "stacked/g013_Snap-22149-22150_focused.jpg",
+      "kind": "stack",
+      "batch": "yolo-3차",
+      "n_objects": 1,
+      "objects": [
+        {"key": "1075_497_104_162", "removed": false, "accepted": false, "label": "rod_frag", "note": "", "bind": "exact", "auto_confirmed": true, "bind_score": 1.0, "geom": {"bbox_xywh": [1075, 497, 104, 162], "polygon": [1176, 497, 1139, 497, 1119, 521, 1075, 588, 1075, 623, 1085, 638, 1087, 651, 1091, 657, 1096, 658, 1105, 651, 1173, 538, 1178, 526]}}
+      ]
+    },
+    {
+      "image": "photos/260731/AM22-GC10B 25cm/Snap-22149.jpg",
+      "kind": "frame",
+      "batch": "yolo-3차",
+      "n_objects": 1,
+      "objects": [
+        {"key": "1080_493_105_157", "removed": false, "accepted": false, "label": "rod_frag", "note": "", "bind": "exact", "auto_confirmed": true, "bind_score": 1.0, "geom": {"bbox_xywh": [1080, 493, 105, 157], "polygon": [1175, 493, 1143, 493, 1120, 520, 1080, 584, 1080, 631, 1091, 649, 1109, 649, 1114, 643, 1179, 530, 1184, 511, 1183, 505]}}
+      ]
+    },
+    {
+      "image": "photos/260731/AM22-GC10B 25cm/Snap-22150.jpg",
+      "kind": "frame",
+      "batch": "yolo-3차",
+      "n_objects": 1,
+      "objects": [
+        {"key": "1080_489_106_169", "removed": false, "accepted": false, "label": "rod_frag", "note": "", "bind": "exact", "auto_confirmed": true, "bind_score": 1.0, "geom": {"bbox_xywh": [1080, 489, 106, 169], "polygon": [1170, 489, 1143, 489, 1138, 493, 1113, 525, 1080, 581, 1080, 630, 1085, 640, 1088, 657, 1096, 657, 1113, 640, 1183, 524, 1185, 515, 1183, 504]}}
+      ]
     }
   ],
-  "links": []
+  "links": [
+    {
+      "batch": "yolo-3차",
+      "note": "",
+      "members": [
+        {"image": "stacked/g013_Snap-22149-22150_focused.jpg", "kind": "stack", "batch": "yolo-3차", "key": "1075_497_104_162", "rep": true, "geom": {"bbox_xywh": [1075, 497, 104, 162], "polygon": [1176, 497, 1139, 497, 1119, 521, 1075, 588, 1075, 623, 1085, 638, 1087, 651, 1091, 657, 1096, 658, 1105, 651, 1173, 538, 1178, 526]}},
+        {"image": "photos/260731/AM22-GC10B 25cm/Snap-22149.jpg", "kind": "frame", "batch": "yolo-3차", "key": "1080_493_105_157", "rep": false, "geom": {"bbox_xywh": [1080, 493, 105, 157], "polygon": [1175, 493, 1143, 493, 1120, 520, 1080, 584, 1080, 631, 1091, 649, 1109, 649, 1114, 643, 1179, 530, 1184, 511, 1183, 505]}},
+        {"image": "photos/260731/AM22-GC10B 25cm/Snap-22150.jpg", "kind": "frame", "batch": "yolo-3차", "key": "1080_489_106_169", "rep": false, "geom": {"bbox_xywh": [1080, 489, 106, 169], "polygon": [1170, 489, 1143, 489, 1138, 493, 1113, 525, 1080, 581, 1080, 630, 1085, 640, 1088, 657, 1096, 657, 1113, 640, 1183, 524, 1185, 515, 1183, 504]}}
+      ]
+    }
+  ]
 }

@@ -5,10 +5,19 @@
   "tag": "g007_Snap-22184-22185",
   "done": true,
   "note": "",
-  "n_images": 0,
-  "n_objects": 0,
+  "n_images": 1,
+  "n_objects": 1,
   "n_links": 0,
   "images": [
+    {
+      "image": "photos/260731/AM22-GC10B 261cm/Snap-22184.jpg",
+      "kind": "frame",
+      "batch": "yolo-3차",
+      "n_objects": 1,
+      "objects": [
+        {"key": "1944_1450_131_103", "removed": true, "accepted": false, "label": "", "note": "", "bind": "exact", "bind_score": 1.0, "geom": {"bbox": [1944, 1450, 131, 103], "polygon": [1944, 1465, 1944, 1512, 1984, 1542, 2003, 1552, 2013, 1552, 2033, 1547, 2047, 1540, 2063, 1521, 2074, 1487, 2073, 1470, 2069, 1461, 2059, 1450, 1986, 1450, 1953, 1460]}}
+      ]
+    }
   ],
   "links": []
 }

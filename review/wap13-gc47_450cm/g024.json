@@ -3,12 +3,62 @@
   "slide": "wap13-gc47_450cm",
   "gid": 24,
   "tag": "g024_Snap-21327-21329",
-  "done": false,
+  "done": true,
   "note": "",
-  "n_images": 1,
-  "n_objects": 29,
-  "n_links": 0,
+  "n_images": 9,
+  "n_objects": 246,
+  "n_links": 51,
   "images": [
+    {
+      "image": "stacked/g024_Snap-21327-21329_focused.jpg",
+      "kind": "stack",
+      "batch": "",
+      "n_objects": 42,
+      "objects": [
+        {"key": "m082ae7b2", "removed": false, "accepted": false, "label": "chaetoceros", "note": "", "bind": "manual", "source": "manual", "geom": {"bbox": [923, 2007, 51, 49], "polygon": [940.0, 2054.0, 928.0, 2043.0, 923.0, 2020.0, 929.0, 2011.0, 936.0, 2007.0, 950.0, 2011.0, 966.0, 2026.0, 974.0, 2041.0, 969.0, 2051.0, 963.0, 2056.0, 953.0, 2056.0]}},
+        {"key": "m08ac016f", "removed": false, "accepted": false, "label": "chaetoceros", "note": "", "bind": "manual", "source": "manual", "geom": {"bbox": [1276, 1125, 61, 68], "polygon": [1286.0, 1190.0, 1276.0, 1173.0, 1278.0, 1145.0, 1287.0, 1135.0, 1303.0, 1128.0, 1326.0, 1125.0, 1334.0, 1135.0, 1337.0, 1152.0, 1335.0, 1168.0, 1320.0, 1186.0, 1305.0, 1193.0]}},
+        {"key": "m0b800f5e", "removed": false, "accepted": false, "label": "chaetoceros", "note": "", "bind": "manual", "source": "manual", "geom": {"bbox": [974, 1610, 107, 88], "polygon": [982.0, 1695.0, 974.0, 1675.0, 982.0, 1651.0, 1001.0, 1632.0, 1026.0, 1618.0, 1056.0, 1610.0, 1069.0, 1613.0, 1081.0, 1627.0, 1078.0, 1638.0, 1060.0, 1660.0, 1054.0, 1669.0, 1036.0, 1687.0, 994.0, 1698.0]}},
+        {"key": "m16986ea1", "removed": false, "accepted": false, "label": "chaetoceros", "note": "", "bind": "manual", "source": "manual", "geom": {"bbox": [1526, 1467, 65, 47], "polygon": [1548.0, 1514.0, 1537.0, 1506.0, 1526.0, 1490.0, 1540.0, 1472.0, 1550.0, 1469.0, 1563.0, 1467.0, 1577.0, 1470.0, 1587.0, 1480.0, 1591.0, 1491.0, 1581.0, 1504.0, 1569.0, 1512.0]}},
+        {"key": "m1d4b0dba", "removed": false, "accepted": false, "label": "chaetoceros", "note": "", "bind": "manual", "source": "manual", "geom": {"bbox": [451, 1981, 66, 54], "polygon": [451.0, 2000.0, 464.0, 2018.0, 488.0, 2029.0, 501.0, 2035.0, 517.0, 2018.0, 511.0, 1993.0, 470.0, 1981.0, 451.0, 1992.0]}},
+        {"key": "m211a5d71", "removed": false, "accepted": false, "label": "chaetoceros", "note": "", "bind": "manual", "source": "manual", "geom": {"bbox": [808, 647, 121, 64], "polygon": [808.0, 689.0, 846.0, 658.0, 895.0, 647.0, 926.0, 659.0, 929.0, 676.0, 923.0, 686.0, 901.0, 699.0, 865.0, 706.0, 832.0, 711.0, 810.0, 705.0]}},
+        {"key": "m2a6f003f", "removed": false, "accepted": false, "label": "chaetoceros", "note": "", "bind": "manual", "source": "manual", "geom": {"bbox": [440, 667, 53, 32], "polygon": [443.0, 681.0, 447.0, 667.0, 468.0, 668.0, 493.0, 683.0, 490.0, 692.0, 484.0, 698.0, 464.0, 699.0, 440.0, 688.0]}},
+        {"key": "m33be8ac8", "removed": false, "accepted": false, "label": "chaetoceros", "note": "", "bind": "manual", "source": "manual", "geom": {"bbox": [904, 55, 79, 53], "polygon": [904.0, 67.0, 914.0, 55.0, 953.0, 55.0, 983.0, 91.0, 972.0, 108.0, 929.0, 104.0]}},
+        {"key": "m341bb79c", "removed": false, "accepted": false, "label": "chaetoceros", "note": "", "bind": "manual", "source": "manual", "geom": {"bbox": [105, 133, 69, 45], "polygon": [105.0, 141.0, 109.0, 162.0, 134.0, 175.0, 157.0, 178.0, 174.0, 158.0, 155.0, 138.0, 140.0, 133.0]}},
+        {"key": "m366451e7", "removed": false, "accepted": false, "label": "chaetoceros", "note": "", "bind": "manual", "source": "manual", "geom": {"bbox": [187, 838, 51, 60], "polygon": [215.0, 895.0, 192.0, 880.0, 187.0, 863.0, 195.0, 851.0, 206.0, 838.0, 223.0, 847.0, 238.0, 865.0, 237.0, 881.0, 231.0, 895.0, 225.0, 898.0]}},
+        {"key": "m38e1f6be", "removed": false, "accepted": false, "label": "chaetoceros", "note": "", "bind": "manual", "source": "manual", "geom": {"bbox": [775, 1872, 63, 69], "polygon": [780.0, 1936.0, 775.0, 1907.0, 786.0, 1887.0, 811.0, 1873.0, 822.0, 1872.0, 836.0, 1879.0, 838.0, 1896.0, 837.0, 1906.0, 830.0, 1923.0, 825.0, 1932.0, 805.0, 1941.0]}},
+        {"key": "m3b3dbbdd", "removed": false, "accepted": false, "label": "chaetoceros", "note": "", "bind": "manual", "source": "manual", "geom": {"bbox": [794, 1992, 32, 46], "polygon": [794.0, 2035.0, 811.0, 2038.0, 826.0, 2016.0, 819.0, 1994.0, 801.0, 1992.0]}},
+        {"key": "m42e0f85e", "removed": false, "accepted": false, "label": "chaetoceros", "note": "", "bind": "manual", "source": "manual", "geom": {"bbox": [1833, 1545, 93, 78], "polygon": [1833.0, 1616.0, 1853.0, 1575.0, 1871.0, 1559.0, 1893.0, 1550.0, 1910.0, 1547.0, 1924.0, 1545.0, 1926.0, 1563.0, 1917.0, 1586.0, 1892.0, 1609.0, 1862.0, 1620.0, 1835.0, 1623.0]}},
+        {"key": "m4d37b9de", "removed": false, "accepted": false, "label": "chaetoceros", "note": "", "bind": "manual", "source": "manual", "geom": {"bbox": [112, 1636, 49, 80], "polygon": [112.0, 1710.0, 141.0, 1716.0, 161.0, 1675.0, 154.0, 1640.0, 130.0, 1636.0, 123.0, 1651.0, 121.0, 1669.0, 120.0, 1684.0]}},
+        {"key": "m4fbe4c51", "removed": false, "accepted": false, "label": "chaetoceros", "note": "", "bind": "manual", "source": "manual", "geom": {"bbox": [1920, 1758, 44, 65], "polygon": [1920.0, 1819.0, 1941.0, 1823.0, 1964.0, 1769.0, 1941.0, 1758.0, 1921.0, 1779.0]}},
+        {"key": "m56a4ede5", "removed": false, "accepted": false, "label": "chaetoceros", "note": "", "bind": "manual", "source": "manual", "geom": {"bbox": [1593, 58, 55, 89], "polygon": [1607.0, 144.0, 1593.0, 114.0, 1601.0, 68.0, 1623.0, 58.0, 1647.0, 81.0, 1648.0, 125.0, 1639.0, 136.0, 1630.0, 147.0]}},
+        {"key": "m604e4381", "removed": false, "accepted": false, "label": "chaetoceros", "note": "", "bind": "manual", "source": "manual", "geom": {"bbox": [422, 339, 89, 106], "polygon": [454.0, 442.0, 429.0, 411.0, 422.0, 378.0, 447.0, 344.0, 470.0, 339.0, 490.0, 344.0, 511.0, 380.0, 506.0, 414.0, 501.0, 425.0, 487.0, 440.0, 471.0, 445.0]}},
+        {"key": "m6119599d", "removed": false, "accepted": false, "label": "chaetoceros", "note": "", "bind": "manual", "source": "manual", "geom": {"bbox": [2230, 139, 62, 48], "polygon": [2235.0, 166.0, 2244.0, 140.0, 2258.0, 139.0, 2273.0, 140.0, 2292.0, 157.0, 2282.0, 181.0, 2266.0, 187.0, 2248.0, 184.0, 2230.0, 176.0]}},
+        {"key": "m63a672b4", "removed": false, "accepted": false, "label": "chaetoceros", "note": "", "bind": "manual", "source": "manual", "geom": {"bbox": [2514, 1092, 81, 90], "polygon": [2574.0, 1179.0, 2523.0, 1146.0, 2514.0, 1113.0, 2514.0, 1094.0, 2532.0, 1092.0, 2552.0, 1100.0, 2570.0, 1115.0, 2583.0, 1135.0, 2591.0, 1151.0, 2595.0, 1170.0, 2590.0, 1182.0]}},
+        {"key": "m6564bad2", "removed": false, "accepted": false, "label": "chaetoceros", "note": "", "bind": "manual", "source": "manual", "geom": {"bbox": [1306, 33, 73, 50], "polygon": [1306.0, 45.0, 1328.0, 33.0, 1359.0, 39.0, 1375.0, 66.0, 1379.0, 80.0, 1366.0, 83.0, 1338.0, 64.0]}},
+        {"key": "m68dc6793", "removed": false, "accepted": false, "label": "chaetoceros", "note": "", "bind": "manual", "source": "manual", "geom": {"bbox": [2495, 217, 49, 51], "polygon": [2499.0, 264.0, 2495.0, 242.0, 2505.0, 226.0, 2517.0, 219.0, 2530.0, 217.0, 2542.0, 218.0, 2544.0, 238.0, 2536.0, 259.0, 2519.0, 266.0, 2508.0, 268.0]}},
+        {"key": "m6996c041", "removed": false, "accepted": false, "label": "chaetoceros", "note": "", "bind": "manual", "source": "manual", "geom": {"bbox": [960, 444, 71, 37], "polygon": [962.0, 469.0, 960.0, 481.0, 1031.0, 479.0, 1017.0, 453.0, 989.0, 444.0]}},
+        {"key": "m86cc587e", "removed": false, "accepted": false, "label": "chaetoceros", "note": "", "bind": "manual", "source": "manual", "geom": {"bbox": [146, 1116, 88, 54], "polygon": [146.0, 1153.0, 163.0, 1122.0, 188.0, 1119.0, 216.0, 1116.0, 232.0, 1125.0, 234.0, 1141.0, 225.0, 1154.0, 208.0, 1165.0, 193.0, 1169.0, 167.0, 1170.0, 148.0, 1164.0]}},
+        {"key": "m8a0c6467", "removed": false, "accepted": false, "label": "chaetoceros", "note": "", "bind": "manual", "source": "manual", "geom": {"bbox": [1759, 921, 77, 58], "polygon": [1759.0, 930.0, 1764.0, 921.0, 1813.0, 935.0, 1836.0, 965.0, 1827.0, 979.0, 1789.0, 961.0]}},
+        {"key": "m8a3d6363", "removed": false, "accepted": false, "label": "chaetoceros", "note": "", "bind": "manual", "source": "manual", "geom": {"bbox": [193, 1557, 45, 61], "polygon": [209.0, 1618.0, 223.0, 1618.0, 238.0, 1594.0, 229.0, 1557.0, 213.0, 1557.0, 194.0, 1576.0, 193.0, 1594.0]}},
+        {"key": "m9054c6ab", "removed": false, "accepted": false, "label": "chaetoceros", "note": "", "bind": "manual", "source": "manual", "geom": {"bbox": [1916, 2097, 91, 88], "polygon": [1916.0, 2170.0, 1940.0, 2124.0, 1984.0, 2098.0, 2003.0, 2097.0, 2007.0, 2114.0, 1998.0, 2145.0, 1980.0, 2165.0, 1927.0, 2185.0]}},
+        {"key": "ma593d8bc", "removed": false, "accepted": false, "label": "chaetoceros", "note": "", "bind": "manual", "source": "manual", "geom": {"bbox": [1429, 155, 80, 48], "polygon": [1429.0, 191.0, 1443.0, 165.0, 1491.0, 155.0, 1504.0, 161.0, 1509.0, 171.0, 1509.0, 185.0, 1482.0, 198.0, 1464.0, 203.0, 1440.0, 197.0]}},
+        {"key": "madc2de34", "removed": false, "accepted": false, "label": "chaetoceros", "note": "", "bind": "manual", "source": "manual", "geom": {"bbox": [2338, 37, 50, 85], "polygon": [2350.0, 119.0, 2338.0, 95.0, 2338.0, 69.0, 2339.0, 47.0, 2359.0, 37.0, 2378.0, 49.0, 2388.0, 76.0, 2384.0, 113.0, 2370.0, 122.0]}},
+        {"key": "maee587a1", "removed": false, "accepted": false, "label": "chaetoceros", "note": "", "bind": "manual", "source": "manual", "geom": {"bbox": [1436, 1039, 39, 42], "polygon": [1438.0, 1069.0, 1436.0, 1049.0, 1438.0, 1041.0, 1452.0, 1039.0, 1464.0, 1039.0, 1475.0, 1050.0, 1475.0, 1067.0, 1469.0, 1079.0, 1459.0, 1081.0, 1445.0, 1075.0]}},
+        {"key": "mb824423c", "removed": false, "accepted": false, "label": "chaetoceros", "note": "", "bind": "manual", "source": "manual", "geom": {"bbox": [1698, 1158, 66, 73], "polygon": [1699.0, 1181.0, 1706.0, 1204.0, 1717.0, 1219.0, 1739.0, 1231.0, 1751.0, 1229.0, 1763.0, 1212.0, 1764.0, 1196.0, 1755.0, 1170.0, 1737.0, 1160.0, 1715.0, 1158.0, 1698.0, 1166.0]}},
+        {"key": "mbb464040", "removed": false, "accepted": false, "label": "chaetoceros", "note": "", "bind": "manual", "source": "manual", "geom": {"bbox": [2638, 1186, 106, 77], "polygon": [2638.0, 1199.0, 2651.0, 1186.0, 2713.0, 1199.0, 2744.0, 1249.0, 2730.0, 1263.0, 2669.0, 1252.0]}},
+        {"key": "mc6e5504f", "removed": false, "accepted": false, "label": "chaetoceros", "note": "", "bind": "manual", "source": "manual", "geom": {"bbox": [233, 955, 51, 31], "polygon": [237.0, 955.0, 233.0, 975.0, 248.0, 983.0, 270.0, 986.0, 284.0, 979.0, 284.0, 961.0]}},
+        {"key": "mc97e3172", "removed": false, "accepted": false, "label": "chaetoceros", "note": "", "bind": "manual", "source": "manual", "geom": {"bbox": [2272, 424, 62, 66], "polygon": [2279.0, 473.0, 2272.0, 441.0, 2282.0, 430.0, 2296.0, 424.0, 2334.0, 453.0, 2334.0, 467.0, 2324.0, 484.0, 2311.0, 490.0, 2294.0, 486.0]}},
+        {"key": "mccd43944", "removed": false, "accepted": false, "label": "chaetoceros", "note": "", "bind": "manual", "source": "manual", "geom": {"bbox": [1622, 442, 61, 43], "polygon": [1622.0, 459.0, 1642.0, 448.0, 1664.0, 442.0, 1680.0, 446.0, 1683.0, 457.0, 1683.0, 466.0, 1659.0, 485.0, 1641.0, 484.0, 1633.0, 479.0, 1627.0, 470.0]}},
+        {"key": "mcf7cb2db", "removed": false, "accepted": false, "label": "round_frag", "note": "", "bind": "manual", "source": "manual", "geom": {"bbox": [914, 2069, 109, 67], "polygon": [921.0, 2129.0, 934.0, 2131.0, 936.0, 2136.0, 976.0, 2122.0, 1017.0, 2101.0, 1023.0, 2091.0, 1003.0, 2072.0, 935.0, 2069.0, 915.0, 2091.0, 914.0, 2109.0]}},
+        {"key": "md0e4a676", "removed": false, "accepted": false, "label": "chaetoceros", "note": "", "bind": "manual", "source": "manual", "geom": {"bbox": [1900, 1493, 58, 60], "polygon": [1935.0, 1553.0, 1916.0, 1550.0, 1909.0, 1541.0, 1900.0, 1526.0, 1902.0, 1499.0, 1915.0, 1493.0, 1944.0, 1502.0, 1958.0, 1520.0, 1956.0, 1543.0, 1949.0, 1552.0]}},
+        {"key": "me2127cdb", "removed": false, "accepted": false, "label": "chaetoceros", "note": "", "bind": "manual", "source": "manual", "geom": {"bbox": [239, 220, 124, 55], "polygon": [239.0, 236.0, 273.0, 259.0, 304.0, 273.0, 337.0, 275.0, 358.0, 274.0, 363.0, 265.0, 325.0, 225.0, 303.0, 224.0, 272.0, 220.0, 244.0, 223.0]}},
+        {"key": "mee951330", "removed": false, "accepted": false, "label": "chaetoceros", "note": "", "bind": "manual", "source": "manual", "geom": {"bbox": [512, 388, 107, 56], "polygon": [512.0, 439.0, 542.0, 400.0, 567.0, 388.0, 616.0, 388.0, 619.0, 399.0, 596.0, 413.0, 571.0, 433.0, 545.0, 444.0]}},
+        {"key": "mf46dfc41", "removed": false, "accepted": false, "label": "chaetoceros", "note": "", "bind": "manual", "source": "manual", "geom": {"bbox": [1496, 429, 46, 47], "polygon": [1496.0, 475.0, 1496.0, 450.0, 1516.0, 429.0, 1531.0, 429.0, 1540.0, 437.0, 1542.0, 453.0, 1537.0, 462.0, 1520.0, 471.0, 1504.0, 476.0]}},
+        {"key": "mf4819a31", "removed": false, "accepted": false, "label": "chaetoceros", "note": "", "bind": "manual", "source": "manual", "geom": {"bbox": [537, 1843, 70, 34], "polygon": [541.0, 1844.0, 537.0, 1857.0, 567.0, 1877.0, 604.0, 1872.0, 607.0, 1859.0, 569.0, 1843.0]}},
+        {"key": "mfc5695ac", "removed": false, "accepted": false, "label": "chaetoceros", "note": "", "bind": "manual", "source": "manual", "geom": {"bbox": [1617, 348, 58, 73], "polygon": [1626.0, 417.0, 1617.0, 390.0, 1622.0, 354.0, 1644.0, 350.0, 1656.0, 348.0, 1667.0, 364.0, 1675.0, 381.0, 1672.0, 403.0, 1653.0, 421.0]}},
+        {"key": "mfe5ef396", "removed": false, "accepted": false, "label": "chaetoceros", "note": "", "bind": "manual", "source": "manual", "geom": {"bbox": [198, 997, 73, 88], "polygon": [198.0, 1010.0, 203.0, 1033.0, 209.0, 1050.0, 249.0, 1082.0, 266.0, 1085.0, 271.0, 1069.0, 271.0, 1039.0, 249.0, 1015.0, 222.0, 998.0, 203.0, 997.0]}}
+      ]
+    },
     {
       "image": "stacked/g024_Snap-21327-21329_focused.jpg",
       "kind": "stack",
@@ -45,7 +95,740 @@
         {"key": "936_443_147_217", "removed": true, "accepted": false, "label": "", "note": "", "bind": "exact", "bind_score": 1.0, "geom": {"bbox": [936, 443, 147, 217], "polygon": [990, 445, 983, 450, 969, 452, 959, 461, 960, 487, 956, 504, 962, 531, 968, 540, 991, 556, 992, 564, 985, 581, 988, 608, 1015, 650, 1047, 660, 1071, 644, 1081, 631, 1083, 616, 1074, 572, 1055, 539, 1047, 533, 1030, 530, 1033, 515, 1031, 497, 1023, 471, 1024, 461, 1015, 443]}},
         {"key": "947_1768_179_153", "removed": true, "accepted": false, "label": "", "note": "", "bind": "exact", "bind_score": 1.0, "geom": {"bbox": [947, 1768, 179, 153], "polygon": [1116, 1771, 1112, 1768, 1101, 1769, 1069, 1779, 1036, 1778, 1015, 1794, 983, 1788, 957, 1825, 949, 1852, 949, 1873, 963, 1876, 973, 1871, 996, 1870, 1003, 1866, 1027, 1865, 1038, 1870, 1070, 1864, 1082, 1871, 1101, 1865, 1112, 1858, 1123, 1824, 1126, 1797, 1117, 1789, 1119, 1780]}}
       ]
+    },
+    {
+      "image": "stacked/g024_Snap-21327-21329_focused.jpg",
+      "kind": "stack",
+      "batch": "yolo-3차",
+      "n_objects": 16,
+      "objects": [
+        {"key": "1514_1131_86_121", "removed": false, "accepted": true, "label": "rod_frag", "note": "", "bind": "exact", "bind_score": 1.0, "geom": {"bbox": [1514, 1131, 86, 121], "polygon": [1573, 1131, 1546, 1131, 1548, 1134, 1547, 1145, 1522, 1184, 1519, 1199, 1514, 1206, 1514, 1243, 1525, 1249, 1546, 1251, 1556, 1247, 1583, 1227, 1599, 1207, 1599, 1181, 1594, 1169, 1591, 1151, 1587, 1144]}},
+        {"key": "1600_835_138_232", "removed": false, "accepted": false, "label": "round_frag", "note": "", "bind": "exact", "bind_score": 1.0, "geom": {"bbox_xywh": [1600, 835, 138, 232], "polygon": [1737, 835, 1724, 836, 1702, 850, 1671, 899, 1665, 918, 1642, 958, 1616, 986, 1600, 1011, 1600, 1026, 1604, 1023, 1620, 1029, 1668, 1066, 1680, 1065, 1708, 1031, 1724, 989, 1721, 956, 1737, 923]}},
+        {"key": "1755_1278_206_100", "removed": false, "accepted": false, "label": "rod", "note": "", "bind": "exact", "bind_score": 1.0, "geom": {"bbox_xywh": [1755, 1278, 206, 100], "polygon": [1755, 1278, 1755, 1351, 1768, 1358, 1794, 1360, 1827, 1376, 1847, 1377, 1886, 1365, 1943, 1358, 1960, 1346, 1960, 1299, 1939, 1287, 1905, 1278]}},
+        {"key": "2202_1329_69_103", "removed": false, "accepted": false, "label": "chaetoceros", "note": "", "bind": "exact", "bind_score": 1.0, "geom": {"bbox_xywh": [2202, 1329, 69, 103], "polygon": [2270, 1329, 2258, 1329, 2256, 1334, 2244, 1346, 2238, 1349, 2214, 1374, 2202, 1383, 2202, 1395, 2204, 1400, 2202, 1419, 2205, 1427, 2211, 1431, 2228, 1431, 2231, 1429, 2239, 1419, 2245, 1405, 2266, 1381, 2270, 1371]}},
+        {"key": "2202_564_275_136", "removed": true, "accepted": false, "label": "", "note": "", "bind": "exact", "bind_score": 1.0, "geom": {"bbox": [2202, 564, 275, 136], "polygon": [2202, 628, 2220, 665, 2230, 675, 2275, 691, 2334, 698, 2381, 678, 2444, 629, 2475, 624, 2476, 579, 2443, 577, 2425, 564, 2393, 564, 2395, 573, 2389, 577, 2359, 574, 2332, 564, 2268, 564, 2256, 569, 2206, 614]}},
+        {"key": "2219_1329_62_103", "removed": true, "accepted": false, "label": "", "note": "", "bind": "exact", "bind_score": 1.0, "geom": {"bbox": [2219, 1329, 62, 103], "polygon": [2279, 1329, 2259, 1329, 2253, 1338, 2230, 1356, 2219, 1369, 2219, 1431, 2228, 1431, 2234, 1426, 2240, 1418, 2246, 1404, 2265, 1383, 2278, 1349, 2280, 1340]}},
+        {"key": "2379_140_167_123", "removed": true, "accepted": false, "label": "", "note": "", "bind": "exact", "bind_score": 1.0, "geom": {"bbox": [2379, 140, 167, 123], "polygon": [2381, 169, 2379, 183, 2383, 194, 2403, 206, 2421, 205, 2424, 208, 2421, 220, 2428, 229, 2450, 234, 2491, 236, 2494, 243, 2493, 254, 2500, 262, 2529, 262, 2545, 245, 2545, 223, 2540, 215, 2532, 208, 2507, 200, 2479, 172, 2452, 166, 2434, 140, 2406, 140]}},
+        {"key": "2379_142_133_94", "removed": true, "accepted": false, "label": "", "note": "", "bind": "exact", "bind_score": 1.0, "geom": {"bbox": [2379, 142, 133, 94], "polygon": [2380, 172, 2380, 189, 2393, 202, 2411, 205, 2429, 197, 2433, 199, 2434, 202, 2422, 219, 2428, 229, 2450, 234, 2500, 235, 2506, 225, 2511, 226, 2511, 205, 2478, 172, 2469, 169, 2454, 171, 2447, 185, 2443, 185, 2445, 159, 2435, 142, 2405, 142]}},
+        {"key": "2718_1639_34_159", "removed": true, "accepted": false, "label": "", "note": "", "bind": "exact", "bind_score": 1.0, "geom": {"bbox": [2718, 1639, 34, 159], "polygon": [2745, 1639, 2736, 1655, 2729, 1662, 2718, 1668, 2718, 1763, 2746, 1795, 2751, 1797, 2751, 1639]}},
+        {"key": "435_762_94_120", "removed": false, "accepted": false, "label": "rod_frag", "note": "", "bind": "exact", "bind_score": 1.0, "geom": {"bbox_xywh": [435, 762, 94, 120], "polygon": [435, 762, 435, 808, 464, 853, 476, 876, 482, 881, 492, 881, 502, 874, 528, 869, 528, 848, 507, 797, 487, 762]}},
+        {"key": "551_706_206_238", "removed": false, "accepted": false, "label": "rod_frag", "note": "", "bind": "exact", "bind_score": 1.0, "geom": {"bbox": [551, 706, 206, 238], "polygon": [756, 706, 731, 706, 721, 722, 689, 752, 577, 887, 562, 901, 551, 902, 551, 919, 563, 941, 571, 943, 675, 840, 689, 814, 743, 752, 756, 722]}},
+        {"key": "594_1708_86_68", "removed": false, "accepted": true, "label": "chaetoceros", "note": "", "bind": "exact", "bind_score": 1.0, "geom": {"bbox": [594, 1708, 86, 68], "polygon": [672, 1708, 624, 1708, 609, 1721, 601, 1731, 594, 1745, 594, 1773, 597, 1775, 636, 1775, 653, 1765, 670, 1749, 674, 1739, 679, 1732, 679, 1718]}},
+        {"key": "594_243_69_124", "removed": false, "accepted": false, "label": "chaetoceros", "note": "", "bind": "exact", "bind_score": 1.0, "geom": {"bbox": [594, 243, 69, 124], "polygon": [594, 243, 594, 311, 599, 314, 604, 325, 633, 361, 639, 364, 660, 365, 662, 363, 662, 356, 646, 329, 640, 307, 626, 283, 612, 243]}},
+        {"key": "602_710_147_189", "removed": true, "accepted": false, "label": "", "note": "", "bind": "exact", "bind_score": 1.0, "geom": {"bbox": [602, 710, 147, 189], "polygon": [748, 710, 729, 710, 688, 753, 625, 833, 602, 856, 602, 898, 615, 898, 674, 842, 694, 808, 743, 753, 748, 739]}},
+        {"key": "667_349_86_85", "removed": false, "accepted": false, "label": "round_frag", "note": "", "bind": "exact", "bind_score": 1.0, "geom": {"bbox_xywh": [667, 349, 86, 85], "polygon": [670, 349, 667, 355, 667, 401, 677, 417, 683, 423, 701, 432, 719, 433, 740, 426, 752, 418, 752, 403, 748, 391, 742, 382, 724, 366, 718, 356, 716, 349]}},
+        {"key": "912_719_292_360", "removed": false, "accepted": false, "label": "rod_frag", "note": "", "bind": "exact", "bind_score": 1.0, "geom": {"bbox_xywh": [912, 719, 292, 360], "polygon": [1203, 719, 1190, 719, 1165, 741, 1130, 744, 1087, 772, 1041, 834, 917, 1038, 912, 1065, 918, 1073, 942, 1077, 968, 1056, 1107, 877]}}
+      ]
+    },
+    {
+      "image": "photos/260729/WAP13-GC47 450cm/Snap-21327.jpg",
+      "kind": "frame",
+      "batch": "",
+      "n_objects": 42,
+      "objects": [
+        {"key": "m082ae7b2", "removed": false, "accepted": false, "label": "chaetoceros", "note": "", "bind": "manual", "source": "manual", "geom": {"bbox": [923, 2007, 51, 49], "polygon": [940.0, 2054.0, 928.0, 2043.0, 923.0, 2020.0, 929.0, 2011.0, 936.0, 2007.0, 950.0, 2011.0, 966.0, 2026.0, 974.0, 2041.0, 969.0, 2051.0, 963.0, 2056.0, 953.0, 2056.0]}},
+        {"key": "m08ac016f", "removed": false, "accepted": false, "label": "chaetoceros", "note": "", "bind": "manual", "source": "manual", "geom": {"bbox": [1276, 1125, 61, 68], "polygon": [1286.0, 1190.0, 1276.0, 1173.0, 1278.0, 1145.0, 1287.0, 1135.0, 1303.0, 1128.0, 1326.0, 1125.0, 1334.0, 1135.0, 1337.0, 1152.0, 1335.0, 1168.0, 1320.0, 1186.0, 1305.0, 1193.0]}},
+        {"key": "m0b800f5e", "removed": false, "accepted": false, "label": "chaetoceros", "note": "", "bind": "manual", "source": "manual", "geom": {"bbox": [974, 1610, 107, 88], "polygon": [982.0, 1695.0, 974.0, 1675.0, 982.0, 1651.0, 1001.0, 1632.0, 1026.0, 1618.0, 1056.0, 1610.0, 1069.0, 1613.0, 1081.0, 1627.0, 1078.0, 1638.0, 1060.0, 1660.0, 1054.0, 1669.0, 1036.0, 1687.0, 994.0, 1698.0]}},
+        {"key": "m16986ea1", "removed": false, "accepted": false, "label": "chaetoceros", "note": "", "bind": "manual", "source": "manual", "geom": {"bbox": [1526, 1467, 65, 47], "polygon": [1548.0, 1514.0, 1537.0, 1506.0, 1526.0, 1490.0, 1540.0, 1472.0, 1550.0, 1469.0, 1563.0, 1467.0, 1577.0, 1470.0, 1587.0, 1480.0, 1591.0, 1491.0, 1581.0, 1504.0, 1569.0, 1512.0]}},
+        {"key": "m1d4b0dba", "removed": false, "accepted": false, "label": "chaetoceros", "note": "", "bind": "manual", "source": "manual", "geom": {"bbox": [451, 1981, 66, 54], "polygon": [451.0, 2000.0, 464.0, 2018.0, 488.0, 2029.0, 501.0, 2035.0, 517.0, 2018.0, 511.0, 1993.0, 470.0, 1981.0, 451.0, 1992.0]}},
+        {"key": "m211a5d71", "removed": false, "accepted": false, "label": "chaetoceros", "note": "", "bind": "manual", "source": "manual", "geom": {"bbox": [808, 647, 121, 64], "polygon": [808.0, 689.0, 846.0, 658.0, 895.0, 647.0, 926.0, 659.0, 929.0, 676.0, 923.0, 686.0, 901.0, 699.0, 865.0, 706.0, 832.0, 711.0, 810.0, 705.0]}},
+        {"key": "m2a6f003f", "removed": false, "accepted": false, "label": "chaetoceros", "note": "", "bind": "manual", "source": "manual", "geom": {"bbox": [440, 667, 53, 32], "polygon": [443.0, 681.0, 447.0, 667.0, 468.0, 668.0, 493.0, 683.0, 490.0, 692.0, 484.0, 698.0, 464.0, 699.0, 440.0, 688.0]}},
+        {"key": "m33be8ac8", "removed": false, "accepted": false, "label": "chaetoceros", "note": "", "bind": "manual", "source": "manual", "geom": {"bbox": [904, 55, 79, 53], "polygon": [904.0, 67.0, 914.0, 55.0, 953.0, 55.0, 983.0, 91.0, 972.0, 108.0, 929.0, 104.0]}},
+        {"key": "m341bb79c", "removed": false, "accepted": false, "label": "chaetoceros", "note": "", "bind": "manual", "source": "manual", "geom": {"bbox": [105, 133, 69, 45], "polygon": [105.0, 141.0, 109.0, 162.0, 134.0, 175.0, 157.0, 178.0, 174.0, 158.0, 155.0, 138.0, 140.0, 133.0]}},
+        {"key": "m366451e7", "removed": false, "accepted": false, "label": "chaetoceros", "note": "", "bind": "manual", "source": "manual", "geom": {"bbox": [187, 838, 51, 60], "polygon": [215.0, 895.0, 192.0, 880.0, 187.0, 863.0, 195.0, 851.0, 206.0, 838.0, 223.0, 847.0, 238.0, 865.0, 237.0, 881.0, 231.0, 895.0, 225.0, 898.0]}},
+        {"key": "m38e1f6be", "removed": false, "accepted": false, "label": "chaetoceros", "note": "", "bind": "manual", "source": "manual", "geom": {"bbox": [775, 1872, 63, 69], "polygon": [780.0, 1936.0, 775.0, 1907.0, 786.0, 1887.0, 811.0, 1873.0, 822.0, 1872.0, 836.0, 1879.0, 838.0, 1896.0, 837.0, 1906.0, 830.0, 1923.0, 825.0, 1932.0, 805.0, 1941.0]}},
+        {"key": "m3b3dbbdd", "removed": false, "accepted": false, "label": "chaetoceros", "note": "", "bind": "manual", "source": "manual", "geom": {"bbox": [794, 1992, 32, 46], "polygon": [794.0, 2035.0, 811.0, 2038.0, 826.0, 2016.0, 819.0, 1994.0, 801.0, 1992.0]}},
+        {"key": "m42e0f85e", "removed": false, "accepted": false, "label": "chaetoceros", "note": "", "bind": "manual", "source": "manual", "geom": {"bbox": [1833, 1545, 93, 78], "polygon": [1833.0, 1616.0, 1853.0, 1575.0, 1871.0, 1559.0, 1893.0, 1550.0, 1910.0, 1547.0, 1924.0, 1545.0, 1926.0, 1563.0, 1917.0, 1586.0, 1892.0, 1609.0, 1862.0, 1620.0, 1835.0, 1623.0]}},
+        {"key": "m4d37b9de", "removed": false, "accepted": false, "label": "chaetoceros", "note": "", "bind": "manual", "source": "manual", "geom": {"bbox": [112, 1636, 49, 80], "polygon": [112.0, 1710.0, 141.0, 1716.0, 161.0, 1675.0, 154.0, 1640.0, 130.0, 1636.0, 123.0, 1651.0, 121.0, 1669.0, 120.0, 1684.0]}},
+        {"key": "m4fbe4c51", "removed": false, "accepted": false, "label": "chaetoceros", "note": "", "bind": "manual", "source": "manual", "geom": {"bbox": [1920, 1758, 44, 65], "polygon": [1920.0, 1819.0, 1941.0, 1823.0, 1964.0, 1769.0, 1941.0, 1758.0, 1921.0, 1779.0]}},
+        {"key": "m56a4ede5", "removed": false, "accepted": false, "label": "chaetoceros", "note": "", "bind": "manual", "source": "manual", "geom": {"bbox": [1593, 58, 55, 89], "polygon": [1607.0, 144.0, 1593.0, 114.0, 1601.0, 68.0, 1623.0, 58.0, 1647.0, 81.0, 1648.0, 125.0, 1639.0, 136.0, 1630.0, 147.0]}},
+        {"key": "m604e4381", "removed": false, "accepted": false, "label": "chaetoceros", "note": "", "bind": "manual", "source": "manual", "geom": {"bbox": [422, 339, 89, 106], "polygon": [454.0, 442.0, 429.0, 411.0, 422.0, 378.0, 447.0, 344.0, 470.0, 339.0, 490.0, 344.0, 511.0, 380.0, 506.0, 414.0, 501.0, 425.0, 487.0, 440.0, 471.0, 445.0]}},
+        {"key": "m6119599d", "removed": false, "accepted": false, "label": "chaetoceros", "note": "", "bind": "manual", "source": "manual", "geom": {"bbox": [2230, 139, 62, 48], "polygon": [2235.0, 166.0, 2244.0, 140.0, 2258.0, 139.0, 2273.0, 140.0, 2292.0, 157.0, 2282.0, 181.0, 2266.0, 187.0, 2248.0, 184.0, 2230.0, 176.0]}},
+        {"key": "m63a672b4", "removed": false, "accepted": false, "label": "chaetoceros", "note": "", "bind": "manual", "source": "manual", "geom": {"bbox": [2514, 1092, 81, 90], "polygon": [2574.0, 1179.0, 2523.0, 1146.0, 2514.0, 1113.0, 2514.0, 1094.0, 2532.0, 1092.0, 2552.0, 1100.0, 2570.0, 1115.0, 2583.0, 1135.0, 2591.0, 1151.0, 2595.0, 1170.0, 2590.0, 1182.0]}},
+        {"key": "m6564bad2", "removed": false, "accepted": false, "label": "chaetoceros", "note": "", "bind": "manual", "source": "manual", "geom": {"bbox": [1306, 33, 73, 50], "polygon": [1306.0, 45.0, 1328.0, 33.0, 1359.0, 39.0, 1375.0, 66.0, 1379.0, 80.0, 1366.0, 83.0, 1338.0, 64.0]}},
+        {"key": "m68dc6793", "removed": false, "accepted": false, "label": "chaetoceros", "note": "", "bind": "manual", "source": "manual", "geom": {"bbox": [2495, 217, 49, 51], "polygon": [2499.0, 264.0, 2495.0, 242.0, 2505.0, 226.0, 2517.0, 219.0, 2530.0, 217.0, 2542.0, 218.0, 2544.0, 238.0, 2536.0, 259.0, 2519.0, 266.0, 2508.0, 268.0]}},
+        {"key": "m6996c041", "removed": false, "accepted": false, "label": "chaetoceros", "note": "", "bind": "manual", "source": "manual", "geom": {"bbox": [960, 444, 71, 37], "polygon": [962.0, 469.0, 960.0, 481.0, 1031.0, 479.0, 1017.0, 453.0, 989.0, 444.0]}},
+        {"key": "m86cc587e", "removed": false, "accepted": false, "label": "chaetoceros", "note": "", "bind": "manual", "source": "manual", "geom": {"bbox": [146, 1116, 88, 54], "polygon": [146.0, 1153.0, 163.0, 1122.0, 188.0, 1119.0, 216.0, 1116.0, 232.0, 1125.0, 234.0, 1141.0, 225.0, 1154.0, 208.0, 1165.0, 193.0, 1169.0, 167.0, 1170.0, 148.0, 1164.0]}},
+        {"key": "m8a0c6467", "removed": false, "accepted": false, "label": "chaetoceros", "note": "", "bind": "manual", "source": "manual", "geom": {"bbox": [1759, 921, 77, 58], "polygon": [1759.0, 930.0, 1764.0, 921.0, 1813.0, 935.0, 1836.0, 965.0, 1827.0, 979.0, 1789.0, 961.0]}},
+        {"key": "m8a3d6363", "removed": false, "accepted": false, "label": "chaetoceros", "note": "", "bind": "manual", "source": "manual", "geom": {"bbox": [193, 1557, 45, 61], "polygon": [209.0, 1618.0, 223.0, 1618.0, 238.0, 1594.0, 229.0, 1557.0, 213.0, 1557.0, 194.0, 1576.0, 193.0, 1594.0]}},
+        {"key": "m9054c6ab", "removed": false, "accepted": false, "label": "chaetoceros", "note": "", "bind": "manual", "source": "manual", "geom": {"bbox": [1916, 2097, 91, 88], "polygon": [1916.0, 2170.0, 1940.0, 2124.0, 1984.0, 2098.0, 2003.0, 2097.0, 2007.0, 2114.0, 1998.0, 2145.0, 1980.0, 2165.0, 1927.0, 2185.0]}},
+        {"key": "ma593d8bc", "removed": false, "accepted": false, "label": "chaetoceros", "note": "", "bind": "manual", "source": "manual", "geom": {"bbox": [1429, 155, 80, 48], "polygon": [1429.0, 191.0, 1443.0, 165.0, 1491.0, 155.0, 1504.0, 161.0, 1509.0, 171.0, 1509.0, 185.0, 1482.0, 198.0, 1464.0, 203.0, 1440.0, 197.0]}},
+        {"key": "madc2de34", "removed": false, "accepted": false, "label": "chaetoceros", "note": "", "bind": "manual", "source": "manual", "geom": {"bbox": [2338, 37, 50, 85], "polygon": [2350.0, 119.0, 2338.0, 95.0, 2338.0, 69.0, 2339.0, 47.0, 2359.0, 37.0, 2378.0, 49.0, 2388.0, 76.0, 2384.0, 113.0, 2370.0, 122.0]}},
+        {"key": "maee587a1", "removed": false, "accepted": false, "label": "chaetoceros", "note": "", "bind": "manual", "source": "manual", "geom": {"bbox": [1436, 1039, 39, 42], "polygon": [1438.0, 1069.0, 1436.0, 1049.0, 1438.0, 1041.0, 1452.0, 1039.0, 1464.0, 1039.0, 1475.0, 1050.0, 1475.0, 1067.0, 1469.0, 1079.0, 1459.0, 1081.0, 1445.0, 1075.0]}},
+        {"key": "mb824423c", "removed": false, "accepted": false, "label": "chaetoceros", "note": "", "bind": "manual", "source": "manual", "geom": {"bbox": [1698, 1158, 66, 73], "polygon": [1699.0, 1181.0, 1706.0, 1204.0, 1717.0, 1219.0, 1739.0, 1231.0, 1751.0, 1229.0, 1763.0, 1212.0, 1764.0, 1196.0, 1755.0, 1170.0, 1737.0, 1160.0, 1715.0, 1158.0, 1698.0, 1166.0]}},
+        {"key": "mbb464040", "removed": false, "accepted": false, "label": "chaetoceros", "note": "", "bind": "manual", "source": "manual", "geom": {"bbox": [2638, 1186, 106, 77], "polygon": [2638.0, 1199.0, 2651.0, 1186.0, 2713.0, 1199.0, 2744.0, 1249.0, 2730.0, 1263.0, 2669.0, 1252.0]}},
+        {"key": "mc6e5504f", "removed": false, "accepted": false, "label": "chaetoceros", "note": "", "bind": "manual", "source": "manual", "geom": {"bbox": [233, 955, 51, 31], "polygon": [237.0, 955.0, 233.0, 975.0, 248.0, 983.0, 270.0, 986.0, 284.0, 979.0, 284.0, 961.0]}},
+        {"key": "mc97e3172", "removed": false, "accepted": false, "label": "chaetoceros", "note": "", "bind": "manual", "source": "manual", "geom": {"bbox": [2272, 424, 62, 66], "polygon": [2279.0, 473.0, 2272.0, 441.0, 2282.0, 430.0, 2296.0, 424.0, 2334.0, 453.0, 2334.0, 467.0, 2324.0, 484.0, 2311.0, 490.0, 2294.0, 486.0]}},
+        {"key": "mccd43944", "removed": false, "accepted": false, "label": "chaetoceros", "note": "", "bind": "manual", "source": "manual", "geom": {"bbox": [1622, 442, 61, 43], "polygon": [1622.0, 459.0, 1642.0, 448.0, 1664.0, 442.0, 1680.0, 446.0, 1683.0, 457.0, 1683.0, 466.0, 1659.0, 485.0, 1641.0, 484.0, 1633.0, 479.0, 1627.0, 470.0]}},
+        {"key": "mcf7cb2db", "removed": false, "accepted": false, "label": "round_frag", "note": "", "bind": "manual", "source": "manual", "geom": {"bbox": [914, 2069, 109, 67], "polygon": [921.0, 2129.0, 934.0, 2131.0, 936.0, 2136.0, 976.0, 2122.0, 1017.0, 2101.0, 1023.0, 2091.0, 1003.0, 2072.0, 935.0, 2069.0, 915.0, 2091.0, 914.0, 2109.0]}},
+        {"key": "md0e4a676", "removed": false, "accepted": false, "label": "chaetoceros", "note": "", "bind": "manual", "source": "manual", "geom": {"bbox": [1900, 1493, 58, 60], "polygon": [1935.0, 1553.0, 1916.0, 1550.0, 1909.0, 1541.0, 1900.0, 1526.0, 1902.0, 1499.0, 1915.0, 1493.0, 1944.0, 1502.0, 1958.0, 1520.0, 1956.0, 1543.0, 1949.0, 1552.0]}},
+        {"key": "me2127cdb", "removed": false, "accepted": false, "label": "chaetoceros", "note": "", "bind": "manual", "source": "manual", "geom": {"bbox": [239, 220, 124, 55], "polygon": [239.0, 236.0, 273.0, 259.0, 304.0, 273.0, 337.0, 275.0, 358.0, 274.0, 363.0, 265.0, 325.0, 225.0, 303.0, 224.0, 272.0, 220.0, 244.0, 223.0]}},
+        {"key": "mee951330", "removed": false, "accepted": false, "label": "chaetoceros", "note": "", "bind": "manual", "source": "manual", "geom": {"bbox": [512, 388, 107, 56], "polygon": [512.0, 439.0, 542.0, 400.0, 567.0, 388.0, 616.0, 388.0, 619.0, 399.0, 596.0, 413.0, 571.0, 433.0, 545.0, 444.0]}},
+        {"key": "mf46dfc41", "removed": false, "accepted": false, "label": "chaetoceros", "note": "", "bind": "manual", "source": "manual", "geom": {"bbox": [1496, 429, 46, 47], "polygon": [1496.0, 475.0, 1496.0, 450.0, 1516.0, 429.0, 1531.0, 429.0, 1540.0, 437.0, 1542.0, 453.0, 1537.0, 462.0, 1520.0, 471.0, 1504.0, 476.0]}},
+        {"key": "mf4819a31", "removed": false, "accepted": false, "label": "chaetoceros", "note": "", "bind": "manual", "source": "manual", "geom": {"bbox": [537, 1843, 70, 34], "polygon": [541.0, 1844.0, 537.0, 1857.0, 567.0, 1877.0, 604.0, 1872.0, 607.0, 1859.0, 569.0, 1843.0]}},
+        {"key": "mfc5695ac", "removed": false, "accepted": false, "label": "chaetoceros", "note": "", "bind": "manual", "source": "manual", "geom": {"bbox": [1617, 348, 58, 73], "polygon": [1626.0, 417.0, 1617.0, 390.0, 1622.0, 354.0, 1644.0, 350.0, 1656.0, 348.0, 1667.0, 364.0, 1675.0, 381.0, 1672.0, 403.0, 1653.0, 421.0]}},
+        {"key": "mfe5ef396", "removed": false, "accepted": false, "label": "chaetoceros", "note": "", "bind": "manual", "source": "manual", "geom": {"bbox": [198, 997, 73, 88], "polygon": [198.0, 1010.0, 203.0, 1033.0, 209.0, 1050.0, 249.0, 1082.0, 266.0, 1085.0, 271.0, 1069.0, 271.0, 1039.0, 249.0, 1015.0, 222.0, 998.0, 203.0, 997.0]}}
+      ]
+    },
+    {
+      "image": "photos/260729/WAP13-GC47 450cm/Snap-21327.jpg",
+      "kind": "frame",
+      "batch": "yolo-3차",
+      "n_objects": 4,
+      "objects": [
+        {"key": "1600_839_155_232", "removed": false, "accepted": false, "label": "round_frag", "note": "", "bind": "exact", "bind_score": 1.0, "geom": {"bbox_xywh": [1600, 839, 155, 232], "polygon": [1754, 839, 1710, 839, 1685, 857, 1633, 961, 1600, 999, 1600, 1030, 1621, 1037, 1663, 1070, 1685, 1070, 1723, 995, 1731, 943, 1742, 921, 1754, 911]}},
+        {"key": "1755_1278_206_102", "removed": false, "accepted": true, "label": "rod", "note": "", "bind": "exact", "bind_score": 1.0, "geom": {"bbox_xywh": [1755, 1278, 206, 102], "polygon": [1755, 1281, 1755, 1347, 1793, 1360, 1818, 1373, 1852, 1379, 1888, 1365, 1939, 1359, 1953, 1352, 1960, 1344, 1960, 1293, 1931, 1278, 1757, 1278]}},
+        {"key": "1807_1106_85_68", "removed": true, "accepted": false, "label": "", "note": "", "bind": "exact", "bind_score": 1.0, "geom": {"bbox": [1807, 1106, 85, 68], "polygon": [1888, 1117, 1877, 1112, 1873, 1108, 1873, 1106, 1860, 1106, 1862, 1108, 1860, 1117, 1853, 1122, 1838, 1137, 1835, 1138, 1830, 1144, 1807, 1160, 1807, 1173, 1827, 1173, 1879, 1143, 1888, 1133, 1891, 1126]}},
+        {"key": "912_779_215_306", "removed": false, "accepted": true, "label": "rod_frag", "note": "", "bind": "exact", "bind_score": 1.0, "geom": {"bbox_xywh": [912, 779, 215, 306], "polygon": [1114, 779, 1077, 779, 912, 1028, 912, 1069, 931, 1084, 964, 1069, 981, 1052, 1091, 900, 1126, 840, 1126, 800]}}
+      ]
+    },
+    {
+      "image": "photos/260729/WAP13-GC47 450cm/Snap-21328.jpg",
+      "kind": "frame",
+      "batch": "",
+      "n_objects": 42,
+      "objects": [
+        {"key": "m082ae7b2", "removed": false, "accepted": false, "label": "chaetoceros", "note": "", "bind": "manual", "source": "manual", "geom": {"bbox": [923, 2007, 51, 49], "polygon": [940.0, 2054.0, 928.0, 2043.0, 923.0, 2020.0, 929.0, 2011.0, 936.0, 2007.0, 950.0, 2011.0, 966.0, 2026.0, 974.0, 2041.0, 969.0, 2051.0, 963.0, 2056.0, 953.0, 2056.0]}},
+        {"key": "m08ac016f", "removed": false, "accepted": false, "label": "chaetoceros", "note": "", "bind": "manual", "source": "manual", "geom": {"bbox": [1276, 1125, 61, 68], "polygon": [1286.0, 1190.0, 1276.0, 1173.0, 1278.0, 1145.0, 1287.0, 1135.0, 1303.0, 1128.0, 1326.0, 1125.0, 1334.0, 1135.0, 1337.0, 1152.0, 1335.0, 1168.0, 1320.0, 1186.0, 1305.0, 1193.0]}},
+        {"key": "m0b800f5e", "removed": false, "accepted": false, "label": "chaetoceros", "note": "", "bind": "manual", "source": "manual", "geom": {"bbox": [974, 1610, 107, 88], "polygon": [982.0, 1695.0, 974.0, 1675.0, 982.0, 1651.0, 1001.0, 1632.0, 1026.0, 1618.0, 1056.0, 1610.0, 1069.0, 1613.0, 1081.0, 1627.0, 1078.0, 1638.0, 1060.0, 1660.0, 1054.0, 1669.0, 1036.0, 1687.0, 994.0, 1698.0]}},
+        {"key": "m16986ea1", "removed": false, "accepted": false, "label": "chaetoceros", "note": "", "bind": "manual", "source": "manual", "geom": {"bbox": [1526, 1467, 65, 47], "polygon": [1548.0, 1514.0, 1537.0, 1506.0, 1526.0, 1490.0, 1540.0, 1472.0, 1550.0, 1469.0, 1563.0, 1467.0, 1577.0, 1470.0, 1587.0, 1480.0, 1591.0, 1491.0, 1581.0, 1504.0, 1569.0, 1512.0]}},
+        {"key": "m1d4b0dba", "removed": false, "accepted": false, "label": "chaetoceros", "note": "", "bind": "manual", "source": "manual", "geom": {"bbox": [451, 1981, 66, 54], "polygon": [451.0, 2000.0, 464.0, 2018.0, 488.0, 2029.0, 501.0, 2035.0, 517.0, 2018.0, 511.0, 1993.0, 470.0, 1981.0, 451.0, 1992.0]}},
+        {"key": "m211a5d71", "removed": false, "accepted": false, "label": "chaetoceros", "note": "", "bind": "manual", "source": "manual", "geom": {"bbox": [808, 647, 121, 64], "polygon": [808.0, 689.0, 846.0, 658.0, 895.0, 647.0, 926.0, 659.0, 929.0, 676.0, 923.0, 686.0, 901.0, 699.0, 865.0, 706.0, 832.0, 711.0, 810.0, 705.0]}},
+        {"key": "m2a6f003f", "removed": false, "accepted": false, "label": "chaetoceros", "note": "", "bind": "manual", "source": "manual", "geom": {"bbox": [440, 667, 53, 32], "polygon": [443.0, 681.0, 447.0, 667.0, 468.0, 668.0, 493.0, 683.0, 490.0, 692.0, 484.0, 698.0, 464.0, 699.0, 440.0, 688.0]}},
+        {"key": "m33be8ac8", "removed": false, "accepted": false, "label": "chaetoceros", "note": "", "bind": "manual", "source": "manual", "geom": {"bbox": [904, 55, 79, 53], "polygon": [904.0, 67.0, 914.0, 55.0, 953.0, 55.0, 983.0, 91.0, 972.0, 108.0, 929.0, 104.0]}},
+        {"key": "m341bb79c", "removed": false, "accepted": false, "label": "chaetoceros", "note": "", "bind": "manual", "source": "manual", "geom": {"bbox": [105, 133, 69, 45], "polygon": [105.0, 141.0, 109.0, 162.0, 134.0, 175.0, 157.0, 178.0, 174.0, 158.0, 155.0, 138.0, 140.0, 133.0]}},
+        {"key": "m366451e7", "removed": false, "accepted": false, "label": "chaetoceros", "note": "", "bind": "manual", "source": "manual", "geom": {"bbox": [187, 838, 51, 60], "polygon": [215.0, 895.0, 192.0, 880.0, 187.0, 863.0, 195.0, 851.0, 206.0, 838.0, 223.0, 847.0, 238.0, 865.0, 237.0, 881.0, 231.0, 895.0, 225.0, 898.0]}},
+        {"key": "m38e1f6be", "removed": false, "accepted": false, "label": "chaetoceros", "note": "", "bind": "manual", "source": "manual", "geom": {"bbox": [775, 1872, 63, 69], "polygon": [780.0, 1936.0, 775.0, 1907.0, 786.0, 1887.0, 811.0, 1873.0, 822.0, 1872.0, 836.0, 1879.0, 838.0, 1896.0, 837.0, 1906.0, 830.0, 1923.0, 825.0, 1932.0, 805.0, 1941.0]}},
+        {"key": "m3b3dbbdd", "removed": false, "accepted": false, "label": "chaetoceros", "note": "", "bind": "manual", "source": "manual", "geom": {"bbox": [794, 1992, 32, 46], "polygon": [794.0, 2035.0, 811.0, 2038.0, 826.0, 2016.0, 819.0, 1994.0, 801.0, 1992.0]}},
+        {"key": "m42e0f85e", "removed": false, "accepted": false, "label": "chaetoceros", "note": "", "bind": "manual", "source": "manual", "geom": {"bbox": [1833, 1545, 93, 78], "polygon": [1833.0, 1616.0, 1853.0, 1575.0, 1871.0, 1559.0, 1893.0, 1550.0, 1910.0, 1547.0, 1924.0, 1545.0, 1926.0, 1563.0, 1917.0, 1586.0, 1892.0, 1609.0, 1862.0, 1620.0, 1835.0, 1623.0]}},
+        {"key": "m4d37b9de", "removed": false, "accepted": false, "label": "chaetoceros", "note": "", "bind": "manual", "source": "manual", "geom": {"bbox": [112, 1636, 49, 80], "polygon": [112.0, 1710.0, 141.0, 1716.0, 161.0, 1675.0, 154.0, 1640.0, 130.0, 1636.0, 123.0, 1651.0, 121.0, 1669.0, 120.0, 1684.0]}},
+        {"key": "m4fbe4c51", "removed": false, "accepted": false, "label": "chaetoceros", "note": "", "bind": "manual", "source": "manual", "geom": {"bbox": [1920, 1758, 44, 65], "polygon": [1920.0, 1819.0, 1941.0, 1823.0, 1964.0, 1769.0, 1941.0, 1758.0, 1921.0, 1779.0]}},
+        {"key": "m56a4ede5", "removed": false, "accepted": false, "label": "chaetoceros", "note": "", "bind": "manual", "source": "manual", "geom": {"bbox": [1593, 58, 55, 89], "polygon": [1607.0, 144.0, 1593.0, 114.0, 1601.0, 68.0, 1623.0, 58.0, 1647.0, 81.0, 1648.0, 125.0, 1639.0, 136.0, 1630.0, 147.0]}},
+        {"key": "m604e4381", "removed": false, "accepted": false, "label": "chaetoceros", "note": "", "bind": "manual", "source": "manual", "geom": {"bbox": [422, 339, 89, 106], "polygon": [454.0, 442.0, 429.0, 411.0, 422.0, 378.0, 447.0, 344.0, 470.0, 339.0, 490.0, 344.0, 511.0, 380.0, 506.0, 414.0, 501.0, 425.0, 487.0, 440.0, 471.0, 445.0]}},
+        {"key": "m6119599d", "removed": false, "accepted": false, "label": "chaetoceros", "note": "", "bind": "manual", "source": "manual", "geom": {"bbox": [2230, 139, 62, 48], "polygon": [2235.0, 166.0, 2244.0, 140.0, 2258.0, 139.0, 2273.0, 140.0, 2292.0, 157.0, 2282.0, 181.0, 2266.0, 187.0, 2248.0, 184.0, 2230.0, 176.0]}},
+        {"key": "m63a672b4", "removed": false, "accepted": false, "label": "chaetoceros", "note": "", "bind": "manual", "source": "manual", "geom": {"bbox": [2514, 1092, 81, 90], "polygon": [2574.0, 1179.0, 2523.0, 1146.0, 2514.0, 1113.0, 2514.0, 1094.0, 2532.0, 1092.0, 2552.0, 1100.0, 2570.0, 1115.0, 2583.0, 1135.0, 2591.0, 1151.0, 2595.0, 1170.0, 2590.0, 1182.0]}},
+        {"key": "m6564bad2", "removed": false, "accepted": false, "label": "chaetoceros", "note": "", "bind": "manual", "source": "manual", "geom": {"bbox": [1306, 33, 73, 50], "polygon": [1306.0, 45.0, 1328.0, 33.0, 1359.0, 39.0, 1375.0, 66.0, 1379.0, 80.0, 1366.0, 83.0, 1338.0, 64.0]}},
+        {"key": "m68dc6793", "removed": false, "accepted": false, "label": "chaetoceros", "note": "", "bind": "manual", "source": "manual", "geom": {"bbox": [2495, 217, 49, 51], "polygon": [2499.0, 264.0, 2495.0, 242.0, 2505.0, 226.0, 2517.0, 219.0, 2530.0, 217.0, 2542.0, 218.0, 2544.0, 238.0, 2536.0, 259.0, 2519.0, 266.0, 2508.0, 268.0]}},
+        {"key": "m6996c041", "removed": false, "accepted": false, "label": "chaetoceros", "note": "", "bind": "manual", "source": "manual", "geom": {"bbox": [960, 444, 71, 37], "polygon": [962.0, 469.0, 960.0, 481.0, 1031.0, 479.0, 1017.0, 453.0, 989.0, 444.0]}},
+        {"key": "m86cc587e", "removed": false, "accepted": false, "label": "chaetoceros", "note": "", "bind": "manual", "source": "manual", "geom": {"bbox": [146, 1116, 88, 54], "polygon": [146.0, 1153.0, 163.0, 1122.0, 188.0, 1119.0, 216.0, 1116.0, 232.0, 1125.0, 234.0, 1141.0, 225.0, 1154.0, 208.0, 1165.0, 193.0, 1169.0, 167.0, 1170.0, 148.0, 1164.0]}},
+        {"key": "m8a0c6467", "removed": false, "accepted": false, "label": "chaetoceros", "note": "", "bind": "manual", "source": "manual", "geom": {"bbox": [1759, 921, 77, 58], "polygon": [1759.0, 930.0, 1764.0, 921.0, 1813.0, 935.0, 1836.0, 965.0, 1827.0, 979.0, 1789.0, 961.0]}},
+        {"key": "m8a3d6363", "removed": false, "accepted": false, "label": "chaetoceros", "note": "", "bind": "manual", "source": "manual", "geom": {"bbox": [193, 1557, 45, 61], "polygon": [209.0, 1618.0, 223.0, 1618.0, 238.0, 1594.0, 229.0, 1557.0, 213.0, 1557.0, 194.0, 1576.0, 193.0, 1594.0]}},
+        {"key": "m9054c6ab", "removed": false, "accepted": false, "label": "chaetoceros", "note": "", "bind": "manual", "source": "manual", "geom": {"bbox": [1916, 2097, 91, 88], "polygon": [1916.0, 2170.0, 1940.0, 2124.0, 1984.0, 2098.0, 2003.0, 2097.0, 2007.0, 2114.0, 1998.0, 2145.0, 1980.0, 2165.0, 1927.0, 2185.0]}},
+        {"key": "ma593d8bc", "removed": false, "accepted": false, "label": "chaetoceros", "note": "", "bind": "manual", "source": "manual", "geom": {"bbox": [1429, 155, 80, 48], "polygon": [1429.0, 191.0, 1443.0, 165.0, 1491.0, 155.0, 1504.0, 161.0, 1509.0, 171.0, 1509.0, 185.0, 1482.0, 198.0, 1464.0, 203.0, 1440.0, 197.0]}},
+        {"key": "madc2de34", "removed": false, "accepted": false, "label": "chaetoceros", "note": "", "bind": "manual", "source": "manual", "geom": {"bbox": [2338, 37, 50, 85], "polygon": [2350.0, 119.0, 2338.0, 95.0, 2338.0, 69.0, 2339.0, 47.0, 2359.0, 37.0, 2378.0, 49.0, 2388.0, 76.0, 2384.0, 113.0, 2370.0, 122.0]}},
+        {"key": "maee587a1", "removed": false, "accepted": false, "label": "chaetoceros", "note": "", "bind": "manual", "source": "manual", "geom": {"bbox": [1436, 1039, 39, 42], "polygon": [1438.0, 1069.0, 1436.0, 1049.0, 1438.0, 1041.0, 1452.0, 1039.0, 1464.0, 1039.0, 1475.0, 1050.0, 1475.0, 1067.0, 1469.0, 1079.0, 1459.0, 1081.0, 1445.0, 1075.0]}},
+        {"key": "mb824423c", "removed": false, "accepted": false, "label": "chaetoceros", "note": "", "bind": "manual", "source": "manual", "geom": {"bbox": [1698, 1158, 66, 73], "polygon": [1699.0, 1181.0, 1706.0, 1204.0, 1717.0, 1219.0, 1739.0, 1231.0, 1751.0, 1229.0, 1763.0, 1212.0, 1764.0, 1196.0, 1755.0, 1170.0, 1737.0, 1160.0, 1715.0, 1158.0, 1698.0, 1166.0]}},
+        {"key": "mbb464040", "removed": false, "accepted": false, "label": "chaetoceros", "note": "", "bind": "manual", "source": "manual", "geom": {"bbox": [2638, 1186, 106, 77], "polygon": [2638.0, 1199.0, 2651.0, 1186.0, 2713.0, 1199.0, 2744.0, 1249.0, 2730.0, 1263.0, 2669.0, 1252.0]}},
+        {"key": "mc6e5504f", "removed": false, "accepted": false, "label": "chaetoceros", "note": "", "bind": "manual", "source": "manual", "geom": {"bbox": [233, 955, 51, 31], "polygon": [237.0, 955.0, 233.0, 975.0, 248.0, 983.0, 270.0, 986.0, 284.0, 979.0, 284.0, 961.0]}},
+        {"key": "mc97e3172", "removed": false, "accepted": false, "label": "chaetoceros", "note": "", "bind": "manual", "source": "manual", "geom": {"bbox": [2272, 424, 62, 66], "polygon": [2279.0, 473.0, 2272.0, 441.0, 2282.0, 430.0, 2296.0, 424.0, 2334.0, 453.0, 2334.0, 467.0, 2324.0, 484.0, 2311.0, 490.0, 2294.0, 486.0]}},
+        {"key": "mccd43944", "removed": false, "accepted": false, "label": "chaetoceros", "note": "", "bind": "manual", "source": "manual", "geom": {"bbox": [1622, 442, 61, 43], "polygon": [1622.0, 459.0, 1642.0, 448.0, 1664.0, 442.0, 1680.0, 446.0, 1683.0, 457.0, 1683.0, 466.0, 1659.0, 485.0, 1641.0, 484.0, 1633.0, 479.0, 1627.0, 470.0]}},
+        {"key": "mcf7cb2db", "removed": false, "accepted": false, "label": "round_frag", "note": "", "bind": "manual", "source": "manual", "geom": {"bbox": [914, 2069, 109, 67], "polygon": [921.0, 2129.0, 934.0, 2131.0, 936.0, 2136.0, 976.0, 2122.0, 1017.0, 2101.0, 1023.0, 2091.0, 1003.0, 2072.0, 935.0, 2069.0, 915.0, 2091.0, 914.0, 2109.0]}},
+        {"key": "md0e4a676", "removed": false, "accepted": false, "label": "chaetoceros", "note": "", "bind": "manual", "source": "manual", "geom": {"bbox": [1900, 1493, 58, 60], "polygon": [1935.0, 1553.0, 1916.0, 1550.0, 1909.0, 1541.0, 1900.0, 1526.0, 1902.0, 1499.0, 1915.0, 1493.0, 1944.0, 1502.0, 1958.0, 1520.0, 1956.0, 1543.0, 1949.0, 1552.0]}},
+        {"key": "me2127cdb", "removed": false, "accepted": false, "label": "chaetoceros", "note": "", "bind": "manual", "source": "manual", "geom": {"bbox": [239, 220, 124, 55], "polygon": [239.0, 236.0, 273.0, 259.0, 304.0, 273.0, 337.0, 275.0, 358.0, 274.0, 363.0, 265.0, 325.0, 225.0, 303.0, 224.0, 272.0, 220.0, 244.0, 223.0]}},
+        {"key": "mee951330", "removed": false, "accepted": false, "label": "chaetoceros", "note": "", "bind": "manual", "source": "manual", "geom": {"bbox": [512, 388, 107, 56], "polygon": [512.0, 439.0, 542.0, 400.0, 567.0, 388.0, 616.0, 388.0, 619.0, 399.0, 596.0, 413.0, 571.0, 433.0, 545.0, 444.0]}},
+        {"key": "mf46dfc41", "removed": false, "accepted": false, "label": "chaetoceros", "note": "", "bind": "manual", "source": "manual", "geom": {"bbox": [1496, 429, 46, 47], "polygon": [1496.0, 475.0, 1496.0, 450.0, 1516.0, 429.0, 1531.0, 429.0, 1540.0, 437.0, 1542.0, 453.0, 1537.0, 462.0, 1520.0, 471.0, 1504.0, 476.0]}},
+        {"key": "mf4819a31", "removed": false, "accepted": false, "label": "chaetoceros", "note": "", "bind": "manual", "source": "manual", "geom": {"bbox": [537, 1843, 70, 34], "polygon": [541.0, 1844.0, 537.0, 1857.0, 567.0, 1877.0, 604.0, 1872.0, 607.0, 1859.0, 569.0, 1843.0]}},
+        {"key": "mfc5695ac", "removed": false, "accepted": false, "label": "chaetoceros", "note": "", "bind": "manual", "source": "manual", "geom": {"bbox": [1617, 348, 58, 73], "polygon": [1626.0, 417.0, 1617.0, 390.0, 1622.0, 354.0, 1644.0, 350.0, 1656.0, 348.0, 1667.0, 364.0, 1675.0, 381.0, 1672.0, 403.0, 1653.0, 421.0]}},
+        {"key": "mfe5ef396", "removed": false, "accepted": false, "label": "chaetoceros", "note": "", "bind": "manual", "source": "manual", "geom": {"bbox": [198, 997, 73, 88], "polygon": [198.0, 1010.0, 203.0, 1033.0, 209.0, 1050.0, 249.0, 1082.0, 266.0, 1085.0, 271.0, 1069.0, 271.0, 1039.0, 249.0, 1015.0, 222.0, 998.0, 203.0, 997.0]}}
+      ]
+    },
+    {
+      "image": "photos/260729/WAP13-GC47 450cm/Snap-21328.jpg",
+      "kind": "frame",
+      "batch": "yolo-3차",
+      "n_objects": 14,
+      "objects": [
+        {"key": "1600_934_126_137", "removed": false, "accepted": true, "label": "round_frag", "note": "", "bind": "exact", "bind_score": 1.0, "geom": {"bbox_xywh": [1600, 934, 126, 137], "polygon": [1721, 934, 1656, 934, 1637, 963, 1600, 1007, 1600, 1036, 1612, 1034, 1634, 1051, 1663, 1068, 1681, 1069, 1709, 1028, 1725, 987, 1723, 969, 1707, 944, 1712, 936]}},
+        {"key": "1755_1269_206_103", "removed": false, "accepted": false, "label": "rod", "note": "", "bind": "exact", "bind_score": 1.0, "geom": {"bbox_xywh": [1755, 1269, 206, 103], "polygon": [1755, 1273, 1755, 1352, 1768, 1358, 1793, 1362, 1814, 1371, 1869, 1371, 1890, 1364, 1942, 1358, 1958, 1349, 1960, 1300, 1941, 1286, 1856, 1269, 1762, 1269]}},
+        {"key": "2082_854_120_234", "removed": true, "accepted": false, "label": "", "note": "", "bind": "exact", "bind_score": 1.0, "geom": {"bbox": [2082, 854, 120, 234], "polygon": [2201, 854, 2165, 874, 2120, 890, 2102, 914, 2102, 926, 2114, 929, 2120, 935, 2100, 992, 2082, 1028, 2082, 1082, 2088, 1087, 2112, 1087, 2154, 1067, 2171, 1048, 2185, 1022, 2201, 981]}},
+        {"key": "2379_147_133_91", "removed": true, "accepted": false, "label": "", "note": "", "bind": "exact", "bind_score": 1.0, "geom": {"bbox": [2379, 147, 133, 91], "polygon": [2381, 171, 2379, 186, 2382, 193, 2391, 201, 2403, 205, 2428, 198, 2433, 202, 2423, 217, 2430, 229, 2465, 237, 2497, 235, 2502, 233, 2506, 225, 2511, 225, 2511, 203, 2505, 199, 2481, 170, 2472, 167, 2462, 168, 2452, 172, 2446, 180, 2443, 176, 2441, 161, 2432, 147, 2400, 147]}},
+        {"key": "2408_170_138_71", "removed": true, "accepted": false, "label": "", "note": "", "bind": "exact", "bind_score": 1.0, "geom": {"bbox": [2408, 170, 138, 71], "polygon": [2408, 170, 2408, 204, 2429, 197, 2433, 201, 2423, 218, 2428, 228, 2464, 237, 2499, 234, 2507, 224, 2515, 224, 2516, 233, 2508, 239, 2501, 240, 2545, 240, 2545, 222, 2542, 216, 2533, 209, 2516, 208, 2504, 198, 2481, 170, 2457, 170, 2451, 173, 2446, 181, 2443, 170]}},
+        {"key": "2703_1639_49_159", "removed": true, "accepted": false, "label": "", "note": "", "bind": "exact", "bind_score": 1.0, "geom": {"bbox": [2703, 1639, 49, 159], "polygon": [2747, 1639, 2735, 1657, 2708, 1686, 2703, 1706, 2703, 1746, 2714, 1753, 2730, 1777, 2747, 1797, 2751, 1797, 2751, 1639]}},
+        {"key": "2718_1639_34_159", "removed": true, "accepted": false, "label": "", "note": "", "bind": "exact", "bind_score": 1.0, "geom": {"bbox": [2718, 1639, 34, 159], "polygon": [2747, 1639, 2736, 1656, 2718, 1674, 2718, 1759, 2731, 1778, 2748, 1797, 2751, 1797, 2751, 1639]}},
+        {"key": "3_2120_201_86", "removed": true, "accepted": false, "label": "", "note": "", "bind": "exact", "bind_score": 1.0, "geom": {"bbox": [3, 2120, 201, 86], "polygon": [3, 2205, 179, 2205, 183, 2196, 201, 2177, 202, 2160, 194, 2146, 184, 2140, 173, 2140, 155, 2146, 114, 2126, 97, 2125, 86, 2120, 58, 2120, 46, 2137, 11, 2161, 3, 2162]}},
+        {"key": "435_770_97_119", "removed": false, "accepted": false, "label": "rod_frag", "note": "", "bind": "exact", "bind_score": 1.0, "geom": {"bbox_xywh": [435, 770, 97, 119], "polygon": [435, 770, 435, 805, 476, 877, 486, 888, 496, 888, 524, 876, 530, 868, 531, 857, 529, 849, 507, 797, 488, 770]}},
+        {"key": "594_1708_86_68", "removed": false, "accepted": true, "label": "chaetoceros", "note": "", "bind": "exact", "bind_score": 1.0, "geom": {"bbox_xywh": [594, 1708, 86, 68], "polygon": [671, 1708, 624, 1708, 613, 1716, 606, 1724, 601, 1727, 597, 1735, 594, 1734, 595, 1771, 600, 1775, 638, 1775, 660, 1760, 671, 1749, 679, 1730, 679, 1720]}},
+        {"key": "602_710_147_189", "removed": true, "accepted": false, "label": "", "note": "", "bind": "exact", "bind_score": 1.0, "geom": {"bbox": [602, 710, 147, 189], "polygon": [748, 710, 726, 710, 721, 719, 683, 756, 651, 801, 602, 854, 602, 898, 615, 898, 675, 837, 685, 820, 735, 762, 748, 737]}},
+        {"key": "620_2069_34_137", "removed": true, "accepted": false, "label": "", "note": "", "bind": "exact", "bind_score": 1.0, "geom": {"bbox": [620, 2069, 34, 137], "polygon": [620, 2069, 620, 2129, 625, 2148, 634, 2205, 653, 2205, 653, 2124, 647, 2093, 646, 2069]}},
+        {"key": "671_353_86_82", "removed": false, "accepted": false, "label": "round_frag", "note": "", "bind": "exact", "bind_score": 1.0, "geom": {"bbox_xywh": [671, 353, 86, 82], "polygon": [671, 353, 672, 417, 694, 430, 707, 434, 718, 434, 729, 431, 749, 422, 754, 417, 756, 405, 748, 385, 733, 370, 729, 368, 716, 353]}},
+        {"key": "912_736_283_343", "removed": false, "accepted": false, "label": "rod_frag", "note": "", "bind": "exact", "bind_score": 1.0, "geom": {"bbox_xywh": [912, 736, 283, 343], "polygon": [1194, 736, 1138, 739, 1085, 772, 1033, 844, 915, 1039, 912, 1066, 917, 1072, 942, 1077, 968, 1057, 1108, 876]}}
+      ]
+    },
+    {
+      "image": "photos/260729/WAP13-GC47 450cm/Snap-21329.jpg",
+      "kind": "frame",
+      "batch": "",
+      "n_objects": 42,
+      "objects": [
+        {"key": "m082ae7b2", "removed": false, "accepted": false, "label": "chaetoceros", "note": "", "bind": "manual", "source": "manual", "geom": {"bbox": [923, 2007, 51, 49], "polygon": [940.0, 2054.0, 928.0, 2043.0, 923.0, 2020.0, 929.0, 2011.0, 936.0, 2007.0, 950.0, 2011.0, 966.0, 2026.0, 974.0, 2041.0, 969.0, 2051.0, 963.0, 2056.0, 953.0, 2056.0]}},
+        {"key": "m08ac016f", "removed": false, "accepted": false, "label": "chaetoceros", "note": "", "bind": "manual", "source": "manual", "geom": {"bbox": [1276, 1125, 61, 68], "polygon": [1286.0, 1190.0, 1276.0, 1173.0, 1278.0, 1145.0, 1287.0, 1135.0, 1303.0, 1128.0, 1326.0, 1125.0, 1334.0, 1135.0, 1337.0, 1152.0, 1335.0, 1168.0, 1320.0, 1186.0, 1305.0, 1193.0]}},
+        {"key": "m0b800f5e", "removed": false, "accepted": false, "label": "chaetoceros", "note": "", "bind": "manual", "source": "manual", "geom": {"bbox": [974, 1610, 107, 88], "polygon": [982.0, 1695.0, 974.0, 1675.0, 982.0, 1651.0, 1001.0, 1632.0, 1026.0, 1618.0, 1056.0, 1610.0, 1069.0, 1613.0, 1081.0, 1627.0, 1078.0, 1638.0, 1060.0, 1660.0, 1054.0, 1669.0, 1036.0, 1687.0, 994.0, 1698.0]}},
+        {"key": "m16986ea1", "removed": false, "accepted": false, "label": "chaetoceros", "note": "", "bind": "manual", "source": "manual", "geom": {"bbox": [1526, 1467, 65, 47], "polygon": [1548.0, 1514.0, 1537.0, 1506.0, 1526.0, 1490.0, 1540.0, 1472.0, 1550.0, 1469.0, 1563.0, 1467.0, 1577.0, 1470.0, 1587.0, 1480.0, 1591.0, 1491.0, 1581.0, 1504.0, 1569.0, 1512.0]}},
+        {"key": "m1d4b0dba", "removed": false, "accepted": false, "label": "chaetoceros", "note": "", "bind": "manual", "source": "manual", "geom": {"bbox": [451, 1981, 66, 54], "polygon": [451.0, 2000.0, 464.0, 2018.0, 488.0, 2029.0, 501.0, 2035.0, 517.0, 2018.0, 511.0, 1993.0, 470.0, 1981.0, 451.0, 1992.0]}},
+        {"key": "m211a5d71", "removed": false, "accepted": false, "label": "chaetoceros", "note": "", "bind": "manual", "source": "manual", "geom": {"bbox": [808, 647, 121, 64], "polygon": [808.0, 689.0, 846.0, 658.0, 895.0, 647.0, 926.0, 659.0, 929.0, 676.0, 923.0, 686.0, 901.0, 699.0, 865.0, 706.0, 832.0, 711.0, 810.0, 705.0]}},
+        {"key": "m2a6f003f", "removed": false, "accepted": false, "label": "chaetoceros", "note": "", "bind": "manual", "source": "manual", "geom": {"bbox": [440, 667, 53, 32], "polygon": [443.0, 681.0, 447.0, 667.0, 468.0, 668.0, 493.0, 683.0, 490.0, 692.0, 484.0, 698.0, 464.0, 699.0, 440.0, 688.0]}},
+        {"key": "m33be8ac8", "removed": false, "accepted": false, "label": "chaetoceros", "note": "", "bind": "manual", "source": "manual", "geom": {"bbox": [904, 55, 79, 53], "polygon": [904.0, 67.0, 914.0, 55.0, 953.0, 55.0, 983.0, 91.0, 972.0, 108.0, 929.0, 104.0]}},
+        {"key": "m341bb79c", "removed": false, "accepted": false, "label": "chaetoceros", "note": "", "bind": "manual", "source": "manual", "geom": {"bbox": [105, 133, 69, 45], "polygon": [105.0, 141.0, 109.0, 162.0, 134.0, 175.0, 157.0, 178.0, 174.0, 158.0, 155.0, 138.0, 140.0, 133.0]}},
+        {"key": "m366451e7", "removed": false, "accepted": false, "label": "chaetoceros", "note": "", "bind": "manual", "source": "manual", "geom": {"bbox": [187, 838, 51, 60], "polygon": [215.0, 895.0, 192.0, 880.0, 187.0, 863.0, 195.0, 851.0, 206.0, 838.0, 223.0, 847.0, 238.0, 865.0, 237.0, 881.0, 231.0, 895.0, 225.0, 898.0]}},
+        {"key": "m38e1f6be", "removed": false, "accepted": false, "label": "chaetoceros", "note": "", "bind": "manual", "source": "manual", "geom": {"bbox": [775, 1872, 63, 69], "polygon": [780.0, 1936.0, 775.0, 1907.0, 786.0, 1887.0, 811.0, 1873.0, 822.0, 1872.0, 836.0, 1879.0, 838.0, 1896.0, 837.0, 1906.0, 830.0, 1923.0, 825.0, 1932.0, 805.0, 1941.0]}},
+        {"key": "m3b3dbbdd", "removed": false, "accepted": false, "label": "chaetoceros", "note": "", "bind": "manual", "source": "manual", "geom": {"bbox": [794, 1992, 32, 46], "polygon": [794.0, 2035.0, 811.0, 2038.0, 826.0, 2016.0, 819.0, 1994.0, 801.0, 1992.0]}},
+        {"key": "m42e0f85e", "removed": false, "accepted": false, "label": "chaetoceros", "note": "", "bind": "manual", "source": "manual", "geom": {"bbox": [1833, 1545, 93, 78], "polygon": [1833.0, 1616.0, 1853.0, 1575.0, 1871.0, 1559.0, 1893.0, 1550.0, 1910.0, 1547.0, 1924.0, 1545.0, 1926.0, 1563.0, 1917.0, 1586.0, 1892.0, 1609.0, 1862.0, 1620.0, 1835.0, 1623.0]}},
+        {"key": "m4d37b9de", "removed": false, "accepted": false, "label": "chaetoceros", "note": "", "bind": "manual", "source": "manual", "geom": {"bbox": [112, 1636, 49, 80], "polygon": [112.0, 1710.0, 141.0, 1716.0, 161.0, 1675.0, 154.0, 1640.0, 130.0, 1636.0, 123.0, 1651.0, 121.0, 1669.0, 120.0, 1684.0]}},
+        {"key": "m4fbe4c51", "removed": false, "accepted": false, "label": "chaetoceros", "note": "", "bind": "manual", "source": "manual", "geom": {"bbox": [1920, 1758, 44, 65], "polygon": [1920.0, 1819.0, 1941.0, 1823.0, 1964.0, 1769.0, 1941.0, 1758.0, 1921.0, 1779.0]}},
+        {"key": "m56a4ede5", "removed": false, "accepted": false, "label": "chaetoceros", "note": "", "bind": "manual", "source": "manual", "geom": {"bbox": [1593, 58, 55, 89], "polygon": [1607.0, 144.0, 1593.0, 114.0, 1601.0, 68.0, 1623.0, 58.0, 1647.0, 81.0, 1648.0, 125.0, 1639.0, 136.0, 1630.0, 147.0]}},
+        {"key": "m604e4381", "removed": false, "accepted": false, "label": "chaetoceros", "note": "", "bind": "manual", "source": "manual", "geom": {"bbox": [422, 339, 89, 106], "polygon": [454.0, 442.0, 429.0, 411.0, 422.0, 378.0, 447.0, 344.0, 470.0, 339.0, 490.0, 344.0, 511.0, 380.0, 506.0, 414.0, 501.0, 425.0, 487.0, 440.0, 471.0, 445.0]}},
+        {"key": "m6119599d", "removed": false, "accepted": false, "label": "chaetoceros", "note": "", "bind": "manual", "source": "manual", "geom": {"bbox": [2230, 139, 62, 48], "polygon": [2235.0, 166.0, 2244.0, 140.0, 2258.0, 139.0, 2273.0, 140.0, 2292.0, 157.0, 2282.0, 181.0, 2266.0, 187.0, 2248.0, 184.0, 2230.0, 176.0]}},
+        {"key": "m63a672b4", "removed": false, "accepted": false, "label": "chaetoceros", "note": "", "bind": "manual", "source": "manual", "geom": {"bbox": [2514, 1092, 81, 90], "polygon": [2574.0, 1179.0, 2523.0, 1146.0, 2514.0, 1113.0, 2514.0, 1094.0, 2532.0, 1092.0, 2552.0, 1100.0, 2570.0, 1115.0, 2583.0, 1135.0, 2591.0, 1151.0, 2595.0, 1170.0, 2590.0, 1182.0]}},
+        {"key": "m6564bad2", "removed": false, "accepted": false, "label": "chaetoceros", "note": "", "bind": "manual", "source": "manual", "geom": {"bbox": [1306, 33, 73, 50], "polygon": [1306.0, 45.0, 1328.0, 33.0, 1359.0, 39.0, 1375.0, 66.0, 1379.0, 80.0, 1366.0, 83.0, 1338.0, 64.0]}},
+        {"key": "m68dc6793", "removed": false, "accepted": false, "label": "chaetoceros", "note": "", "bind": "manual", "source": "manual", "geom": {"bbox": [2495, 217, 49, 51], "polygon": [2499.0, 264.0, 2495.0, 242.0, 2505.0, 226.0, 2517.0, 219.0, 2530.0, 217.0, 2542.0, 218.0, 2544.0, 238.0, 2536.0, 259.0, 2519.0, 266.0, 2508.0, 268.0]}},
+        {"key": "m6996c041", "removed": false, "accepted": false, "label": "chaetoceros", "note": "", "bind": "manual", "source": "manual", "geom": {"bbox": [960, 444, 71, 37], "polygon": [962.0, 469.0, 960.0, 481.0, 1031.0, 479.0, 1017.0, 453.0, 989.0, 444.0]}},
+        {"key": "m86cc587e", "removed": false, "accepted": false, "label": "chaetoceros", "note": "", "bind": "manual", "source": "manual", "geom": {"bbox": [146, 1116, 88, 54], "polygon": [146.0, 1153.0, 163.0, 1122.0, 188.0, 1119.0, 216.0, 1116.0, 232.0, 1125.0, 234.0, 1141.0, 225.0, 1154.0, 208.0, 1165.0, 193.0, 1169.0, 167.0, 1170.0, 148.0, 1164.0]}},
+        {"key": "m8a0c6467", "removed": false, "accepted": false, "label": "chaetoceros", "note": "", "bind": "manual", "source": "manual", "geom": {"bbox": [1759, 921, 77, 58], "polygon": [1759.0, 930.0, 1764.0, 921.0, 1813.0, 935.0, 1836.0, 965.0, 1827.0, 979.0, 1789.0, 961.0]}},
+        {"key": "m8a3d6363", "removed": false, "accepted": false, "label": "chaetoceros", "note": "", "bind": "manual", "source": "manual", "geom": {"bbox": [193, 1557, 45, 61], "polygon": [209.0, 1618.0, 223.0, 1618.0, 238.0, 1594.0, 229.0, 1557.0, 213.0, 1557.0, 194.0, 1576.0, 193.0, 1594.0]}},
+        {"key": "m9054c6ab", "removed": false, "accepted": false, "label": "chaetoceros", "note": "", "bind": "manual", "source": "manual", "geom": {"bbox": [1916, 2097, 91, 88], "polygon": [1916.0, 2170.0, 1940.0, 2124.0, 1984.0, 2098.0, 2003.0, 2097.0, 2007.0, 2114.0, 1998.0, 2145.0, 1980.0, 2165.0, 1927.0, 2185.0]}},
+        {"key": "ma593d8bc", "removed": false, "accepted": false, "label": "chaetoceros", "note": "", "bind": "manual", "source": "manual", "geom": {"bbox": [1429, 155, 80, 48], "polygon": [1429.0, 191.0, 1443.0, 165.0, 1491.0, 155.0, 1504.0, 161.0, 1509.0, 171.0, 1509.0, 185.0, 1482.0, 198.0, 1464.0, 203.0, 1440.0, 197.0]}},
+        {"key": "madc2de34", "removed": false, "accepted": false, "label": "chaetoceros", "note": "", "bind": "manual", "source": "manual", "geom": {"bbox": [2338, 37, 50, 85], "polygon": [2350.0, 119.0, 2338.0, 95.0, 2338.0, 69.0, 2339.0, 47.0, 2359.0, 37.0, 2378.0, 49.0, 2388.0, 76.0, 2384.0, 113.0, 2370.0, 122.0]}},
+        {"key": "maee587a1", "removed": false, "accepted": false, "label": "chaetoceros", "note": "", "bind": "manual", "source": "manual", "geom": {"bbox": [1436, 1039, 39, 42], "polygon": [1438.0, 1069.0, 1436.0, 1049.0, 1438.0, 1041.0, 1452.0, 1039.0, 1464.0, 1039.0, 1475.0, 1050.0, 1475.0, 1067.0, 1469.0, 1079.0, 1459.0, 1081.0, 1445.0, 1075.0]}},
+        {"key": "mb824423c", "removed": false, "accepted": false, "label": "chaetoceros", "note": "", "bind": "manual", "source": "manual", "geom": {"bbox": [1698, 1158, 66, 73], "polygon": [1699.0, 1181.0, 1706.0, 1204.0, 1717.0, 1219.0, 1739.0, 1231.0, 1751.0, 1229.0, 1763.0, 1212.0, 1764.0, 1196.0, 1755.0, 1170.0, 1737.0, 1160.0, 1715.0, 1158.0, 1698.0, 1166.0]}},
+        {"key": "mbb464040", "removed": false, "accepted": false, "label": "chaetoceros", "note": "", "bind": "manual", "source": "manual", "geom": {"bbox": [2638, 1186, 106, 77], "polygon": [2638.0, 1199.0, 2651.0, 1186.0, 2713.0, 1199.0, 2744.0, 1249.0, 2730.0, 1263.0, 2669.0, 1252.0]}},
+        {"key": "mc6e5504f", "removed": false, "accepted": false, "label": "chaetoceros", "note": "", "bind": "manual", "source": "manual", "geom": {"bbox": [233, 955, 51, 31], "polygon": [237.0, 955.0, 233.0, 975.0, 248.0, 983.0, 270.0, 986.0, 284.0, 979.0, 284.0, 961.0]}},
+        {"key": "mc97e3172", "removed": false, "accepted": false, "label": "chaetoceros", "note": "", "bind": "manual", "source": "manual", "geom": {"bbox": [2272, 424, 62, 66], "polygon": [2279.0, 473.0, 2272.0, 441.0, 2282.0, 430.0, 2296.0, 424.0, 2334.0, 453.0, 2334.0, 467.0, 2324.0, 484.0, 2311.0, 490.0, 2294.0, 486.0]}},
+        {"key": "mccd43944", "removed": false, "accepted": false, "label": "chaetoceros", "note": "", "bind": "manual", "source": "manual", "geom": {"bbox": [1622, 442, 61, 43], "polygon": [1622.0, 459.0, 1642.0, 448.0, 1664.0, 442.0, 1680.0, 446.0, 1683.0, 457.0, 1683.0, 466.0, 1659.0, 485.0, 1641.0, 484.0, 1633.0, 479.0, 1627.0, 470.0]}},
+        {"key": "mcf7cb2db", "removed": false, "accepted": false, "label": "round_frag", "note": "", "bind": "manual", "source": "manual", "geom": {"bbox": [914, 2069, 109, 67], "polygon": [921.0, 2129.0, 934.0, 2131.0, 936.0, 2136.0, 976.0, 2122.0, 1017.0, 2101.0, 1023.0, 2091.0, 1003.0, 2072.0, 935.0, 2069.0, 915.0, 2091.0, 914.0, 2109.0]}},
+        {"key": "md0e4a676", "removed": false, "accepted": false, "label": "chaetoceros", "note": "", "bind": "manual", "source": "manual", "geom": {"bbox": [1900, 1493, 58, 60], "polygon": [1935.0, 1553.0, 1916.0, 1550.0, 1909.0, 1541.0, 1900.0, 1526.0, 1902.0, 1499.0, 1915.0, 1493.0, 1944.0, 1502.0, 1958.0, 1520.0, 1956.0, 1543.0, 1949.0, 1552.0]}},
+        {"key": "me2127cdb", "removed": false, "accepted": false, "label": "chaetoceros", "note": "", "bind": "manual", "source": "manual", "geom": {"bbox": [239, 220, 124, 55], "polygon": [239.0, 236.0, 273.0, 259.0, 304.0, 273.0, 337.0, 275.0, 358.0, 274.0, 363.0, 265.0, 325.0, 225.0, 303.0, 224.0, 272.0, 220.0, 244.0, 223.0]}},
+        {"key": "mee951330", "removed": false, "accepted": false, "label": "chaetoceros", "note": "", "bind": "manual", "source": "manual", "geom": {"bbox": [512, 388, 107, 56], "polygon": [512.0, 439.0, 542.0, 400.0, 567.0, 388.0, 616.0, 388.0, 619.0, 399.0, 596.0, 413.0, 571.0, 433.0, 545.0, 444.0]}},
+        {"key": "mf46dfc41", "removed": false, "accepted": false, "label": "chaetoceros", "note": "", "bind": "manual", "source": "manual", "geom": {"bbox": [1496, 429, 46, 47], "polygon": [1496.0, 475.0, 1496.0, 450.0, 1516.0, 429.0, 1531.0, 429.0, 1540.0, 437.0, 1542.0, 453.0, 1537.0, 462.0, 1520.0, 471.0, 1504.0, 476.0]}},
+        {"key": "mf4819a31", "removed": false, "accepted": false, "label": "chaetoceros", "note": "", "bind": "manual", "source": "manual", "geom": {"bbox": [537, 1843, 70, 34], "polygon": [541.0, 1844.0, 537.0, 1857.0, 567.0, 1877.0, 604.0, 1872.0, 607.0, 1859.0, 569.0, 1843.0]}},
+        {"key": "mfc5695ac", "removed": false, "accepted": false, "label": "chaetoceros", "note": "", "bind": "manual", "source": "manual", "geom": {"bbox": [1617, 348, 58, 73], "polygon": [1626.0, 417.0, 1617.0, 390.0, 1622.0, 354.0, 1644.0, 350.0, 1656.0, 348.0, 1667.0, 364.0, 1675.0, 381.0, 1672.0, 403.0, 1653.0, 421.0]}},
+        {"key": "mfe5ef396", "removed": false, "accepted": false, "label": "chaetoceros", "note": "", "bind": "manual", "source": "manual", "geom": {"bbox": [198, 997, 73, 88], "polygon": [198.0, 1010.0, 203.0, 1033.0, 209.0, 1050.0, 249.0, 1082.0, 266.0, 1085.0, 271.0, 1069.0, 271.0, 1039.0, 249.0, 1015.0, 222.0, 998.0, 203.0, 997.0]}}
+      ]
+    },
+    {
+      "image": "photos/260729/WAP13-GC47 450cm/Snap-21329.jpg",
+      "kind": "frame",
+      "batch": "yolo-3차",
+      "n_objects": 15,
+      "objects": [
+        {"key": "1514_1140_93_103", "removed": false, "accepted": true, "label": "rod_frag", "note": "", "bind": "exact", "bind_score": 1.0, "geom": {"bbox_xywh": [1514, 1140, 93, 103], "polygon": [1580, 1140, 1549, 1140, 1545, 1153, 1519, 1202, 1514, 1207, 1514, 1242, 1565, 1242, 1580, 1232, 1591, 1221, 1601, 1207, 1606, 1194, 1595, 1170, 1590, 1153]}},
+        {"key": "1609_899_120_172", "removed": false, "accepted": true, "label": "round_frag", "note": "", "bind": "exact", "bind_score": 1.0, "geom": {"bbox_xywh": [1609, 899, 120, 172], "polygon": [1723, 899, 1673, 899, 1666, 918, 1641, 959, 1609, 999, 1609, 1024, 1620, 1029, 1643, 1051, 1672, 1070, 1680, 1068, 1708, 1034, 1724, 991, 1722, 953, 1728, 941, 1728, 913, 1723, 909]}},
+        {"key": "1755_1278_206_100", "removed": false, "accepted": false, "label": "rod", "note": "", "bind": "exact", "bind_score": 1.0, "geom": {"bbox_xywh": [1755, 1278, 206, 100], "polygon": [1755, 1278, 1755, 1351, 1766, 1357, 1799, 1360, 1827, 1375, 1845, 1377, 1886, 1365, 1939, 1359, 1959, 1349, 1960, 1298, 1939, 1287, 1905, 1278]}},
+        {"key": "2082_856_131_235", "removed": true, "accepted": false, "label": "", "note": "", "bind": "exact", "bind_score": 1.0, "geom": {"bbox": [2082, 856, 131, 235], "polygon": [2210, 856, 2187, 856, 2164, 871, 2127, 884, 2115, 893, 2103, 910, 2100, 929, 2108, 945, 2107, 967, 2099, 993, 2082, 1021, 2085, 1082, 2091, 1088, 2111, 1088, 2147, 1071, 2164, 1056, 2186, 1022, 2209, 953, 2203, 906, 2212, 867]}},
+        {"key": "2202_1329_69_103", "removed": true, "accepted": false, "label": "", "note": "", "bind": "exact", "bind_score": 1.0, "geom": {"bbox": [2202, 1329, 69, 103], "polygon": [2270, 1329, 2258, 1329, 2250, 1340, 2234, 1352, 2214, 1373, 2208, 1375, 2202, 1382, 2203, 1420, 2205, 1426, 2210, 1430, 2227, 1431, 2233, 1427, 2240, 1418, 2246, 1404, 2267, 1380, 2270, 1371]}},
+        {"key": "2202_564_275_135", "removed": true, "accepted": false, "label": "", "note": "", "bind": "exact", "bind_score": 1.0, "geom": {"bbox": [2202, 564, 275, 135], "polygon": [2202, 627, 2223, 670, 2231, 676, 2308, 697, 2344, 696, 2384, 676, 2444, 629, 2475, 624, 2476, 579, 2446, 577, 2424, 564, 2384, 564, 2374, 571, 2343, 571, 2324, 564, 2270, 564, 2255, 570, 2207, 614]}},
+        {"key": "2219_1329_62_103", "removed": false, "accepted": false, "label": "chaetoceros", "note": "", "bind": "exact", "bind_score": 1.0, "geom": {"bbox_xywh": [2219, 1329, 62, 103], "polygon": [2279, 1329, 2259, 1329, 2249, 1341, 2235, 1351, 2219, 1367, 2219, 1431, 2227, 1431, 2233, 1427, 2240, 1418, 2249, 1400, 2266, 1382, 2280, 1341]}},
+        {"key": "2700_1638_52_159", "removed": true, "accepted": false, "label": "", "note": "", "bind": "exact", "bind_score": 1.0, "geom": {"bbox": [2700, 1638, 52, 159], "polygon": [2748, 1638, 2741, 1650, 2731, 1661, 2708, 1677, 2700, 1694, 2700, 1704, 2706, 1729, 2707, 1747, 2714, 1753, 2747, 1796, 2751, 1796, 2751, 1638]}},
+        {"key": "2718_1639_34_158", "removed": true, "accepted": false, "label": "", "note": "", "bind": "exact", "bind_score": 1.0, "geom": {"bbox": [2718, 1639, 34, 158], "polygon": [2747, 1639, 2738, 1654, 2730, 1662, 2718, 1669, 2718, 1759, 2747, 1796, 2751, 1796, 2751, 1639]}},
+        {"key": "435_762_94_120", "removed": false, "accepted": false, "label": "rod_frag", "note": "", "bind": "exact", "bind_score": 1.0, "geom": {"bbox_xywh": [435, 762, 94, 120], "polygon": [435, 762, 435, 809, 462, 850, 476, 876, 482, 881, 491, 881, 502, 873, 519, 872, 527, 869, 528, 848, 487, 762]}},
+        {"key": "594_1708_86_68", "removed": false, "accepted": true, "label": "chaetoceros", "note": "", "bind": "exact", "bind_score": 1.0, "geom": {"bbox_xywh": [594, 1708, 86, 68], "polygon": [674, 1709, 627, 1708, 609, 1721, 601, 1729, 598, 1738, 595, 1742, 594, 1771, 598, 1775, 636, 1775, 652, 1766, 670, 1748, 674, 1735, 678, 1729, 679, 1719]}},
+        {"key": "594_242_69_125", "removed": false, "accepted": false, "label": "chaetoceros", "note": "", "bind": "exact", "bind_score": 1.0, "geom": {"bbox_xywh": [594, 242, 69, 125], "polygon": [594, 242, 594, 310, 598, 312, 605, 326, 633, 360, 639, 363, 662, 366, 662, 353, 655, 346, 647, 331, 641, 310, 618, 267, 610, 242]}},
+        {"key": "667_344_86_91", "removed": false, "accepted": true, "label": "round_frag", "note": "", "bind": "exact", "bind_score": 1.0, "geom": {"bbox_xywh": [667, 344, 86, 91], "polygon": [669, 345, 667, 351, 667, 399, 677, 418, 683, 424, 699, 432, 711, 434, 725, 432, 744, 424, 752, 418, 752, 402, 747, 389, 743, 383, 725, 366, 711, 344]}},
+        {"key": "792_650_137_69", "removed": true, "accepted": false, "label": "", "note": "", "bind": "exact", "bind_score": 1.0, "geom": {"bbox": [792, 650, 137, 69], "polygon": [928, 650, 924, 659, 907, 650, 857, 650, 813, 672, 797, 676, 792, 681, 792, 718, 808, 718, 801, 711, 802, 703, 808, 700, 813, 700, 823, 706, 856, 717, 868, 718, 873, 710, 889, 706, 918, 685, 928, 670]}},
+        {"key": "912_719_292_360", "removed": false, "accepted": false, "label": "rod_frag", "note": "", "bind": "exact", "bind_score": 1.0, "geom": {"bbox_xywh": [912, 719, 292, 360], "polygon": [1203, 719, 1189, 719, 1166, 740, 1139, 737, 1087, 772, 1040, 836, 917, 1039, 912, 1066, 918, 1073, 941, 1077, 967, 1057, 1108, 875]}}
+      ]
     }
   ],
-  "links": []
+  "links": [
+    {
+      "batch": "yolo-3차",
+      "note": "",
+      "members": [
+        {"image": "stacked/g024_Snap-21327-21329_focused.jpg", "kind": "stack", "batch": "yolo-3차", "key": "1514_1131_86_121", "rep": true, "geom": {"bbox": [1514, 1131, 86, 121], "polygon": [1573, 1131, 1546, 1131, 1548, 1134, 1547, 1145, 1522, 1184, 1519, 1199, 1514, 1206, 1514, 1243, 1525, 1249, 1546, 1251, 1556, 1247, 1583, 1227, 1599, 1207, 1599, 1181, 1594, 1169, 1591, 1151, 1587, 1144]}},
+        {"image": "photos/260729/WAP13-GC47 450cm/Snap-21329.jpg", "kind": "frame", "batch": "yolo-3차", "key": "1514_1140_93_103", "rep": false, "geom": {"bbox_xywh": [1514, 1140, 93, 103], "polygon": [1580, 1140, 1549, 1140, 1545, 1153, 1519, 1202, 1514, 1207, 1514, 1242, 1565, 1242, 1580, 1232, 1591, 1221, 1601, 1207, 1606, 1194, 1595, 1170, 1590, 1153]}}
+      ]
+    },
+    {
+      "batch": "yolo-3차",
+      "note": "",
+      "members": [
+        {"image": "stacked/g024_Snap-21327-21329_focused.jpg", "kind": "stack", "batch": "yolo-3차", "key": "1600_835_138_232", "rep": true, "geom": {"bbox_xywh": [1600, 835, 138, 232], "polygon": [1737, 835, 1724, 836, 1702, 850, 1671, 899, 1665, 918, 1642, 958, 1616, 986, 1600, 1011, 1600, 1026, 1604, 1023, 1620, 1029, 1668, 1066, 1680, 1065, 1708, 1031, 1724, 989, 1721, 956, 1737, 923]}},
+        {"image": "photos/260729/WAP13-GC47 450cm/Snap-21327.jpg", "kind": "frame", "batch": "yolo-3차", "key": "1600_839_155_232", "rep": false, "geom": {"bbox_xywh": [1600, 839, 155, 232], "polygon": [1754, 839, 1710, 839, 1685, 857, 1633, 961, 1600, 999, 1600, 1030, 1621, 1037, 1663, 1070, 1685, 1070, 1723, 995, 1731, 943, 1742, 921, 1754, 911]}},
+        {"image": "photos/260729/WAP13-GC47 450cm/Snap-21328.jpg", "kind": "frame", "batch": "yolo-3차", "key": "1600_934_126_137", "rep": false, "geom": {"bbox_xywh": [1600, 934, 126, 137], "polygon": [1721, 934, 1656, 934, 1637, 963, 1600, 1007, 1600, 1036, 1612, 1034, 1634, 1051, 1663, 1068, 1681, 1069, 1709, 1028, 1725, 987, 1723, 969, 1707, 944, 1712, 936]}},
+        {"image": "photos/260729/WAP13-GC47 450cm/Snap-21329.jpg", "kind": "frame", "batch": "yolo-3차", "key": "1609_899_120_172", "rep": false, "geom": {"bbox_xywh": [1609, 899, 120, 172], "polygon": [1723, 899, 1673, 899, 1666, 918, 1641, 959, 1609, 999, 1609, 1024, 1620, 1029, 1643, 1051, 1672, 1070, 1680, 1068, 1708, 1034, 1724, 991, 1722, 953, 1728, 941, 1728, 913, 1723, 909]}}
+      ]
+    },
+    {
+      "batch": "yolo-3차",
+      "note": "",
+      "members": [
+        {"image": "stacked/g024_Snap-21327-21329_focused.jpg", "kind": "stack", "batch": "yolo-3차", "key": "1755_1278_206_100", "rep": true, "geom": {"bbox_xywh": [1755, 1278, 206, 100], "polygon": [1755, 1278, 1755, 1351, 1768, 1358, 1794, 1360, 1827, 1376, 1847, 1377, 1886, 1365, 1943, 1358, 1960, 1346, 1960, 1299, 1939, 1287, 1905, 1278]}},
+        {"image": "photos/260729/WAP13-GC47 450cm/Snap-21327.jpg", "kind": "frame", "batch": "yolo-3차", "key": "1755_1278_206_102", "rep": false, "geom": {"bbox_xywh": [1755, 1278, 206, 102], "polygon": [1755, 1281, 1755, 1347, 1793, 1360, 1818, 1373, 1852, 1379, 1888, 1365, 1939, 1359, 1953, 1352, 1960, 1344, 1960, 1293, 1931, 1278, 1757, 1278]}},
+        {"image": "photos/260729/WAP13-GC47 450cm/Snap-21328.jpg", "kind": "frame", "batch": "yolo-3차", "key": "1755_1269_206_103", "rep": false, "geom": {"bbox_xywh": [1755, 1269, 206, 103], "polygon": [1755, 1273, 1755, 1352, 1768, 1358, 1793, 1362, 1814, 1371, 1869, 1371, 1890, 1364, 1942, 1358, 1958, 1349, 1960, 1300, 1941, 1286, 1856, 1269, 1762, 1269]}},
+        {"image": "photos/260729/WAP13-GC47 450cm/Snap-21329.jpg", "kind": "frame", "batch": "yolo-3차", "key": "1755_1278_206_100", "rep": false, "geom": {"bbox_xywh": [1755, 1278, 206, 100], "polygon": [1755, 1278, 1755, 1351, 1766, 1357, 1799, 1360, 1827, 1375, 1845, 1377, 1886, 1365, 1939, 1359, 1959, 1349, 1960, 1298, 1939, 1287, 1905, 1278]}}
+      ]
+    },
+    {
+      "batch": "yolo-3차",
+      "note": "",
+      "members": [
+        {"image": "stacked/g024_Snap-21327-21329_focused.jpg", "kind": "stack", "batch": "yolo-3차", "key": "2202_1329_69_103", "rep": true, "geom": {"bbox_xywh": [2202, 1329, 69, 103], "polygon": [2270, 1329, 2258, 1329, 2256, 1334, 2244, 1346, 2238, 1349, 2214, 1374, 2202, 1383, 2202, 1395, 2204, 1400, 2202, 1419, 2205, 1427, 2211, 1431, 2228, 1431, 2231, 1429, 2239, 1419, 2245, 1405, 2266, 1381, 2270, 1371]}},
+        {"image": "photos/260729/WAP13-GC47 450cm/Snap-21329.jpg", "kind": "frame", "batch": "yolo-3차", "key": "2219_1329_62_103", "rep": false, "geom": {"bbox_xywh": [2219, 1329, 62, 103], "polygon": [2279, 1329, 2259, 1329, 2249, 1341, 2235, 1351, 2219, 1367, 2219, 1431, 2227, 1431, 2233, 1427, 2240, 1418, 2249, 1400, 2266, 1382, 2280, 1341]}}
+      ]
+    },
+    {
+      "batch": "yolo-3차",
+      "note": "",
+      "members": [
+        {"image": "stacked/g024_Snap-21327-21329_focused.jpg", "kind": "stack", "batch": "yolo-3차", "key": "435_762_94_120", "rep": true, "geom": {"bbox_xywh": [435, 762, 94, 120], "polygon": [435, 762, 435, 808, 464, 853, 476, 876, 482, 881, 492, 881, 502, 874, 528, 869, 528, 848, 507, 797, 487, 762]}},
+        {"image": "photos/260729/WAP13-GC47 450cm/Snap-21328.jpg", "kind": "frame", "batch": "yolo-3차", "key": "435_770_97_119", "rep": false, "geom": {"bbox_xywh": [435, 770, 97, 119], "polygon": [435, 770, 435, 805, 476, 877, 486, 888, 496, 888, 524, 876, 530, 868, 531, 857, 529, 849, 507, 797, 488, 770]}},
+        {"image": "photos/260729/WAP13-GC47 450cm/Snap-21329.jpg", "kind": "frame", "batch": "yolo-3차", "key": "435_762_94_120", "rep": false, "geom": {"bbox_xywh": [435, 762, 94, 120], "polygon": [435, 762, 435, 809, 462, 850, 476, 876, 482, 881, 491, 881, 502, 873, 519, 872, 527, 869, 528, 848, 487, 762]}}
+      ]
+    },
+    {
+      "batch": "yolo-3차",
+      "note": "",
+      "members": [
+        {"image": "stacked/g024_Snap-21327-21329_focused.jpg", "kind": "stack", "batch": "yolo-3차", "key": "594_1708_86_68", "rep": true, "geom": {"bbox": [594, 1708, 86, 68], "polygon": [672, 1708, 624, 1708, 609, 1721, 601, 1731, 594, 1745, 594, 1773, 597, 1775, 636, 1775, 653, 1765, 670, 1749, 674, 1739, 679, 1732, 679, 1718]}},
+        {"image": "photos/260729/WAP13-GC47 450cm/Snap-21328.jpg", "kind": "frame", "batch": "yolo-3차", "key": "594_1708_86_68", "rep": false, "geom": {"bbox_xywh": [594, 1708, 86, 68], "polygon": [671, 1708, 624, 1708, 613, 1716, 606, 1724, 601, 1727, 597, 1735, 594, 1734, 595, 1771, 600, 1775, 638, 1775, 660, 1760, 671, 1749, 679, 1730, 679, 1720]}},
+        {"image": "photos/260729/WAP13-GC47 450cm/Snap-21329.jpg", "kind": "frame", "batch": "yolo-3차", "key": "594_1708_86_68", "rep": false, "geom": {"bbox_xywh": [594, 1708, 86, 68], "polygon": [674, 1709, 627, 1708, 609, 1721, 601, 1729, 598, 1738, 595, 1742, 594, 1771, 598, 1775, 636, 1775, 652, 1766, 670, 1748, 674, 1735, 678, 1729, 679, 1719]}}
+      ]
+    },
+    {
+      "batch": "yolo-3차",
+      "note": "",
+      "members": [
+        {"image": "stacked/g024_Snap-21327-21329_focused.jpg", "kind": "stack", "batch": "yolo-3차", "key": "594_243_69_124", "rep": true, "geom": {"bbox": [594, 243, 69, 124], "polygon": [594, 243, 594, 311, 599, 314, 604, 325, 633, 361, 639, 364, 660, 365, 662, 363, 662, 356, 646, 329, 640, 307, 626, 283, 612, 243]}},
+        {"image": "photos/260729/WAP13-GC47 450cm/Snap-21329.jpg", "kind": "frame", "batch": "yolo-3차", "key": "594_242_69_125", "rep": false, "geom": {"bbox_xywh": [594, 242, 69, 125], "polygon": [594, 242, 594, 310, 598, 312, 605, 326, 633, 360, 639, 363, 662, 366, 662, 353, 655, 346, 647, 331, 641, 310, 618, 267, 610, 242]}}
+      ]
+    },
+    {
+      "batch": "yolo-3차",
+      "note": "",
+      "members": [
+        {"image": "stacked/g024_Snap-21327-21329_focused.jpg", "kind": "stack", "batch": "yolo-3차", "key": "667_349_86_85", "rep": true, "geom": {"bbox_xywh": [667, 349, 86, 85], "polygon": [670, 349, 667, 355, 667, 401, 677, 417, 683, 423, 701, 432, 719, 433, 740, 426, 752, 418, 752, 403, 748, 391, 742, 382, 724, 366, 718, 356, 716, 349]}},
+        {"image": "photos/260729/WAP13-GC47 450cm/Snap-21328.jpg", "kind": "frame", "batch": "yolo-3차", "key": "671_353_86_82", "rep": false, "geom": {"bbox_xywh": [671, 353, 86, 82], "polygon": [671, 353, 672, 417, 694, 430, 707, 434, 718, 434, 729, 431, 749, 422, 754, 417, 756, 405, 748, 385, 733, 370, 729, 368, 716, 353]}},
+        {"image": "photos/260729/WAP13-GC47 450cm/Snap-21329.jpg", "kind": "frame", "batch": "yolo-3차", "key": "667_344_86_91", "rep": false, "geom": {"bbox_xywh": [667, 344, 86, 91], "polygon": [669, 345, 667, 351, 667, 399, 677, 418, 683, 424, 699, 432, 711, 434, 725, 432, 744, 424, 752, 418, 752, 402, 747, 389, 743, 383, 725, 366, 711, 344]}}
+      ]
+    },
+    {
+      "batch": "yolo-3차",
+      "note": "",
+      "members": [
+        {"image": "stacked/g024_Snap-21327-21329_focused.jpg", "kind": "stack", "batch": "yolo-3차", "key": "912_719_292_360", "rep": true, "geom": {"bbox_xywh": [912, 719, 292, 360], "polygon": [1203, 719, 1190, 719, 1165, 741, 1130, 744, 1087, 772, 1041, 834, 917, 1038, 912, 1065, 918, 1073, 942, 1077, 968, 1056, 1107, 877]}},
+        {"image": "photos/260729/WAP13-GC47 450cm/Snap-21327.jpg", "kind": "frame", "batch": "yolo-3차", "key": "912_779_215_306", "rep": false, "geom": {"bbox_xywh": [912, 779, 215, 306], "polygon": [1114, 779, 1077, 779, 912, 1028, 912, 1069, 931, 1084, 964, 1069, 981, 1052, 1091, 900, 1126, 840, 1126, 800]}},
+        {"image": "photos/260729/WAP13-GC47 450cm/Snap-21328.jpg", "kind": "frame", "batch": "yolo-3차", "key": "912_736_283_343", "rep": false, "geom": {"bbox_xywh": [912, 736, 283, 343], "polygon": [1194, 736, 1138, 739, 1085, 772, 1033, 844, 915, 1039, 912, 1066, 917, 1072, 942, 1077, 968, 1057, 1108, 876]}},
+        {"image": "photos/260729/WAP13-GC47 450cm/Snap-21329.jpg", "kind": "frame", "batch": "yolo-3차", "key": "912_719_292_360", "rep": false, "geom": {"bbox_xywh": [912, 719, 292, 360], "polygon": [1203, 719, 1189, 719, 1166, 740, 1139, 737, 1087, 772, 1040, 836, 917, 1039, 912, 1066, 918, 1073, 941, 1077, 967, 1057, 1108, 875]}}
+      ]
+    },
+    {
+      "batch": "",
+      "note": "",
+      "members": [
+        {"image": "stacked/g024_Snap-21327-21329_focused.jpg", "kind": "stack", "batch": "", "key": "m082ae7b2", "rep": true, "geom": {"bbox": [923, 2007, 51, 49], "polygon": [940.0, 2054.0, 928.0, 2043.0, 923.0, 2020.0, 929.0, 2011.0, 936.0, 2007.0, 950.0, 2011.0, 966.0, 2026.0, 974.0, 2041.0, 969.0, 2051.0, 963.0, 2056.0, 953.0, 2056.0]}},
+        {"image": "photos/260729/WAP13-GC47 450cm/Snap-21327.jpg", "kind": "frame", "batch": "", "key": "m082ae7b2", "rep": false, "geom": {"bbox": [923, 2007, 51, 49], "polygon": [940.0, 2054.0, 928.0, 2043.0, 923.0, 2020.0, 929.0, 2011.0, 936.0, 2007.0, 950.0, 2011.0, 966.0, 2026.0, 974.0, 2041.0, 969.0, 2051.0, 963.0, 2056.0, 953.0, 2056.0]}},
+        {"image": "photos/260729/WAP13-GC47 450cm/Snap-21328.jpg", "kind": "frame", "batch": "", "key": "m082ae7b2", "rep": false, "geom": {"bbox": [923, 2007, 51, 49], "polygon": [940.0, 2054.0, 928.0, 2043.0, 923.0, 2020.0, 929.0, 2011.0, 936.0, 2007.0, 950.0, 2011.0, 966.0, 2026.0, 974.0, 2041.0, 969.0, 2051.0, 963.0, 2056.0, 953.0, 2056.0]}},
+        {"image": "photos/260729/WAP13-GC47 450cm/Snap-21329.jpg", "kind": "frame", "batch": "", "key": "m082ae7b2", "rep": false, "geom": {"bbox": [923, 2007, 51, 49], "polygon": [940.0, 2054.0, 928.0, 2043.0, 923.0, 2020.0, 929.0, 2011.0, 936.0, 2007.0, 950.0, 2011.0, 966.0, 2026.0, 974.0, 2041.0, 969.0, 2051.0, 963.0, 2056.0, 953.0, 2056.0]}}
+      ]
+    },
+    {
+      "batch": "",
+      "note": "",
+      "members": [
+        {"image": "stacked/g024_Snap-21327-21329_focused.jpg", "kind": "stack", "batch": "", "key": "m08ac016f", "rep": true, "geom": {"bbox": [1276, 1125, 61, 68], "polygon": [1286.0, 1190.0, 1276.0, 1173.0, 1278.0, 1145.0, 1287.0, 1135.0, 1303.0, 1128.0, 1326.0, 1125.0, 1334.0, 1135.0, 1337.0, 1152.0, 1335.0, 1168.0, 1320.0, 1186.0, 1305.0, 1193.0]}},
+        {"image": "photos/260729/WAP13-GC47 450cm/Snap-21327.jpg", "kind": "frame", "batch": "", "key": "m08ac016f", "rep": false, "geom": {"bbox": [1276, 1125, 61, 68], "polygon": [1286.0, 1190.0, 1276.0, 1173.0, 1278.0, 1145.0, 1287.0, 1135.0, 1303.0, 1128.0, 1326.0, 1125.0, 1334.0, 1135.0, 1337.0, 1152.0, 1335.0, 1168.0, 1320.0, 1186.0, 1305.0, 1193.0]}},
+        {"image": "photos/260729/WAP13-GC47 450cm/Snap-21328.jpg", "kind": "frame", "batch": "", "key": "m08ac016f", "rep": false, "geom": {"bbox": [1276, 1125, 61, 68], "polygon": [1286.0, 1190.0, 1276.0, 1173.0, 1278.0, 1145.0, 1287.0, 1135.0, 1303.0, 1128.0, 1326.0, 1125.0, 1334.0, 1135.0, 1337.0, 1152.0, 1335.0, 1168.0, 1320.0, 1186.0, 1305.0, 1193.0]}},
+        {"image": "photos/260729/WAP13-GC47 450cm/Snap-21329.jpg", "kind": "frame", "batch": "", "key": "m08ac016f", "rep": false, "geom": {"bbox": [1276, 1125, 61, 68], "polygon": [1286.0, 1190.0, 1276.0, 1173.0, 1278.0, 1145.0, 1287.0, 1135.0, 1303.0, 1128.0, 1326.0, 1125.0, 1334.0, 1135.0, 1337.0, 1152.0, 1335.0, 1168.0, 1320.0, 1186.0, 1305.0, 1193.0]}}
+      ]
+    },
+    {
+      "batch": "",
+      "note": "",
+      "members": [
+        {"image": "stacked/g024_Snap-21327-21329_focused.jpg", "kind": "stack", "batch": "", "key": "m0b800f5e", "rep": true, "geom": {"bbox": [974, 1610, 107, 88], "polygon": [982.0, 1695.0, 974.0, 1675.0, 982.0, 1651.0, 1001.0, 1632.0, 1026.0, 1618.0, 1056.0, 1610.0, 1069.0, 1613.0, 1081.0, 1627.0, 1078.0, 1638.0, 1060.0, 1660.0, 1054.0, 1669.0, 1036.0, 1687.0, 994.0, 1698.0]}},
+        {"image": "photos/260729/WAP13-GC47 450cm/Snap-21327.jpg", "kind": "frame", "batch": "", "key": "m0b800f5e", "rep": false, "geom": {"bbox": [974, 1610, 107, 88], "polygon": [982.0, 1695.0, 974.0, 1675.0, 982.0, 1651.0, 1001.0, 1632.0, 1026.0, 1618.0, 1056.0, 1610.0, 1069.0, 1613.0, 1081.0, 1627.0, 1078.0, 1638.0, 1060.0, 1660.0, 1054.0, 1669.0, 1036.0, 1687.0, 994.0, 1698.0]}},
+        {"image": "photos/260729/WAP13-GC47 450cm/Snap-21328.jpg", "kind": "frame", "batch": "", "key": "m0b800f5e", "rep": false, "geom": {"bbox": [974, 1610, 107, 88], "polygon": [982.0, 1695.0, 974.0, 1675.0, 982.0, 1651.0, 1001.0, 1632.0, 1026.0, 1618.0, 1056.0, 1610.0, 1069.0, 1613.0, 1081.0, 1627.0, 1078.0, 1638.0, 1060.0, 1660.0, 1054.0, 1669.0, 1036.0, 1687.0, 994.0, 1698.0]}},
+        {"image": "photos/260729/WAP13-GC47 450cm/Snap-21329.jpg", "kind": "frame", "batch": "", "key": "m0b800f5e", "rep": false, "geom": {"bbox": [974, 1610, 107, 88], "polygon": [982.0, 1695.0, 974.0, 1675.0, 982.0, 1651.0, 1001.0, 1632.0, 1026.0, 1618.0, 1056.0, 1610.0, 1069.0, 1613.0, 1081.0, 1627.0, 1078.0, 1638.0, 1060.0, 1660.0, 1054.0, 1669.0, 1036.0, 1687.0, 994.0, 1698.0]}}
+      ]
+    },
+    {
+      "batch": "",
+      "note": "",
+      "members": [
+        {"image": "stacked/g024_Snap-21327-21329_focused.jpg", "kind": "stack", "batch": "", "key": "m16986ea1", "rep": true, "geom": {"bbox": [1526, 1467, 65, 47], "polygon": [1548.0, 1514.0, 1537.0, 1506.0, 1526.0, 1490.0, 1540.0, 1472.0, 1550.0, 1469.0, 1563.0, 1467.0, 1577.0, 1470.0, 1587.0, 1480.0, 1591.0, 1491.0, 1581.0, 1504.0, 1569.0, 1512.0]}},
+        {"image": "photos/260729/WAP13-GC47 450cm/Snap-21327.jpg", "kind": "frame", "batch": "", "key": "m16986ea1", "rep": false, "geom": {"bbox": [1526, 1467, 65, 47], "polygon": [1548.0, 1514.0, 1537.0, 1506.0, 1526.0, 1490.0, 1540.0, 1472.0, 1550.0, 1469.0, 1563.0, 1467.0, 1577.0, 1470.0, 1587.0, 1480.0, 1591.0, 1491.0, 1581.0, 1504.0, 1569.0, 1512.0]}},
+        {"image": "photos/260729/WAP13-GC47 450cm/Snap-21328.jpg", "kind": "frame", "batch": "", "key": "m16986ea1", "rep": false, "geom": {"bbox": [1526, 1467, 65, 47], "polygon": [1548.0, 1514.0, 1537.0, 1506.0, 1526.0, 1490.0, 1540.0, 1472.0, 1550.0, 1469.0, 1563.0, 1467.0, 1577.0, 1470.0, 1587.0, 1480.0, 1591.0, 1491.0, 1581.0, 1504.0, 1569.0, 1512.0]}},
+        {"image": "photos/260729/WAP13-GC47 450cm/Snap-21329.jpg", "kind": "frame", "batch": "", "key": "m16986ea1", "rep": false, "geom": {"bbox": [1526, 1467, 65, 47], "polygon": [1548.0, 1514.0, 1537.0, 1506.0, 1526.0, 1490.0, 1540.0, 1472.0, 1550.0, 1469.0, 1563.0, 1467.0, 1577.0, 1470.0, 1587.0, 1480.0, 1591.0, 1491.0, 1581.0, 1504.0, 1569.0, 1512.0]}}
+      ]
+    },
+    {
+      "batch": "",
+      "note": "",
+      "members": [
+        {"image": "stacked/g024_Snap-21327-21329_focused.jpg", "kind": "stack", "batch": "", "key": "m1d4b0dba", "rep": true, "geom": {"bbox": [451, 1981, 66, 54], "polygon": [451.0, 2000.0, 464.0, 2018.0, 488.0, 2029.0, 501.0, 2035.0, 517.0, 2018.0, 511.0, 1993.0, 470.0, 1981.0, 451.0, 1992.0]}},
+        {"image": "photos/260729/WAP13-GC47 450cm/Snap-21327.jpg", "kind": "frame", "batch": "", "key": "m1d4b0dba", "rep": false, "geom": {"bbox": [451, 1981, 66, 54], "polygon": [451.0, 2000.0, 464.0, 2018.0, 488.0, 2029.0, 501.0, 2035.0, 517.0, 2018.0, 511.0, 1993.0, 470.0, 1981.0, 451.0, 1992.0]}},
+        {"image": "photos/260729/WAP13-GC47 450cm/Snap-21328.jpg", "kind": "frame", "batch": "", "key": "m1d4b0dba", "rep": false, "geom": {"bbox": [451, 1981, 66, 54], "polygon": [451.0, 2000.0, 464.0, 2018.0, 488.0, 2029.0, 501.0, 2035.0, 517.0, 2018.0, 511.0, 1993.0, 470.0, 1981.0, 451.0, 1992.0]}},
+        {"image": "photos/260729/WAP13-GC47 450cm/Snap-21329.jpg", "kind": "frame", "batch": "", "key": "m1d4b0dba", "rep": false, "geom": {"bbox": [451, 1981, 66, 54], "polygon": [451.0, 2000.0, 464.0, 2018.0, 488.0, 2029.0, 501.0, 2035.0, 517.0, 2018.0, 511.0, 1993.0, 470.0, 1981.0, 451.0, 1992.0]}}
+      ]
+    },
+    {
+      "batch": "",
+      "note": "",
+      "members": [
+        {"image": "stacked/g024_Snap-21327-21329_focused.jpg", "kind": "stack", "batch": "", "key": "m211a5d71", "rep": true, "geom": {"bbox": [808, 647, 121, 64], "polygon": [808.0, 689.0, 846.0, 658.0, 895.0, 647.0, 926.0, 659.0, 929.0, 676.0, 923.0, 686.0, 901.0, 699.0, 865.0, 706.0, 832.0, 711.0, 810.0, 705.0]}},
+        {"image": "photos/260729/WAP13-GC47 450cm/Snap-21327.jpg", "kind": "frame", "batch": "", "key": "m211a5d71", "rep": false, "geom": {"bbox": [808, 647, 121, 64], "polygon": [808.0, 689.0, 846.0, 658.0, 895.0, 647.0, 926.0, 659.0, 929.0, 676.0, 923.0, 686.0, 901.0, 699.0, 865.0, 706.0, 832.0, 711.0, 810.0, 705.0]}},
+        {"image": "photos/260729/WAP13-GC47 450cm/Snap-21328.jpg", "kind": "frame", "batch": "", "key": "m211a5d71", "rep": false, "geom": {"bbox": [808, 647, 121, 64], "polygon": [808.0, 689.0, 846.0, 658.0, 895.0, 647.0, 926.0, 659.0, 929.0, 676.0, 923.0, 686.0, 901.0, 699.0, 865.0, 706.0, 832.0, 711.0, 810.0, 705.0]}},
+        {"image": "photos/260729/WAP13-GC47 450cm/Snap-21329.jpg", "kind": "frame", "batch": "", "key": "m211a5d71", "rep": false, "geom": {"bbox": [808, 647, 121, 64], "polygon": [808.0, 689.0, 846.0, 658.0, 895.0, 647.0, 926.0, 659.0, 929.0, 676.0, 923.0, 686.0, 901.0, 699.0, 865.0, 706.0, 832.0, 711.0, 810.0, 705.0]}}
+      ]
+    },
+    {
+      "batch": "",
+      "note": "",
+      "members": [
+        {"image": "stacked/g024_Snap-21327-21329_focused.jpg", "kind": "stack", "batch": "", "key": "m2a6f003f", "rep": true, "geom": {"bbox": [440, 667, 53, 32], "polygon": [443.0, 681.0, 447.0, 667.0, 468.0, 668.0, 493.0, 683.0, 490.0, 692.0, 484.0, 698.0, 464.0, 699.0, 440.0, 688.0]}},
+        {"image": "photos/260729/WAP13-GC47 450cm/Snap-21327.jpg", "kind": "frame", "batch": "", "key": "m2a6f003f", "rep": false, "geom": {"bbox": [440, 667, 53, 32], "polygon": [443.0, 681.0, 447.0, 667.0, 468.0, 668.0, 493.0, 683.0, 490.0, 692.0, 484.0, 698.0, 464.0, 699.0, 440.0, 688.0]}},
+        {"image": "photos/260729/WAP13-GC47 450cm/Snap-21328.jpg", "kind": "frame", "batch": "", "key": "m2a6f003f", "rep": false, "geom": {"bbox": [440, 667, 53, 32], "polygon": [443.0, 681.0, 447.0, 667.0, 468.0, 668.0, 493.0, 683.0, 490.0, 692.0, 484.0, 698.0, 464.0, 699.0, 440.0, 688.0]}},
+        {"image": "photos/260729/WAP13-GC47 450cm/Snap-21329.jpg", "kind": "frame", "batch": "", "key": "m2a6f003f", "rep": false, "geom": {"bbox": [440, 667, 53, 32], "polygon": [443.0, 681.0, 447.0, 667.0, 468.0, 668.0, 493.0, 683.0, 490.0, 692.0, 484.0, 698.0, 464.0, 699.0, 440.0, 688.0]}}
+      ]
+    },
+    {
+      "batch": "",
+      "note": "",
+      "members": [
+        {"image": "stacked/g024_Snap-21327-21329_focused.jpg", "kind": "stack", "batch": "", "key": "m33be8ac8", "rep": true, "geom": {"bbox": [904, 55, 79, 53], "polygon": [904.0, 67.0, 914.0, 55.0, 953.0, 55.0, 983.0, 91.0, 972.0, 108.0, 929.0, 104.0]}},
+        {"image": "photos/260729/WAP13-GC47 450cm/Snap-21327.jpg", "kind": "frame", "batch": "", "key": "m33be8ac8", "rep": false, "geom": {"bbox": [904, 55, 79, 53], "polygon": [904.0, 67.0, 914.0, 55.0, 953.0, 55.0, 983.0, 91.0, 972.0, 108.0, 929.0, 104.0]}},
+        {"image": "photos/260729/WAP13-GC47 450cm/Snap-21328.jpg", "kind": "frame", "batch": "", "key": "m33be8ac8", "rep": false, "geom": {"bbox": [904, 55, 79, 53], "polygon": [904.0, 67.0, 914.0, 55.0, 953.0, 55.0, 983.0, 91.0, 972.0, 108.0, 929.0, 104.0]}},
+        {"image": "photos/260729/WAP13-GC47 450cm/Snap-21329.jpg", "kind": "frame", "batch": "", "key": "m33be8ac8", "rep": false, "geom": {"bbox": [904, 55, 79, 53], "polygon": [904.0, 67.0, 914.0, 55.0, 953.0, 55.0, 983.0, 91.0, 972.0, 108.0, 929.0, 104.0]}}
+      ]
+    },
+    {
+      "batch": "",
+      "note": "",
+      "members": [
+        {"image": "stacked/g024_Snap-21327-21329_focused.jpg", "kind": "stack", "batch": "", "key": "m341bb79c", "rep": true, "geom": {"bbox": [105, 133, 69, 45], "polygon": [105.0, 141.0, 109.0, 162.0, 134.0, 175.0, 157.0, 178.0, 174.0, 158.0, 155.0, 138.0, 140.0, 133.0]}},
+        {"image": "photos/260729/WAP13-GC47 450cm/Snap-21327.jpg", "kind": "frame", "batch": "", "key": "m341bb79c", "rep": false, "geom": {"bbox": [105, 133, 69, 45], "polygon": [105.0, 141.0, 109.0, 162.0, 134.0, 175.0, 157.0, 178.0, 174.0, 158.0, 155.0, 138.0, 140.0, 133.0]}},
+        {"image": "photos/260729/WAP13-GC47 450cm/Snap-21328.jpg", "kind": "frame", "batch": "", "key": "m341bb79c", "rep": false, "geom": {"bbox": [105, 133, 69, 45], "polygon": [105.0, 141.0, 109.0, 162.0, 134.0, 175.0, 157.0, 178.0, 174.0, 158.0, 155.0, 138.0, 140.0, 133.0]}},
+        {"image": "photos/260729/WAP13-GC47 450cm/Snap-21329.jpg", "kind": "frame", "batch": "", "key": "m341bb79c", "rep": false, "geom": {"bbox": [105, 133, 69, 45], "polygon": [105.0, 141.0, 109.0, 162.0, 134.0, 175.0, 157.0, 178.0, 174.0, 158.0, 155.0, 138.0, 140.0, 133.0]}}
+      ]
+    },
+    {
+      "batch": "",
+      "note": "",
+      "members": [
+        {"image": "stacked/g024_Snap-21327-21329_focused.jpg", "kind": "stack", "batch": "", "key": "m366451e7", "rep": true, "geom": {"bbox": [187, 838, 51, 60], "polygon": [215.0, 895.0, 192.0, 880.0, 187.0, 863.0, 195.0, 851.0, 206.0, 838.0, 223.0, 847.0, 238.0, 865.0, 237.0, 881.0, 231.0, 895.0, 225.0, 898.0]}},
+        {"image": "photos/260729/WAP13-GC47 450cm/Snap-21327.jpg", "kind": "frame", "batch": "", "key": "m366451e7", "rep": false, "geom": {"bbox": [187, 838, 51, 60], "polygon": [215.0, 895.0, 192.0, 880.0, 187.0, 863.0, 195.0, 851.0, 206.0, 838.0, 223.0, 847.0, 238.0, 865.0, 237.0, 881.0, 231.0, 895.0, 225.0, 898.0]}},
+        {"image": "photos/260729/WAP13-GC47 450cm/Snap-21328.jpg", "kind": "frame", "batch": "", "key": "m366451e7", "rep": false, "geom": {"bbox": [187, 838, 51, 60], "polygon": [215.0, 895.0, 192.0, 880.0, 187.0, 863.0, 195.0, 851.0, 206.0, 838.0, 223.0, 847.0, 238.0, 865.0, 237.0, 881.0, 231.0, 895.0, 225.0, 898.0]}},
+        {"image": "photos/260729/WAP13-GC47 450cm/Snap-21329.jpg", "kind": "frame", "batch": "", "key": "m366451e7", "rep": false, "geom": {"bbox": [187, 838, 51, 60], "polygon": [215.0, 895.0, 192.0, 880.0, 187.0, 863.0, 195.0, 851.0, 206.0, 838.0, 223.0, 847.0, 238.0, 865.0, 237.0, 881.0, 231.0, 895.0, 225.0, 898.0]}}
+      ]
+    },
+    {
+      "batch": "",
+      "note": "",
+      "members": [
+        {"image": "stacked/g024_Snap-21327-21329_focused.jpg", "kind": "stack", "batch": "", "key": "m38e1f6be", "rep": true, "geom": {"bbox": [775, 1872, 63, 69], "polygon": [780.0, 1936.0, 775.0, 1907.0, 786.0, 1887.0, 811.0, 1873.0, 822.0, 1872.0, 836.0, 1879.0, 838.0, 1896.0, 837.0, 1906.0, 830.0, 1923.0, 825.0, 1932.0, 805.0, 1941.0]}},
+        {"image": "photos/260729/WAP13-GC47 450cm/Snap-21327.jpg", "kind": "frame", "batch": "", "key": "m38e1f6be", "rep": false, "geom": {"bbox": [775, 1872, 63, 69], "polygon": [780.0, 1936.0, 775.0, 1907.0, 786.0, 1887.0, 811.0, 1873.0, 822.0, 1872.0, 836.0, 1879.0, 838.0, 1896.0, 837.0, 1906.0, 830.0, 1923.0, 825.0, 1932.0, 805.0, 1941.0]}},
+        {"image": "photos/260729/WAP13-GC47 450cm/Snap-21328.jpg", "kind": "frame", "batch": "", "key": "m38e1f6be", "rep": false, "geom": {"bbox": [775, 1872, 63, 69], "polygon": [780.0, 1936.0, 775.0, 1907.0, 786.0, 1887.0, 811.0, 1873.0, 822.0, 1872.0, 836.0, 1879.0, 838.0, 1896.0, 837.0, 1906.0, 830.0, 1923.0, 825.0, 1932.0, 805.0, 1941.0]}},
+        {"image": "photos/260729/WAP13-GC47 450cm/Snap-21329.jpg", "kind": "frame", "batch": "", "key": "m38e1f6be", "rep": false, "geom": {"bbox": [775, 1872, 63, 69], "polygon": [780.0, 1936.0, 775.0, 1907.0, 786.0, 1887.0, 811.0, 1873.0, 822.0, 1872.0, 836.0, 1879.0, 838.0, 1896.0, 837.0, 1906.0, 830.0, 1923.0, 825.0, 1932.0, 805.0, 1941.0]}}
+      ]
+    },
+    {
+      "batch": "",
+      "note": "",
+      "members": [
+        {"image": "stacked/g024_Snap-21327-21329_focused.jpg", "kind": "stack", "batch": "", "key": "m3b3dbbdd", "rep": true, "geom": {"bbox": [794, 1992, 32, 46], "polygon": [794.0, 2035.0, 811.0, 2038.0, 826.0, 2016.0, 819.0, 1994.0, 801.0, 1992.0]}},
+        {"image": "photos/260729/WAP13-GC47 450cm/Snap-21327.jpg", "kind": "frame", "batch": "", "key": "m3b3dbbdd", "rep": false, "geom": {"bbox": [794, 1992, 32, 46], "polygon": [794.0, 2035.0, 811.0, 2038.0, 826.0, 2016.0, 819.0, 1994.0, 801.0, 1992.0]}},
+        {"image": "photos/260729/WAP13-GC47 450cm/Snap-21328.jpg", "kind": "frame", "batch": "", "key": "m3b3dbbdd", "rep": false, "geom": {"bbox": [794, 1992, 32, 46], "polygon": [794.0, 2035.0, 811.0, 2038.0, 826.0, 2016.0, 819.0, 1994.0, 801.0, 1992.0]}},
+        {"image": "photos/260729/WAP13-GC47 450cm/Snap-21329.jpg", "kind": "frame", "batch": "", "key": "m3b3dbbdd", "rep": false, "geom": {"bbox": [794, 1992, 32, 46], "polygon": [794.0, 2035.0, 811.0, 2038.0, 826.0, 2016.0, 819.0, 1994.0, 801.0, 1992.0]}}
+      ]
+    },
+    {
+      "batch": "",
+      "note": "",
+      "members": [
+        {"image": "stacked/g024_Snap-21327-21329_focused.jpg", "kind": "stack", "batch": "", "key": "m42e0f85e", "rep": true, "geom": {"bbox": [1833, 1545, 93, 78], "polygon": [1833.0, 1616.0, 1853.0, 1575.0, 1871.0, 1559.0, 1893.0, 1550.0, 1910.0, 1547.0, 1924.0, 1545.0, 1926.0, 1563.0, 1917.0, 1586.0, 1892.0, 1609.0, 1862.0, 1620.0, 1835.0, 1623.0]}},
+        {"image": "photos/260729/WAP13-GC47 450cm/Snap-21327.jpg", "kind": "frame", "batch": "", "key": "m42e0f85e", "rep": false, "geom": {"bbox": [1833, 1545, 93, 78], "polygon": [1833.0, 1616.0, 1853.0, 1575.0, 1871.0, 1559.0, 1893.0, 1550.0, 1910.0, 1547.0, 1924.0, 1545.0, 1926.0, 1563.0, 1917.0, 1586.0, 1892.0, 1609.0, 1862.0, 1620.0, 1835.0, 1623.0]}},
+        {"image": "photos/260729/WAP13-GC47 450cm/Snap-21328.jpg", "kind": "frame", "batch": "", "key": "m42e0f85e", "rep": false, "geom": {"bbox": [1833, 1545, 93, 78], "polygon": [1833.0, 1616.0, 1853.0, 1575.0, 1871.0, 1559.0, 1893.0, 1550.0, 1910.0, 1547.0, 1924.0, 1545.0, 1926.0, 1563.0, 1917.0, 1586.0, 1892.0, 1609.0, 1862.0, 1620.0, 1835.0, 1623.0]}},
+        {"image": "photos/260729/WAP13-GC47 450cm/Snap-21329.jpg", "kind": "frame", "batch": "", "key": "m42e0f85e", "rep": false, "geom": {"bbox": [1833, 1545, 93, 78], "polygon": [1833.0, 1616.0, 1853.0, 1575.0, 1871.0, 1559.0, 1893.0, 1550.0, 1910.0, 1547.0, 1924.0, 1545.0, 1926.0, 1563.0, 1917.0, 1586.0, 1892.0, 1609.0, 1862.0, 1620.0, 1835.0, 1623.0]}}
+      ]
+    },
+    {
+      "batch": "",
+      "note": "",
+      "members": [
+        {"image": "stacked/g024_Snap-21327-21329_focused.jpg", "kind": "stack", "batch": "", "key": "m4d37b9de", "rep": true, "geom": {"bbox": [112, 1636, 49, 80], "polygon": [112.0, 1710.0, 141.0, 1716.0, 161.0, 1675.0, 154.0, 1640.0, 130.0, 1636.0, 123.0, 1651.0, 121.0, 1669.0, 120.0, 1684.0]}},
+        {"image": "photos/260729/WAP13-GC47 450cm/Snap-21327.jpg", "kind": "frame", "batch": "", "key": "m4d37b9de", "rep": false, "geom": {"bbox": [112, 1636, 49, 80], "polygon": [112.0, 1710.0, 141.0, 1716.0, 161.0, 1675.0, 154.0, 1640.0, 130.0, 1636.0, 123.0, 1651.0, 121.0, 1669.0, 120.0, 1684.0]}},
+        {"image": "photos/260729/WAP13-GC47 450cm/Snap-21328.jpg", "kind": "frame", "batch": "", "key": "m4d37b9de", "rep": false, "geom": {"bbox": [112, 1636, 49, 80], "polygon": [112.0, 1710.0, 141.0, 1716.0, 161.0, 1675.0, 154.0, 1640.0, 130.0, 1636.0, 123.0, 1651.0, 121.0, 1669.0, 120.0, 1684.0]}},
+        {"image": "photos/260729/WAP13-GC47 450cm/Snap-21329.jpg", "kind": "frame", "batch": "", "key": "m4d37b9de", "rep": false, "geom": {"bbox": [112, 1636, 49, 80], "polygon": [112.0, 1710.0, 141.0, 1716.0, 161.0, 1675.0, 154.0, 1640.0, 130.0, 1636.0, 123.0, 1651.0, 121.0, 1669.0, 120.0, 1684.0]}}
+      ]
+    },
+    {
+      "batch": "",
+      "note": "",
+      "members": [
+        {"image": "stacked/g024_Snap-21327-21329_focused.jpg", "kind": "stack", "batch": "", "key": "m4fbe4c51", "rep": true, "geom": {"bbox": [1920, 1758, 44, 65], "polygon": [1920.0, 1819.0, 1941.0, 1823.0, 1964.0, 1769.0, 1941.0, 1758.0, 1921.0, 1779.0]}},
+        {"image": "photos/260729/WAP13-GC47 450cm/Snap-21327.jpg", "kind": "frame", "batch": "", "key": "m4fbe4c51", "rep": false, "geom": {"bbox": [1920, 1758, 44, 65], "polygon": [1920.0, 1819.0, 1941.0, 1823.0, 1964.0, 1769.0, 1941.0, 1758.0, 1921.0, 1779.0]}},
+        {"image": "photos/260729/WAP13-GC47 450cm/Snap-21328.jpg", "kind": "frame", "batch": "", "key": "m4fbe4c51", "rep": false, "geom": {"bbox": [1920, 1758, 44, 65], "polygon": [1920.0, 1819.0, 1941.0, 1823.0, 1964.0, 1769.0, 1941.0, 1758.0, 1921.0, 1779.0]}},
+        {"image": "photos/260729/WAP13-GC47 450cm/Snap-21329.jpg", "kind": "frame", "batch": "", "key": "m4fbe4c51", "rep": false, "geom": {"bbox": [1920, 1758, 44, 65], "polygon": [1920.0, 1819.0, 1941.0, 1823.0, 1964.0, 1769.0, 1941.0, 1758.0, 1921.0, 1779.0]}}
+      ]
+    },
+    {
+      "batch": "",
+      "note": "",
+      "members": [
+        {"image": "stacked/g024_Snap-21327-21329_focused.jpg", "kind": "stack", "batch": "", "key": "m56a4ede5", "rep": true, "geom": {"bbox": [1593, 58, 55, 89], "polygon": [1607.0, 144.0, 1593.0, 114.0, 1601.0, 68.0, 1623.0, 58.0, 1647.0, 81.0, 1648.0, 125.0, 1639.0, 136.0, 1630.0, 147.0]}},
+        {"image": "photos/260729/WAP13-GC47 450cm/Snap-21327.jpg", "kind": "frame", "batch": "", "key": "m56a4ede5", "rep": false, "geom": {"bbox": [1593, 58, 55, 89], "polygon": [1607.0, 144.0, 1593.0, 114.0, 1601.0, 68.0, 1623.0, 58.0, 1647.0, 81.0, 1648.0, 125.0, 1639.0, 136.0, 1630.0, 147.0]}},
+        {"image": "photos/260729/WAP13-GC47 450cm/Snap-21328.jpg", "kind": "frame", "batch": "", "key": "m56a4ede5", "rep": false, "geom": {"bbox": [1593, 58, 55, 89], "polygon": [1607.0, 144.0, 1593.0, 114.0, 1601.0, 68.0, 1623.0, 58.0, 1647.0, 81.0, 1648.0, 125.0, 1639.0, 136.0, 1630.0, 147.0]}},
+        {"image": "photos/260729/WAP13-GC47 450cm/Snap-21329.jpg", "kind": "frame", "batch": "", "key": "m56a4ede5", "rep": false, "geom": {"bbox": [1593, 58, 55, 89], "polygon": [1607.0, 144.0, 1593.0, 114.0, 1601.0, 68.0, 1623.0, 58.0, 1647.0, 81.0, 1648.0, 125.0, 1639.0, 136.0, 1630.0, 147.0]}}
+      ]
+    },
+    {
+      "batch": "",
+      "note": "",
+      "members": [
+        {"image": "stacked/g024_Snap-21327-21329_focused.jpg", "kind": "stack", "batch": "", "key": "m604e4381", "rep": true, "geom": {"bbox": [422, 339, 89, 106], "polygon": [454.0, 442.0, 429.0, 411.0, 422.0, 378.0, 447.0, 344.0, 470.0, 339.0, 490.0, 344.0, 511.0, 380.0, 506.0, 414.0, 501.0, 425.0, 487.0, 440.0, 471.0, 445.0]}},
+        {"image": "photos/260729/WAP13-GC47 450cm/Snap-21327.jpg", "kind": "frame", "batch": "", "key": "m604e4381", "rep": false, "geom": {"bbox": [422, 339, 89, 106], "polygon": [454.0, 442.0, 429.0, 411.0, 422.0, 378.0, 447.0, 344.0, 470.0, 339.0, 490.0, 344.0, 511.0, 380.0, 506.0, 414.0, 501.0, 425.0, 487.0, 440.0, 471.0, 445.0]}},
+        {"image": "photos/260729/WAP13-GC47 450cm/Snap-21328.jpg", "kind": "frame", "batch": "", "key": "m604e4381", "rep": false, "geom": {"bbox": [422, 339, 89, 106], "polygon": [454.0, 442.0, 429.0, 411.0, 422.0, 378.0, 447.0, 344.0, 470.0, 339.0, 490.0, 344.0, 511.0, 380.0, 506.0, 414.0, 501.0, 425.0, 487.0, 440.0, 471.0, 445.0]}},
+        {"image": "photos/260729/WAP13-GC47 450cm/Snap-21329.jpg", "kind": "frame", "batch": "", "key": "m604e4381", "rep": false, "geom": {"bbox": [422, 339, 89, 106], "polygon": [454.0, 442.0, 429.0, 411.0, 422.0, 378.0, 447.0, 344.0, 470.0, 339.0, 490.0, 344.0, 511.0, 380.0, 506.0, 414.0, 501.0, 425.0, 487.0, 440.0, 471.0, 445.0]}}
+      ]
+    },
+    {
+      "batch": "",
+      "note": "",
+      "members": [
+        {"image": "stacked/g024_Snap-21327-21329_focused.jpg", "kind": "stack", "batch": "", "key": "m6119599d", "rep": true, "geom": {"bbox": [2230, 139, 62, 48], "polygon": [2235.0, 166.0, 2244.0, 140.0, 2258.0, 139.0, 2273.0, 140.0, 2292.0, 157.0, 2282.0, 181.0, 2266.0, 187.0, 2248.0, 184.0, 2230.0, 176.0]}},
+        {"image": "photos/260729/WAP13-GC47 450cm/Snap-21327.jpg", "kind": "frame", "batch": "", "key": "m6119599d", "rep": false, "geom": {"bbox": [2230, 139, 62, 48], "polygon": [2235.0, 166.0, 2244.0, 140.0, 2258.0, 139.0, 2273.0, 140.0, 2292.0, 157.0, 2282.0, 181.0, 2266.0, 187.0, 2248.0, 184.0, 2230.0, 176.0]}},
+        {"image": "photos/260729/WAP13-GC47 450cm/Snap-21328.jpg", "kind": "frame", "batch": "", "key": "m6119599d", "rep": false, "geom": {"bbox": [2230, 139, 62, 48], "polygon": [2235.0, 166.0, 2244.0, 140.0, 2258.0, 139.0, 2273.0, 140.0, 2292.0, 157.0, 2282.0, 181.0, 2266.0, 187.0, 2248.0, 184.0, 2230.0, 176.0]}},
+        {"image": "photos/260729/WAP13-GC47 450cm/Snap-21329.jpg", "kind": "frame", "batch": "", "key": "m6119599d", "rep": false, "geom": {"bbox": [2230, 139, 62, 48], "polygon": [2235.0, 166.0, 2244.0, 140.0, 2258.0, 139.0, 2273.0, 140.0, 2292.0, 157.0, 2282.0, 181.0, 2266.0, 187.0, 2248.0, 184.0, 2230.0, 176.0]}}
+      ]
+    },
+    {
+      "batch": "",
+      "note": "",
+      "members": [
+        {"image": "stacked/g024_Snap-21327-21329_focused.jpg", "kind": "stack", "batch": "", "key": "m63a672b4", "rep": true, "geom": {"bbox": [2514, 1092, 81, 90], "polygon": [2574.0, 1179.0, 2523.0, 1146.0, 2514.0, 1113.0, 2514.0, 1094.0, 2532.0, 1092.0, 2552.0, 1100.0, 2570.0, 1115.0, 2583.0, 1135.0, 2591.0, 1151.0, 2595.0, 1170.0, 2590.0, 1182.0]}},
+        {"image": "photos/260729/WAP13-GC47 450cm/Snap-21327.jpg", "kind": "frame", "batch": "", "key": "m63a672b4", "rep": false, "geom": {"bbox": [2514, 1092, 81, 90], "polygon": [2574.0, 1179.0, 2523.0, 1146.0, 2514.0, 1113.0, 2514.0, 1094.0, 2532.0, 1092.0, 2552.0, 1100.0, 2570.0, 1115.0, 2583.0, 1135.0, 2591.0, 1151.0, 2595.0, 1170.0, 2590.0, 1182.0]}},
+        {"image": "photos/260729/WAP13-GC47 450cm/Snap-21328.jpg", "kind": "frame", "batch": "", "key": "m63a672b4", "rep": false, "geom": {"bbox": [2514, 1092, 81, 90], "polygon": [2574.0, 1179.0, 2523.0, 1146.0, 2514.0, 1113.0, 2514.0, 1094.0, 2532.0, 1092.0, 2552.0, 1100.0, 2570.0, 1115.0, 2583.0, 1135.0, 2591.0, 1151.0, 2595.0, 1170.0, 2590.0, 1182.0]}},
+        {"image": "photos/260729/WAP13-GC47 450cm/Snap-21329.jpg", "kind": "frame", "batch": "", "key": "m63a672b4", "rep": false, "geom": {"bbox": [2514, 1092, 81, 90], "polygon": [2574.0, 1179.0, 2523.0, 1146.0, 2514.0, 1113.0, 2514.0, 1094.0, 2532.0, 1092.0, 2552.0, 1100.0, 2570.0, 1115.0, 2583.0, 1135.0, 2591.0, 1151.0, 2595.0, 1170.0, 2590.0, 1182.0]}}
+      ]
+    },
+    {
+      "batch": "",
+      "note": "",
+      "members": [
+        {"image": "stacked/g024_Snap-21327-21329_focused.jpg", "kind": "stack", "batch": "", "key": "m6564bad2", "rep": true, "geom": {"bbox": [1306, 33, 73, 50], "polygon": [1306.0, 45.0, 1328.0, 33.0, 1359.0, 39.0, 1375.0, 66.0, 1379.0, 80.0, 1366.0, 83.0, 1338.0, 64.0]}},
+        {"image": "photos/260729/WAP13-GC47 450cm/Snap-21327.jpg", "kind": "frame", "batch": "", "key": "m6564bad2", "rep": false, "geom": {"bbox": [1306, 33, 73, 50], "polygon": [1306.0, 45.0, 1328.0, 33.0, 1359.0, 39.0, 1375.0, 66.0, 1379.0, 80.0, 1366.0, 83.0, 1338.0, 64.0]}},
+        {"image": "photos/260729/WAP13-GC47 450cm/Snap-21328.jpg", "kind": "frame", "batch": "", "key": "m6564bad2", "rep": false, "geom": {"bbox": [1306, 33, 73, 50], "polygon": [1306.0, 45.0, 1328.0, 33.0, 1359.0, 39.0, 1375.0, 66.0, 1379.0, 80.0, 1366.0, 83.0, 1338.0, 64.0]}},
+        {"image": "photos/260729/WAP13-GC47 450cm/Snap-21329.jpg", "kind": "frame", "batch": "", "key": "m6564bad2", "rep": false, "geom": {"bbox": [1306, 33, 73, 50], "polygon": [1306.0, 45.0, 1328.0, 33.0, 1359.0, 39.0, 1375.0, 66.0, 1379.0, 80.0, 1366.0, 83.0, 1338.0, 64.0]}}
+      ]
+    },
+    {
+      "batch": "",
+      "note": "",
+      "members": [
+        {"image": "stacked/g024_Snap-21327-21329_focused.jpg", "kind": "stack", "batch": "", "key": "m68dc6793", "rep": true, "geom": {"bbox": [2495, 217, 49, 51], "polygon": [2499.0, 264.0, 2495.0, 242.0, 2505.0, 226.0, 2517.0, 219.0, 2530.0, 217.0, 2542.0, 218.0, 2544.0, 238.0, 2536.0, 259.0, 2519.0, 266.0, 2508.0, 268.0]}},
+        {"image": "photos/260729/WAP13-GC47 450cm/Snap-21327.jpg", "kind": "frame", "batch": "", "key": "m68dc6793", "rep": false, "geom": {"bbox": [2495, 217, 49, 51], "polygon": [2499.0, 264.0, 2495.0, 242.0, 2505.0, 226.0, 2517.0, 219.0, 2530.0, 217.0, 2542.0, 218.0, 2544.0, 238.0, 2536.0, 259.0, 2519.0, 266.0, 2508.0, 268.0]}},
+        {"image": "photos/260729/WAP13-GC47 450cm/Snap-21328.jpg", "kind": "frame", "batch": "", "key": "m68dc6793", "rep": false, "geom": {"bbox": [2495, 217, 49, 51], "polygon": [2499.0, 264.0, 2495.0, 242.0, 2505.0, 226.0, 2517.0, 219.0, 2530.0, 217.0, 2542.0, 218.0, 2544.0, 238.0, 2536.0, 259.0, 2519.0, 266.0, 2508.0, 268.0]}},
+        {"image": "photos/260729/WAP13-GC47 450cm/Snap-21329.jpg", "kind": "frame", "batch": "", "key": "m68dc6793", "rep": false, "geom": {"bbox": [2495, 217, 49, 51], "polygon": [2499.0, 264.0, 2495.0, 242.0, 2505.0, 226.0, 2517.0, 219.0, 2530.0, 217.0, 2542.0, 218.0, 2544.0, 238.0, 2536.0, 259.0, 2519.0, 266.0, 2508.0, 268.0]}}
+      ]
+    },
+    {
+      "batch": "",
+      "note": "",
+      "members": [
+        {"image": "stacked/g024_Snap-21327-21329_focused.jpg", "kind": "stack", "batch": "", "key": "m6996c041", "rep": true, "geom": {"bbox": [960, 444, 71, 37], "polygon": [962.0, 469.0, 960.0, 481.0, 1031.0, 479.0, 1017.0, 453.0, 989.0, 444.0]}},
+        {"image": "photos/260729/WAP13-GC47 450cm/Snap-21327.jpg", "kind": "frame", "batch": "", "key": "m6996c041", "rep": false, "geom": {"bbox": [960, 444, 71, 37], "polygon": [962.0, 469.0, 960.0, 481.0, 1031.0, 479.0, 1017.0, 453.0, 989.0, 444.0]}},
+        {"image": "photos/260729/WAP13-GC47 450cm/Snap-21328.jpg", "kind": "frame", "batch": "", "key": "m6996c041", "rep": false, "geom": {"bbox": [960, 444, 71, 37], "polygon": [962.0, 469.0, 960.0, 481.0, 1031.0, 479.0, 1017.0, 453.0, 989.0, 444.0]}},
+        {"image": "photos/260729/WAP13-GC47 450cm/Snap-21329.jpg", "kind": "frame", "batch": "", "key": "m6996c041", "rep": false, "geom": {"bbox": [960, 444, 71, 37], "polygon": [962.0, 469.0, 960.0, 481.0, 1031.0, 479.0, 1017.0, 453.0, 989.0, 444.0]}}
+      ]
+    },
+    {
+      "batch": "",
+      "note": "",
+      "members": [
+        {"image": "stacked/g024_Snap-21327-21329_focused.jpg", "kind": "stack", "batch": "", "key": "m86cc587e", "rep": true, "geom": {"bbox": [146, 1116, 88, 54], "polygon": [146.0, 1153.0, 163.0, 1122.0, 188.0, 1119.0, 216.0, 1116.0, 232.0, 1125.0, 234.0, 1141.0, 225.0, 1154.0, 208.0, 1165.0, 193.0, 1169.0, 167.0, 1170.0, 148.0, 1164.0]}},
+        {"image": "photos/260729/WAP13-GC47 450cm/Snap-21327.jpg", "kind": "frame", "batch": "", "key": "m86cc587e", "rep": false, "geom": {"bbox": [146, 1116, 88, 54], "polygon": [146.0, 1153.0, 163.0, 1122.0, 188.0, 1119.0, 216.0, 1116.0, 232.0, 1125.0, 234.0, 1141.0, 225.0, 1154.0, 208.0, 1165.0, 193.0, 1169.0, 167.0, 1170.0, 148.0, 1164.0]}},
+        {"image": "photos/260729/WAP13-GC47 450cm/Snap-21328.jpg", "kind": "frame", "batch": "", "key": "m86cc587e", "rep": false, "geom": {"bbox": [146, 1116, 88, 54], "polygon": [146.0, 1153.0, 163.0, 1122.0, 188.0, 1119.0, 216.0, 1116.0, 232.0, 1125.0, 234.0, 1141.0, 225.0, 1154.0, 208.0, 1165.0, 193.0, 1169.0, 167.0, 1170.0, 148.0, 1164.0]}},
+        {"image": "photos/260729/WAP13-GC47 450cm/Snap-21329.jpg", "kind": "frame", "batch": "", "key": "m86cc587e", "rep": false, "geom": {"bbox": [146, 1116, 88, 54], "polygon": [146.0, 1153.0, 163.0, 1122.0, 188.0, 1119.0, 216.0, 1116.0, 232.0, 1125.0, 234.0, 1141.0, 225.0, 1154.0, 208.0, 1165.0, 193.0, 1169.0, 167.0, 1170.0, 148.0, 1164.0]}}
+      ]
+    },
+    {
+      "batch": "",
+      "note": "",
+      "members": [
+        {"image": "stacked/g024_Snap-21327-21329_focused.jpg", "kind": "stack", "batch": "", "key": "m8a0c6467", "rep": true, "geom": {"bbox": [1759, 921, 77, 58], "polygon": [1759.0, 930.0, 1764.0, 921.0, 1813.0, 935.0, 1836.0, 965.0, 1827.0, 979.0, 1789.0, 961.0]}},
+        {"image": "photos/260729/WAP13-GC47 450cm/Snap-21327.jpg", "kind": "frame", "batch": "", "key": "m8a0c6467", "rep": false, "geom": {"bbox": [1759, 921, 77, 58], "polygon": [1759.0, 930.0, 1764.0, 921.0, 1813.0, 935.0, 1836.0, 965.0, 1827.0, 979.0, 1789.0, 961.0]}},
+        {"image": "photos/260729/WAP13-GC47 450cm/Snap-21328.jpg", "kind": "frame", "batch": "", "key": "m8a0c6467", "rep": false, "geom": {"bbox": [1759, 921, 77, 58], "polygon": [1759.0, 930.0, 1764.0, 921.0, 1813.0, 935.0, 1836.0, 965.0, 1827.0, 979.0, 1789.0, 961.0]}},
+        {"image": "photos/260729/WAP13-GC47 450cm/Snap-21329.jpg", "kind": "frame", "batch": "", "key": "m8a0c6467", "rep": false, "geom": {"bbox": [1759, 921, 77, 58], "polygon": [1759.0, 930.0, 1764.0, 921.0, 1813.0, 935.0, 1836.0, 965.0, 1827.0, 979.0, 1789.0, 961.0]}}
+      ]
+    },
+    {
+      "batch": "",
+      "note": "",
+      "members": [
+        {"image": "stacked/g024_Snap-21327-21329_focused.jpg", "kind": "stack", "batch": "", "key": "m8a3d6363", "rep": true, "geom": {"bbox": [193, 1557, 45, 61], "polygon": [209.0, 1618.0, 223.0, 1618.0, 238.0, 1594.0, 229.0, 1557.0, 213.0, 1557.0, 194.0, 1576.0, 193.0, 1594.0]}},
+        {"image": "photos/260729/WAP13-GC47 450cm/Snap-21327.jpg", "kind": "frame", "batch": "", "key": "m8a3d6363", "rep": false, "geom": {"bbox": [193, 1557, 45, 61], "polygon": [209.0, 1618.0, 223.0, 1618.0, 238.0, 1594.0, 229.0, 1557.0, 213.0, 1557.0, 194.0, 1576.0, 193.0, 1594.0]}},
+        {"image": "photos/260729/WAP13-GC47 450cm/Snap-21328.jpg", "kind": "frame", "batch": "", "key": "m8a3d6363", "rep": false, "geom": {"bbox": [193, 1557, 45, 61], "polygon": [209.0, 1618.0, 223.0, 1618.0, 238.0, 1594.0, 229.0, 1557.0, 213.0, 1557.0, 194.0, 1576.0, 193.0, 1594.0]}},
+        {"image": "photos/260729/WAP13-GC47 450cm/Snap-21329.jpg", "kind": "frame", "batch": "", "key": "m8a3d6363", "rep": false, "geom": {"bbox": [193, 1557, 45, 61], "polygon": [209.0, 1618.0, 223.0, 1618.0, 238.0, 1594.0, 229.0, 1557.0, 213.0, 1557.0, 194.0, 1576.0, 193.0, 1594.0]}}
+      ]
+    },
+    {
+      "batch": "",
+      "note": "",
+      "members": [
+        {"image": "stacked/g024_Snap-21327-21329_focused.jpg", "kind": "stack", "batch": "", "key": "m9054c6ab", "rep": true, "geom": {"bbox": [1916, 2097, 91, 88], "polygon": [1916.0, 2170.0, 1940.0, 2124.0, 1984.0, 2098.0, 2003.0, 2097.0, 2007.0, 2114.0, 1998.0, 2145.0, 1980.0, 2165.0, 1927.0, 2185.0]}},
+        {"image": "photos/260729/WAP13-GC47 450cm/Snap-21327.jpg", "kind": "frame", "batch": "", "key": "m9054c6ab", "rep": false, "geom": {"bbox": [1916, 2097, 91, 88], "polygon": [1916.0, 2170.0, 1940.0, 2124.0, 1984.0, 2098.0, 2003.0, 2097.0, 2007.0, 2114.0, 1998.0, 2145.0, 1980.0, 2165.0, 1927.0, 2185.0]}},
+        {"image": "photos/260729/WAP13-GC47 450cm/Snap-21328.jpg", "kind": "frame", "batch": "", "key": "m9054c6ab", "rep": false, "geom": {"bbox": [1916, 2097, 91, 88], "polygon": [1916.0, 2170.0, 1940.0, 2124.0, 1984.0, 2098.0, 2003.0, 2097.0, 2007.0, 2114.0, 1998.0, 2145.0, 1980.0, 2165.0, 1927.0, 2185.0]}},
+        {"image": "photos/260729/WAP13-GC47 450cm/Snap-21329.jpg", "kind": "frame", "batch": "", "key": "m9054c6ab", "rep": false, "geom": {"bbox": [1916, 2097, 91, 88], "polygon": [1916.0, 2170.0, 1940.0, 2124.0, 1984.0, 2098.0, 2003.0, 2097.0, 2007.0, 2114.0, 1998.0, 2145.0, 1980.0, 2165.0, 1927.0, 2185.0]}}
+      ]
+    },
+    {
+      "batch": "",
+      "note": "",
+      "members": [
+        {"image": "stacked/g024_Snap-21327-21329_focused.jpg", "kind": "stack", "batch": "", "key": "ma593d8bc", "rep": true, "geom": {"bbox": [1429, 155, 80, 48], "polygon": [1429.0, 191.0, 1443.0, 165.0, 1491.0, 155.0, 1504.0, 161.0, 1509.0, 171.0, 1509.0, 185.0, 1482.0, 198.0, 1464.0, 203.0, 1440.0, 197.0]}},
+        {"image": "photos/260729/WAP13-GC47 450cm/Snap-21327.jpg", "kind": "frame", "batch": "", "key": "ma593d8bc", "rep": false, "geom": {"bbox": [1429, 155, 80, 48], "polygon": [1429.0, 191.0, 1443.0, 165.0, 1491.0, 155.0, 1504.0, 161.0, 1509.0, 171.0, 1509.0, 185.0, 1482.0, 198.0, 1464.0, 203.0, 1440.0, 197.0]}},
+        {"image": "photos/260729/WAP13-GC47 450cm/Snap-21328.jpg", "kind": "frame", "batch": "", "key": "ma593d8bc", "rep": false, "geom": {"bbox": [1429, 155, 80, 48], "polygon": [1429.0, 191.0, 1443.0, 165.0, 1491.0, 155.0, 1504.0, 161.0, 1509.0, 171.0, 1509.0, 185.0, 1482.0, 198.0, 1464.0, 203.0, 1440.0, 197.0]}},
+        {"image": "photos/260729/WAP13-GC47 450cm/Snap-21329.jpg", "kind": "frame", "batch": "", "key": "ma593d8bc", "rep": false, "geom": {"bbox": [1429, 155, 80, 48], "polygon": [1429.0, 191.0, 1443.0, 165.0, 1491.0, 155.0, 1504.0, 161.0, 1509.0, 171.0, 1509.0, 185.0, 1482.0, 198.0, 1464.0, 203.0, 1440.0, 197.0]}}
+      ]
+    },
+    {
+      "batch": "",
+      "note": "",
+      "members": [
+        {"image": "stacked/g024_Snap-21327-21329_focused.jpg", "kind": "stack", "batch": "", "key": "madc2de34", "rep": true, "geom": {"bbox": [2338, 37, 50, 85], "polygon": [2350.0, 119.0, 2338.0, 95.0, 2338.0, 69.0, 2339.0, 47.0, 2359.0, 37.0, 2378.0, 49.0, 2388.0, 76.0, 2384.0, 113.0, 2370.0, 122.0]}},
+        {"image": "photos/260729/WAP13-GC47 450cm/Snap-21327.jpg", "kind": "frame", "batch": "", "key": "madc2de34", "rep": false, "geom": {"bbox": [2338, 37, 50, 85], "polygon": [2350.0, 119.0, 2338.0, 95.0, 2338.0, 69.0, 2339.0, 47.0, 2359.0, 37.0, 2378.0, 49.0, 2388.0, 76.0, 2384.0, 113.0, 2370.0, 122.0]}},
+        {"image": "photos/260729/WAP13-GC47 450cm/Snap-21328.jpg", "kind": "frame", "batch": "", "key": "madc2de34", "rep": false, "geom": {"bbox": [2338, 37, 50, 85], "polygon": [2350.0, 119.0, 2338.0, 95.0, 2338.0, 69.0, 2339.0, 47.0, 2359.0, 37.0, 2378.0, 49.0, 2388.0, 76.0, 2384.0, 113.0, 2370.0, 122.0]}},
+        {"image": "photos/260729/WAP13-GC47 450cm/Snap-21329.jpg", "kind": "frame", "batch": "", "key": "madc2de34", "rep": false, "geom": {"bbox": [2338, 37, 50, 85], "polygon": [2350.0, 119.0, 2338.0, 95.0, 2338.0, 69.0, 2339.0, 47.0, 2359.0, 37.0, 2378.0, 49.0, 2388.0, 76.0, 2384.0, 113.0, 2370.0, 122.0]}}
+      ]
+    },
+    {
+      "batch": "",
+      "note": "",
+      "members": [
+        {"image": "stacked/g024_Snap-21327-21329_focused.jpg", "kind": "stack", "batch": "", "key": "maee587a1", "rep": true, "geom": {"bbox": [1436, 1039, 39, 42], "polygon": [1438.0, 1069.0, 1436.0, 1049.0, 1438.0, 1041.0, 1452.0, 1039.0, 1464.0, 1039.0, 1475.0, 1050.0, 1475.0, 1067.0, 1469.0, 1079.0, 1459.0, 1081.0, 1445.0, 1075.0]}},
+        {"image": "photos/260729/WAP13-GC47 450cm/Snap-21327.jpg", "kind": "frame", "batch": "", "key": "maee587a1", "rep": false, "geom": {"bbox": [1436, 1039, 39, 42], "polygon": [1438.0, 1069.0, 1436.0, 1049.0, 1438.0, 1041.0, 1452.0, 1039.0, 1464.0, 1039.0, 1475.0, 1050.0, 1475.0, 1067.0, 1469.0, 1079.0, 1459.0, 1081.0, 1445.0, 1075.0]}},
+        {"image": "photos/260729/WAP13-GC47 450cm/Snap-21328.jpg", "kind": "frame", "batch": "", "key": "maee587a1", "rep": false, "geom": {"bbox": [1436, 1039, 39, 42], "polygon": [1438.0, 1069.0, 1436.0, 1049.0, 1438.0, 1041.0, 1452.0, 1039.0, 1464.0, 1039.0, 1475.0, 1050.0, 1475.0, 1067.0, 1469.0, 1079.0, 1459.0, 1081.0, 1445.0, 1075.0]}},
+        {"image": "photos/260729/WAP13-GC47 450cm/Snap-21329.jpg", "kind": "frame", "batch": "", "key": "maee587a1", "rep": false, "geom": {"bbox": [1436, 1039, 39, 42], "polygon": [1438.0, 1069.0, 1436.0, 1049.0, 1438.0, 1041.0, 1452.0, 1039.0, 1464.0, 1039.0, 1475.0, 1050.0, 1475.0, 1067.0, 1469.0, 1079.0, 1459.0, 1081.0, 1445.0, 1075.0]}}
+      ]
+    },
+    {
+      "batch": "",
+      "note": "",
+      "members": [
+        {"image": "stacked/g024_Snap-21327-21329_focused.jpg", "kind": "stack", "batch": "", "key": "mb824423c", "rep": true, "geom": {"bbox": [1698, 1158, 66, 73], "polygon": [1699.0, 1181.0, 1706.0, 1204.0, 1717.0, 1219.0, 1739.0, 1231.0, 1751.0, 1229.0, 1763.0, 1212.0, 1764.0, 1196.0, 1755.0, 1170.0, 1737.0, 1160.0, 1715.0, 1158.0, 1698.0, 1166.0]}},
+        {"image": "photos/260729/WAP13-GC47 450cm/Snap-21327.jpg", "kind": "frame", "batch": "", "key": "mb824423c", "rep": false, "geom": {"bbox": [1698, 1158, 66, 73], "polygon": [1699.0, 1181.0, 1706.0, 1204.0, 1717.0, 1219.0, 1739.0, 1231.0, 1751.0, 1229.0, 1763.0, 1212.0, 1764.0, 1196.0, 1755.0, 1170.0, 1737.0, 1160.0, 1715.0, 1158.0, 1698.0, 1166.0]}},
+        {"image": "photos/260729/WAP13-GC47 450cm/Snap-21328.jpg", "kind": "frame", "batch": "", "key": "mb824423c", "rep": false, "geom": {"bbox": [1698, 1158, 66, 73], "polygon": [1699.0, 1181.0, 1706.0, 1204.0, 1717.0, 1219.0, 1739.0, 1231.0, 1751.0, 1229.0, 1763.0, 1212.0, 1764.0, 1196.0, 1755.0, 1170.0, 1737.0, 1160.0, 1715.0, 1158.0, 1698.0, 1166.0]}},
+        {"image": "photos/260729/WAP13-GC47 450cm/Snap-21329.jpg", "kind": "frame", "batch": "", "key": "mb824423c", "rep": false, "geom": {"bbox": [1698, 1158, 66, 73], "polygon": [1699.0, 1181.0, 1706.0, 1204.0, 1717.0, 1219.0, 1739.0, 1231.0, 1751.0, 1229.0, 1763.0, 1212.0, 1764.0, 1196.0, 1755.0, 1170.0, 1737.0, 1160.0, 1715.0, 1158.0, 1698.0, 1166.0]}}
+      ]
+    },
+    {
+      "batch": "",
+      "note": "",
+      "members": [
+        {"image": "stacked/g024_Snap-21327-21329_focused.jpg", "kind": "stack", "batch": "", "key": "mbb464040", "rep": true, "geom": {"bbox": [2638, 1186, 106, 77], "polygon": [2638.0, 1199.0, 2651.0, 1186.0, 2713.0, 1199.0, 2744.0, 1249.0, 2730.0, 1263.0, 2669.0, 1252.0]}},
+        {"image": "photos/260729/WAP13-GC47 450cm/Snap-21327.jpg", "kind": "frame", "batch": "", "key": "mbb464040", "rep": false, "geom": {"bbox": [2638, 1186, 106, 77], "polygon": [2638.0, 1199.0, 2651.0, 1186.0, 2713.0, 1199.0, 2744.0, 1249.0, 2730.0, 1263.0, 2669.0, 1252.0]}},
+        {"image": "photos/260729/WAP13-GC47 450cm/Snap-21328.jpg", "kind": "frame", "batch": "", "key": "mbb464040", "rep": false, "geom": {"bbox": [2638, 1186, 106, 77], "polygon": [2638.0, 1199.0, 2651.0, 1186.0, 2713.0, 1199.0, 2744.0, 1249.0, 2730.0, 1263.0, 2669.0, 1252.0]}},
+        {"image": "photos/260729/WAP13-GC47 450cm/Snap-21329.jpg", "kind": "frame", "batch": "", "key": "mbb464040", "rep": false, "geom": {"bbox": [2638, 1186, 106, 77], "polygon": [2638.0, 1199.0, 2651.0, 1186.0, 2713.0, 1199.0, 2744.0, 1249.0, 2730.0, 1263.0, 2669.0, 1252.0]}}
+      ]
+    },
+    {
+      "batch": "",
+      "note": "",
+      "members": [
+        {"image": "stacked/g024_Snap-21327-21329_focused.jpg", "kind": "stack", "batch": "", "key": "mc6e5504f", "rep": true, "geom": {"bbox": [233, 955, 51, 31], "polygon": [237.0, 955.0, 233.0, 975.0, 248.0, 983.0, 270.0, 986.0, 284.0, 979.0, 284.0, 961.0]}},
+        {"image": "photos/260729/WAP13-GC47 450cm/Snap-21327.jpg", "kind": "frame", "batch": "", "key": "mc6e5504f", "rep": false, "geom": {"bbox": [233, 955, 51, 31], "polygon": [237.0, 955.0, 233.0, 975.0, 248.0, 983.0, 270.0, 986.0, 284.0, 979.0, 284.0, 961.0]}},
+        {"image": "photos/260729/WAP13-GC47 450cm/Snap-21328.jpg", "kind": "frame", "batch": "", "key": "mc6e5504f", "rep": false, "geom": {"bbox": [233, 955, 51, 31], "polygon": [237.0, 955.0, 233.0, 975.0, 248.0, 983.0, 270.0, 986.0, 284.0, 979.0, 284.0, 961.0]}},
+        {"image": "photos/260729/WAP13-GC47 450cm/Snap-21329.jpg", "kind": "frame", "batch": "", "key": "mc6e5504f", "rep": false, "geom": {"bbox": [233, 955, 51, 31], "polygon": [237.0, 955.0, 233.0, 975.0, 248.0, 983.0, 270.0, 986.0, 284.0, 979.0, 284.0, 961.0]}}
+      ]
+    },
+    {
+      "batch": "",
+      "note": "",
+      "members": [
+        {"image": "stacked/g024_Snap-21327-21329_focused.jpg", "kind": "stack", "batch": "", "key": "mc97e3172", "rep": true, "geom": {"bbox": [2272, 424, 62, 66], "polygon": [2279.0, 473.0, 2272.0, 441.0, 2282.0, 430.0, 2296.0, 424.0, 2334.0, 453.0, 2334.0, 467.0, 2324.0, 484.0, 2311.0, 490.0, 2294.0, 486.0]}},
+        {"image": "photos/260729/WAP13-GC47 450cm/Snap-21327.jpg", "kind": "frame", "batch": "", "key": "mc97e3172", "rep": false, "geom": {"bbox": [2272, 424, 62, 66], "polygon": [2279.0, 473.0, 2272.0, 441.0, 2282.0, 430.0, 2296.0, 424.0, 2334.0, 453.0, 2334.0, 467.0, 2324.0, 484.0, 2311.0, 490.0, 2294.0, 486.0]}},
+        {"image": "photos/260729/WAP13-GC47 450cm/Snap-21328.jpg", "kind": "frame", "batch": "", "key": "mc97e3172", "rep": false, "geom": {"bbox": [2272, 424, 62, 66], "polygon": [2279.0, 473.0, 2272.0, 441.0, 2282.0, 430.0, 2296.0, 424.0, 2334.0, 453.0, 2334.0, 467.0, 2324.0, 484.0, 2311.0, 490.0, 2294.0, 486.0]}},
+        {"image": "photos/260729/WAP13-GC47 450cm/Snap-21329.jpg", "kind": "frame", "batch": "", "key": "mc97e3172", "rep": false, "geom": {"bbox": [2272, 424, 62, 66], "polygon": [2279.0, 473.0, 2272.0, 441.0, 2282.0, 430.0, 2296.0, 424.0, 2334.0, 453.0, 2334.0, 467.0, 2324.0, 484.0, 2311.0, 490.0, 2294.0, 486.0]}}
+      ]
+    },
+    {
+      "batch": "",
+      "note": "",
+      "members": [
+        {"image": "stacked/g024_Snap-21327-21329_focused.jpg", "kind": "stack", "batch": "", "key": "mccd43944", "rep": true, "geom": {"bbox": [1622, 442, 61, 43], "polygon": [1622.0, 459.0, 1642.0, 448.0, 1664.0, 442.0, 1680.0, 446.0, 1683.0, 457.0, 1683.0, 466.0, 1659.0, 485.0, 1641.0, 484.0, 1633.0, 479.0, 1627.0, 470.0]}},
+        {"image": "photos/260729/WAP13-GC47 450cm/Snap-21327.jpg", "kind": "frame", "batch": "", "key": "mccd43944", "rep": false, "geom": {"bbox": [1622, 442, 61, 43], "polygon": [1622.0, 459.0, 1642.0, 448.0, 1664.0, 442.0, 1680.0, 446.0, 1683.0, 457.0, 1683.0, 466.0, 1659.0, 485.0, 1641.0, 484.0, 1633.0, 479.0, 1627.0, 470.0]}},
+        {"image": "photos/260729/WAP13-GC47 450cm/Snap-21328.jpg", "kind": "frame", "batch": "", "key": "mccd43944", "rep": false, "geom": {"bbox": [1622, 442, 61, 43], "polygon": [1622.0, 459.0, 1642.0, 448.0, 1664.0, 442.0, 1680.0, 446.0, 1683.0, 457.0, 1683.0, 466.0, 1659.0, 485.0, 1641.0, 484.0, 1633.0, 479.0, 1627.0, 470.0]}},
+        {"image": "photos/260729/WAP13-GC47 450cm/Snap-21329.jpg", "kind": "frame", "batch": "", "key": "mccd43944", "rep": false, "geom": {"bbox": [1622, 442, 61, 43], "polygon": [1622.0, 459.0, 1642.0, 448.0, 1664.0, 442.0, 1680.0, 446.0, 1683.0, 457.0, 1683.0, 466.0, 1659.0, 485.0, 1641.0, 484.0, 1633.0, 479.0, 1627.0, 470.0]}}
+      ]
+    },
+    {
+      "batch": "",
+      "note": "",
+      "members": [
+        {"image": "stacked/g024_Snap-21327-21329_focused.jpg", "kind": "stack", "batch": "", "key": "mcf7cb2db", "rep": true, "geom": {"bbox": [914, 2069, 109, 67], "polygon": [921.0, 2129.0, 934.0, 2131.0, 936.0, 2136.0, 976.0, 2122.0, 1017.0, 2101.0, 1023.0, 2091.0, 1003.0, 2072.0, 935.0, 2069.0, 915.0, 2091.0, 914.0, 2109.0]}},
+        {"image": "photos/260729/WAP13-GC47 450cm/Snap-21327.jpg", "kind": "frame", "batch": "", "key": "mcf7cb2db", "rep": false, "geom": {"bbox": [914, 2069, 109, 67], "polygon": [921.0, 2129.0, 934.0, 2131.0, 936.0, 2136.0, 976.0, 2122.0, 1017.0, 2101.0, 1023.0, 2091.0, 1003.0, 2072.0, 935.0, 2069.0, 915.0, 2091.0, 914.0, 2109.0]}},
+        {"image": "photos/260729/WAP13-GC47 450cm/Snap-21328.jpg", "kind": "frame", "batch": "", "key": "mcf7cb2db", "rep": false, "geom": {"bbox": [914, 2069, 109, 67], "polygon": [921.0, 2129.0, 934.0, 2131.0, 936.0, 2136.0, 976.0, 2122.0, 1017.0, 2101.0, 1023.0, 2091.0, 1003.0, 2072.0, 935.0, 2069.0, 915.0, 2091.0, 914.0, 2109.0]}},
+        {"image": "photos/260729/WAP13-GC47 450cm/Snap-21329.jpg", "kind": "frame", "batch": "", "key": "mcf7cb2db", "rep": false, "geom": {"bbox": [914, 2069, 109, 67], "polygon": [921.0, 2129.0, 934.0, 2131.0, 936.0, 2136.0, 976.0, 2122.0, 1017.0, 2101.0, 1023.0, 2091.0, 1003.0, 2072.0, 935.0, 2069.0, 915.0, 2091.0, 914.0, 2109.0]}}
+      ]
+    },
+    {
+      "batch": "",
+      "note": "",
+      "members": [
+        {"image": "stacked/g024_Snap-21327-21329_focused.jpg", "kind": "stack", "batch": "", "key": "md0e4a676", "rep": true, "geom": {"bbox": [1900, 1493, 58, 60], "polygon": [1935.0, 1553.0, 1916.0, 1550.0, 1909.0, 1541.0, 1900.0, 1526.0, 1902.0, 1499.0, 1915.0, 1493.0, 1944.0, 1502.0, 1958.0, 1520.0, 1956.0, 1543.0, 1949.0, 1552.0]}},
+        {"image": "photos/260729/WAP13-GC47 450cm/Snap-21327.jpg", "kind": "frame", "batch": "", "key": "md0e4a676", "rep": false, "geom": {"bbox": [1900, 1493, 58, 60], "polygon": [1935.0, 1553.0, 1916.0, 1550.0, 1909.0, 1541.0, 1900.0, 1526.0, 1902.0, 1499.0, 1915.0, 1493.0, 1944.0, 1502.0, 1958.0, 1520.0, 1956.0, 1543.0, 1949.0, 1552.0]}},
+        {"image": "photos/260729/WAP13-GC47 450cm/Snap-21328.jpg", "kind": "frame", "batch": "", "key": "md0e4a676", "rep": false, "geom": {"bbox": [1900, 1493, 58, 60], "polygon": [1935.0, 1553.0, 1916.0, 1550.0, 1909.0, 1541.0, 1900.0, 1526.0, 1902.0, 1499.0, 1915.0, 1493.0, 1944.0, 1502.0, 1958.0, 1520.0, 1956.0, 1543.0, 1949.0, 1552.0]}},
+        {"image": "photos/260729/WAP13-GC47 450cm/Snap-21329.jpg", "kind": "frame", "batch": "", "key": "md0e4a676", "rep": false, "geom": {"bbox": [1900, 1493, 58, 60], "polygon": [1935.0, 1553.0, 1916.0, 1550.0, 1909.0, 1541.0, 1900.0, 1526.0, 1902.0, 1499.0, 1915.0, 1493.0, 1944.0, 1502.0, 1958.0, 1520.0, 1956.0, 1543.0, 1949.0, 1552.0]}}
+      ]
+    },
+    {
+      "batch": "",
+      "note": "",
+      "members": [
+        {"image": "stacked/g024_Snap-21327-21329_focused.jpg", "kind": "stack", "batch": "", "key": "me2127cdb", "rep": true, "geom": {"bbox": [239, 220, 124, 55], "polygon": [239.0, 236.0, 273.0, 259.0, 304.0, 273.0, 337.0, 275.0, 358.0, 274.0, 363.0, 265.0, 325.0, 225.0, 303.0, 224.0, 272.0, 220.0, 244.0, 223.0]}},
+        {"image": "photos/260729/WAP13-GC47 450cm/Snap-21327.jpg", "kind": "frame", "batch": "", "key": "me2127cdb", "rep": false, "geom": {"bbox": [239, 220, 124, 55], "polygon": [239.0, 236.0, 273.0, 259.0, 304.0, 273.0, 337.0, 275.0, 358.0, 274.0, 363.0, 265.0, 325.0, 225.0, 303.0, 224.0, 272.0, 220.0, 244.0, 223.0]}},
+        {"image": "photos/260729/WAP13-GC47 450cm/Snap-21328.jpg", "kind": "frame", "batch": "", "key": "me2127cdb", "rep": false, "geom": {"bbox": [239, 220, 124, 55], "polygon": [239.0, 236.0, 273.0, 259.0, 304.0, 273.0, 337.0, 275.0, 358.0, 274.0, 363.0, 265.0, 325.0, 225.0, 303.0, 224.0, 272.0, 220.0, 244.0, 223.0]}},
+        {"image": "photos/260729/WAP13-GC47 450cm/Snap-21329.jpg", "kind": "frame", "batch": "", "key": "me2127cdb", "rep": false, "geom": {"bbox": [239, 220, 124, 55], "polygon": [239.0, 236.0, 273.0, 259.0, 304.0, 273.0, 337.0, 275.0, 358.0, 274.0, 363.0, 265.0, 325.0, 225.0, 303.0, 224.0, 272.0, 220.0, 244.0, 223.0]}}
+      ]
+    },
+    {
+      "batch": "",
+      "note": "",
+      "members": [
+        {"image": "stacked/g024_Snap-21327-21329_focused.jpg", "kind": "stack", "batch": "", "key": "mee951330", "rep": true, "geom": {"bbox": [512, 388, 107, 56], "polygon": [512.0, 439.0, 542.0, 400.0, 567.0, 388.0, 616.0, 388.0, 619.0, 399.0, 596.0, 413.0, 571.0, 433.0, 545.0, 444.0]}},
+        {"image": "photos/260729/WAP13-GC47 450cm/Snap-21327.jpg", "kind": "frame", "batch": "", "key": "mee951330", "rep": false, "geom": {"bbox": [512, 388, 107, 56], "polygon": [512.0, 439.0, 542.0, 400.0, 567.0, 388.0, 616.0, 388.0, 619.0, 399.0, 596.0, 413.0, 571.0, 433.0, 545.0, 444.0]}},
+        {"image": "photos/260729/WAP13-GC47 450cm/Snap-21328.jpg", "kind": "frame", "batch": "", "key": "mee951330", "rep": false, "geom": {"bbox": [512, 388, 107, 56], "polygon": [512.0, 439.0, 542.0, 400.0, 567.0, 388.0, 616.0, 388.0, 619.0, 399.0, 596.0, 413.0, 571.0, 433.0, 545.0, 444.0]}},
+        {"image": "photos/260729/WAP13-GC47 450cm/Snap-21329.jpg", "kind": "frame", "batch": "", "key": "mee951330", "rep": false, "geom": {"bbox": [512, 388, 107, 56], "polygon": [512.0, 439.0, 542.0, 400.0, 567.0, 388.0, 616.0, 388.0, 619.0, 399.0, 596.0, 413.0, 571.0, 433.0, 545.0, 444.0]}}
+      ]
+    },
+    {
+      "batch": "",
+      "note": "",
+      "members": [
+        {"image": "stacked/g024_Snap-21327-21329_focused.jpg", "kind": "stack", "batch": "", "key": "mf46dfc41", "rep": true, "geom": {"bbox": [1496, 429, 46, 47], "polygon": [1496.0, 475.0, 1496.0, 450.0, 1516.0, 429.0, 1531.0, 429.0, 1540.0, 437.0, 1542.0, 453.0, 1537.0, 462.0, 1520.0, 471.0, 1504.0, 476.0]}},
+        {"image": "photos/260729/WAP13-GC47 450cm/Snap-21327.jpg", "kind": "frame", "batch": "", "key": "mf46dfc41", "rep": false, "geom": {"bbox": [1496, 429, 46, 47], "polygon": [1496.0, 475.0, 1496.0, 450.0, 1516.0, 429.0, 1531.0, 429.0, 1540.0, 437.0, 1542.0, 453.0, 1537.0, 462.0, 1520.0, 471.0, 1504.0, 476.0]}},
+        {"image": "photos/260729/WAP13-GC47 450cm/Snap-21328.jpg", "kind": "frame", "batch": "", "key": "mf46dfc41", "rep": false, "geom": {"bbox": [1496, 429, 46, 47], "polygon": [1496.0, 475.0, 1496.0, 450.0, 1516.0, 429.0, 1531.0, 429.0, 1540.0, 437.0, 1542.0, 453.0, 1537.0, 462.0, 1520.0, 471.0, 1504.0, 476.0]}},
+        {"image": "photos/260729/WAP13-GC47 450cm/Snap-21329.jpg", "kind": "frame", "batch": "", "key": "mf46dfc41", "rep": false, "geom": {"bbox": [1496, 429, 46, 47], "polygon": [1496.0, 475.0, 1496.0, 450.0, 1516.0, 429.0, 1531.0, 429.0, 1540.0, 437.0, 1542.0, 453.0, 1537.0, 462.0, 1520.0, 471.0, 1504.0, 476.0]}}
+      ]
+    },
+    {
+      "batch": "",
+      "note": "",
+      "members": [
+        {"image": "stacked/g024_Snap-21327-21329_focused.jpg", "kind": "stack", "batch": "", "key": "mf4819a31", "rep": true, "geom": {"bbox": [537, 1843, 70, 34], "polygon": [541.0, 1844.0, 537.0, 1857.0, 567.0, 1877.0, 604.0, 1872.0, 607.0, 1859.0, 569.0, 1843.0]}},
+        {"image": "photos/260729/WAP13-GC47 450cm/Snap-21327.jpg", "kind": "frame", "batch": "", "key": "mf4819a31", "rep": false, "geom": {"bbox": [537, 1843, 70, 34], "polygon": [541.0, 1844.0, 537.0, 1857.0, 567.0, 1877.0, 604.0, 1872.0, 607.0, 1859.0, 569.0, 1843.0]}},
+        {"image": "photos/260729/WAP13-GC47 450cm/Snap-21328.jpg", "kind": "frame", "batch": "", "key": "mf4819a31", "rep": false, "geom": {"bbox": [537, 1843, 70, 34], "polygon": [541.0, 1844.0, 537.0, 1857.0, 567.0, 1877.0, 604.0, 1872.0, 607.0, 1859.0, 569.0, 1843.0]}},
+        {"image": "photos/260729/WAP13-GC47 450cm/Snap-21329.jpg", "kind": "frame", "batch": "", "key": "mf4819a31", "rep": false, "geom": {"bbox": [537, 1843, 70, 34], "polygon": [541.0, 1844.0, 537.0, 1857.0, 567.0, 1877.0, 604.0, 1872.0, 607.0, 1859.0, 569.0, 1843.0]}}
+      ]
+    },
+    {
+      "batch": "",
+      "note": "",
+      "members": [
+        {"image": "stacked/g024_Snap-21327-21329_focused.jpg", "kind": "stack", "batch": "", "key": "mfc5695ac", "rep": true, "geom": {"bbox": [1617, 348, 58, 73], "polygon": [1626.0, 417.0, 1617.0, 390.0, 1622.0, 354.0, 1644.0, 350.0, 1656.0, 348.0, 1667.0, 364.0, 1675.0, 381.0, 1672.0, 403.0, 1653.0, 421.0]}},
+        {"image": "photos/260729/WAP13-GC47 450cm/Snap-21327.jpg", "kind": "frame", "batch": "", "key": "mfc5695ac", "rep": false, "geom": {"bbox": [1617, 348, 58, 73], "polygon": [1626.0, 417.0, 1617.0, 390.0, 1622.0, 354.0, 1644.0, 350.0, 1656.0, 348.0, 1667.0, 364.0, 1675.0, 381.0, 1672.0, 403.0, 1653.0, 421.0]}},
+        {"image": "photos/260729/WAP13-GC47 450cm/Snap-21328.jpg", "kind": "frame", "batch": "", "key": "mfc5695ac", "rep": false, "geom": {"bbox": [1617, 348, 58, 73], "polygon": [1626.0, 417.0, 1617.0, 390.0, 1622.0, 354.0, 1644.0, 350.0, 1656.0, 348.0, 1667.0, 364.0, 1675.0, 381.0, 1672.0, 403.0, 1653.0, 421.0]}},
+        {"image": "photos/260729/WAP13-GC47 450cm/Snap-21329.jpg", "kind": "frame", "batch": "", "key": "mfc5695ac", "rep": false, "geom": {"bbox": [1617, 348, 58, 73], "polygon": [1626.0, 417.0, 1617.0, 390.0, 1622.0, 354.0, 1644.0, 350.0, 1656.0, 348.0, 1667.0, 364.0, 1675.0, 381.0, 1672.0, 403.0, 1653.0, 421.0]}}
+      ]
+    },
+    {
+      "batch": "",
+      "note": "",
+      "members": [
+        {"image": "stacked/g024_Snap-21327-21329_focused.jpg", "kind": "stack", "batch": "", "key": "mfe5ef396", "rep": true, "geom": {"bbox": [198, 997, 73, 88], "polygon": [198.0, 1010.0, 203.0, 1033.0, 209.0, 1050.0, 249.0, 1082.0, 266.0, 1085.0, 271.0, 1069.0, 271.0, 1039.0, 249.0, 1015.0, 222.0, 998.0, 203.0, 997.0]}},
+        {"image": "photos/260729/WAP13-GC47 450cm/Snap-21327.jpg", "kind": "frame", "batch": "", "key": "mfe5ef396", "rep": false, "geom": {"bbox": [198, 997, 73, 88], "polygon": [198.0, 1010.0, 203.0, 1033.0, 209.0, 1050.0, 249.0, 1082.0, 266.0, 1085.0, 271.0, 1069.0, 271.0, 1039.0, 249.0, 1015.0, 222.0, 998.0, 203.0, 997.0]}},
+        {"image": "photos/260729/WAP13-GC47 450cm/Snap-21328.jpg", "kind": "frame", "batch": "", "key": "mfe5ef396", "rep": false, "geom": {"bbox": [198, 997, 73, 88], "polygon": [198.0, 1010.0, 203.0, 1033.0, 209.0, 1050.0, 249.0, 1082.0, 266.0, 1085.0, 271.0, 1069.0, 271.0, 1039.0, 249.0, 1015.0, 222.0, 998.0, 203.0, 997.0]}},
+        {"image": "photos/260729/WAP13-GC47 450cm/Snap-21329.jpg", "kind": "frame", "batch": "", "key": "mfe5ef396", "rep": false, "geom": {"bbox": [198, 997, 73, 88], "polygon": [198.0, 1010.0, 203.0, 1033.0, 209.0, 1050.0, 249.0, 1082.0, 266.0, 1085.0, 271.0, 1069.0, 271.0, 1039.0, 249.0, 1015.0, 222.0, 998.0, 203.0, 997.0]}}
+      ]
+    }
+  ]
 }

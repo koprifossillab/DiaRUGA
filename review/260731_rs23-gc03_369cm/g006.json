@@ -3,12 +3,33 @@
   "slide": "260731_rs23-gc03_369cm",
   "gid": 6,
   "tag": "g006_Snap-21687-21691",
-  "done": false,
+  "done": true,
   "note": "",
-  "n_images": 1,
-  "n_objects": 12,
-  "n_links": 0,
+  "n_images": 13,
+  "n_objects": 145,
+  "n_links": 16,
   "images": [
+    {
+      "image": "stacked/g006_Snap-21687-21691_focused.jpg",
+      "kind": "stack",
+      "batch": "",
+      "n_objects": 13,
+      "objects": [
+        {"key": "m2131d37e", "removed": false, "accepted": false, "label": "eucampia", "note": "", "bind": "manual", "species": "Eucampia antarctica", "grade": "B", "pose": "girdle", "source": "manual", "geom": {"bbox": [431, 1084, 501, 303], "polygon": [907.0, 1084.0, 932.0, 1307.0, 456.0, 1387.0, 431.0, 1146.0, 508.0, 1129.0, 536.0, 1201.0, 551.0, 1229.0, 600.0, 1269.0, 704.0, 1226.0, 774.0, 1243.0, 801.0, 1221.0, 811.0, 1187.0, 840.0, 1090.0]}},
+        {"key": "m30e8c85d", "removed": false, "accepted": false, "label": "rod", "note": "", "bind": "manual", "species": "Fragilariopsis curta", "grade": "C", "pose": "valve", "source": "manual", "geom": {"bbox": [1295, 570, 72, 243], "polygon": [1305.0, 570.0, 1295.0, 761.0, 1301.0, 796.0, 1318.0, 813.0, 1350.0, 808.0, 1363.0, 771.0, 1367.0, 581.0]}},
+        {"key": "m41417592", "removed": false, "accepted": false, "label": "rod_frag", "note": "", "bind": "manual", "source": "manual", "geom": {"bbox": [1512, 1330, 79, 55], "polygon": [1531.0, 1330.0, 1512.0, 1364.0, 1571.0, 1385.0, 1591.0, 1355.0]}},
+        {"key": "m47f14bea", "removed": false, "accepted": false, "label": "round_frag", "note": "", "bind": "manual", "source": "manual", "geom": {"bbox": [1482, 585, 50, 75], "polygon": [1482.0, 585.0, 1485.0, 660.0, 1532.0, 639.0, 1523.0, 616.0]}},
+        {"key": "m6ff4ab43", "removed": false, "accepted": false, "label": "rod_frag", "note": "", "bind": "manual", "source": "manual", "geom": {"bbox": [336, 1494, 46, 221], "polygon": [372.0, 1496.0, 382.0, 1696.0, 371.0, 1715.0, 350.0, 1712.0, 338.0, 1696.0, 336.0, 1494.0]}},
+        {"key": "m7b637ce7", "removed": false, "accepted": false, "label": "rod_frag", "note": "", "bind": "manual", "source": "manual", "geom": {"bbox": [1016, 1890, 202, 112], "polygon": [1181.0, 1890.0, 1019.0, 1966.0, 1016.0, 1988.0, 1024.0, 2002.0, 1047.0, 1998.0, 1184.0, 1939.0, 1218.0, 1928.0]}},
+        {"key": "m831c175f", "removed": false, "accepted": false, "label": "rod_frag", "note": "", "bind": "manual", "source": "manual", "geom": {"bbox": [2019, 1146, 139, 377], "polygon": [2019.0, 1153.0, 2129.0, 1523.0, 2157.0, 1509.0, 2158.0, 1467.0, 2066.0, 1146.0]}},
+        {"key": "m839829df", "removed": false, "accepted": false, "label": "rod_frag", "note": "", "bind": "manual", "source": "manual", "geom": {"bbox": [412, 1421, 61, 141], "polygon": [412.0, 1440.0, 415.0, 1536.0, 417.0, 1562.0, 473.0, 1542.0, 460.0, 1441.0, 450.0, 1423.0, 434.0, 1421.0, 421.0, 1428.0]}},
+        {"key": "ma083a57b", "removed": false, "accepted": false, "label": "round_frag", "note": "", "bind": "manual", "source": "manual", "geom": {"bbox": [587, 1453, 137, 235], "polygon": [587.0, 1590.0, 589.0, 1674.0, 646.0, 1688.0, 663.0, 1658.0, 664.0, 1636.0, 688.0, 1620.0, 700.0, 1582.0, 723.0, 1560.0, 724.0, 1543.0, 696.0, 1476.0, 674.0, 1464.0, 652.0, 1453.0, 630.0, 1463.0, 628.0, 1499.0, 626.0, 1541.0, 614.0, 1564.0]}},
+        {"key": "maebd8059", "removed": false, "accepted": false, "label": "round", "note": "", "bind": "manual", "grade": "C", "pose": "valve", "source": "manual", "geom": {"bbox": [1133, 3, 398, 266], "polygon": [1531.0, 24.0, 1482.0, 198.0, 1425.0, 228.0, 1373.0, 259.0, 1298.0, 269.0, 1244.0, 264.0, 1163.0, 238.0, 1133.0, 124.0, 1155.0, 37.0, 1196.0, 3.0, 1522.0, 3.0]}},
+        {"key": "mb038da97", "removed": false, "accepted": false, "label": "rod_frag", "note": "", "bind": "manual", "source": "manual", "geom": {"bbox": [1561, 383, 55, 141], "polygon": [1573.0, 383.0, 1561.0, 524.0, 1593.0, 524.0, 1616.0, 460.0, 1588.0, 428.0]}},
+        {"key": "mb6d3a721", "removed": false, "accepted": false, "label": "rod_frag", "note": "", "bind": "manual", "species": "Fragilariopsis kerguelensis", "source": "manual", "geom": {"bbox": [402, 919, 205, 235], "polygon": [402.0, 1115.0, 463.0, 1154.0, 607.0, 947.0, 565.0, 919.0]}},
+        {"key": "mda7e0c98", "removed": false, "accepted": false, "label": "rod_frag", "note": "", "bind": "manual", "source": "manual", "geom": {"bbox": [221, 1444, 126, 92], "polygon": [328.0, 1444.0, 221.0, 1488.0, 227.0, 1520.0, 249.0, 1536.0, 295.0, 1524.0, 334.0, 1521.0, 347.0, 1492.0]}}
+      ]
+    },
     {
       "image": "stacked/g006_Snap-21687-21691_focused.jpg",
       "kind": "stack",
@@ -28,7 +49,405 @@
         {"key": "818_849_389_524", "removed": true, "accepted": false, "label": "", "note": "", "bind": "exact", "bind_score": 1.0, "geom": {"bbox": [818, 849, 389, 524], "polygon": [820, 849, 822, 878, 857, 882, 855, 900, 842, 897, 836, 909, 897, 916, 894, 928, 875, 927, 875, 943, 897, 960, 926, 952, 894, 969, 933, 987, 913, 1012, 926, 1023, 906, 1037, 897, 1016, 879, 1047, 897, 1065, 912, 1052, 928, 1056, 904, 1073, 923, 1091, 912, 1126, 930, 1253, 1015, 1341, 1058, 1367, 1111, 1372, 1161, 1350, 1198, 1307, 1206, 1261, 1189, 1198, 1155, 1142, 1026, 1003]}},
         {"key": "986_2060_127_148", "removed": true, "accepted": false, "label": "", "note": "", "bind": "exact", "bind_score": 1.0, "geom": {"bbox": [986, 2060, 127, 148], "polygon": [987, 2063, 994, 2081, 1007, 2100, 1021, 2113, 1034, 2133, 1059, 2160, 1084, 2195, 1095, 2204, 1095, 2207, 1112, 2207, 1112, 2203, 1092, 2176, 1006, 2071, 994, 2060]}}
       ]
+    },
+    {
+      "image": "stacked/g006_Snap-21687-21691_focused.jpg",
+      "kind": "stack",
+      "batch": "yolo-3차",
+      "n_objects": 10,
+      "objects": [
+        {"key": "1028_1897_194_103", "removed": true, "accepted": false, "label": "", "note": "", "bind": "exact", "bind_score": 1.0, "geom": {"bbox": [1028, 1897, 194, 103], "polygon": [1221, 1910, 1217, 1906, 1207, 1907, 1185, 1897, 1173, 1897, 1156, 1905, 1116, 1911, 1080, 1930, 1059, 1950, 1029, 1968, 1028, 1997, 1045, 1999, 1080, 1988, 1158, 1950, 1204, 1936, 1219, 1918]}},
+        {"key": "1191_2000_237_138", "removed": true, "accepted": false, "label": "", "note": "", "bind": "exact", "bind_score": 1.0, "geom": {"bbox": [1191, 2000, 237, 138], "polygon": [1427, 2002, 1337, 2000, 1318, 2016, 1285, 2025, 1199, 2065, 1191, 2073, 1203, 2091, 1193, 2126, 1195, 2137, 1264, 2137, 1268, 2108, 1366, 2077, 1426, 2049]}},
+        {"key": "1239_394_61_94", "removed": true, "accepted": false, "label": "", "note": "", "bind": "exact", "bind_score": 1.0, "geom": {"bbox": [1239, 394, 61, 94], "polygon": [1299, 394, 1277, 394, 1277, 400, 1272, 410, 1268, 414, 1239, 461, 1239, 483, 1242, 487, 1251, 487, 1259, 477, 1264, 466, 1268, 462, 1272, 454, 1277, 449, 1289, 425, 1295, 418]}},
+        {"key": "1256_1415_306_293", "removed": false, "accepted": false, "label": "", "note": "", "bind": "exact", "species": "Actinocyclus actinochilus", "grade": "B", "pose": "valve", "auto_confirmed": true, "bind_score": 1.0, "geom": {"bbox": [1256, 1415, 306, 293], "polygon": [1518, 1415, 1484, 1415, 1453, 1445, 1433, 1453, 1293, 1471, 1274, 1479, 1257, 1600, 1256, 1653, 1280, 1679, 1331, 1707, 1418, 1707, 1475, 1682, 1510, 1651, 1548, 1601, 1558, 1574, 1561, 1538, 1547, 1463]}},
+        {"key": "1290_581_69_224", "removed": true, "accepted": false, "label": "", "note": "", "bind": "exact", "bind_score": 1.0, "geom": {"bbox": [1290, 581, 69, 224], "polygon": [1313, 581, 1303, 666, 1294, 687, 1290, 686, 1290, 748, 1300, 780, 1311, 798, 1320, 804, 1340, 804, 1353, 790, 1358, 777, 1358, 603, 1339, 581]}},
+        {"key": "306_1725_180_172", "removed": true, "accepted": false, "label": "", "note": "", "bind": "exact", "bind_score": 1.0, "geom": {"bbox": [306, 1725, 180, 172], "polygon": [306, 1725, 309, 1833, 328, 1874, 353, 1896, 437, 1896, 482, 1851, 485, 1844, 485, 1807, 476, 1797, 463, 1770, 445, 1751, 425, 1741, 409, 1748, 400, 1747, 381, 1729, 381, 1725]}},
+        {"key": "405_926_189_223", "removed": true, "accepted": false, "label": "", "note": "", "bind": "exact", "bind_score": 1.0, "geom": {"bbox": [405, 926, 189, 223], "polygon": [580, 929, 563, 926, 502, 966, 481, 987, 461, 1033, 405, 1106, 405, 1127, 425, 1148, 500, 1148, 490, 1135, 493, 1126, 521, 1091, 551, 1030, 582, 998, 593, 974, 593, 949]}},
+        {"key": "551_1570_151_132", "removed": true, "accepted": false, "label": "", "note": "", "bind": "exact", "bind_score": 1.0, "geom": {"bbox": [551, 1570, 151, 132], "polygon": [601, 1570, 572, 1583, 551, 1598, 551, 1642, 572, 1660, 582, 1675, 595, 1687, 615, 1701, 625, 1701, 654, 1686, 689, 1657, 701, 1616, 698, 1608, 647, 1570]}},
+        {"key": "697_1613_121_103", "removed": false, "accepted": true, "label": "round_frag", "note": "", "bind": "exact", "auto_confirmed": true, "bind_score": 1.0, "geom": {"bbox": [697, 1613, 121, 103], "polygon": [697, 1654, 697, 1670, 704, 1677, 732, 1695, 757, 1706, 784, 1714, 817, 1715, 817, 1678, 813, 1669, 817, 1662, 817, 1639, 808, 1626, 811, 1613, 774, 1613, 749, 1615, 733, 1619, 716, 1630, 710, 1641]}},
+        {"key": "775_1475_180_86", "removed": false, "accepted": false, "label": "round_frag", "note": "", "bind": "exact", "auto_confirmed": true, "bind_score": 1.0, "geom": {"bbox": [775, 1475, 180, 86], "polygon": [775, 1481, 775, 1511, 851, 1560, 869, 1560, 889, 1547, 916, 1535, 954, 1499, 954, 1475, 854, 1475, 808, 1482]}}
+      ]
+    },
+    {
+      "image": "photos/260731/RS23-GC03 369cm/Snap-21687.jpg",
+      "kind": "frame",
+      "batch": "",
+      "n_objects": 15,
+      "objects": [
+        {"key": "m2131d37e", "removed": false, "accepted": false, "label": "eucampia", "note": "", "bind": "manual", "species": "Eucampia antarctica", "grade": "B", "pose": "girdle", "source": "manual", "geom": {"bbox": [431, 1084, 501, 303], "polygon": [907.0, 1084.0, 932.0, 1307.0, 456.0, 1387.0, 431.0, 1146.0, 508.0, 1129.0, 536.0, 1201.0, 551.0, 1229.0, 600.0, 1269.0, 704.0, 1226.0, 774.0, 1243.0, 801.0, 1221.0, 811.0, 1187.0, 840.0, 1090.0]}},
+        {"key": "m30e8c85d", "removed": false, "accepted": false, "label": "rod", "note": "", "bind": "manual", "species": "Fragilariopsis curta", "grade": "C", "pose": "valve", "source": "manual", "geom": {"bbox": [1295, 570, 72, 243], "polygon": [1305.0, 570.0, 1295.0, 761.0, 1301.0, 796.0, 1318.0, 813.0, 1350.0, 808.0, 1363.0, 771.0, 1367.0, 581.0]}},
+        {"key": "m41417592", "removed": false, "accepted": false, "label": "rod_frag", "note": "", "bind": "manual", "source": "manual", "geom": {"bbox": [1512, 1330, 79, 55], "polygon": [1531.0, 1330.0, 1512.0, 1364.0, 1571.0, 1385.0, 1591.0, 1355.0]}},
+        {"key": "m47f14bea", "removed": false, "accepted": false, "label": "round_frag", "note": "", "bind": "manual", "source": "manual", "geom": {"bbox": [1482, 585, 50, 75], "polygon": [1482.0, 585.0, 1485.0, 660.0, 1532.0, 639.0, 1523.0, 616.0]}},
+        {"key": "m6ff4ab43", "removed": false, "accepted": false, "label": "rod_frag", "note": "", "bind": "manual", "source": "manual", "geom": {"bbox": [336, 1494, 46, 221], "polygon": [372.0, 1496.0, 382.0, 1696.0, 371.0, 1715.0, 350.0, 1712.0, 338.0, 1696.0, 336.0, 1494.0]}},
+        {"key": "m7b637ce7", "removed": false, "accepted": false, "label": "rod_frag", "note": "", "bind": "manual", "source": "manual", "geom": {"bbox": [1016, 1890, 202, 112], "polygon": [1181.0, 1890.0, 1019.0, 1966.0, 1016.0, 1988.0, 1024.0, 2002.0, 1047.0, 1998.0, 1184.0, 1939.0, 1218.0, 1928.0]}},
+        {"key": "m831c175f", "removed": false, "accepted": false, "label": "rod_frag", "note": "", "bind": "manual", "source": "manual", "geom": {"bbox": [2019, 1146, 139, 377], "polygon": [2019.0, 1153.0, 2129.0, 1523.0, 2157.0, 1509.0, 2158.0, 1467.0, 2066.0, 1146.0]}},
+        {"key": "m839829df", "removed": false, "accepted": false, "label": "rod_frag", "note": "", "bind": "manual", "source": "manual", "geom": {"bbox": [412, 1421, 61, 141], "polygon": [412.0, 1440.0, 415.0, 1536.0, 417.0, 1562.0, 473.0, 1542.0, 460.0, 1441.0, 450.0, 1423.0, 434.0, 1421.0, 421.0, 1428.0]}},
+        {"key": "m85849e7d", "removed": false, "accepted": false, "label": "", "note": "", "bind": "manual", "species": "Actinocyclus actinochilus", "grade": "B", "pose": "valve", "source": "manual", "geom": {"bbox": [1256, 1415, 306, 293], "polygon": [1518, 1415, 1484, 1415, 1453, 1445, 1433, 1453, 1293, 1471, 1274, 1479, 1257, 1600, 1256, 1653, 1280, 1679, 1331, 1707, 1418, 1707, 1475, 1682, 1510, 1651, 1548, 1601, 1558, 1574, 1561, 1538, 1547, 1463]}},
+        {"key": "m99b5dc2a", "removed": false, "accepted": false, "label": "round_frag", "note": "", "bind": "manual", "source": "manual", "geom": {"bbox": [775, 1475, 180, 86], "polygon": [775, 1481, 775, 1511, 851, 1560, 869, 1560, 889, 1547, 916, 1535, 954, 1499, 954, 1475, 854, 1475, 808, 1482]}},
+        {"key": "ma083a57b", "removed": false, "accepted": false, "label": "round_frag", "note": "", "bind": "manual", "source": "manual", "geom": {"bbox": [587, 1453, 137, 235], "polygon": [587.0, 1590.0, 589.0, 1674.0, 646.0, 1688.0, 663.0, 1658.0, 664.0, 1636.0, 688.0, 1620.0, 700.0, 1582.0, 723.0, 1560.0, 724.0, 1543.0, 696.0, 1476.0, 674.0, 1464.0, 652.0, 1453.0, 630.0, 1463.0, 628.0, 1499.0, 626.0, 1541.0, 614.0, 1564.0]}},
+        {"key": "maebd8059", "removed": false, "accepted": false, "label": "round", "note": "", "bind": "manual", "grade": "C", "pose": "valve", "source": "manual", "geom": {"bbox": [1133, 3, 398, 266], "polygon": [1531.0, 24.0, 1482.0, 198.0, 1425.0, 228.0, 1373.0, 259.0, 1298.0, 269.0, 1244.0, 264.0, 1163.0, 238.0, 1133.0, 124.0, 1155.0, 37.0, 1196.0, 3.0, 1522.0, 3.0]}},
+        {"key": "mb038da97", "removed": false, "accepted": false, "label": "rod_frag", "note": "", "bind": "manual", "source": "manual", "geom": {"bbox": [1561, 383, 55, 141], "polygon": [1573.0, 383.0, 1561.0, 524.0, 1593.0, 524.0, 1616.0, 460.0, 1588.0, 428.0]}},
+        {"key": "mb6d3a721", "removed": false, "accepted": false, "label": "rod_frag", "note": "", "bind": "manual", "species": "Fragilariopsis kerguelensis", "source": "manual", "geom": {"bbox": [402, 919, 205, 235], "polygon": [402.0, 1115.0, 463.0, 1154.0, 607.0, 947.0, 565.0, 919.0]}},
+        {"key": "mda7e0c98", "removed": false, "accepted": false, "label": "rod_frag", "note": "", "bind": "manual", "source": "manual", "geom": {"bbox": [221, 1444, 126, 92], "polygon": [328.0, 1444.0, 221.0, 1488.0, 227.0, 1520.0, 249.0, 1536.0, 295.0, 1524.0, 334.0, 1521.0, 347.0, 1492.0]}}
+      ]
+    },
+    {
+      "image": "photos/260731/RS23-GC03 369cm/Snap-21687.jpg",
+      "kind": "frame",
+      "batch": "yolo-3차",
+      "n_objects": 4,
+      "objects": [
+        {"key": "1256_1415_310_302", "removed": true, "accepted": false, "label": "", "note": "", "bind": "exact", "bind_score": 1.0, "geom": {"bbox": [1256, 1415, 310, 302], "polygon": [1523, 1415, 1462, 1415, 1453, 1435, 1440, 1443, 1285, 1476, 1272, 1499, 1256, 1597, 1256, 1669, 1291, 1694, 1345, 1716, 1391, 1716, 1434, 1707, 1496, 1673, 1539, 1622, 1565, 1560, 1565, 1518, 1555, 1476]}},
+        {"key": "2030_1144_138_374", "removed": true, "accepted": false, "label": "", "note": "", "bind": "exact", "bind_score": 1.0, "geom": {"bbox": [2030, 1144, 138, 374], "polygon": [2042, 1144, 2030, 1154, 2030, 1191, 2109, 1464, 2127, 1513, 2151, 1517, 2167, 1506, 2167, 1491, 2149, 1457, 2125, 1350, 2085, 1237, 2063, 1156, 2056, 1146]}},
+        {"key": "405_925_189_215", "removed": true, "accepted": false, "label": "", "note": "", "bind": "exact", "bind_score": 1.0, "geom": {"bbox": [405, 925, 189, 215], "polygon": [574, 925, 553, 929, 494, 970, 487, 980, 478, 1013, 457, 1033, 439, 1064, 405, 1106, 408, 1122, 437, 1139, 466, 1139, 488, 1121, 514, 1086, 531, 1054, 566, 1016, 593, 974, 593, 945]}},
+        {"key": "783_1467_189_103", "removed": true, "accepted": false, "label": "", "note": "", "bind": "exact", "bind_score": 1.0, "geom": {"bbox": [783, 1467, 189, 103], "polygon": [971, 1467, 830, 1481, 803, 1479, 783, 1470, 783, 1529, 855, 1567, 872, 1568, 931, 1540, 971, 1508, 971, 1491, 962, 1479, 963, 1472, 971, 1471]}}
+      ]
+    },
+    {
+      "image": "photos/260731/RS23-GC03 369cm/Snap-21688.jpg",
+      "kind": "frame",
+      "batch": "",
+      "n_objects": 15,
+      "objects": [
+        {"key": "m2131d37e", "removed": false, "accepted": false, "label": "eucampia", "note": "", "bind": "manual", "species": "Eucampia antarctica", "grade": "B", "pose": "girdle", "source": "manual", "geom": {"bbox": [431, 1084, 501, 303], "polygon": [907.0, 1084.0, 932.0, 1307.0, 456.0, 1387.0, 431.0, 1146.0, 508.0, 1129.0, 536.0, 1201.0, 551.0, 1229.0, 600.0, 1269.0, 704.0, 1226.0, 774.0, 1243.0, 801.0, 1221.0, 811.0, 1187.0, 840.0, 1090.0]}},
+        {"key": "m30e8c85d", "removed": false, "accepted": false, "label": "rod", "note": "", "bind": "manual", "species": "Fragilariopsis curta", "grade": "C", "pose": "valve", "source": "manual", "geom": {"bbox": [1295, 570, 72, 243], "polygon": [1305.0, 570.0, 1295.0, 761.0, 1301.0, 796.0, 1318.0, 813.0, 1350.0, 808.0, 1363.0, 771.0, 1367.0, 581.0]}},
+        {"key": "m41417592", "removed": false, "accepted": false, "label": "rod_frag", "note": "", "bind": "manual", "source": "manual", "geom": {"bbox": [1512, 1330, 79, 55], "polygon": [1531.0, 1330.0, 1512.0, 1364.0, 1571.0, 1385.0, 1591.0, 1355.0]}},
+        {"key": "m47f14bea", "removed": false, "accepted": false, "label": "round_frag", "note": "", "bind": "manual", "source": "manual", "geom": {"bbox": [1482, 585, 50, 75], "polygon": [1482.0, 585.0, 1485.0, 660.0, 1532.0, 639.0, 1523.0, 616.0]}},
+        {"key": "m6ff4ab43", "removed": false, "accepted": false, "label": "rod_frag", "note": "", "bind": "manual", "source": "manual", "geom": {"bbox": [336, 1494, 46, 221], "polygon": [372.0, 1496.0, 382.0, 1696.0, 371.0, 1715.0, 350.0, 1712.0, 338.0, 1696.0, 336.0, 1494.0]}},
+        {"key": "m7b637ce7", "removed": false, "accepted": false, "label": "rod_frag", "note": "", "bind": "manual", "source": "manual", "geom": {"bbox": [1016, 1890, 202, 112], "polygon": [1181.0, 1890.0, 1019.0, 1966.0, 1016.0, 1988.0, 1024.0, 2002.0, 1047.0, 1998.0, 1184.0, 1939.0, 1218.0, 1928.0]}},
+        {"key": "m831c175f", "removed": false, "accepted": false, "label": "rod_frag", "note": "", "bind": "manual", "source": "manual", "geom": {"bbox": [2019, 1146, 139, 377], "polygon": [2019.0, 1153.0, 2129.0, 1523.0, 2157.0, 1509.0, 2158.0, 1467.0, 2066.0, 1146.0]}},
+        {"key": "m839829df", "removed": false, "accepted": false, "label": "rod_frag", "note": "", "bind": "manual", "source": "manual", "geom": {"bbox": [412, 1421, 61, 141], "polygon": [412.0, 1440.0, 415.0, 1536.0, 417.0, 1562.0, 473.0, 1542.0, 460.0, 1441.0, 450.0, 1423.0, 434.0, 1421.0, 421.0, 1428.0]}},
+        {"key": "m85849e7d", "removed": false, "accepted": false, "label": "", "note": "", "bind": "manual", "species": "Actinocyclus actinochilus", "grade": "B", "pose": "valve", "source": "manual", "geom": {"bbox": [1256, 1415, 306, 293], "polygon": [1518, 1415, 1484, 1415, 1453, 1445, 1433, 1453, 1293, 1471, 1274, 1479, 1257, 1600, 1256, 1653, 1280, 1679, 1331, 1707, 1418, 1707, 1475, 1682, 1510, 1651, 1548, 1601, 1558, 1574, 1561, 1538, 1547, 1463]}},
+        {"key": "m99b5dc2a", "removed": false, "accepted": false, "label": "round_frag", "note": "", "bind": "manual", "source": "manual", "geom": {"bbox": [775, 1475, 180, 86], "polygon": [775, 1481, 775, 1511, 851, 1560, 869, 1560, 889, 1547, 916, 1535, 954, 1499, 954, 1475, 854, 1475, 808, 1482]}},
+        {"key": "ma083a57b", "removed": false, "accepted": false, "label": "round_frag", "note": "", "bind": "manual", "source": "manual", "geom": {"bbox": [587, 1453, 137, 235], "polygon": [587.0, 1590.0, 589.0, 1674.0, 646.0, 1688.0, 663.0, 1658.0, 664.0, 1636.0, 688.0, 1620.0, 700.0, 1582.0, 723.0, 1560.0, 724.0, 1543.0, 696.0, 1476.0, 674.0, 1464.0, 652.0, 1453.0, 630.0, 1463.0, 628.0, 1499.0, 626.0, 1541.0, 614.0, 1564.0]}},
+        {"key": "maebd8059", "removed": false, "accepted": false, "label": "round", "note": "", "bind": "manual", "grade": "C", "pose": "valve", "source": "manual", "geom": {"bbox": [1133, 3, 398, 266], "polygon": [1531.0, 24.0, 1482.0, 198.0, 1425.0, 228.0, 1373.0, 259.0, 1298.0, 269.0, 1244.0, 264.0, 1163.0, 238.0, 1133.0, 124.0, 1155.0, 37.0, 1196.0, 3.0, 1522.0, 3.0]}},
+        {"key": "mb038da97", "removed": false, "accepted": false, "label": "rod_frag", "note": "", "bind": "manual", "source": "manual", "geom": {"bbox": [1561, 383, 55, 141], "polygon": [1573.0, 383.0, 1561.0, 524.0, 1593.0, 524.0, 1616.0, 460.0, 1588.0, 428.0]}},
+        {"key": "mb6d3a721", "removed": false, "accepted": false, "label": "rod_frag", "note": "", "bind": "manual", "species": "Fragilariopsis kerguelensis", "source": "manual", "geom": {"bbox": [402, 919, 205, 235], "polygon": [402.0, 1115.0, 463.0, 1154.0, 607.0, 947.0, 565.0, 919.0]}},
+        {"key": "mda7e0c98", "removed": false, "accepted": false, "label": "rod_frag", "note": "", "bind": "manual", "source": "manual", "geom": {"bbox": [221, 1444, 126, 92], "polygon": [328.0, 1444.0, 221.0, 1488.0, 227.0, 1520.0, 249.0, 1536.0, 295.0, 1524.0, 334.0, 1521.0, 347.0, 1492.0]}}
+      ]
+    },
+    {
+      "image": "photos/260731/RS23-GC03 369cm/Snap-21688.jpg",
+      "kind": "frame",
+      "batch": "yolo-3차",
+      "n_objects": 12,
+      "objects": [
+        {"key": "1256_1432_304_276", "removed": true, "accepted": false, "label": "", "note": "", "bind": "exact", "bind_score": 1.0, "geom": {"bbox": [1256, 1432, 304, 276], "polygon": [1531, 1432, 1464, 1432, 1456, 1445, 1431, 1455, 1306, 1468, 1278, 1476, 1256, 1661, 1286, 1687, 1323, 1707, 1426, 1707, 1483, 1678, 1530, 1632, 1559, 1574, 1552, 1498]}},
+        {"key": "1290_671_69_138", "removed": true, "accepted": false, "label": "", "note": "", "bind": "exact", "bind_score": 1.0, "geom": {"bbox": [1290, 671, 69, 138], "polygon": [1309, 671, 1301, 684, 1293, 685, 1290, 682, 1290, 747, 1295, 754, 1298, 770, 1309, 796, 1325, 808, 1339, 808, 1349, 799, 1358, 779, 1358, 684, 1348, 671]}},
+        {"key": "1497_2120_341_86", "removed": true, "accepted": false, "label": "", "note": "", "bind": "exact", "bind_score": 1.0, "geom": {"bbox": [1497, 2120, 341, 86], "polygon": [1497, 2178, 1497, 2205, 1837, 2205, 1827, 2183, 1786, 2147, 1725, 2130, 1715, 2131, 1698, 2143, 1691, 2142, 1685, 2135, 1683, 2120, 1570, 2120, 1542, 2148, 1509, 2164]}},
+        {"key": "1746_1510_138_50", "removed": true, "accepted": false, "label": "", "note": "", "bind": "exact", "bind_score": 1.0, "geom": {"bbox": [1746, 1510, 138, 50], "polygon": [1746, 1510, 1746, 1535, 1801, 1556, 1836, 1555, 1852, 1559, 1870, 1558, 1883, 1552, 1882, 1538, 1874, 1530, 1863, 1525, 1810, 1515, 1796, 1510]}},
+        {"key": "177_1708_47_154", "removed": true, "accepted": false, "label": "", "note": "", "bind": "exact", "bind_score": 1.0, "geom": {"bbox": [177, 1708, 47, 154], "polygon": [223, 1708, 188, 1708, 189, 1763, 177, 1813, 177, 1861, 186, 1861, 193, 1851, 213, 1798, 216, 1781, 223, 1762]}},
+        {"key": "310_1725_181_189", "removed": true, "accepted": false, "label": "", "note": "", "bind": "exact", "bind_score": 1.0, "geom": {"bbox": [310, 1725, 181, 189], "polygon": [325, 1728, 322, 1755, 314, 1763, 310, 1758, 310, 1792, 314, 1789, 317, 1796, 310, 1820, 310, 1857, 326, 1887, 340, 1901, 374, 1913, 403, 1913, 448, 1890, 477, 1856, 486, 1852, 490, 1858, 490, 1810, 476, 1795, 465, 1770, 451, 1753, 429, 1745, 408, 1751, 369, 1730, 367, 1725, 329, 1725]}},
+        {"key": "405_926_197_213", "removed": true, "accepted": false, "label": "", "note": "", "bind": "exact", "bind_score": 1.0, "geom": {"bbox": [405, 926, 197, 213], "polygon": [601, 937, 597, 944, 576, 927, 562, 927, 498, 966, 473, 987, 452, 1041, 407, 1108, 408, 1132, 492, 1137, 515, 1115, 536, 1060, 563, 1027, 572, 1022, 596, 1044, 601, 1041]}},
+        {"key": "501_1518_101_35", "removed": true, "accepted": false, "label": "", "note": "", "bind": "exact", "bind_score": 1.0, "geom": {"bbox": [501, 1518, 101, 35], "polygon": [501, 1518, 501, 1528, 517, 1533, 531, 1541, 546, 1546, 555, 1551, 601, 1552, 601, 1537, 590, 1533, 564, 1518]}},
+        {"key": "504_1501_103_69", "removed": true, "accepted": false, "label": "", "note": "", "bind": "exact", "bind_score": 1.0, "geom": {"bbox": [504, 1501, 103, 69], "polygon": [504, 1508, 504, 1529, 570, 1555, 579, 1561, 599, 1565, 587, 1569, 606, 1569, 606, 1539, 599, 1537, 564, 1518, 546, 1511, 531, 1501, 513, 1501]}},
+        {"key": "542_1565_146_125", "removed": true, "accepted": false, "label": "", "note": "", "bind": "exact", "bind_score": 1.0, "geom": {"bbox": [542, 1565, 146, 125], "polygon": [658, 1568, 640, 1565, 633, 1574, 623, 1576, 614, 1574, 607, 1568, 563, 1572, 559, 1576, 542, 1616, 546, 1624, 544, 1634, 548, 1647, 578, 1678, 600, 1689, 644, 1689, 663, 1668, 687, 1649, 686, 1633, 671, 1609, 679, 1599, 668, 1575]}},
+        {"key": "697_1622_155_103", "removed": false, "accepted": true, "label": "round_frag", "note": "", "bind": "exact", "auto_confirmed": true, "bind_score": 1.0, "geom": {"bbox": [697, 1622, 155, 103], "polygon": [697, 1645, 697, 1677, 737, 1700, 816, 1724, 830, 1723, 847, 1706, 851, 1705, 850, 1692, 835, 1682, 820, 1677, 817, 1669, 820, 1642, 808, 1622, 732, 1622]}},
+        {"key": "783_1475_189_86", "removed": true, "accepted": false, "label": "", "note": "", "bind": "exact", "bind_score": 1.0, "geom": {"bbox": [783, 1475, 189, 86], "polygon": [971, 1491, 948, 1475, 861, 1476, 821, 1485, 804, 1485, 783, 1476, 783, 1519, 851, 1560, 881, 1560, 928, 1540, 971, 1509]}}
+      ]
+    },
+    {
+      "image": "photos/260731/RS23-GC03 369cm/Snap-21689.jpg",
+      "kind": "frame",
+      "batch": "",
+      "n_objects": 15,
+      "objects": [
+        {"key": "m2131d37e", "removed": false, "accepted": false, "label": "eucampia", "note": "", "bind": "manual", "species": "Eucampia antarctica", "grade": "B", "pose": "girdle", "source": "manual", "geom": {"bbox": [431, 1084, 501, 303], "polygon": [907.0, 1084.0, 932.0, 1307.0, 456.0, 1387.0, 431.0, 1146.0, 508.0, 1129.0, 536.0, 1201.0, 551.0, 1229.0, 600.0, 1269.0, 704.0, 1226.0, 774.0, 1243.0, 801.0, 1221.0, 811.0, 1187.0, 840.0, 1090.0]}},
+        {"key": "m30e8c85d", "removed": false, "accepted": false, "label": "rod", "note": "", "bind": "manual", "species": "Fragilariopsis curta", "grade": "C", "pose": "valve", "source": "manual", "geom": {"bbox": [1295, 570, 72, 243], "polygon": [1305.0, 570.0, 1295.0, 761.0, 1301.0, 796.0, 1318.0, 813.0, 1350.0, 808.0, 1363.0, 771.0, 1367.0, 581.0]}},
+        {"key": "m41417592", "removed": false, "accepted": false, "label": "rod_frag", "note": "", "bind": "manual", "source": "manual", "geom": {"bbox": [1512, 1330, 79, 55], "polygon": [1531.0, 1330.0, 1512.0, 1364.0, 1571.0, 1385.0, 1591.0, 1355.0]}},
+        {"key": "m47f14bea", "removed": false, "accepted": false, "label": "round_frag", "note": "", "bind": "manual", "source": "manual", "geom": {"bbox": [1482, 585, 50, 75], "polygon": [1482.0, 585.0, 1485.0, 660.0, 1532.0, 639.0, 1523.0, 616.0]}},
+        {"key": "m6ff4ab43", "removed": false, "accepted": false, "label": "rod_frag", "note": "", "bind": "manual", "source": "manual", "geom": {"bbox": [336, 1494, 46, 221], "polygon": [372.0, 1496.0, 382.0, 1696.0, 371.0, 1715.0, 350.0, 1712.0, 338.0, 1696.0, 336.0, 1494.0]}},
+        {"key": "m7b637ce7", "removed": false, "accepted": false, "label": "rod_frag", "note": "", "bind": "manual", "source": "manual", "geom": {"bbox": [1016, 1890, 202, 112], "polygon": [1181.0, 1890.0, 1019.0, 1966.0, 1016.0, 1988.0, 1024.0, 2002.0, 1047.0, 1998.0, 1184.0, 1939.0, 1218.0, 1928.0]}},
+        {"key": "m831c175f", "removed": false, "accepted": false, "label": "rod_frag", "note": "", "bind": "manual", "source": "manual", "geom": {"bbox": [2019, 1146, 139, 377], "polygon": [2019.0, 1153.0, 2129.0, 1523.0, 2157.0, 1509.0, 2158.0, 1467.0, 2066.0, 1146.0]}},
+        {"key": "m839829df", "removed": false, "accepted": false, "label": "rod_frag", "note": "", "bind": "manual", "source": "manual", "geom": {"bbox": [412, 1421, 61, 141], "polygon": [412.0, 1440.0, 415.0, 1536.0, 417.0, 1562.0, 473.0, 1542.0, 460.0, 1441.0, 450.0, 1423.0, 434.0, 1421.0, 421.0, 1428.0]}},
+        {"key": "m85849e7d", "removed": false, "accepted": false, "label": "", "note": "", "bind": "manual", "species": "Actinocyclus actinochilus", "grade": "B", "pose": "valve", "source": "manual", "geom": {"bbox": [1256, 1415, 306, 293], "polygon": [1518, 1415, 1484, 1415, 1453, 1445, 1433, 1453, 1293, 1471, 1274, 1479, 1257, 1600, 1256, 1653, 1280, 1679, 1331, 1707, 1418, 1707, 1475, 1682, 1510, 1651, 1548, 1601, 1558, 1574, 1561, 1538, 1547, 1463]}},
+        {"key": "m99b5dc2a", "removed": false, "accepted": false, "label": "round_frag", "note": "", "bind": "manual", "source": "manual", "geom": {"bbox": [775, 1475, 180, 86], "polygon": [775, 1481, 775, 1511, 851, 1560, 869, 1560, 889, 1547, 916, 1535, 954, 1499, 954, 1475, 854, 1475, 808, 1482]}},
+        {"key": "ma083a57b", "removed": false, "accepted": false, "label": "round_frag", "note": "", "bind": "manual", "source": "manual", "geom": {"bbox": [587, 1453, 137, 235], "polygon": [587.0, 1590.0, 589.0, 1674.0, 646.0, 1688.0, 663.0, 1658.0, 664.0, 1636.0, 688.0, 1620.0, 700.0, 1582.0, 723.0, 1560.0, 724.0, 1543.0, 696.0, 1476.0, 674.0, 1464.0, 652.0, 1453.0, 630.0, 1463.0, 628.0, 1499.0, 626.0, 1541.0, 614.0, 1564.0]}},
+        {"key": "maebd8059", "removed": false, "accepted": false, "label": "round", "note": "", "bind": "manual", "grade": "C", "pose": "valve", "source": "manual", "geom": {"bbox": [1133, 3, 398, 266], "polygon": [1531.0, 24.0, 1482.0, 198.0, 1425.0, 228.0, 1373.0, 259.0, 1298.0, 269.0, 1244.0, 264.0, 1163.0, 238.0, 1133.0, 124.0, 1155.0, 37.0, 1196.0, 3.0, 1522.0, 3.0]}},
+        {"key": "mb038da97", "removed": false, "accepted": false, "label": "rod_frag", "note": "", "bind": "manual", "source": "manual", "geom": {"bbox": [1561, 383, 55, 141], "polygon": [1573.0, 383.0, 1561.0, 524.0, 1593.0, 524.0, 1616.0, 460.0, 1588.0, 428.0]}},
+        {"key": "mb6d3a721", "removed": false, "accepted": false, "label": "rod_frag", "note": "", "bind": "manual", "species": "Fragilariopsis kerguelensis", "source": "manual", "geom": {"bbox": [402, 919, 205, 235], "polygon": [402.0, 1115.0, 463.0, 1154.0, 607.0, 947.0, 565.0, 919.0]}},
+        {"key": "mda7e0c98", "removed": false, "accepted": false, "label": "rod_frag", "note": "", "bind": "manual", "source": "manual", "geom": {"bbox": [221, 1444, 126, 92], "polygon": [328.0, 1444.0, 221.0, 1488.0, 227.0, 1520.0, 249.0, 1536.0, 295.0, 1524.0, 334.0, 1521.0, 347.0, 1492.0]}}
+      ]
+    },
+    {
+      "image": "photos/260731/RS23-GC03 369cm/Snap-21689.jpg",
+      "kind": "frame",
+      "batch": "yolo-3차",
+      "n_objects": 6,
+      "objects": [
+        {"key": "1024_1914_129_86", "removed": true, "accepted": false, "label": "", "note": "", "bind": "exact", "bind_score": 1.0, "geom": {"bbox": [1024, 1914, 129, 86], "polygon": [1152, 1914, 1097, 1915, 1084, 1932, 1027, 1971, 1024, 1976, 1024, 1990, 1026, 1994, 1033, 1999, 1052, 1999, 1087, 1987, 1130, 1965, 1152, 1949]}},
+        {"key": "1230_405_69_90", "removed": true, "accepted": false, "label": "", "note": "", "bind": "exact", "bind_score": 1.0, "geom": {"bbox": [1230, 405, 69, 90], "polygon": [1298, 405, 1272, 405, 1272, 408, 1265, 421, 1250, 441, 1230, 473, 1230, 488, 1232, 491, 1243, 494, 1251, 491, 1255, 487, 1272, 459, 1278, 452, 1289, 430, 1298, 417]}},
+        {"key": "1256_1432_304_276", "removed": true, "accepted": false, "label": "", "note": "", "bind": "exact", "bind_score": 1.0, "geom": {"bbox": [1256, 1432, 304, 276], "polygon": [1529, 1432, 1458, 1432, 1450, 1445, 1378, 1458, 1307, 1460, 1277, 1469, 1264, 1488, 1256, 1544, 1256, 1653, 1295, 1687, 1338, 1707, 1415, 1704, 1458, 1690, 1482, 1675, 1523, 1632, 1547, 1589, 1556, 1559, 1558, 1514]}},
+        {"key": "1828_1321_168_172", "removed": true, "accepted": false, "label": "", "note": "", "bind": "exact", "bind_score": 1.0, "geom": {"bbox": [1828, 1321, 168, 172], "polygon": [1861, 1344, 1832, 1382, 1828, 1392, 1828, 1406, 1833, 1421, 1873, 1473, 1894, 1492, 1995, 1492, 1995, 1444, 1977, 1421, 1968, 1401, 1966, 1364, 1960, 1350, 1918, 1321, 1900, 1322]}},
+        {"key": "405_925_189_224", "removed": true, "accepted": false, "label": "", "note": "", "bind": "exact", "bind_score": 1.0, "geom": {"bbox": [405, 925, 189, 224], "polygon": [572, 927, 554, 926, 535, 946, 502, 968, 474, 994, 466, 1005, 454, 1039, 406, 1107, 405, 1128, 412, 1138, 430, 1142, 435, 1148, 469, 1148, 466, 1143, 489, 1120, 557, 1020, 593, 974, 593, 947]}},
+        {"key": "766_1475_189_86", "removed": true, "accepted": false, "label": "", "note": "", "bind": "exact", "bind_score": 1.0, "geom": {"bbox": [766, 1475, 189, 86], "polygon": [954, 1477, 932, 1475, 881, 1479, 838, 1478, 803, 1482, 779, 1482, 766, 1477, 766, 1506, 786, 1522, 811, 1534, 851, 1560, 877, 1560, 912, 1545, 934, 1525, 954, 1496]}}
+      ]
+    },
+    {
+      "image": "photos/260731/RS23-GC03 369cm/Snap-21690.jpg",
+      "kind": "frame",
+      "batch": "",
+      "n_objects": 15,
+      "objects": [
+        {"key": "m2131d37e", "removed": false, "accepted": false, "label": "eucampia", "note": "", "bind": "manual", "species": "Eucampia antarctica", "grade": "B", "pose": "girdle", "source": "manual", "geom": {"bbox": [431, 1084, 501, 303], "polygon": [907.0, 1084.0, 932.0, 1307.0, 456.0, 1387.0, 431.0, 1146.0, 508.0, 1129.0, 536.0, 1201.0, 551.0, 1229.0, 600.0, 1269.0, 704.0, 1226.0, 774.0, 1243.0, 801.0, 1221.0, 811.0, 1187.0, 840.0, 1090.0]}},
+        {"key": "m30e8c85d", "removed": false, "accepted": false, "label": "rod", "note": "", "bind": "manual", "species": "Fragilariopsis curta", "grade": "C", "pose": "valve", "source": "manual", "geom": {"bbox": [1295, 570, 72, 243], "polygon": [1305.0, 570.0, 1295.0, 761.0, 1301.0, 796.0, 1318.0, 813.0, 1350.0, 808.0, 1363.0, 771.0, 1367.0, 581.0]}},
+        {"key": "m41417592", "removed": false, "accepted": false, "label": "rod_frag", "note": "", "bind": "manual", "source": "manual", "geom": {"bbox": [1512, 1330, 79, 55], "polygon": [1531.0, 1330.0, 1512.0, 1364.0, 1571.0, 1385.0, 1591.0, 1355.0]}},
+        {"key": "m47f14bea", "removed": false, "accepted": false, "label": "round_frag", "note": "", "bind": "manual", "source": "manual", "geom": {"bbox": [1482, 585, 50, 75], "polygon": [1482.0, 585.0, 1485.0, 660.0, 1532.0, 639.0, 1523.0, 616.0]}},
+        {"key": "m6ff4ab43", "removed": false, "accepted": false, "label": "rod_frag", "note": "", "bind": "manual", "source": "manual", "geom": {"bbox": [336, 1494, 46, 221], "polygon": [372.0, 1496.0, 382.0, 1696.0, 371.0, 1715.0, 350.0, 1712.0, 338.0, 1696.0, 336.0, 1494.0]}},
+        {"key": "m7b637ce7", "removed": false, "accepted": false, "label": "rod_frag", "note": "", "bind": "manual", "source": "manual", "geom": {"bbox": [1016, 1890, 202, 112], "polygon": [1181.0, 1890.0, 1019.0, 1966.0, 1016.0, 1988.0, 1024.0, 2002.0, 1047.0, 1998.0, 1184.0, 1939.0, 1218.0, 1928.0]}},
+        {"key": "m831c175f", "removed": false, "accepted": false, "label": "rod_frag", "note": "", "bind": "manual", "source": "manual", "geom": {"bbox": [2019, 1146, 139, 377], "polygon": [2019.0, 1153.0, 2129.0, 1523.0, 2157.0, 1509.0, 2158.0, 1467.0, 2066.0, 1146.0]}},
+        {"key": "m839829df", "removed": false, "accepted": false, "label": "rod_frag", "note": "", "bind": "manual", "source": "manual", "geom": {"bbox": [412, 1421, 61, 141], "polygon": [412.0, 1440.0, 415.0, 1536.0, 417.0, 1562.0, 473.0, 1542.0, 460.0, 1441.0, 450.0, 1423.0, 434.0, 1421.0, 421.0, 1428.0]}},
+        {"key": "m85849e7d", "removed": false, "accepted": false, "label": "", "note": "", "bind": "manual", "species": "Actinocyclus actinochilus", "grade": "B", "pose": "valve", "source": "manual", "geom": {"bbox": [1256, 1415, 306, 293], "polygon": [1518, 1415, 1484, 1415, 1453, 1445, 1433, 1453, 1293, 1471, 1274, 1479, 1257, 1600, 1256, 1653, 1280, 1679, 1331, 1707, 1418, 1707, 1475, 1682, 1510, 1651, 1548, 1601, 1558, 1574, 1561, 1538, 1547, 1463]}},
+        {"key": "m99b5dc2a", "removed": false, "accepted": false, "label": "round_frag", "note": "", "bind": "manual", "source": "manual", "geom": {"bbox": [775, 1475, 180, 86], "polygon": [775, 1481, 775, 1511, 851, 1560, 869, 1560, 889, 1547, 916, 1535, 954, 1499, 954, 1475, 854, 1475, 808, 1482]}},
+        {"key": "ma083a57b", "removed": false, "accepted": false, "label": "round_frag", "note": "", "bind": "manual", "source": "manual", "geom": {"bbox": [587, 1453, 137, 235], "polygon": [587.0, 1590.0, 589.0, 1674.0, 646.0, 1688.0, 663.0, 1658.0, 664.0, 1636.0, 688.0, 1620.0, 700.0, 1582.0, 723.0, 1560.0, 724.0, 1543.0, 696.0, 1476.0, 674.0, 1464.0, 652.0, 1453.0, 630.0, 1463.0, 628.0, 1499.0, 626.0, 1541.0, 614.0, 1564.0]}},
+        {"key": "maebd8059", "removed": false, "accepted": false, "label": "round", "note": "", "bind": "manual", "grade": "C", "pose": "valve", "source": "manual", "geom": {"bbox": [1133, 3, 398, 266], "polygon": [1531.0, 24.0, 1482.0, 198.0, 1425.0, 228.0, 1373.0, 259.0, 1298.0, 269.0, 1244.0, 264.0, 1163.0, 238.0, 1133.0, 124.0, 1155.0, 37.0, 1196.0, 3.0, 1522.0, 3.0]}},
+        {"key": "mb038da97", "removed": false, "accepted": false, "label": "rod_frag", "note": "", "bind": "manual", "source": "manual", "geom": {"bbox": [1561, 383, 55, 141], "polygon": [1573.0, 383.0, 1561.0, 524.0, 1593.0, 524.0, 1616.0, 460.0, 1588.0, 428.0]}},
+        {"key": "mb6d3a721", "removed": false, "accepted": false, "label": "rod_frag", "note": "", "bind": "manual", "species": "Fragilariopsis kerguelensis", "source": "manual", "geom": {"bbox": [402, 919, 205, 235], "polygon": [402.0, 1115.0, 463.0, 1154.0, 607.0, 947.0, 565.0, 919.0]}},
+        {"key": "mda7e0c98", "removed": false, "accepted": false, "label": "rod_frag", "note": "", "bind": "manual", "source": "manual", "geom": {"bbox": [221, 1444, 126, 92], "polygon": [328.0, 1444.0, 221.0, 1488.0, 227.0, 1520.0, 249.0, 1536.0, 295.0, 1524.0, 334.0, 1521.0, 347.0, 1492.0]}}
+      ]
+    },
+    {
+      "image": "photos/260731/RS23-GC03 369cm/Snap-21690.jpg",
+      "kind": "frame",
+      "batch": "yolo-3차",
+      "n_objects": 5,
+      "objects": [
+        {"key": "1032_1897_169_103", "removed": true, "accepted": false, "label": "", "note": "", "bind": "exact", "bind_score": 1.0, "geom": {"bbox": [1032, 1897, 169, 103], "polygon": [1194, 1905, 1183, 1897, 1166, 1898, 1139, 1908, 1096, 1931, 1079, 1937, 1066, 1949, 1032, 1969, 1032, 1999, 1053, 1999, 1182, 1944, 1191, 1938, 1199, 1928, 1200, 1918]}},
+        {"key": "1204_2000_207_138", "removed": true, "accepted": false, "label": "", "note": "", "bind": "exact", "bind_score": 1.0, "geom": {"bbox": [1204, 2000, 207, 138], "polygon": [1410, 2039, 1398, 2030, 1392, 2014, 1380, 2000, 1343, 2000, 1312, 2019, 1260, 2039, 1226, 2056, 1204, 2073, 1204, 2084, 1207, 2080, 1217, 2082, 1210, 2084, 1204, 2093, 1204, 2137, 1227, 2137, 1228, 2133, 1261, 2116, 1350, 2085, 1410, 2056]}},
+        {"key": "1239_1424_310_275", "removed": true, "accepted": false, "label": "", "note": "", "bind": "exact", "bind_score": 1.0, "geom": {"bbox": [1239, 1424, 310, 275], "polygon": [1294, 1424, 1386, 1435, 1280, 1457, 1258, 1474, 1247, 1501, 1239, 1594, 1253, 1633, 1292, 1672, 1345, 1698, 1430, 1692, 1479, 1666, 1521, 1622, 1548, 1573, 1548, 1497, 1519, 1429, 1529, 1424, 1433, 1424, 1424, 1431, 1408, 1431, 1407, 1424]}},
+        {"key": "439_1157_120_207", "removed": true, "accepted": false, "label": "", "note": "", "bind": "exact", "bind_score": 1.0, "geom": {"bbox": [439, 1157, 120, 207], "polygon": [439, 1157, 441, 1290, 459, 1358, 464, 1363, 557, 1363, 558, 1254, 542, 1231, 538, 1194, 532, 1180, 511, 1157]}},
+        {"key": "620_1467_103_120", "removed": true, "accepted": false, "label": "", "note": "", "bind": "exact", "bind_score": 1.0, "geom": {"bbox": [620, 1467, 103, 120], "polygon": [665, 1467, 648, 1484, 637, 1500, 628, 1519, 624, 1534, 620, 1538, 620, 1554, 634, 1572, 657, 1586, 700, 1586, 713, 1566, 722, 1533, 722, 1506, 715, 1495, 700, 1479, 696, 1467]}}
+      ]
+    },
+    {
+      "image": "photos/260731/RS23-GC03 369cm/Snap-21691.jpg",
+      "kind": "frame",
+      "batch": "",
+      "n_objects": 15,
+      "objects": [
+        {"key": "m2131d37e", "removed": false, "accepted": false, "label": "eucampia", "note": "", "bind": "manual", "species": "Eucampia antarctica", "grade": "B", "pose": "girdle", "source": "manual", "geom": {"bbox": [431, 1084, 501, 303], "polygon": [907.0, 1084.0, 932.0, 1307.0, 456.0, 1387.0, 431.0, 1146.0, 508.0, 1129.0, 536.0, 1201.0, 551.0, 1229.0, 600.0, 1269.0, 704.0, 1226.0, 774.0, 1243.0, 801.0, 1221.0, 811.0, 1187.0, 840.0, 1090.0]}},
+        {"key": "m30e8c85d", "removed": false, "accepted": false, "label": "rod", "note": "", "bind": "manual", "species": "Fragilariopsis curta", "grade": "C", "pose": "valve", "source": "manual", "geom": {"bbox": [1295, 570, 72, 243], "polygon": [1305.0, 570.0, 1295.0, 761.0, 1301.0, 796.0, 1318.0, 813.0, 1350.0, 808.0, 1363.0, 771.0, 1367.0, 581.0]}},
+        {"key": "m41417592", "removed": false, "accepted": false, "label": "rod_frag", "note": "", "bind": "manual", "source": "manual", "geom": {"bbox": [1512, 1330, 79, 55], "polygon": [1531.0, 1330.0, 1512.0, 1364.0, 1571.0, 1385.0, 1591.0, 1355.0]}},
+        {"key": "m47f14bea", "removed": false, "accepted": false, "label": "round_frag", "note": "", "bind": "manual", "source": "manual", "geom": {"bbox": [1482, 585, 50, 75], "polygon": [1482.0, 585.0, 1485.0, 660.0, 1532.0, 639.0, 1523.0, 616.0]}},
+        {"key": "m6ff4ab43", "removed": false, "accepted": false, "label": "rod_frag", "note": "", "bind": "manual", "source": "manual", "geom": {"bbox": [336, 1494, 46, 221], "polygon": [372.0, 1496.0, 382.0, 1696.0, 371.0, 1715.0, 350.0, 1712.0, 338.0, 1696.0, 336.0, 1494.0]}},
+        {"key": "m7b637ce7", "removed": false, "accepted": false, "label": "rod_frag", "note": "", "bind": "manual", "source": "manual", "geom": {"bbox": [1016, 1890, 202, 112], "polygon": [1181.0, 1890.0, 1019.0, 1966.0, 1016.0, 1988.0, 1024.0, 2002.0, 1047.0, 1998.0, 1184.0, 1939.0, 1218.0, 1928.0]}},
+        {"key": "m831c175f", "removed": false, "accepted": false, "label": "rod_frag", "note": "", "bind": "manual", "source": "manual", "geom": {"bbox": [2019, 1146, 139, 377], "polygon": [2019.0, 1153.0, 2129.0, 1523.0, 2157.0, 1509.0, 2158.0, 1467.0, 2066.0, 1146.0]}},
+        {"key": "m839829df", "removed": false, "accepted": false, "label": "rod_frag", "note": "", "bind": "manual", "source": "manual", "geom": {"bbox": [412, 1421, 61, 141], "polygon": [412.0, 1440.0, 415.0, 1536.0, 417.0, 1562.0, 473.0, 1542.0, 460.0, 1441.0, 450.0, 1423.0, 434.0, 1421.0, 421.0, 1428.0]}},
+        {"key": "m85849e7d", "removed": false, "accepted": false, "label": "", "note": "", "bind": "manual", "species": "Actinocyclus actinochilus", "grade": "B", "pose": "valve", "source": "manual", "geom": {"bbox": [1256, 1415, 306, 293], "polygon": [1518, 1415, 1484, 1415, 1453, 1445, 1433, 1453, 1293, 1471, 1274, 1479, 1257, 1600, 1256, 1653, 1280, 1679, 1331, 1707, 1418, 1707, 1475, 1682, 1510, 1651, 1548, 1601, 1558, 1574, 1561, 1538, 1547, 1463]}},
+        {"key": "m99b5dc2a", "removed": false, "accepted": false, "label": "round_frag", "note": "", "bind": "manual", "source": "manual", "geom": {"bbox": [775, 1475, 180, 86], "polygon": [775, 1481, 775, 1511, 851, 1560, 869, 1560, 889, 1547, 916, 1535, 954, 1499, 954, 1475, 854, 1475, 808, 1482]}},
+        {"key": "ma083a57b", "removed": false, "accepted": false, "label": "round_frag", "note": "", "bind": "manual", "source": "manual", "geom": {"bbox": [587, 1453, 137, 235], "polygon": [587.0, 1590.0, 589.0, 1674.0, 646.0, 1688.0, 663.0, 1658.0, 664.0, 1636.0, 688.0, 1620.0, 700.0, 1582.0, 723.0, 1560.0, 724.0, 1543.0, 696.0, 1476.0, 674.0, 1464.0, 652.0, 1453.0, 630.0, 1463.0, 628.0, 1499.0, 626.0, 1541.0, 614.0, 1564.0]}},
+        {"key": "maebd8059", "removed": false, "accepted": false, "label": "round", "note": "", "bind": "manual", "grade": "C", "pose": "valve", "source": "manual", "geom": {"bbox": [1133, 3, 398, 266], "polygon": [1531.0, 24.0, 1482.0, 198.0, 1425.0, 228.0, 1373.0, 259.0, 1298.0, 269.0, 1244.0, 264.0, 1163.0, 238.0, 1133.0, 124.0, 1155.0, 37.0, 1196.0, 3.0, 1522.0, 3.0]}},
+        {"key": "mb038da97", "removed": false, "accepted": false, "label": "rod_frag", "note": "", "bind": "manual", "source": "manual", "geom": {"bbox": [1561, 383, 55, 141], "polygon": [1573.0, 383.0, 1561.0, 524.0, 1593.0, 524.0, 1616.0, 460.0, 1588.0, 428.0]}},
+        {"key": "mb6d3a721", "removed": false, "accepted": false, "label": "rod_frag", "note": "", "bind": "manual", "species": "Fragilariopsis kerguelensis", "source": "manual", "geom": {"bbox": [402, 919, 205, 235], "polygon": [402.0, 1115.0, 463.0, 1154.0, 607.0, 947.0, 565.0, 919.0]}},
+        {"key": "mda7e0c98", "removed": false, "accepted": false, "label": "rod_frag", "note": "", "bind": "manual", "source": "manual", "geom": {"bbox": [221, 1444, 126, 92], "polygon": [328.0, 1444.0, 221.0, 1488.0, 227.0, 1520.0, 249.0, 1536.0, 295.0, 1524.0, 334.0, 1521.0, 347.0, 1492.0]}}
+      ]
+    },
+    {
+      "image": "photos/260731/RS23-GC03 369cm/Snap-21691.jpg",
+      "kind": "frame",
+      "batch": "yolo-3차",
+      "n_objects": 8,
+      "objects": [
+        {"key": "1024_1904_129_96", "removed": true, "accepted": false, "label": "", "note": "", "bind": "exact", "bind_score": 1.0, "geom": {"bbox": [1024, 1904, 129, 96], "polygon": [1152, 1916, 1131, 1904, 1096, 1904, 1090, 1919, 1079, 1932, 1061, 1943, 1026, 1970, 1024, 1973, 1024, 1994, 1033, 1999, 1053, 1998, 1103, 1980, 1132, 1964, 1152, 1950]}},
+        {"key": "1230_396_69_97", "removed": true, "accepted": false, "label": "", "note": "", "bind": "exact", "bind_score": 1.0, "geom": {"bbox": [1230, 396, 69, 97], "polygon": [1297, 396, 1275, 396, 1256, 433, 1232, 469, 1230, 479, 1234, 489, 1240, 492, 1250, 490, 1260, 479, 1271, 458, 1277, 452, 1289, 428, 1297, 418]}},
+        {"key": "1256_1432_303_276", "removed": true, "accepted": false, "label": "", "note": "", "bind": "exact", "bind_score": 1.0, "geom": {"bbox": [1256, 1432, 303, 276], "polygon": [1527, 1432, 1465, 1432, 1453, 1445, 1424, 1453, 1297, 1462, 1275, 1469, 1264, 1493, 1256, 1550, 1257, 1657, 1292, 1685, 1344, 1707, 1415, 1705, 1449, 1694, 1486, 1672, 1529, 1625, 1555, 1562, 1555, 1506]}},
+        {"key": "1299_581_67_223", "removed": true, "accepted": false, "label": "", "note": "", "bind": "exact", "bind_score": 1.0, "geom": {"bbox": [1299, 581, 67, 223], "polygon": [1351, 581, 1315, 581, 1308, 607, 1299, 671, 1299, 759, 1302, 781, 1311, 796, 1327, 803, 1338, 802, 1346, 796, 1354, 781, 1357, 766, 1359, 721, 1365, 681, 1365, 608, 1361, 594]}},
+        {"key": "1825_1316_136_168", "removed": true, "accepted": false, "label": "", "note": "", "bind": "exact", "bind_score": 1.0, "geom": {"bbox": [1825, 1316, 136, 168], "polygon": [1901, 1317, 1853, 1349, 1830, 1383, 1826, 1393, 1826, 1411, 1832, 1424, 1851, 1445, 1867, 1478, 1874, 1483, 1960, 1483, 1960, 1356, 1954, 1347, 1924, 1320, 1914, 1316]}},
+        {"key": "405_934_185_206", "removed": true, "accepted": false, "label": "", "note": "", "bind": "exact", "bind_score": 1.0, "geom": {"bbox": [405, 934, 185, 206], "polygon": [575, 934, 545, 934, 536, 946, 490, 979, 479, 995, 460, 1038, 405, 1105, 407, 1129, 430, 1139, 463, 1139, 479, 1126, 589, 974, 589, 946]}},
+        {"key": "702_1622_160_103", "removed": false, "accepted": true, "label": "round_frag", "note": "", "bind": "exact", "auto_confirmed": true, "bind_score": 1.0, "geom": {"bbox": [702, 1622, 160, 103], "polygon": [702, 1649, 703, 1666, 708, 1676, 758, 1705, 804, 1717, 819, 1724, 849, 1724, 861, 1713, 858, 1696, 860, 1658, 855, 1622, 724, 1622]}},
+        {"key": "766_1484_189_69", "removed": true, "accepted": false, "label": "", "note": "", "bind": "exact", "bind_score": 1.0, "geom": {"bbox": [766, 1484, 189, 69], "polygon": [766, 1484, 767, 1507, 820, 1541, 842, 1552, 880, 1552, 906, 1543, 917, 1537, 954, 1503, 954, 1484]}}
+      ]
     }
   ],
-  "links": []
+  "links": [
+    {
+      "batch": "yolo-3차",
+      "note": "",
+      "members": [
+        {"image": "stacked/g006_Snap-21687-21691_focused.jpg", "kind": "stack", "batch": "yolo-3차", "key": "1256_1415_306_293", "rep": true, "geom": {"bbox": [1256, 1415, 306, 293], "polygon": [1518, 1415, 1484, 1415, 1453, 1445, 1433, 1453, 1293, 1471, 1274, 1479, 1257, 1600, 1256, 1653, 1280, 1679, 1331, 1707, 1418, 1707, 1475, 1682, 1510, 1651, 1548, 1601, 1558, 1574, 1561, 1538, 1547, 1463]}},
+        {"image": "photos/260731/RS23-GC03 369cm/Snap-21687.jpg", "kind": "frame", "batch": "", "key": "m85849e7d", "rep": false, "geom": {"bbox": [1256, 1415, 306, 293], "polygon": [1518, 1415, 1484, 1415, 1453, 1445, 1433, 1453, 1293, 1471, 1274, 1479, 1257, 1600, 1256, 1653, 1280, 1679, 1331, 1707, 1418, 1707, 1475, 1682, 1510, 1651, 1548, 1601, 1558, 1574, 1561, 1538, 1547, 1463]}},
+        {"image": "photos/260731/RS23-GC03 369cm/Snap-21688.jpg", "kind": "frame", "batch": "", "key": "m85849e7d", "rep": false, "geom": {"bbox": [1256, 1415, 306, 293], "polygon": [1518, 1415, 1484, 1415, 1453, 1445, 1433, 1453, 1293, 1471, 1274, 1479, 1257, 1600, 1256, 1653, 1280, 1679, 1331, 1707, 1418, 1707, 1475, 1682, 1510, 1651, 1548, 1601, 1558, 1574, 1561, 1538, 1547, 1463]}},
+        {"image": "photos/260731/RS23-GC03 369cm/Snap-21689.jpg", "kind": "frame", "batch": "", "key": "m85849e7d", "rep": false, "geom": {"bbox": [1256, 1415, 306, 293], "polygon": [1518, 1415, 1484, 1415, 1453, 1445, 1433, 1453, 1293, 1471, 1274, 1479, 1257, 1600, 1256, 1653, 1280, 1679, 1331, 1707, 1418, 1707, 1475, 1682, 1510, 1651, 1548, 1601, 1558, 1574, 1561, 1538, 1547, 1463]}},
+        {"image": "photos/260731/RS23-GC03 369cm/Snap-21690.jpg", "kind": "frame", "batch": "", "key": "m85849e7d", "rep": false, "geom": {"bbox": [1256, 1415, 306, 293], "polygon": [1518, 1415, 1484, 1415, 1453, 1445, 1433, 1453, 1293, 1471, 1274, 1479, 1257, 1600, 1256, 1653, 1280, 1679, 1331, 1707, 1418, 1707, 1475, 1682, 1510, 1651, 1548, 1601, 1558, 1574, 1561, 1538, 1547, 1463]}},
+        {"image": "photos/260731/RS23-GC03 369cm/Snap-21691.jpg", "kind": "frame", "batch": "", "key": "m85849e7d", "rep": false, "geom": {"bbox": [1256, 1415, 306, 293], "polygon": [1518, 1415, 1484, 1415, 1453, 1445, 1433, 1453, 1293, 1471, 1274, 1479, 1257, 1600, 1256, 1653, 1280, 1679, 1331, 1707, 1418, 1707, 1475, 1682, 1510, 1651, 1548, 1601, 1558, 1574, 1561, 1538, 1547, 1463]}}
+      ]
+    },
+    {
+      "batch": "yolo-3차",
+      "note": "",
+      "members": [
+        {"image": "stacked/g006_Snap-21687-21691_focused.jpg", "kind": "stack", "batch": "yolo-3차", "key": "697_1613_121_103", "rep": true, "geom": {"bbox": [697, 1613, 121, 103], "polygon": [697, 1654, 697, 1670, 704, 1677, 732, 1695, 757, 1706, 784, 1714, 817, 1715, 817, 1678, 813, 1669, 817, 1662, 817, 1639, 808, 1626, 811, 1613, 774, 1613, 749, 1615, 733, 1619, 716, 1630, 710, 1641]}},
+        {"image": "photos/260731/RS23-GC03 369cm/Snap-21688.jpg", "kind": "frame", "batch": "yolo-3차", "key": "697_1622_155_103", "rep": false, "geom": {"bbox": [697, 1622, 155, 103], "polygon": [697, 1645, 697, 1677, 737, 1700, 816, 1724, 830, 1723, 847, 1706, 851, 1705, 850, 1692, 835, 1682, 820, 1677, 817, 1669, 820, 1642, 808, 1622, 732, 1622]}},
+        {"image": "photos/260731/RS23-GC03 369cm/Snap-21691.jpg", "kind": "frame", "batch": "yolo-3차", "key": "702_1622_160_103", "rep": false, "geom": {"bbox": [702, 1622, 160, 103], "polygon": [702, 1649, 703, 1666, 708, 1676, 758, 1705, 804, 1717, 819, 1724, 849, 1724, 861, 1713, 858, 1696, 860, 1658, 855, 1622, 724, 1622]}}
+      ]
+    },
+    {
+      "batch": "yolo-3차",
+      "note": "",
+      "members": [
+        {"image": "stacked/g006_Snap-21687-21691_focused.jpg", "kind": "stack", "batch": "yolo-3차", "key": "775_1475_180_86", "rep": true, "geom": {"bbox": [775, 1475, 180, 86], "polygon": [775, 1481, 775, 1511, 851, 1560, 869, 1560, 889, 1547, 916, 1535, 954, 1499, 954, 1475, 854, 1475, 808, 1482]}},
+        {"image": "photos/260731/RS23-GC03 369cm/Snap-21687.jpg", "kind": "frame", "batch": "", "key": "m99b5dc2a", "rep": false, "geom": {"bbox": [775, 1475, 180, 86], "polygon": [775, 1481, 775, 1511, 851, 1560, 869, 1560, 889, 1547, 916, 1535, 954, 1499, 954, 1475, 854, 1475, 808, 1482]}},
+        {"image": "photos/260731/RS23-GC03 369cm/Snap-21688.jpg", "kind": "frame", "batch": "", "key": "m99b5dc2a", "rep": false, "geom": {"bbox": [775, 1475, 180, 86], "polygon": [775, 1481, 775, 1511, 851, 1560, 869, 1560, 889, 1547, 916, 1535, 954, 1499, 954, 1475, 854, 1475, 808, 1482]}},
+        {"image": "photos/260731/RS23-GC03 369cm/Snap-21689.jpg", "kind": "frame", "batch": "", "key": "m99b5dc2a", "rep": false, "geom": {"bbox": [775, 1475, 180, 86], "polygon": [775, 1481, 775, 1511, 851, 1560, 869, 1560, 889, 1547, 916, 1535, 954, 1499, 954, 1475, 854, 1475, 808, 1482]}},
+        {"image": "photos/260731/RS23-GC03 369cm/Snap-21690.jpg", "kind": "frame", "batch": "", "key": "m99b5dc2a", "rep": false, "geom": {"bbox": [775, 1475, 180, 86], "polygon": [775, 1481, 775, 1511, 851, 1560, 869, 1560, 889, 1547, 916, 1535, 954, 1499, 954, 1475, 854, 1475, 808, 1482]}},
+        {"image": "photos/260731/RS23-GC03 369cm/Snap-21691.jpg", "kind": "frame", "batch": "", "key": "m99b5dc2a", "rep": false, "geom": {"bbox": [775, 1475, 180, 86], "polygon": [775, 1481, 775, 1511, 851, 1560, 869, 1560, 889, 1547, 916, 1535, 954, 1499, 954, 1475, 854, 1475, 808, 1482]}}
+      ]
+    },
+    {
+      "batch": "",
+      "note": "",
+      "members": [
+        {"image": "stacked/g006_Snap-21687-21691_focused.jpg", "kind": "stack", "batch": "", "key": "m2131d37e", "rep": true, "geom": {"bbox": [431, 1084, 501, 303], "polygon": [907.0, 1084.0, 932.0, 1307.0, 456.0, 1387.0, 431.0, 1146.0, 508.0, 1129.0, 536.0, 1201.0, 551.0, 1229.0, 600.0, 1269.0, 704.0, 1226.0, 774.0, 1243.0, 801.0, 1221.0, 811.0, 1187.0, 840.0, 1090.0]}},
+        {"image": "photos/260731/RS23-GC03 369cm/Snap-21687.jpg", "kind": "frame", "batch": "", "key": "m2131d37e", "rep": false, "geom": {"bbox": [431, 1084, 501, 303], "polygon": [907.0, 1084.0, 932.0, 1307.0, 456.0, 1387.0, 431.0, 1146.0, 508.0, 1129.0, 536.0, 1201.0, 551.0, 1229.0, 600.0, 1269.0, 704.0, 1226.0, 774.0, 1243.0, 801.0, 1221.0, 811.0, 1187.0, 840.0, 1090.0]}},
+        {"image": "photos/260731/RS23-GC03 369cm/Snap-21688.jpg", "kind": "frame", "batch": "", "key": "m2131d37e", "rep": false, "geom": {"bbox": [431, 1084, 501, 303], "polygon": [907.0, 1084.0, 932.0, 1307.0, 456.0, 1387.0, 431.0, 1146.0, 508.0, 1129.0, 536.0, 1201.0, 551.0, 1229.0, 600.0, 1269.0, 704.0, 1226.0, 774.0, 1243.0, 801.0, 1221.0, 811.0, 1187.0, 840.0, 1090.0]}},
+        {"image": "photos/260731/RS23-GC03 369cm/Snap-21689.jpg", "kind": "frame", "batch": "", "key": "m2131d37e", "rep": false, "geom": {"bbox": [431, 1084, 501, 303], "polygon": [907.0, 1084.0, 932.0, 1307.0, 456.0, 1387.0, 431.0, 1146.0, 508.0, 1129.0, 536.0, 1201.0, 551.0, 1229.0, 600.0, 1269.0, 704.0, 1226.0, 774.0, 1243.0, 801.0, 1221.0, 811.0, 1187.0, 840.0, 1090.0]}},
+        {"image": "photos/260731/RS23-GC03 369cm/Snap-21690.jpg", "kind": "frame", "batch": "", "key": "m2131d37e", "rep": false, "geom": {"bbox": [431, 1084, 501, 303], "polygon": [907.0, 1084.0, 932.0, 1307.0, 456.0, 1387.0, 431.0, 1146.0, 508.0, 1129.0, 536.0, 1201.0, 551.0, 1229.0, 600.0, 1269.0, 704.0, 1226.0, 774.0, 1243.0, 801.0, 1221.0, 811.0, 1187.0, 840.0, 1090.0]}},
+        {"image": "photos/260731/RS23-GC03 369cm/Snap-21691.jpg", "kind": "frame", "batch": "", "key": "m2131d37e", "rep": false, "geom": {"bbox": [431, 1084, 501, 303], "polygon": [907.0, 1084.0, 932.0, 1307.0, 456.0, 1387.0, 431.0, 1146.0, 508.0, 1129.0, 536.0, 1201.0, 551.0, 1229.0, 600.0, 1269.0, 704.0, 1226.0, 774.0, 1243.0, 801.0, 1221.0, 811.0, 1187.0, 840.0, 1090.0]}}
+      ]
+    },
+    {
+      "batch": "",
+      "note": "",
+      "members": [
+        {"image": "stacked/g006_Snap-21687-21691_focused.jpg", "kind": "stack", "batch": "", "key": "m30e8c85d", "rep": true, "geom": {"bbox": [1295, 570, 72, 243], "polygon": [1305.0, 570.0, 1295.0, 761.0, 1301.0, 796.0, 1318.0, 813.0, 1350.0, 808.0, 1363.0, 771.0, 1367.0, 581.0]}},
+        {"image": "photos/260731/RS23-GC03 369cm/Snap-21687.jpg", "kind": "frame", "batch": "", "key": "m30e8c85d", "rep": false, "geom": {"bbox": [1295, 570, 72, 243], "polygon": [1305.0, 570.0, 1295.0, 761.0, 1301.0, 796.0, 1318.0, 813.0, 1350.0, 808.0, 1363.0, 771.0, 1367.0, 581.0]}},
+        {"image": "photos/260731/RS23-GC03 369cm/Snap-21688.jpg", "kind": "frame", "batch": "", "key": "m30e8c85d", "rep": false, "geom": {"bbox": [1295, 570, 72, 243], "polygon": [1305.0, 570.0, 1295.0, 761.0, 1301.0, 796.0, 1318.0, 813.0, 1350.0, 808.0, 1363.0, 771.0, 1367.0, 581.0]}},
+        {"image": "photos/260731/RS23-GC03 369cm/Snap-21689.jpg", "kind": "frame", "batch": "", "key": "m30e8c85d", "rep": false, "geom": {"bbox": [1295, 570, 72, 243], "polygon": [1305.0, 570.0, 1295.0, 761.0, 1301.0, 796.0, 1318.0, 813.0, 1350.0, 808.0, 1363.0, 771.0, 1367.0, 581.0]}},
+        {"image": "photos/260731/RS23-GC03 369cm/Snap-21690.jpg", "kind": "frame", "batch": "", "key": "m30e8c85d", "rep": false, "geom": {"bbox": [1295, 570, 72, 243], "polygon": [1305.0, 570.0, 1295.0, 761.0, 1301.0, 796.0, 1318.0, 813.0, 1350.0, 808.0, 1363.0, 771.0, 1367.0, 581.0]}},
+        {"image": "photos/260731/RS23-GC03 369cm/Snap-21691.jpg", "kind": "frame", "batch": "", "key": "m30e8c85d", "rep": false, "geom": {"bbox": [1295, 570, 72, 243], "polygon": [1305.0, 570.0, 1295.0, 761.0, 1301.0, 796.0, 1318.0, 813.0, 1350.0, 808.0, 1363.0, 771.0, 1367.0, 581.0]}}
+      ]
+    },
+    {
+      "batch": "",
+      "note": "",
+      "members": [
+        {"image": "stacked/g006_Snap-21687-21691_focused.jpg", "kind": "stack", "batch": "", "key": "m41417592", "rep": true, "geom": {"bbox": [1512, 1330, 79, 55], "polygon": [1531.0, 1330.0, 1512.0, 1364.0, 1571.0, 1385.0, 1591.0, 1355.0]}},
+        {"image": "photos/260731/RS23-GC03 369cm/Snap-21687.jpg", "kind": "frame", "batch": "", "key": "m41417592", "rep": false, "geom": {"bbox": [1512, 1330, 79, 55], "polygon": [1531.0, 1330.0, 1512.0, 1364.0, 1571.0, 1385.0, 1591.0, 1355.0]}},
+        {"image": "photos/260731/RS23-GC03 369cm/Snap-21688.jpg", "kind": "frame", "batch": "", "key": "m41417592", "rep": false, "geom": {"bbox": [1512, 1330, 79, 55], "polygon": [1531.0, 1330.0, 1512.0, 1364.0, 1571.0, 1385.0, 1591.0, 1355.0]}},
+        {"image": "photos/260731/RS23-GC03 369cm/Snap-21689.jpg", "kind": "frame", "batch": "", "key": "m41417592", "rep": false, "geom": {"bbox": [1512, 1330, 79, 55], "polygon": [1531.0, 1330.0, 1512.0, 1364.0, 1571.0, 1385.0, 1591.0, 1355.0]}},
+        {"image": "photos/260731/RS23-GC03 369cm/Snap-21690.jpg", "kind": "frame", "batch": "", "key": "m41417592", "rep": false, "geom": {"bbox": [1512, 1330, 79, 55], "polygon": [1531.0, 1330.0, 1512.0, 1364.0, 1571.0, 1385.0, 1591.0, 1355.0]}},
+        {"image": "photos/260731/RS23-GC03 369cm/Snap-21691.jpg", "kind": "frame", "batch": "", "key": "m41417592", "rep": false, "geom": {"bbox": [1512, 1330, 79, 55], "polygon": [1531.0, 1330.0, 1512.0, 1364.0, 1571.0, 1385.0, 1591.0, 1355.0]}}
+      ]
+    },
+    {
+      "batch": "",
+      "note": "",
+      "members": [
+        {"image": "stacked/g006_Snap-21687-21691_focused.jpg", "kind": "stack", "batch": "", "key": "m47f14bea", "rep": true, "geom": {"bbox": [1482, 585, 50, 75], "polygon": [1482.0, 585.0, 1485.0, 660.0, 1532.0, 639.0, 1523.0, 616.0]}},
+        {"image": "photos/260731/RS23-GC03 369cm/Snap-21687.jpg", "kind": "frame", "batch": "", "key": "m47f14bea", "rep": false, "geom": {"bbox": [1482, 585, 50, 75], "polygon": [1482.0, 585.0, 1485.0, 660.0, 1532.0, 639.0, 1523.0, 616.0]}},
+        {"image": "photos/260731/RS23-GC03 369cm/Snap-21688.jpg", "kind": "frame", "batch": "", "key": "m47f14bea", "rep": false, "geom": {"bbox": [1482, 585, 50, 75], "polygon": [1482.0, 585.0, 1485.0, 660.0, 1532.0, 639.0, 1523.0, 616.0]}},
+        {"image": "photos/260731/RS23-GC03 369cm/Snap-21689.jpg", "kind": "frame", "batch": "", "key": "m47f14bea", "rep": false, "geom": {"bbox": [1482, 585, 50, 75], "polygon": [1482.0, 585.0, 1485.0, 660.0, 1532.0, 639.0, 1523.0, 616.0]}},
+        {"image": "photos/260731/RS23-GC03 369cm/Snap-21690.jpg", "kind": "frame", "batch": "", "key": "m47f14bea", "rep": false, "geom": {"bbox": [1482, 585, 50, 75], "polygon": [1482.0, 585.0, 1485.0, 660.0, 1532.0, 639.0, 1523.0, 616.0]}},
+        {"image": "photos/260731/RS23-GC03 369cm/Snap-21691.jpg", "kind": "frame", "batch": "", "key": "m47f14bea", "rep": false, "geom": {"bbox": [1482, 585, 50, 75], "polygon": [1482.0, 585.0, 1485.0, 660.0, 1532.0, 639.0, 1523.0, 616.0]}}
+      ]
+    },
+    {
+      "batch": "",
+      "note": "",
+      "members": [
+        {"image": "stacked/g006_Snap-21687-21691_focused.jpg", "kind": "stack", "batch": "", "key": "m6ff4ab43", "rep": true, "geom": {"bbox": [336, 1494, 46, 221], "polygon": [372.0, 1496.0, 382.0, 1696.0, 371.0, 1715.0, 350.0, 1712.0, 338.0, 1696.0, 336.0, 1494.0]}},
+        {"image": "photos/260731/RS23-GC03 369cm/Snap-21687.jpg", "kind": "frame", "batch": "", "key": "m6ff4ab43", "rep": false, "geom": {"bbox": [336, 1494, 46, 221], "polygon": [372.0, 1496.0, 382.0, 1696.0, 371.0, 1715.0, 350.0, 1712.0, 338.0, 1696.0, 336.0, 1494.0]}},
+        {"image": "photos/260731/RS23-GC03 369cm/Snap-21688.jpg", "kind": "frame", "batch": "", "key": "m6ff4ab43", "rep": false, "geom": {"bbox": [336, 1494, 46, 221], "polygon": [372.0, 1496.0, 382.0, 1696.0, 371.0, 1715.0, 350.0, 1712.0, 338.0, 1696.0, 336.0, 1494.0]}},
+        {"image": "photos/260731/RS23-GC03 369cm/Snap-21689.jpg", "kind": "frame", "batch": "", "key": "m6ff4ab43", "rep": false, "geom": {"bbox": [336, 1494, 46, 221], "polygon": [372.0, 1496.0, 382.0, 1696.0, 371.0, 1715.0, 350.0, 1712.0, 338.0, 1696.0, 336.0, 1494.0]}},
+        {"image": "photos/260731/RS23-GC03 369cm/Snap-21690.jpg", "kind": "frame", "batch": "", "key": "m6ff4ab43", "rep": false, "geom": {"bbox": [336, 1494, 46, 221], "polygon": [372.0, 1496.0, 382.0, 1696.0, 371.0, 1715.0, 350.0, 1712.0, 338.0, 1696.0, 336.0, 1494.0]}},
+        {"image": "photos/260731/RS23-GC03 369cm/Snap-21691.jpg", "kind": "frame", "batch": "", "key": "m6ff4ab43", "rep": false, "geom": {"bbox": [336, 1494, 46, 221], "polygon": [372.0, 1496.0, 382.0, 1696.0, 371.0, 1715.0, 350.0, 1712.0, 338.0, 1696.0, 336.0, 1494.0]}}
+      ]
+    },
+    {
+      "batch": "",
+      "note": "",
+      "members": [
+        {"image": "stacked/g006_Snap-21687-21691_focused.jpg", "kind": "stack", "batch": "", "key": "m7b637ce7", "rep": true, "geom": {"bbox": [1016, 1890, 202, 112], "polygon": [1181.0, 1890.0, 1019.0, 1966.0, 1016.0, 1988.0, 1024.0, 2002.0, 1047.0, 1998.0, 1184.0, 1939.0, 1218.0, 1928.0]}},
+        {"image": "photos/260731/RS23-GC03 369cm/Snap-21687.jpg", "kind": "frame", "batch": "", "key": "m7b637ce7", "rep": false, "geom": {"bbox": [1016, 1890, 202, 112], "polygon": [1181.0, 1890.0, 1019.0, 1966.0, 1016.0, 1988.0, 1024.0, 2002.0, 1047.0, 1998.0, 1184.0, 1939.0, 1218.0, 1928.0]}},
+        {"image": "photos/260731/RS23-GC03 369cm/Snap-21688.jpg", "kind": "frame", "batch": "", "key": "m7b637ce7", "rep": false, "geom": {"bbox": [1016, 1890, 202, 112], "polygon": [1181.0, 1890.0, 1019.0, 1966.0, 1016.0, 1988.0, 1024.0, 2002.0, 1047.0, 1998.0, 1184.0, 1939.0, 1218.0, 1928.0]}},
+        {"image": "photos/260731/RS23-GC03 369cm/Snap-21689.jpg", "kind": "frame", "batch": "", "key": "m7b637ce7", "rep": false, "geom": {"bbox": [1016, 1890, 202, 112], "polygon": [1181.0, 1890.0, 1019.0, 1966.0, 1016.0, 1988.0, 1024.0, 2002.0, 1047.0, 1998.0, 1184.0, 1939.0, 1218.0, 1928.0]}},
+        {"image": "photos/260731/RS23-GC03 369cm/Snap-21690.jpg", "kind": "frame", "batch": "", "key": "m7b637ce7", "rep": false, "geom": {"bbox": [1016, 1890, 202, 112], "polygon": [1181.0, 1890.0, 1019.0, 1966.0, 1016.0, 1988.0, 1024.0, 2002.0, 1047.0, 1998.0, 1184.0, 1939.0, 1218.0, 1928.0]}},
+        {"image": "photos/260731/RS23-GC03 369cm/Snap-21691.jpg", "kind": "frame", "batch": "", "key": "m7b637ce7", "rep": false, "geom": {"bbox": [1016, 1890, 202, 112], "polygon": [1181.0, 1890.0, 1019.0, 1966.0, 1016.0, 1988.0, 1024.0, 2002.0, 1047.0, 1998.0, 1184.0, 1939.0, 1218.0, 1928.0]}}
+      ]
+    },
+    {
+      "batch": "",
+      "note": "",
+      "members": [
+        {"image": "stacked/g006_Snap-21687-21691_focused.jpg", "kind": "stack", "batch": "", "key": "m831c175f", "rep": true, "geom": {"bbox": [2019, 1146, 139, 377], "polygon": [2019.0, 1153.0, 2129.0, 1523.0, 2157.0, 1509.0, 2158.0, 1467.0, 2066.0, 1146.0]}},
+        {"image": "photos/260731/RS23-GC03 369cm/Snap-21687.jpg", "kind": "frame", "batch": "", "key": "m831c175f", "rep": false, "geom": {"bbox": [2019, 1146, 139, 377], "polygon": [2019.0, 1153.0, 2129.0, 1523.0, 2157.0, 1509.0, 2158.0, 1467.0, 2066.0, 1146.0]}},
+        {"image": "photos/260731/RS23-GC03 369cm/Snap-21688.jpg", "kind": "frame", "batch": "", "key": "m831c175f", "rep": false, "geom": {"bbox": [2019, 1146, 139, 377], "polygon": [2019.0, 1153.0, 2129.0, 1523.0, 2157.0, 1509.0, 2158.0, 1467.0, 2066.0, 1146.0]}},
+        {"image": "photos/260731/RS23-GC03 369cm/Snap-21689.jpg", "kind": "frame", "batch": "", "key": "m831c175f", "rep": false, "geom": {"bbox": [2019, 1146, 139, 377], "polygon": [2019.0, 1153.0, 2129.0, 1523.0, 2157.0, 1509.0, 2158.0, 1467.0, 2066.0, 1146.0]}},
+        {"image": "photos/260731/RS23-GC03 369cm/Snap-21690.jpg", "kind": "frame", "batch": "", "key": "m831c175f", "rep": false, "geom": {"bbox": [2019, 1146, 139, 377], "polygon": [2019.0, 1153.0, 2129.0, 1523.0, 2157.0, 1509.0, 2158.0, 1467.0, 2066.0, 1146.0]}},
+        {"image": "photos/260731/RS23-GC03 369cm/Snap-21691.jpg", "kind": "frame", "batch": "", "key": "m831c175f", "rep": false, "geom": {"bbox": [2019, 1146, 139, 377], "polygon": [2019.0, 1153.0, 2129.0, 1523.0, 2157.0, 1509.0, 2158.0, 1467.0, 2066.0, 1146.0]}}
+      ]
+    },
+    {
+      "batch": "",
+      "note": "",
+      "members": [
+        {"image": "stacked/g006_Snap-21687-21691_focused.jpg", "kind": "stack", "batch": "", "key": "m839829df", "rep": true, "geom": {"bbox": [412, 1421, 61, 141], "polygon": [412.0, 1440.0, 415.0, 1536.0, 417.0, 1562.0, 473.0, 1542.0, 460.0, 1441.0, 450.0, 1423.0, 434.0, 1421.0, 421.0, 1428.0]}},
+        {"image": "photos/260731/RS23-GC03 369cm/Snap-21687.jpg", "kind": "frame", "batch": "", "key": "m839829df", "rep": false, "geom": {"bbox": [412, 1421, 61, 141], "polygon": [412.0, 1440.0, 415.0, 1536.0, 417.0, 1562.0, 473.0, 1542.0, 460.0, 1441.0, 450.0, 1423.0, 434.0, 1421.0, 421.0, 1428.0]}},
+        {"image": "photos/260731/RS23-GC03 369cm/Snap-21688.jpg", "kind": "frame", "batch": "", "key": "m839829df", "rep": false, "geom": {"bbox": [412, 1421, 61, 141], "polygon": [412.0, 1440.0, 415.0, 1536.0, 417.0, 1562.0, 473.0, 1542.0, 460.0, 1441.0, 450.0, 1423.0, 434.0, 1421.0, 421.0, 1428.0]}},
+        {"image": "photos/260731/RS23-GC03 369cm/Snap-21689.jpg", "kind": "frame", "batch": "", "key": "m839829df", "rep": false, "geom": {"bbox": [412, 1421, 61, 141], "polygon": [412.0, 1440.0, 415.0, 1536.0, 417.0, 1562.0, 473.0, 1542.0, 460.0, 1441.0, 450.0, 1423.0, 434.0, 1421.0, 421.0, 1428.0]}},
+        {"image": "photos/260731/RS23-GC03 369cm/Snap-21690.jpg", "kind": "frame", "batch": "", "key": "m839829df", "rep": false, "geom": {"bbox": [412, 1421, 61, 141], "polygon": [412.0, 1440.0, 415.0, 1536.0, 417.0, 1562.0, 473.0, 1542.0, 460.0, 1441.0, 450.0, 1423.0, 434.0, 1421.0, 421.0, 1428.0]}},
+        {"image": "photos/260731/RS23-GC03 369cm/Snap-21691.jpg", "kind": "frame", "batch": "", "key": "m839829df", "rep": false, "geom": {"bbox": [412, 1421, 61, 141], "polygon": [412.0, 1440.0, 415.0, 1536.0, 417.0, 1562.0, 473.0, 1542.0, 460.0, 1441.0, 450.0, 1423.0, 434.0, 1421.0, 421.0, 1428.0]}}
+      ]
+    },
+    {
+      "batch": "",
+      "note": "",
+      "members": [
+        {"image": "stacked/g006_Snap-21687-21691_focused.jpg", "kind": "stack", "batch": "", "key": "ma083a57b", "rep": true, "geom": {"bbox": [587, 1453, 137, 235], "polygon": [587.0, 1590.0, 589.0, 1674.0, 646.0, 1688.0, 663.0, 1658.0, 664.0, 1636.0, 688.0, 1620.0, 700.0, 1582.0, 723.0, 1560.0, 724.0, 1543.0, 696.0, 1476.0, 674.0, 1464.0, 652.0, 1453.0, 630.0, 1463.0, 628.0, 1499.0, 626.0, 1541.0, 614.0, 1564.0]}},
+        {"image": "photos/260731/RS23-GC03 369cm/Snap-21687.jpg", "kind": "frame", "batch": "", "key": "ma083a57b", "rep": false, "geom": {"bbox": [587, 1453, 137, 235], "polygon": [587.0, 1590.0, 589.0, 1674.0, 646.0, 1688.0, 663.0, 1658.0, 664.0, 1636.0, 688.0, 1620.0, 700.0, 1582.0, 723.0, 1560.0, 724.0, 1543.0, 696.0, 1476.0, 674.0, 1464.0, 652.0, 1453.0, 630.0, 1463.0, 628.0, 1499.0, 626.0, 1541.0, 614.0, 1564.0]}},
+        {"image": "photos/260731/RS23-GC03 369cm/Snap-21688.jpg", "kind": "frame", "batch": "", "key": "ma083a57b", "rep": false, "geom": {"bbox": [587, 1453, 137, 235], "polygon": [587.0, 1590.0, 589.0, 1674.0, 646.0, 1688.0, 663.0, 1658.0, 664.0, 1636.0, 688.0, 1620.0, 700.0, 1582.0, 723.0, 1560.0, 724.0, 1543.0, 696.0, 1476.0, 674.0, 1464.0, 652.0, 1453.0, 630.0, 1463.0, 628.0, 1499.0, 626.0, 1541.0, 614.0, 1564.0]}},
+        {"image": "photos/260731/RS23-GC03 369cm/Snap-21689.jpg", "kind": "frame", "batch": "", "key": "ma083a57b", "rep": false, "geom": {"bbox": [587, 1453, 137, 235], "polygon": [587.0, 1590.0, 589.0, 1674.0, 646.0, 1688.0, 663.0, 1658.0, 664.0, 1636.0, 688.0, 1620.0, 700.0, 1582.0, 723.0, 1560.0, 724.0, 1543.0, 696.0, 1476.0, 674.0, 1464.0, 652.0, 1453.0, 630.0, 1463.0, 628.0, 1499.0, 626.0, 1541.0, 614.0, 1564.0]}},
+        {"image": "photos/260731/RS23-GC03 369cm/Snap-21690.jpg", "kind": "frame", "batch": "", "key": "ma083a57b", "rep": false, "geom": {"bbox": [587, 1453, 137, 235], "polygon": [587.0, 1590.0, 589.0, 1674.0, 646.0, 1688.0, 663.0, 1658.0, 664.0, 1636.0, 688.0, 1620.0, 700.0, 1582.0, 723.0, 1560.0, 724.0, 1543.0, 696.0, 1476.0, 674.0, 1464.0, 652.0, 1453.0, 630.0, 1463.0, 628.0, 1499.0, 626.0, 1541.0, 614.0, 1564.0]}},
+        {"image": "photos/260731/RS23-GC03 369cm/Snap-21691.jpg", "kind": "frame", "batch": "", "key": "ma083a57b", "rep": false, "geom": {"bbox": [587, 1453, 137, 235], "polygon": [587.0, 1590.0, 589.0, 1674.0, 646.0, 1688.0, 663.0, 1658.0, 664.0, 1636.0, 688.0, 1620.0, 700.0, 1582.0, 723.0, 1560.0, 724.0, 1543.0, 696.0, 1476.0, 674.0, 1464.0, 652.0, 1453.0, 630.0, 1463.0, 628.0, 1499.0, 626.0, 1541.0, 614.0, 1564.0]}}
+      ]
+    },
+    {
+      "batch": "",
+      "note": "",
+      "members": [
+        {"image": "stacked/g006_Snap-21687-21691_focused.jpg", "kind": "stack", "batch": "", "key": "maebd8059", "rep": true, "geom": {"bbox": [1133, 3, 398, 266], "polygon": [1531.0, 24.0, 1482.0, 198.0, 1425.0, 228.0, 1373.0, 259.0, 1298.0, 269.0, 1244.0, 264.0, 1163.0, 238.0, 1133.0, 124.0, 1155.0, 37.0, 1196.0, 3.0, 1522.0, 3.0]}},
+        {"image": "photos/260731/RS23-GC03 369cm/Snap-21687.jpg", "kind": "frame", "batch": "", "key": "maebd8059", "rep": false, "geom": {"bbox": [1133, 3, 398, 266], "polygon": [1531.0, 24.0, 1482.0, 198.0, 1425.0, 228.0, 1373.0, 259.0, 1298.0, 269.0, 1244.0, 264.0, 1163.0, 238.0, 1133.0, 124.0, 1155.0, 37.0, 1196.0, 3.0, 1522.0, 3.0]}},
+        {"image": "photos/260731/RS23-GC03 369cm/Snap-21688.jpg", "kind": "frame", "batch": "", "key": "maebd8059", "rep": false, "geom": {"bbox": [1133, 3, 398, 266], "polygon": [1531.0, 24.0, 1482.0, 198.0, 1425.0, 228.0, 1373.0, 259.0, 1298.0, 269.0, 1244.0, 264.0, 1163.0, 238.0, 1133.0, 124.0, 1155.0, 37.0, 1196.0, 3.0, 1522.0, 3.0]}},
+        {"image": "photos/260731/RS23-GC03 369cm/Snap-21689.jpg", "kind": "frame", "batch": "", "key": "maebd8059", "rep": false, "geom": {"bbox": [1133, 3, 398, 266], "polygon": [1531.0, 24.0, 1482.0, 198.0, 1425.0, 228.0, 1373.0, 259.0, 1298.0, 269.0, 1244.0, 264.0, 1163.0, 238.0, 1133.0, 124.0, 1155.0, 37.0, 1196.0, 3.0, 1522.0, 3.0]}},
+        {"image": "photos/260731/RS23-GC03 369cm/Snap-21690.jpg", "kind": "frame", "batch": "", "key": "maebd8059", "rep": false, "geom": {"bbox": [1133, 3, 398, 266], "polygon": [1531.0, 24.0, 1482.0, 198.0, 1425.0, 228.0, 1373.0, 259.0, 1298.0, 269.0, 1244.0, 264.0, 1163.0, 238.0, 1133.0, 124.0, 1155.0, 37.0, 1196.0, 3.0, 1522.0, 3.0]}},
+        {"image": "photos/260731/RS23-GC03 369cm/Snap-21691.jpg", "kind": "frame", "batch": "", "key": "maebd8059", "rep": false, "geom": {"bbox": [1133, 3, 398, 266], "polygon": [1531.0, 24.0, 1482.0, 198.0, 1425.0, 228.0, 1373.0, 259.0, 1298.0, 269.0, 1244.0, 264.0, 1163.0, 238.0, 1133.0, 124.0, 1155.0, 37.0, 1196.0, 3.0, 1522.0, 3.0]}}
+      ]
+    },
+    {
+      "batch": "",
+      "note": "",
+      "members": [
+        {"image": "stacked/g006_Snap-21687-21691_focused.jpg", "kind": "stack", "batch": "", "key": "mb038da97", "rep": true, "geom": {"bbox": [1561, 383, 55, 141], "polygon": [1573.0, 383.0, 1561.0, 524.0, 1593.0, 524.0, 1616.0, 460.0, 1588.0, 428.0]}},
+        {"image": "photos/260731/RS23-GC03 369cm/Snap-21687.jpg", "kind": "frame", "batch": "", "key": "mb038da97", "rep": false, "geom": {"bbox": [1561, 383, 55, 141], "polygon": [1573.0, 383.0, 1561.0, 524.0, 1593.0, 524.0, 1616.0, 460.0, 1588.0, 428.0]}},
+        {"image": "photos/260731/RS23-GC03 369cm/Snap-21688.jpg", "kind": "frame", "batch": "", "key": "mb038da97", "rep": false, "geom": {"bbox": [1561, 383, 55, 141], "polygon": [1573.0, 383.0, 1561.0, 524.0, 1593.0, 524.0, 1616.0, 460.0, 1588.0, 428.0]}},
+        {"image": "photos/260731/RS23-GC03 369cm/Snap-21689.jpg", "kind": "frame", "batch": "", "key": "mb038da97", "rep": false, "geom": {"bbox": [1561, 383, 55, 141], "polygon": [1573.0, 383.0, 1561.0, 524.0, 1593.0, 524.0, 1616.0, 460.0, 1588.0, 428.0]}},
+        {"image": "photos/260731/RS23-GC03 369cm/Snap-21690.jpg", "kind": "frame", "batch": "", "key": "mb038da97", "rep": false, "geom": {"bbox": [1561, 383, 55, 141], "polygon": [1573.0, 383.0, 1561.0, 524.0, 1593.0, 524.0, 1616.0, 460.0, 1588.0, 428.0]}},
+        {"image": "photos/260731/RS23-GC03 369cm/Snap-21691.jpg", "kind": "frame", "batch": "", "key": "mb038da97", "rep": false, "geom": {"bbox": [1561, 383, 55, 141], "polygon": [1573.0, 383.0, 1561.0, 524.0, 1593.0, 524.0, 1616.0, 460.0, 1588.0, 428.0]}}
+      ]
+    },
+    {
+      "batch": "",
+      "note": "",
+      "members": [
+        {"image": "stacked/g006_Snap-21687-21691_focused.jpg", "kind": "stack", "batch": "", "key": "mb6d3a721", "rep": true, "geom": {"bbox": [402, 919, 205, 235], "polygon": [402.0, 1115.0, 463.0, 1154.0, 607.0, 947.0, 565.0, 919.0]}},
+        {"image": "photos/260731/RS23-GC03 369cm/Snap-21687.jpg", "kind": "frame", "batch": "", "key": "mb6d3a721", "rep": false, "geom": {"bbox": [402, 919, 205, 235], "polygon": [402.0, 1115.0, 463.0, 1154.0, 607.0, 947.0, 565.0, 919.0]}},
+        {"image": "photos/260731/RS23-GC03 369cm/Snap-21688.jpg", "kind": "frame", "batch": "", "key": "mb6d3a721", "rep": false, "geom": {"bbox": [402, 919, 205, 235], "polygon": [402.0, 1115.0, 463.0, 1154.0, 607.0, 947.0, 565.0, 919.0]}},
+        {"image": "photos/260731/RS23-GC03 369cm/Snap-21689.jpg", "kind": "frame", "batch": "", "key": "mb6d3a721", "rep": false, "geom": {"bbox": [402, 919, 205, 235], "polygon": [402.0, 1115.0, 463.0, 1154.0, 607.0, 947.0, 565.0, 919.0]}},
+        {"image": "photos/260731/RS23-GC03 369cm/Snap-21690.jpg", "kind": "frame", "batch": "", "key": "mb6d3a721", "rep": false, "geom": {"bbox": [402, 919, 205, 235], "polygon": [402.0, 1115.0, 463.0, 1154.0, 607.0, 947.0, 565.0, 919.0]}},
+        {"image": "photos/260731/RS23-GC03 369cm/Snap-21691.jpg", "kind": "frame", "batch": "", "key": "mb6d3a721", "rep": false, "geom": {"bbox": [402, 919, 205, 235], "polygon": [402.0, 1115.0, 463.0, 1154.0, 607.0, 947.0, 565.0, 919.0]}}
+      ]
+    },
+    {
+      "batch": "",
+      "note": "",
+      "members": [
+        {"image": "stacked/g006_Snap-21687-21691_focused.jpg", "kind": "stack", "batch": "", "key": "mda7e0c98", "rep": true, "geom": {"bbox": [221, 1444, 126, 92], "polygon": [328.0, 1444.0, 221.0, 1488.0, 227.0, 1520.0, 249.0, 1536.0, 295.0, 1524.0, 334.0, 1521.0, 347.0, 1492.0]}},
+        {"image": "photos/260731/RS23-GC03 369cm/Snap-21687.jpg", "kind": "frame", "batch": "", "key": "mda7e0c98", "rep": false, "geom": {"bbox": [221, 1444, 126, 92], "polygon": [328.0, 1444.0, 221.0, 1488.0, 227.0, 1520.0, 249.0, 1536.0, 295.0, 1524.0, 334.0, 1521.0, 347.0, 1492.0]}},
+        {"image": "photos/260731/RS23-GC03 369cm/Snap-21688.jpg", "kind": "frame", "batch": "", "key": "mda7e0c98", "rep": false, "geom": {"bbox": [221, 1444, 126, 92], "polygon": [328.0, 1444.0, 221.0, 1488.0, 227.0, 1520.0, 249.0, 1536.0, 295.0, 1524.0, 334.0, 1521.0, 347.0, 1492.0]}},
+        {"image": "photos/260731/RS23-GC03 369cm/Snap-21689.jpg", "kind": "frame", "batch": "", "key": "mda7e0c98", "rep": false, "geom": {"bbox": [221, 1444, 126, 92], "polygon": [328.0, 1444.0, 221.0, 1488.0, 227.0, 1520.0, 249.0, 1536.0, 295.0, 1524.0, 334.0, 1521.0, 347.0, 1492.0]}},
+        {"image": "photos/260731/RS23-GC03 369cm/Snap-21690.jpg", "kind": "frame", "batch": "", "key": "mda7e0c98", "rep": false, "geom": {"bbox": [221, 1444, 126, 92], "polygon": [328.0, 1444.0, 221.0, 1488.0, 227.0, 1520.0, 249.0, 1536.0, 295.0, 1524.0, 334.0, 1521.0, 347.0, 1492.0]}},
+        {"image": "photos/260731/RS23-GC03 369cm/Snap-21691.jpg", "kind": "frame", "batch": "", "key": "mda7e0c98", "rep": false, "geom": {"bbox": [221, 1444, 126, 92], "polygon": [328.0, 1444.0, 221.0, 1488.0, 227.0, 1520.0, 249.0, 1536.0, 295.0, 1524.0, 334.0, 1521.0, 347.0, 1492.0]}}
+      ]
+    }
+  ]
 }
