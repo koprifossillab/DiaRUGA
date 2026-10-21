@@ -1168,13 +1168,38 @@ CATALOG_PER_PAGE = 120
 # **`named`·`unnamed` 는 진행도와 같은 기준이다** (2026-08-11) — 종명·등급·자세가
 # 다 차야 완료다. 둘이 다른 뜻이면 진행도가 "80%" 인데 "덜 된 것" 거르개가 빈
 # 화면을 내는 상태가 생기고, 사람은 무엇을 믿어야 할지 모른다.
+def _untyped(r, kind):
+    """유형을 사람이 안 고른 카드의 넷째 갈래 (225 · 사용자 2026-10-21).
+
+    유형 칸이 비면 화면은 엔진의 추측(`rod`·`round`)을 대신 그린다 — 그래서
+    "비었다" 가 화면에서 안 보인다. YOLO 4차 자료를 만들기 전에 사람이 훑을
+    수 있게 넷으로 가른다. **손그림이 먼저다** — 그린 개체에는 엔진값이 없다.
+    """
+    if r.get("cls_user"):
+        return False
+    drawn = r.get("source") == "manual"
+    if kind == "drawn":
+        return drawn
+    if drawn:
+        return False
+    cls = r.get("cls") or ""
+    return cls == kind if kind else not cls
+
+
 CATALOG_FILTERS = {
     "manual": ("수동 복구", lambda r: r.get("manual")),
     "labeled": ("사람 지정", lambda r: r.get("cls_user")),
     "noted": ("코멘트 있음", lambda r: r.get("note")),
     "named": ("동정 완료", data.catalog_done),
     "unnamed": ("덜 된 것", lambda r: not data.catalog_done(r)),
+    # 유형 미지정 넷 (225) — 칩에 수를 함께 적는다(`catalog` 뷰)
+    "untyped_rod": ("유형 미지정 · 엔진 봉상", lambda r: _untyped(r, "rod")),
+    "untyped_round": ("유형 미지정 · 엔진 원형", lambda r: _untyped(r, "round")),
+    "untyped_none": ("유형 미지정 · 엔진값 없음", lambda r: _untyped(r, "")),
+    "untyped_drawn": ("유형 미지정 · 손그림", lambda r: _untyped(r, "drawn")),
 }
+UNTYPED_FILTERS = ("untyped_rod", "untyped_round", "untyped_none",
+                   "untyped_drawn")
 
 
 def _catalog_hl(rows, hl):
@@ -1277,6 +1302,12 @@ def catalog(request, slug):
         show_frag = True
     if not show_frag and not data.is_fragment(cls):
         rows = [r for r in rows if not data.is_fragment(r.get("cls"))]
+
+    # **유형 미지정 칩의 수** (225) — 고르기 전에 몇 개가 있는지 보여야 슬라이드를
+    # 돌며 찾는 일이 준다. 파편 감추기 뒤에 세지만, 엔진이 파편을 안 붙이므로
+    # 유형 미지정은 감춰지는 일이 없다.
+    untyped_n = {k: sum(1 for r in rows if CATALOG_FILTERS[k][1](r))
+                 for k in UNTYPED_FILTERS}
 
     members = data.group_members(cls)
     if cls in data.CLASSES:
@@ -1407,7 +1438,8 @@ def catalog(request, slug):
         "blocked": blocked,
         "readonly": bool(blocked),
         "cls": cls,
-        "filters": [{"key": k, "label": v[0]} for k, v in CATALOG_FILTERS.items()],
+        "filters": [{"key": k, "label": v[0], "n": untyped_n.get(k)}
+                    for k, v in CATALOG_FILTERS.items()],
         "q": q,
         "show_frag": show_frag,
         "n_frag": n_frag,

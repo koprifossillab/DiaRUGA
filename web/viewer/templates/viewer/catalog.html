@@ -330,7 +330,7 @@
   {% endfor %}
   {% for f in filters %}
     <a class="chip{% if cls == f.key %} on{% endif %}"
-       href="?cls={{ f.key }}{% if q %}&q={{ q }}{% endif %}{% if show_frag %}&frag=1{% endif %}{% if show_gone %}&gone=1{% endif %}">{{ f.label }}</a>
+       href="?cls={{ f.key }}{% if q %}&q={{ q }}{% endif %}{% if show_frag %}&frag=1{% endif %}{% if show_gone %}&gone=1{% endif %}">{{ f.label }}{% if f.n is not None %} <span class="dim">{{ f.n }}</span>{% endif %}</a>
   {% endfor %}
   {% comment %}
     **파편은 기본으로 감춘다** (사용자 2026-08-11). 처음부터 다 내면 카드가
