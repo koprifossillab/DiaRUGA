@@ -70,7 +70,10 @@ class ReadOnlyScreenTest(BrowserTestCase):
         """
         page = self.open_ro()
         for sel in (".tools", ".drawtool", ".donebar"):
-            for el in page.query_selector_all(sel):
+            els = page.query_selector_all(sel)
+            # 찾지 못하면 아무것도 안 보는 시험이 된다 — 도구 자리를 옮길 때 난다
+            self.assertTrue(els, f"{sel} 가 화면에 없다")
+            for el in els:
                 with self.subTest(sel=sel):
                     self.assertFalse(el.is_visible(),
                                      f"읽기 전용인데 {sel} 이 보인다")

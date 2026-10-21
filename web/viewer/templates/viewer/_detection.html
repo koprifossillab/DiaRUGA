@@ -53,6 +53,18 @@
     원시 {{ det.n_raw_masks }}{% if det.n_sized %} → 크기통과 {{ det.n_sized }}{% endif %} ·
     {{ det.um_per_pixel|floatformat:4 }} µm/px{% if det.um_per_pixel_source %}<span class="dim"> ({{ det.um_per_pixel_source }})</span>{% endif %}
   </span>
+  {% comment %}
+    **칸 여닫기** (229 · 사용자 2026-10-21). 양옆 칸과 프레임 줄을 감추거나 켠다.
+    폭과 프레임 줄 크기는 칸 사이 손잡이를 끌어 바꾼다. `↺` 가 기본값으로
+    되돌린다. 보는 방식이라 브라우저에만 남는다(`diaruga.layout`) — 밝기·대비와
+    같은 자리다. 넓힌 화면(`main.wide`)에서만 보인다.
+  {% endcomment %}
+  {% if not offline %}<span class="layoutctl" id="layoutctl-{{ uid }}">
+    <button type="button" data-lay="left" title="왼쪽 칸(화면 조정·시야·안내) 감추기/보이기">◧</button>
+    <button type="button" data-lay="strip" title="프레임 줄 감추기/보이기">⬓</button>
+    <button type="button" data-lay="right" title="오른쪽 칸(카탈로그·도감) 감추기/보이기">◨</button>
+    <button type="button" data-lay="reset" title="칸 배치를 기본값으로 되돌리기">↺</button>
+  </span>{% endif %}
 </div>
 
 {% if base %}
@@ -61,7 +73,132 @@
   사진과 코멘트 목록을 나란히 둔다. 목록은 코멘트가 하나라도 있을 때만 나타난다
   — 늘 자리를 차지하면 사진이 그만큼 좁아진다(JS 가 여닫는다).
 {% endcomment %}
-<div class="detrow" id="detrow-{{ uid }}">
+<div class="detrow" id="detrow-{{ uid }}"{% if det.size.0 and det.size.1 %} style="--ar: {{ det.size.0 }} / {{ det.size.1 }}"{% endif %}>
+{% comment %}
+  **사진 왼쪽 칸 — 화면 조정과 안내** (229 · 사용자 2026-10-21). 화면을 넓혀
+  쓰면서 [이 칸] [사진 + 프레임 줄] [개체 카탈로그] 세 칸으로 갈랐다. **교정
+  도구(그리기·되돌리기·레이어)는 사진 위 오버레이로 남는다**(사용자) — 사진에서
+  눈을 떼지 않고 누르는 것들이다. 이 칸에는 밝기·대비와 조작 안내가 놓인다.
+{% endcomment %}
+<aside class="dvside" id="dvside-{{ uid }}">
+  {% comment %}
+    화면 조정 — 밝기·대비. **사진에만 건다**(`filter` 를 `<img>` 에만).
+    마스크는 형제 `<svg>` 라 안 물든다: 마스크 색이 분류를 나타내는 판정 근거라
+    사진을 어둡게 했다고 함께 어두워지면 무엇으로 지정했는지가 안 읽힌다.
+
+    **DB 에 안 남는다.** 보는 방식이지 자료가 아니다 — 원본 화소는 그대로이고,
+    계측·판정은 서버가 원본으로 한다. 값은 브라우저에만 남겨(`localStorage`)
+    시야를 옮겨도 따라온다. 슬라이드 하나를 훑는 동안 한 번만 맞추면 된다.
+  {% endcomment %}
+  {% comment %}
+    **폰에서는 접고 시작한다** (194 · 사용자 2026-09-07). 밝기·대비는 슬라이드
+    하나를 훑는 동안 한 번 맞추고 마는 것인데, 좁은 화면에서는 이 두 줄이
+    사진과 판 캐러셀 사이를 가른다. 접힌 채로 여는지 아닌지는
+    `_detview_js.html` 이 **화면 폭을 보고** 정한다 — 짐작하면 태블릿에서
+    틀린다(192 와 같은 줄).
+
+    **접혀 있어도 켜져 있으면 보인다** — 요약에 값을 적는다(`adjnow`).
+    조정이 걸린 채로 접히면 사진이 왜 어두운지 화면 어디에도 안 적히게 되고,
+    그러면 사람은 사진을 의심한다.
+  {% endcomment %}
+  <details class="adjbox" id="adjbox-{{ uid }}" open>
+    <summary class="nhead adjhead">화면 조정<span class="adjnow"
+             id="adjnow-{{ uid }}"></span></summary>
+    <div class="adj" id="adj-{{ uid }}">
+      <label>밝기 <span class="dim" id="brival-{{ uid }}">100%</span>
+        <input type="range" id="bri-{{ uid }}" min="20" max="250" step="5" value="100"></label>
+      <label>대비 <span class="dim" id="conval-{{ uid }}">100%</span>
+        <input type="range" id="con-{{ uid }}" min="20" max="250" step="5" value="100"></label>
+      <button type="button" class="adjreset" id="adjreset-{{ uid }}"
+              title="밝기·대비를 100% 로">되돌리기</button>
+    </div>
+  </details>
+
+  {% comment %}
+    **이 슬라이드의 시야 바둑판과 검토율** (229 · 사용자 2026-10-21). 시야 목록
+    화면을 다녀오지 않고 옆 시야로 간다. 지금 시야는 테두리로, 검토 끝난 시야는
+    초록 점으로 표시한다. **누르면 `leave()` 로 떠난다**(`_detview_js.html`) —
+    밀어낸 저장이 나간 뒤에 옮긴다(116: 떠나는 자리는 전부 그 문으로).
+    숫자는 시야 목록 화면과 같은 집계다(`data.slide_tiles`).
+  {% endcomment %}
+  {% if vside %}
+  <div class="nhead vhead">시야 {{ vside.n }}
+    <span class="dim">· 검토 {{ vside.done }}/{{ vside.n }} ({{ vside.pct }}%)</span></div>
+  <div class="vgrid" id="vgrid-{{ uid }}">
+    {% for t in vside.tiles %}
+    <a href="{% url 'group' slug t.id %}{{ vside_q }}"
+       class="vt{% if t.reviewed %} done{% endif %}{% if t.id == id %} cur{% endif %}"
+       title="g{{ t.id }} · {{ t.n }}장{% if t.reviewed %} · 검토 완료{% endif %}">
+      {% if t.cover_rel %}<img loading="lazy" src="{% thumb t.cover_rel 200 %}" alt="">{% endif %}
+      <span class="vid">g{{ t.id }}</span>
+    </a>
+    {% endfor %}
+  </div>
+  <div class="vstats">
+    <div class="vbar"><i style="width:{{ vside.pct }}%"></i></div>
+    <div>검출 {{ vside.n_auto }} → 검토 후 <b>{{ vside.n_detected }}</b>개
+      {% if vside.mean_detected %}· 시야당 {{ vside.mean_detected }}{% endif %}</div>
+    {% if vside.class_counts %}<div class="dim">{% for d in vside.class_counts %}{{ d.label }} {{ d.n }}{% if not forloop.last %} · {% endif %}{% endfor %}</div>{% endif %}
+    <div class="dim">사진 {{ vside.n_images }}장 · 삭제 {{ vside.n_removed }} · 되살림 {{ vside.n_accepted }} · 분류 지정 {{ vside.n_labeled }}</div>
+  </div>
+  {% endif %}
+
+  {% comment %}
+    **아래쪽은 안내다** (229 · 사용자 2026-10-21). 사진 밑에 있던 조작·단축키
+    안내를 도구 칸 바닥으로 내렸다 — 도구를 쓰는 법이니 도구 곁에 있다.
+  {% endcomment %}
+  <div class="sidefoot">
+{% comment %}
+  **조작 안내가 둘이다** (192). 마우스에만 있는 것을 손가락에게 적어 두면
+  화면이 거짓말을 한다 — 휠도 우클릭도 없는 자리에서 "휠 = 확대" 를 읽는다.
+  어느 쪽을 낼지는 CSS 가 정한다(`@media (hover: none)`): 기기가 무엇인지는
+  브라우저가 알고, 우리가 짐작하면 태블릿+마우스 같은 자리에서 틀린다.
+{% endcomment %}
+<p class="dim touchhint" style="font-size:12px;margin:2px 2px 0">
+  <b>두 손가락 = 확대</b> · 한 손가락 끌기 = 이동 · <b>탭 = 선택</b> ·
+  <b>길게 누르기 = 메뉴</b>(삭제·유형·되살리기) · 빈 곳 탭 = 그 자리의 탈락 후보 펼쳐 보기
+</p>
+<p class="dim mousehint" style="font-size:11.5px;margin:2px 2px 0">
+  휠 = 확대 · 우클릭 드래그 = 이동 · <b>클릭 = 선택 (겹친 자리는 다시 클릭하면 다음 것)</b> · Shift+클릭 = 추가/해제 ·
+  드래그 = 범위 선택 · <b>선택 위에서 우클릭 = 오검출 삭제</b> ·
+  <b>빈 곳 클릭 = 그 자리의 탈락 후보 펼쳐 보기</b>
+  {% comment %}
+    탈락 레이어를 켜면 클릭 우선순위가 바뀐다 — 켰을 때만이라 그 조건을 함께
+    적는다. 안 적으면 "왜 개체가 안 골라지지" 가 된다.
+  {% endcomment %}
+  · <b>탈락</b>을 켜면 클릭이 탈락 후보를 먼저 집는다 (검출 개체는 Shift+클릭)
+</p>
+{% comment %}
+  단축키 안내. 목록을 여기 적지 않는다 — 분류를 더하면서 안내만 옛 목록으로
+  남는 일이 이미 두 번 있었다. ClassDef 의 hotkey 가 그린다. 키를 안 준 분류는
+  여기 안 나오고, 그것이 곧 "아직 배정 안 했다" 는 표시다.
+  읽기 전용(`?batch=` 로 다른 묶음을 볼 때)에서는 키가 안 듣는다 — 안내도 내지 않는다.
+{% endcomment %}
+{% comment %}
+  삭제 키는 ClassDef 가 아니라 여기 적는다 — 오검출은 분류가 아니라 removed
+  집합이라 테이블에 태울 자리가 없다(hotkey_groups 가 .strip() 을 걸어 공백은 빈
+  값으로 사라진다). **가장 많이 하는 조작이라 맨 앞에 둔다** (교정 6,753 중
+  삭제가 5,467).
+
+  분류가 하나도 없어도 이 줄은 놓인다 — 삭제 키는 분류와 무관하다.
+{% endcomment %}
+{% hotkey_groups as hk %}
+<p class="dim keyhint mousehint" id="keyhint-{{ uid }}" style="font-size:11.5px;margin:2px 2px 0">
+  <b>단축키</b> — 개체를 고르고
+  <kbd>Space</kbd>&nbsp;<span title="오검출로 삭제 · 지운 것을 고르고 다시 누르면 되살립니다">삭제</span>{% if hk.groups %} ·
+  {% for h in hk.groups %}<kbd>{{ h.hotkey|upper }}</kbd>&nbsp;{% for c in h.classes %}{% if not forloop.first %} → {% endif %}<span title="{{ c.label }}">{{ c.short }}</span>{% endfor %}{% if not forloop.last %} · {% endif %}{% endfor %}{% if hk.cycles %}
+  <span class="dim">(→ 는 같은 키를 다시 누르면 넘어간다는 뜻)</span>{% endif %}{% endif %}
+  · 고르지 않고 <kbd>S</kbd><kbd>S</kbd>&nbsp;<span title="그린 개체는 남긴다 · Ctrl+Z 로 되돌림">이 판의 검출 전부 삭제</span>
+</p>
+  </div>
+</aside>
+<div class="gut l" data-gut="left" title="끌어서 왼쪽 칸 폭을 바꿉니다 · 두 번 누르면 기본 폭"></div>
+
+{% comment %}
+  **가운데 칸 — 사진과 그 판의 프레임 줄** (229 · 사용자 2026-10-21). 프레임 줄이
+  화면 폭 전체를 먹지 않고 사진 밑에만 놓인다. 양옆 칸은 위에서 아래까지 도구다.
+{% endcomment %}
+<div class="dvcenter" id="dvcenter-{{ uid }}">
 {% comment %}
   **저장은 `(slug, gid)` 로 시야를 짚는다.** `stem` 은 이름이라 슬라이드끼리
   겹치는데(프레임 이름 143종), 그것 하나로 찾다가 12개 화면이 다른 슬라이드의
@@ -223,46 +360,56 @@
        title="두 번 누르면 스케일바의 모양·색·자리를 고릅니다"><canvas></canvas></div>
 </div>
 
+<div class="sgut" data-gut="strip" title="끌어서 프레임 줄 크기를 바꿉니다 · 두 번 누르면 기본 크기"></div>
+<div class="shotcap" id="shotcap-{{ uid }}">
+  <b id="shot-title-{{ uid }}"></b>
+  <span class="dim" id="shot-note-{{ uid }}"></span>
+  <a id="shot-full-{{ uid }}" href="" target="_blank" rel="noopener">원본 크기</a>
+</div>
+
 {% comment %}
-  사진 오른쪽 칸. 화면 조정과 **시야 코멘트**가 있다.
+  이웃 시야의 주소를 캐러셀에 물려 둔다 — 끝에서 화살표를 누르면 그리로 넘어간다.
+  이전 시야로는 그 시야의 마지막 사진에서 시작해야 오가는 흐름이 끊기지 않는다.
+{% endcomment %}
+<div class="striprow" id="nav-{{ uid }}">
+  <button type="button" class="navbtn grp" data-nav="pgroup"
+          {% if prev_id is None %}disabled title="첫 시야입니다"{% else %}title="이전 시야 g{{ prev_id }} (Ctrl+← · 묻지 않고 바로 이동)"{% endif %}>&laquo;</button>
+  <button type="button" class="navbtn" data-nav="pshot" title="이전 사진 (←)">&lsaquo;</button>
+
+  <div class="strip" id="strip-{{ uid }}"
+       {% comment %}
+         어디로 갈지는 서버가 정한다(`data.group_detail` 이 `?batch=` 를 붙인다).
+         여기에 주소를 박아 두었더니 엔진을 갈아 낀 상태에서 "다음 시야" 를 누를
+         때마다 현재 검출로 튀어나갔다
+       {% endcomment %}
+       {% comment %}
+         주소에 이미 쿼리가 붙어 있을 수 있다 — 검토 화면에서 엔진을 갈아 낀
+         상태가 `?batch=N` 이다. `?` 를 그냥 이어 붙이면 `?batch=5?shot=last`
+         가 되어 둘 다 죽는다.
+       {% endcomment %}
+       {% if prev_url %}data-prev="{{ prev_url }}{% if "?" in prev_url %}&amp;{% else %}?{% endif %}shot=last" data-prev-id="{{ prev_id }}"{% endif %}
+       {% if next_url %}data-next="{{ next_url }}" data-next-id="{{ next_id }}"{% endif %}>
+    {% include "viewer/_shots.html" %}
+  </div>
+
+  <button type="button" class="navbtn" data-nav="nshot" title="다음 사진 (→)">&rsaquo;</button>
+  <button type="button" class="navbtn grp" data-nav="ngroup"
+          {% if next_id is None %}disabled title="마지막 시야입니다"{% else %}title="다음 시야 g{{ next_id }} (Ctrl+→ · 묻지 않고 바로 이동)"{% endif %}>&raquo;</button>
+</div>
+
+
+</div>
+
+
+{% comment %}
+  사진 오른쪽 칸. **개체 카탈로그**가 있다 — 화면 조정은 229 에서 왼쪽 칸으로 갔다.
 
   **개체 코멘트 목록은 0036 에서 걷었다** (사용자, 2026-08-12). 개체를 두고
   하는 말은 개체 카탈로그에서 적기로 했고, 적지 않는 목록을 여기 두면 *어디서
   적는 것인지*가 두 자리로 갈린다. 비는 자리는 Diadiction(P14)이 쓴다.
 {% endcomment %}
+<div class="gut r" data-gut="right" title="끌어서 오른쪽 칸 폭을 바꿉니다 · 두 번 누르면 기본 폭"></div>
 <aside class="notes" id="notes-{{ uid }}">
-  {% comment %}
-    화면 조정 — 밝기·대비. **사진에만 건다**(`filter` 를 `<img>` 에만).
-    마스크는 형제 `<svg>` 라 안 물든다: 마스크 색이 분류를 나타내는 판정 근거라
-    사진을 어둡게 했다고 함께 어두워지면 무엇으로 지정했는지가 안 읽힌다.
-
-    **DB 에 안 남는다.** 보는 방식이지 자료가 아니다 — 원본 화소는 그대로이고,
-    계측·판정은 서버가 원본으로 한다. 값은 브라우저에만 남겨(`localStorage`)
-    시야를 옮겨도 따라온다. 슬라이드 하나를 훑는 동안 한 번만 맞추면 된다.
-  {% endcomment %}
-  {% comment %}
-    **폰에서는 접고 시작한다** (194 · 사용자 2026-09-07). 밝기·대비는 슬라이드
-    하나를 훑는 동안 한 번 맞추고 마는 것인데, 좁은 화면에서는 이 두 줄이
-    사진과 판 캐러셀 사이를 가른다. 접힌 채로 여는지 아닌지는
-    `_detview_js.html` 이 **화면 폭을 보고** 정한다 — 짐작하면 태블릿에서
-    틀린다(192 와 같은 줄).
-
-    **접혀 있어도 켜져 있으면 보인다** — 요약에 값을 적는다(`adjnow`).
-    조정이 걸린 채로 접히면 사진이 왜 어두운지 화면 어디에도 안 적히게 되고,
-    그러면 사람은 사진을 의심한다.
-  {% endcomment %}
-  <details class="adjbox" id="adjbox-{{ uid }}" open>
-    <summary class="nhead adjhead">화면 조정<span class="adjnow"
-             id="adjnow-{{ uid }}"></span></summary>
-    <div class="adj" id="adj-{{ uid }}">
-      <label>밝기 <span class="dim" id="brival-{{ uid }}">100%</span>
-        <input type="range" id="bri-{{ uid }}" min="20" max="250" step="5" value="100"></label>
-      <label>대비 <span class="dim" id="conval-{{ uid }}">100%</span>
-        <input type="range" id="con-{{ uid }}" min="20" max="250" step="5" value="100"></label>
-      <button type="button" class="adjreset" id="adjreset-{{ uid }}"
-              title="밝기·대비를 100% 로">되돌리기</button>
-    </div>
-  </details>
 
   {% comment %}
     **개체 카탈로그** (183 · 사용자 2026-09-04). 여기 있던 「이 시야」 메모 상자를
@@ -326,91 +473,257 @@
   <datalist id="catspecies-{{ uid }}">
     {% for s in species_seen %}<option value="{{ s }}">{% endfor %}
   </datalist>
-</aside>
-</div>
+  {% comment %}
+    **도감 칸** (229 · 사용자 2026-10-21). 개체 카탈로그와 바닥 사이. 학명을
+    치면 도감 색인에서 찾고(`api/atlas/suggest` — 카탈로그의 종명 자동완성과
+    같은 문), 고른 이름이 실린 도판 한 쪽을 그 자리에 띄운다. 도감 화면을
+    통째로 들이지 않고 **찾기와 도판 한 장**만 둔다(사용자가 골랐다) — 더 보려면
+    `↗` 로 도감 화면을 새 탭에 연다.
 
-<div class="shotcap" id="shotcap-{{ uid }}">
-  <b id="shot-title-{{ uid }}"></b>
-  <span class="dim" id="shot-note-{{ uid }}"></span>
-  <a id="shot-full-{{ uid }}" href="" target="_blank" rel="noopener">원본 크기</a>
-</div>
+    **개체를 고르면 그 종명으로 찾는다.** 카드가 종명을 채울 때 `catspecies`
+    이벤트를 받는다(`_detview_js.html` 의 `catFill`). 종명 칸에 `input` 을 쏘면
+    **저장이 나가므로** 그 길로 묻지 않는다. 읽기만 한다 — 저장하는 칸이 아니다.
 
-{% comment %}
-  이웃 시야의 주소를 캐러셀에 물려 둔다 — 끝에서 화살표를 누르면 그리로 넘어간다.
-  이전 시야로는 그 시야의 마지막 사진에서 시작해야 오가는 흐름이 끊기지 않는다.
-{% endcomment %}
-<div class="striprow" id="nav-{{ uid }}">
-  <button type="button" class="navbtn grp" data-nav="pgroup"
-          {% if prev_id is None %}disabled title="첫 시야입니다"{% else %}title="이전 시야 g{{ prev_id }} (Ctrl+← · 묻지 않고 바로 이동)"{% endif %}>&laquo;</button>
-  <button type="button" class="navbtn" data-nav="pshot" title="이전 사진 (←)">&lsaquo;</button>
-
-  <div class="strip" id="strip-{{ uid }}"
-       {% comment %}
-         어디로 갈지는 서버가 정한다(`data.group_detail` 이 `?batch=` 를 붙인다).
-         여기에 주소를 박아 두었더니 엔진을 갈아 낀 상태에서 "다음 시야" 를 누를
-         때마다 현재 검출로 튀어나갔다
-       {% endcomment %}
-       {% comment %}
-         주소에 이미 쿼리가 붙어 있을 수 있다 — 검토 화면에서 엔진을 갈아 낀
-         상태가 `?batch=N` 이다. `?` 를 그냥 이어 붙이면 `?batch=5?shot=last`
-         가 되어 둘 다 죽는다.
-       {% endcomment %}
-       {% if prev_url %}data-prev="{{ prev_url }}{% if "?" in prev_url %}&amp;{% else %}?{% endif %}shot=last" data-prev-id="{{ prev_id }}"{% endif %}
-       {% if next_url %}data-next="{{ next_url }}" data-next-id="{{ next_id }}"{% endif %}>
-    {% include "viewer/_shots.html" %}
+    오프라인 파일에는 안 싣는다 — 물어볼 서버가 없다.
+  {% endcomment %}
+  {% if not offline %}
+  <div class="ghead atlashead">도감</div>
+  <div class="atlaspane" id="atlaspane-{{ uid }}"
+       data-suggest="{% url 'atlas_suggest' %}" data-img="{% url 'image' %}">
+    <input type="search" class="atlasq" id="atlasq-{{ uid }}"
+           placeholder="학명으로 찾기 (두 글자부터)" autocomplete="off">
+    {% if atlas_genera %}<div class="atlasgen" id="atlasgen-{{ uid }}" title="속명을 누르면 그 속으로 찾습니다">
+      {% for g in atlas_genera %}<button type="button" data-g="{{ g.genus }}" title="{{ g.genus }} · 색인 {{ g.n }}건">{{ g.genus }}</button>{% endfor %}
+    </div>{% endif %}
+    <div class="atlasrows" id="atlasrows-{{ uid }}"></div>
+    <figure class="atlasplate" id="atlasplate-{{ uid }}" hidden>
+      <figcaption><b class="nm"></b> <span class="dim at"></span>
+        <a class="open" href="" target="_blank" rel="noopener" title="도감 화면에서 이 쪽을 연다">↗</a></figcaption>
+      <a class="big" href="" target="_blank" rel="noopener"><img alt="" loading="lazy"></a>
+    </figure>
   </div>
+  <script>
+  (function () {
+    var uid = "{{ uid }}";
+    var pane = document.getElementById("atlaspane-" + uid);
+    if (!pane) return;
+    var SUGGEST = pane.dataset.suggest, IMG = pane.dataset.img;
+    var q = document.getElementById("atlasq-" + uid);
+    var rowsEl = document.getElementById("atlasrows-" + uid);
+    var fig = document.getElementById("atlasplate-" + uid);
+    var img = fig.querySelector("img");
+    var last = "", timer = null, seq = 0;
 
-  <button type="button" class="navbtn" data-nav="nshot" title="다음 사진 (→)">&rsaquo;</button>
-  <button type="button" class="navbtn grp" data-nav="ngroup"
-          {% if next_id is None %}disabled title="마지막 시야입니다"{% else %}title="다음 시야 g{{ next_id }} (Ctrl+→ · 묻지 않고 바로 이동)"{% endif %}>&raquo;</button>
-</div>
+    function showPlate(row) {
+      var pl = row.plate;
+      fig.querySelector(".nm").textContent = row.value;
+      if (!pl) {
+        // 색인에는 있는데 도판이 없다 — **말한다.** 빈 칸이면 도감에 없는 이름으로 읽힌다
+        fig.querySelector(".at").textContent = "도판이 아직 이어지지 않았습니다";
+        fig.querySelector(".open").hidden = true;
+        fig.querySelector(".big").hidden = true;
+      } else {
+        fig.querySelector(".at").textContent =
+          (pl.volume ? pl.volume + " · " : "") + "도판 p." + pl.pdf_plate_page;
+        fig.querySelector(".open").hidden = false;
+        fig.querySelector(".big").hidden = false;
+        fig.querySelector(".open").href = pl.plate_url;
+        fig.querySelector(".big").href = pl.plate_url;
+        fig.classList.remove("failed");
+        img.src = IMG + "?p=" + encodeURIComponent(pl.plate_rel) + "&w=900";
+      }
+      fig.hidden = false;
+    }
+    img.addEventListener("error", function () {
+      fig.classList.add("failed");
+      fig.querySelector(".at").textContent = "이 쪽은 아직 안 떴습니다 — 도판을 굽는 중일 수 있습니다";
+    });
 
-<div class="detbar">
+    function paint(rows, pickFirst) {
+      rowsEl.textContent = "";
+      rows.forEach(function (row, i) {
+        var b = document.createElement("button");
+        b.type = "button";
+        b.className = "arow" + (row.plate ? "" : " noplate");
+        b.textContent = row.value;
+        if (row.label && row.label !== row.value) b.title = row.label;
+        b.addEventListener("click", function () {
+          rowsEl.querySelectorAll(".arow.on").forEach(function (x) { x.classList.remove("on"); });
+          b.classList.add("on");
+          showPlate(row);
+        });
+        rowsEl.appendChild(b);
+        if (pickFirst && i === 0) b.click();
+      });
+      if (!rows.length) {
+        var s = document.createElement("div");
+        s.className = "dim";
+        s.textContent = "도감 색인에 없는 이름입니다";
+        rowsEl.appendChild(s);
+      }
+    }
+
+    function search(v, pickFirst) {
+      v = (v || "").trim();
+      if (v.length < 2 || v === last) return;
+      last = v;
+      var my = ++seq;
+      fetch(SUGGEST + "?q=" + encodeURIComponent(v), {credentials: "same-origin"})
+        .then(function (r) { return r.json(); })
+        .then(function (j) {
+          if (my !== seq) return;          // 늦게 온 옛 답은 버린다
+          var rows = (j && j.rows) || [];
+          // 그 이름 그대로가 있으면 맨 앞으로 — 개체의 종명으로 찾은 것이면 그것을 띄운다
+          var low = v.toLowerCase();
+          rows.sort(function (a, b) {
+            return (String(b.value).toLowerCase() === low) - (String(a.value).toLowerCase() === low);
+          });
+          paint(rows, pickFirst);
+        })
+        .catch(function () {});
+    }
+
+    // 속명 줄 — 누르면 그 속으로 찾는다. 세로 휠은 옆으로 돌린다
+    var gen = document.getElementById("atlasgen-" + uid);
+    if (gen) {
+      gen.addEventListener("click", function (e) {
+        var b = e.target.closest("button[data-g]");
+        if (!b) return;
+        gen.querySelectorAll("button.on").forEach(function (x) { x.classList.remove("on"); });
+        b.classList.add("on");
+        q.value = b.dataset.g;
+        last = "";
+        search(b.dataset.g, false);
+        b.blur();
+      });
+      gen.addEventListener("wheel", function (e) {
+        if (Math.abs(e.deltaY) > Math.abs(e.deltaX)) { gen.scrollLeft += e.deltaY; e.preventDefault(); }
+      }, {passive: false});
+    }
+
+    q.addEventListener("input", function () {
+      clearTimeout(timer);
+      timer = setTimeout(function () { search(q.value, false); }, 220);
+    });
+    q.addEventListener("keydown", function (e) {
+      if (e.key === "Enter") {
+        e.preventDefault();
+        var first = rowsEl.querySelector(".arow");
+        if (first) first.click();
+      } else if (e.key === "Escape") {
+        q.blur();
+      }
+    });
+    // 개체 카드가 종명을 채우면 그 이름으로 찾는다 (catFill)
+    document.getElementById("notes-" + uid).addEventListener("catspecies", function (e) {
+      var sp = (e.detail || "").trim();
+      if (!sp || document.activeElement === q) return;
+      q.value = sp;
+      search(sp, true);
+    });
+  })();
+  </script>
+  {% endif %}
+
+  {% comment %}
+    **아래쪽은 이 시야의 상태와 시야에 하는 일이다** (229 · 사용자 2026-10-21).
+    선택 정보·저장 상태는 사진 밑에서, 오프라인 꺼내기·시야 가르기는 화면
+    맨 아래에서 올라왔다. 가르기 패널이 읽기 전용에서 안 나오는 조건은
+    `_view_actions.html` 안에 있고, `actions_here` 는 읽기 전용 갈래에 안 실린다.
+  {% endcomment %}
+  <div class="sidefoot">
+  <div class="detbar">
   <span id="selinfo-{{ uid }}" class="dim">선택 없음</span>
   <span id="savestate-{{ uid }}" class="hint"></span>
 </div>
-{% comment %}
-  **조작 안내가 둘이다** (192). 마우스에만 있는 것을 손가락에게 적어 두면
-  화면이 거짓말을 한다 — 휠도 우클릭도 없는 자리에서 "휠 = 확대" 를 읽는다.
-  어느 쪽을 낼지는 CSS 가 정한다(`@media (hover: none)`): 기기가 무엇인지는
-  브라우저가 알고, 우리가 짐작하면 태블릿+마우스 같은 자리에서 틀린다.
-{% endcomment %}
-<p class="dim touchhint" style="font-size:12px;margin:2px 2px 0">
-  <b>두 손가락 = 확대</b> · 한 손가락 끌기 = 이동 · <b>탭 = 선택</b> ·
-  <b>길게 누르기 = 메뉴</b>(삭제·유형·되살리기) · 빈 곳 탭 = 그 자리의 탈락 후보 펼쳐 보기
-</p>
-<p class="dim mousehint" style="font-size:11.5px;margin:2px 2px 0">
-  휠 = 확대 · 우클릭 드래그 = 이동 · <b>클릭 = 선택 (겹친 자리는 다시 클릭하면 다음 것)</b> · Shift+클릭 = 추가/해제 ·
-  드래그 = 범위 선택 · <b>선택 위에서 우클릭 = 오검출 삭제</b> ·
-  <b>빈 곳 클릭 = 그 자리의 탈락 후보 펼쳐 보기</b>
-  {% comment %}
-    탈락 레이어를 켜면 클릭 우선순위가 바뀐다 — 켰을 때만이라 그 조건을 함께
-    적는다. 안 적으면 "왜 개체가 안 골라지지" 가 된다.
-  {% endcomment %}
-  · <b>탈락</b>을 켜면 클릭이 탈락 후보를 먼저 집는다 (검출 개체는 Shift+클릭)
-</p>
-{% comment %}
-  단축키 안내. 목록을 여기 적지 않는다 — 분류를 더하면서 안내만 옛 목록으로
-  남는 일이 이미 두 번 있었다. ClassDef 의 hotkey 가 그린다. 키를 안 준 분류는
-  여기 안 나오고, 그것이 곧 "아직 배정 안 했다" 는 표시다.
-  읽기 전용(`?batch=` 로 다른 묶음을 볼 때)에서는 키가 안 듣는다 — 안내도 내지 않는다.
-{% endcomment %}
-{% comment %}
-  삭제 키는 ClassDef 가 아니라 여기 적는다 — 오검출은 분류가 아니라 removed
-  집합이라 테이블에 태울 자리가 없다(hotkey_groups 가 .strip() 을 걸어 공백은 빈
-  값으로 사라진다). **가장 많이 하는 조작이라 맨 앞에 둔다** (교정 6,753 중
-  삭제가 5,467).
+  {% if actions_here %}{% include "viewer/_view_actions.html" %}{% endif %}
+  </div>
+</aside>
+</div>
+{% if not offline %}
+<script>
+/* 칸 배치 (229) — 여닫기·폭·프레임 줄 크기. **보는 방식이라 브라우저에만**
+   남긴다(`diaruga.layout`). 읽기·쓰기는 try 로 감싼다 — 저장소가 막힌 창에서도
+   화면은 기본값으로 돈다. 상태는 `main` 의 클래스와 변수로 건다 — CSS 가 그것을
+   보고 칸을 그린다(`base.html` 의 `main.wide` 규칙들). */
+(function () {
+  var uid = "{{ uid }}";
+  var main = document.querySelector("main.wide");
+  var ctl = document.getElementById("layoutctl-" + uid);
+  if (!main || !ctl) return;
+  var KEY = "diaruga.layout";
+  var st = {};
+  try { st = JSON.parse(localStorage.getItem(KEY) || "{}") || {}; } catch (e) { st = {}; }
+  function save() { try { localStorage.setItem(KEY, JSON.stringify(st)); } catch (e) {} }
+  function apply() {
+    main.classList.toggle("hide-left", !!st.hideLeft);
+    main.classList.toggle("hide-right", !!st.hideRight);
+    main.classList.toggle("hide-strip", !!st.hideStrip);
+    [["lw", "--lw"], ["rw", "--rw"], ["shotw", "--shotw"]].forEach(function (p) {
+      if (st[p[0]]) { main.style.setProperty(p[1], st[p[0]] + "px"); main.classList.add(p[0] + "-set"); }
+      else { main.style.removeProperty(p[1]); main.classList.remove(p[0] + "-set"); }
+    });
+    ctl.querySelector('[data-lay="left"]').classList.toggle("off", !!st.hideLeft);
+    ctl.querySelector('[data-lay="right"]').classList.toggle("off", !!st.hideRight);
+    ctl.querySelector('[data-lay="strip"]').classList.toggle("off", !!st.hideStrip);
+    // 사진 칸 크기가 바뀌었다 — 마스크·스케일바가 다시 재게 알린다
+    window.dispatchEvent(new Event("resize"));
+  }
+  ctl.addEventListener("click", function (e) {
+    var b = e.target.closest("button[data-lay]");
+    if (!b) return;
+    var k = b.dataset.lay;
+    if (k === "reset") st = {};
+    else if (k === "left") st.hideLeft = !st.hideLeft;
+    else if (k === "right") st.hideRight = !st.hideRight;
+    else if (k === "strip") st.hideStrip = !st.hideStrip;
+    save(); apply();
+    b.blur();               // 단축키가 단추에 먹히지 않게 (Space 가 단추를 다시 누른다)
+  });
 
-  분류가 하나도 없어도 이 줄은 놓인다 — 삭제 키는 분류와 무관하다.
-{% endcomment %}
-{% hotkey_groups as hk %}
-<p class="dim keyhint mousehint" id="keyhint-{{ uid }}" style="font-size:11.5px;margin:2px 2px 0">
-  <b>단축키</b> — 개체를 고르고
-  <kbd>Space</kbd>&nbsp;<span title="오검출로 삭제 · 지운 것을 고르고 다시 누르면 되살립니다">삭제</span>{% if hk.groups %} ·
-  {% for h in hk.groups %}<kbd>{{ h.hotkey|upper }}</kbd>&nbsp;{% for c in h.classes %}{% if not forloop.first %} → {% endif %}<span title="{{ c.label }}">{{ c.short }}</span>{% endfor %}{% if not forloop.last %} · {% endif %}{% endfor %}{% if hk.cycles %}
-  <span class="dim">(→ 는 같은 키를 다시 누르면 넘어간다는 뜻)</span>{% endif %}{% endif %}
-  · 고르지 않고 <kbd>S</kbd><kbd>S</kbd>&nbsp;<span title="그린 개체는 남긴다 · Ctrl+Z 로 되돌림">이 판의 검출 전부 삭제</span>
-</p>
+  // 손잡이 끌기. 왼쪽·오른쪽은 칸 폭, 프레임 줄은 썸네일 폭이다
+  var LIM = {left: [140, 720], right: [200, 820], strip: [64, 220]};
+  document.querySelectorAll("#detrow-" + uid + " [data-gut]").forEach(function (g) {
+    var side = g.dataset.gut;
+    g.addEventListener("dblclick", function () {
+      delete st[{left: "lw", right: "rw", strip: "shotw"}[side]];
+      save(); apply();
+    });
+    g.addEventListener("pointerdown", function (e) {
+      if (e.button !== 0) return;
+      e.preventDefault();
+      g.setPointerCapture(e.pointerId);
+      g.classList.add("drag");
+      var x0 = e.clientX, y0 = e.clientY;
+      var pane = side === "left" ? document.getElementById("dvside-" + uid)
+               : side === "right" ? document.getElementById("notes-" + uid)
+               : document.querySelector("#strip-" + uid + " .shot");
+      var w0 = pane ? pane.getBoundingClientRect().width : 128;
+      function move(ev) {
+        var d = side === "left" ? ev.clientX - x0
+              : side === "right" ? x0 - ev.clientX
+              : (y0 - ev.clientY) * 1.25;        // 위로 끌면 커진다
+        var w = Math.round(Math.max(LIM[side][0], Math.min(LIM[side][1], w0 + d)));
+        st[{left: "lw", right: "rw", strip: "shotw"}[side]] = w;
+        apply();
+      }
+      function up(ev) {
+        g.classList.remove("drag");
+        g.removeEventListener("pointermove", move);
+        g.removeEventListener("pointerup", up);
+        g.removeEventListener("pointercancel", up);
+        save();
+      }
+      g.addEventListener("pointermove", move);
+      g.addEventListener("pointerup", up);
+      g.addEventListener("pointercancel", up);
+    });
+  });
+  apply();
+})();
+</script>
+{% endif %}
+
 </section>
 
 <script type="application/json" id="cand-{{ uid }}">{{ det.candidates|json_dumps }}</script>

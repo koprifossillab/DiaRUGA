@@ -271,6 +271,83 @@
   header h1 + .sub + .gearlink, header .sub + .gearlink,
   header h1 + .sub + .themebtn, header .sub + .themebtn { margin-left: auto; }
   main { padding: 5px 18px 22px; max-width: 1500px; margin: 0 auto; }
+  /* 목록·슬라이드·검토 화면은 창 폭을 다 쓴다 (229). 표와 사진은 넓을수록
+     읽히고, 양옆을 비울 까닭이 없다. 글을 읽는 화면(설정·도감 등)은 그대로 둔다 */
+  main.wide { max-width: none; }
+  /* 넓힌 검토 화면 (229 · 사용자 2026-10-21) — [도구] [사진 + 프레임 줄] [카탈로그].
+     가운데 칸은 사진이 창 높이 안에 다 들어오는 폭으로 잡고(폭에만 맞추면 2560
+     창에서 높이가 1,700px 이 되어 아래를 스크롤해야 한다), **프레임 줄도 그
+     칸 안에서 창 안에 남긴다** — 판을 넘기는 자리라 늘 보여야 한다. 남는 폭은
+     양옆 칸이 다 받는다: 빈 여백을 두지 않는다. `--ar` 는 `.detrow` 에 실린다.
+     116px 는 머리줄과 탭 줄, 프레임 줄이 있으면 그 높이만큼 더 뺀다 */
+  main.wide { --dv-room: 116px; --shotw: 128px; }
+  /* 프레임 줄 높이는 썸네일 폭을 따른다(사진 2752×2208 · 글줄·막대 45px) —
+     128px 이면 290px 로, 예전 값과 같다 */
+  main.wide:has(.striprow) { --dv-room: calc(187px + var(--shotw) * 0.8); }
+  main.wide .dvcenter .strip .shot { width: var(--shotw); }
+  /* --- 칸 여닫기·폭 (229) — 상태는 `_detection.html` 의 배치 스크립트가 `main` 에 건다 */
+  main.wide.hide-strip { --dv-room: 116px; }
+  main.wide.hide-strip .dvcenter .shotcap, main.wide.hide-strip .dvcenter .striprow,
+  main.wide.hide-strip .dvcenter .sgut { display: none; }
+  main.wide.hide-left .detrow .dvside, main.wide.hide-left .detrow .gut.l,
+  main.wide.hide-right .detrow .notes, main.wide.hide-right .detrow .gut.r { display: none; }
+  main.wide.lw-set .detrow .dvside { flex: 0 0 var(--lw); }
+  main.wide.rw-set .detrow .notes { flex: 0 0 var(--rw); }
+  /* 두 칸 다 폭을 박으면 남는 폭을 사진 칸이 받는다(사진은 높이에 맞춰 가운데) */
+  main.wide.lw-set.rw-set .detrow .dvcenter,
+  main.wide.hide-left.hide-right .detrow .dvcenter { flex-grow: 1; }
+  .gut, .sgut, .layoutctl { display: none; }
+  main.wide .detrow .gut {
+    display: block; flex: 0 0 6px; margin: 0 -8px; z-index: 3;
+    cursor: col-resize; border-radius: 3px; touch-action: none;
+  }
+  main.wide .dvcenter .sgut {
+    display: block; position: relative; height: 10px; margin: 0; cursor: row-resize;
+    border-radius: 3px; touch-action: none; user-select: none;
+  }
+  /* 손잡이가 있다는 것을 보인다 — 가운데 짧은 줄 */
+  main.wide .dvcenter .sgut::after, main.wide .detrow .gut::after {
+    content: ''; position: absolute; background: var(--line); border-radius: 2px;
+  }
+  main.wide .dvcenter .sgut::after { left: calc(50% - 24px); top: 4px; width: 48px; height: 3px; }
+  main.wide .detrow .gut { position: relative; user-select: none; }
+  main.wide .detrow .gut::after { top: calc(50% - 24px); left: 2px; width: 3px; height: 48px; }
+  main.wide .detrow .gut:hover, main.wide .detrow .gut.drag,
+  main.wide .dvcenter .sgut:hover, main.wide .dvcenter .sgut.drag {
+    background: var(--accent); opacity: .55;
+  }
+  main.wide .layoutctl { display: flex; gap: 3px; margin-left: 10px; flex-shrink: 0; padding-bottom: 6px; }
+  main.wide .layoutctl button {
+    font: inherit; font-size: 13px; line-height: 1; padding: 3px 6px; cursor: pointer;
+    background: transparent; color: inherit; border: 1px solid var(--line); border-radius: 5px;
+  }
+  main.wide .layoutctl button:hover { border-color: var(--accent); color: var(--accent); }
+  /* 감춘 칸의 단추는 흐리게 — 눌러서 다시 켠다 */
+  main.wide .layoutctl button.off { opacity: .4; }
+  /* 줄 높이를 창에 못 박는다 — 안 그러면 왼쪽 바둑판(시야 62개)이 줄을 늘려
+     사진 칸까지 창 밖으로 밀린다. 양옆 칸은 이 높이 안에서 저마다 구른다 */
+  main.wide .detrow { align-items: stretch; height: calc(100vh - 116px); }
+  main.wide .detrow .dvside { min-height: 0; overflow: hidden; }
+  /* 탭 줄 오른쪽 요약이 두 줄로 접히면 그만큼 사진이 밀린다 — 한 줄로 자른다
+     (폰에서는 접는다 — 아래 미디어 쿼리) */
+  main.wide .dettabs { flex-wrap: nowrap; }
+  main.wide .dettabs > *:not(.tabmeta) { flex-shrink: 0; white-space: nowrap; }
+  main.wide .dettabs .tabmeta {
+    min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  }
+  main.wide .detrow .dvcenter {
+    flex: 0 1 calc((100vh - var(--dv-room)) * var(--ar, 100)); min-width: 0;
+  }
+  main.wide .detrow .dvside { flex: 1 1 168px; width: auto; }
+  main.wide .detrow .notes { flex: 1 1 250px; width: auto; max-height: none; overflow: visible; }
+  /* **칸 폭을 내용이 정하지 않게 한다.** 속명 한 줄(`.atlasgen`)은 줄바꿈이 없어
+     최소 폭이 수천 px 이다 — flex 항목의 기본 최소 폭(auto)이 그것을 따라가
+     오른쪽 칸이 화면을 다 먹었다 */
+  main.wide .detrow .notes, main.wide .detrow .dvside, main.wide .detrow .dvcenter { min-width: 0; }
+  /* 넓힌 화면에서는 오른쪽 칸 높이가 사진 칸에 맞춰 정해진다 — 그 안에서 카탈로그와
+     도감이 반씩 나눈다. 칸 높이가 안 정해지는 자리(폰·오프라인)에서는 0 으로
+     접히므로 여기서만 건다 */
+  main.wide .detrow .notes .catpane, main.wide .detrow .notes .atlaspane { flex-basis: 0; }
   h2 { font-size: 18px; margin: 0 0 4px; }
   .dim { color: var(--dim); }
   .mono { font-family: ui-monospace, "SF Mono", Menlo, monospace; }
@@ -1286,7 +1363,7 @@
 
   /* --- 사진 + 오른쪽 칸 --- */
   .detrow { display: flex; gap: 10px; align-items: flex-start; }
-  .detrow .detview { flex: 1 1 auto; min-width: 0; }
+  .detrow .dvcenter { flex: 1 1 auto; min-width: 0; }
   /* 화면 조정과 **개체 카탈로그**가 든다 (183). 예전에는 아래가 시야 메모
      상자였는데, 570 시야에 6건이라 걷고 그 자리를 고른 개체의 카드에 줬다 —
      개체를 두고 하는 말은 원래 카탈로그에서 적기로 한 것이고(0036), 그 칸이
@@ -1298,41 +1375,41 @@
     max-height: 78vh; overflow: hidden;
     display: flex; flex-direction: column;
   }
-  .notes .nhead, .notes .ghead {
+  .notes .nhead, .notes .ghead, .dvside .nhead {
     flex: 0 0 auto;
     font-size: 12px; font-weight: 650; margin-bottom: 7px;
     padding-bottom: 6px; border-bottom: 1px solid var(--line);
   }
   .notes .ghead { margin-top: 9px; }
   /* 화면 조정 — 밝기·대비. 코멘트 목록보다 위에 두되 자리를 조금만 쓴다 */
-  .notes .adjhead { display: flex; align-items: baseline; gap: 7px; }
-  .notes .adjreset {
+  .dvside .adjhead { display: flex; align-items: baseline; gap: 7px; }
+  .dvside .adjreset {
     margin-left: auto; font: inherit; font-size: 11px; font-weight: 400;
     padding: 1px 7px; border-radius: 5px; cursor: pointer;
     background: transparent; color: var(--dim); border: 1px solid var(--line);
   }
-  .notes .adjreset:hover { color: inherit; border-color: var(--accent); }
+  .dvside .adjreset:hover { color: inherit; border-color: var(--accent); }
   /* 켜져 있으면 눈에 띄어야 한다 — 원본과 다르게 보고 있다는 표시다 */
-  .notes .adjreset.on { color: var(--accent); border-color: var(--accent); }
+  .dvside .adjreset.on { color: var(--accent); border-color: var(--accent); }
   /* 접었다 편다 (194). 폰에서는 접힌 채로 시작한다 — `_detview_js.html` 이
      화면 폭을 보고 정한다. 요약에 지금 값이 적히므로 접혀 있어도 켜진 것을
      안다(`.adjnow`). */
-  .notes .adjbox { flex: 0 0 auto; }
-  .notes .adjbox > summary { list-style: none; cursor: pointer; }
-  .notes .adjbox > summary::-webkit-details-marker { display: none; }
-  .notes .adjbox > summary::after {
+  .dvside .adjbox { flex: 0 0 auto; }
+  .dvside .adjbox > summary { list-style: none; cursor: pointer; }
+  .dvside .adjbox > summary::-webkit-details-marker { display: none; }
+  .dvside .adjbox > summary::after {
     content: '▾'; margin-left: auto; font-size: 10px; opacity: .55;
   }
-  .notes .adjbox:not([open]) > summary::after { content: '▸'; }
-  .notes .adjnow { font-weight: 400; font-size: 11px; color: var(--accent); }
-  .notes .adj { flex: 0 0 auto; margin-bottom: 11px; }
+  .dvside .adjbox:not([open]) > summary::after { content: '▸'; }
+  .dvside .adjnow { font-weight: 400; font-size: 11px; color: var(--accent); }
+  .dvside .adj { flex: 0 0 auto; margin-bottom: 11px; }
   /* 되돌리기가 머리줄에서 판 안으로 내려왔다 (194) — `margin-left:auto` 는
      그때 flex 머리줄의 것이라 여기서는 뜻이 없다 */
-  .notes .adj .adjreset { margin-left: 0; margin-top: 3px; }
-  .notes .adj label {
+  .dvside .adj .adjreset { margin-left: 0; margin-top: 3px; }
+  .dvside .adj label {
     display: block; font-size: 11.5px; color: var(--dim); margin-bottom: 5px;
   }
-  .notes .adj input[type=range] {
+  .dvside .adj input[type=range] {
     display: block; width: 100%; margin-top: 2px; accent-color: var(--accent);
   }
   /* --- 개체 카탈로그 칸 (183) ---
@@ -1346,6 +1423,52 @@
     display: flex; flex-direction: column; gap: 7px;
   }
   .notes .catsay { font-size: 11.5px; color: var(--dim); line-height: 1.6; }
+  /* --- 도감 칸 (229) — 카탈로그 아래. 찾기와 도판 한 장. 카탈로그와 남는
+     높이를 반씩 나누고 넘치면 저마다 구른다 */
+  .notes .atlaspane {
+    flex: 1 1 auto; min-height: 0; min-width: 0; overflow-y: auto; overflow-x: hidden;
+    display: flex; flex-direction: column; gap: 6px;
+  }
+  .notes .atlasq {
+    font: inherit; font-size: 12px; padding: 4px 8px; width: 100%;
+    border: 1px solid var(--line); border-radius: 6px;
+    background: var(--bg); color: inherit;
+  }
+  /* 속명 한 줄 — 많은 순. 넘치면 옆으로 구른다(휠도 옆으로) */
+  .notes .atlasgen {
+    flex: 0 0 auto; display: flex; width: 100%; min-width: 0; max-width: 100%; gap: 4px; overflow-x: auto; overflow-y: hidden;
+    white-space: nowrap; padding-bottom: 3px; scrollbar-width: thin;
+  }
+  .notes .atlasgen button {
+    flex: 0 0 auto; font: inherit; font-size: 11px; font-style: italic;
+    padding: 1px 7px; border-radius: 10px; cursor: pointer;
+    background: var(--bg); color: var(--dim); border: 1px solid var(--line);
+  }
+  .notes .atlasgen button:hover, .notes .atlasgen button.on {
+    color: var(--accent); border-color: var(--accent);
+  }
+  .notes .atlasrows { display: flex; flex-wrap: wrap; gap: 4px; }
+  .notes .atlasrows .arow {
+    font: inherit; font-size: 11.5px; font-style: italic; padding: 2px 8px;
+    border: 1px solid var(--line); border-radius: 11px; cursor: pointer;
+    background: transparent; color: inherit;
+  }
+  .notes .atlasrows .arow:hover, .notes .atlasrows .arow.on {
+    border-color: var(--accent); color: var(--accent);
+  }
+  .notes .atlasrows .arow.noplate { opacity: .55; }
+  .notes .atlasrows .dim { font-size: 11.5px; }
+  .notes .atlasplate { margin: 0; }
+  .notes .atlasplate[hidden] { display: none; }
+  .notes .atlasplate figcaption { font-size: 11.5px; margin-bottom: 4px; }
+  .notes .atlasplate figcaption .nm { font-style: italic; }
+  .notes .atlasplate figcaption .open { margin-left: 4px; text-decoration: none; }
+  .notes .atlasplate figcaption .open[hidden], .notes .atlasplate .big[hidden] { display: none; }
+  .notes .atlasplate img {
+    display: block; width: 100%; height: auto; border-radius: 5px;
+    border: 1px solid var(--line); background: #fff;
+  }
+  .notes .atlasplate.failed img { display: none; }
   .notes .catbox { display: grid; gap: 6px; align-content: start; }
   /* **`display` 를 잡았으니 `[hidden]` 을 명시한다.** 브라우저 기본
      `[hidden] { display: none }` 은 특이도 (0,0,1) 이라 위 규칙(0,2,0)에 진다 —
@@ -1592,6 +1715,65 @@
      화면" 이라는 말을 가린다. `~` 로 잡는 것은 `.hlflag` 가 DOM 에서 뒤에
      있어서다(`_detection.html`). 표시가 감춰져 있으면(`[hidden]`) 안 걸린다. */
   .detview .roflag:not([hidden]) ~ .hlflag { top: 62px; }
+
+  /* --- 사진 왼쪽 칸: 화면 조정과 안내 (229) ---
+     교정 도구는 사진 위에 그대로 둔다(아래) — 사진에서 눈을 떼지 않고 누른다.
+     옆으로 뺀 것은 사진을 덜 가리고 자주 안 만지는 것들이다 */
+  .dvside {
+    flex: 0 0 168px; width: 168px; align-self: stretch;
+    background: var(--panel); border: 1px solid var(--line);
+    border-radius: 9px; padding: 9px 10px; line-height: 1.5;
+    display: flex; flex-direction: column; gap: 10px; cursor: default;
+  }
+  /* 칸 바닥 — 왼쪽은 조작·단축키 안내, 오른쪽은 선택 정보·저장 상태와 시야에
+     하는 일(오프라인 꺼내기 · 가르기). 위의 것과 떨어져 바닥에 붙는다 */
+  .dvside .sidefoot, .notes .sidefoot {
+    margin-top: auto; flex: 0 0 auto; padding-top: 8px;
+    border-top: 1px solid var(--line); position: relative;
+  }
+  .dvside .sidefoot p { margin: 0 0 6px !important; line-height: 1.55; }
+  /* 시야 바둑판 (229). 칸이 넓어지면 열이 는다. 넘치면 바둑판만 구른다 —
+     위의 화면 조정과 아래 통계·안내는 늘 보인다 */
+  .dvside .vhead { margin-bottom: 0; }
+  .dvside .vhead .dim { font-weight: 400; }
+  .dvside .vgrid {
+    flex: 1 1 auto; min-height: 60px; overflow-y: auto;
+    display: grid; gap: 5px; align-content: start;
+    grid-template-columns: repeat(auto-fill, minmax(64px, 1fr));
+    /* 줄 높이를 박는다 — 칸이 구를 때 격자가 줄을 눌러 납작하게 만든다 */
+    grid-auto-rows: 52px;
+  }
+  .dvside .vt {
+    position: relative; display: block; overflow: hidden;
+    border: 1px solid var(--line); border-radius: 5px; background: var(--bg);
+    text-decoration: none; color: inherit;
+  }
+  .dvside .vt img { display: block; width: 100%; height: 100%; object-fit: cover; }
+  .dvside .vt .vid {
+    position: absolute; left: 3px; bottom: 2px; font-size: 10px; line-height: 1.3;
+    padding: 0 4px; border-radius: 3px; background: rgba(0,0,0,.6); color: #fff;
+  }
+  /* 검토 끝난 시야 — 목록의 ✓ 검토와 같은 초록 */
+  .dvside .vt.done::after {
+    content: ''; position: absolute; right: 4px; top: 4px; width: 8px; height: 8px;
+    border-radius: 50%; background: #3fb950; box-shadow: 0 0 0 1.5px rgba(255,255,255,.85);
+  }
+  .dvside .vt.cur { border: 2px solid var(--accent); }
+  .dvside .vt:hover { border-color: var(--accent); }
+  .dvside .vstats { flex: 0 0 auto; font-size: 11.5px; line-height: 1.55; }
+  .dvside .vstats b { color: var(--fg); }
+  .dvside .vbar { height: 4px; border-radius: 2px; background: var(--line); margin: 2px 0 5px; }
+  .dvside .vbar i { display: block; height: 100%; border-radius: 2px; background: #3fb950; }
+  .notes .sidefoot .detbar { margin: 0 0 4px; }
+  .notes .sidefoot .offpick, .notes .sidefoot .resplit { margin: 6px 0 0; }
+  /* 펼친 판은 칸보다 넓다 — 칸 안에서 펴면 글이 한 줄에 몇 자씩 끊긴다. 칸 바닥
+     위로 띄워 사진 쪽으로 넓게 편다(오른쪽 끝을 칸에 맞춘다) */
+  .notes .sidefoot details[open] > div {
+    position: absolute; right: 0; bottom: calc(100% + 6px); z-index: 20;
+    width: min(760px, 80vw); max-width: none; max-height: 75vh; overflow: auto;
+    background: var(--panel); border: 1px solid var(--line); border-radius: 8px;
+    box-shadow: 0 8px 28px rgba(0,0,0,.3);
+  }
 
   /* --- 교정 도구 (사진 좌상단) ---
      사진에서 눈을 떼지 않고 조작하려면 버튼이 사진 위에 있어야 한다.
@@ -2221,6 +2403,13 @@
     /* 사진 옆의 칸을 아래로 내린다 — 옆에 두면 사진이 반이 된다 */
     .detrow { flex-direction: column; }
     .notes { flex: 0 0 auto; width: auto; max-height: none; }
+    main.wide .detrow .dvcenter, main.wide .detrow .dvside,
+    main.wide .detrow .notes { flex: 0 0 auto; }
+    /* 폰에서는 칸이 화면 폭이라 띄울 까닭이 없다 — 제자리에서 편다 */
+    .notes .sidefoot details[open] > div {
+      position: static; width: auto; max-height: none; box-shadow: none;
+      border: 0; background: none;
+    }
     /* 손가락 표적. **감추지 않고 키운다** — 검토에 쓰는 단추들이다 */
     .detview .tools button, .striprow .navbtn,
     .dettabs button { padding: 8px 12px; font-size: 13px; }
@@ -2235,6 +2424,12 @@
       line-height: 1.2; align-self: flex-start;
     }
     .detview .layers { order: -2; }
+    /* 왼쪽 칸(화면 조정·안내)은 사진 위로 온다 — 세로 칸이 아니라 띠다 (229) */
+    .dvside { flex: 0 0 auto; width: auto; }
+    .dvside .vgrid { max-height: 220px; }
+    main.wide .detrow { height: auto; }
+    main.wide .dettabs { flex-wrap: wrap; }
+    main.wide .dettabs .tabmeta { white-space: normal; }
     .dettabs { flex-wrap: wrap; }
     .dettabs .tabmeta { margin-left: 0; width: 100%; padding-bottom: 0; }
     /* 카드가 두 열이면 폰에서 그림도 글자도 못 읽는다 */
@@ -2252,7 +2447,7 @@
 
     /* 화면 조정은 접힌 채로 시작한다(`_detview_js.html`). 접힌 줄이 손끝에
        걸려야 다시 펼 수 있다 */
-    .notes .adjbox > summary { padding: 8px 0; }
+    .dvside .adjbox > summary { padding: 8px 0; }
 
     /* --- 오프라인 프로그램 (194) ---
        시야 목록은 **한 줄로 굴린다** — 60개가 격자로 서면 화면의 절반을 먹는다.
@@ -2356,7 +2551,7 @@
   </a>
   {% endif %}
 </header>
-<main>{% block content %}{% endblock %}</main>
+<main{% block mainclass %}{% endblock %}>{% block content %}{% endblock %}</main>
 <script>
   (function () {
     var b = document.getElementById('themebtn');

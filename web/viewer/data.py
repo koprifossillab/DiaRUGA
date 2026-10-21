@@ -3757,6 +3757,35 @@ def _viewpoints_of(slide: Slide, only_current: bool = False, light: bool = False
         _reviews_prefetch())
 
 
+def slide_tiles(slide: Slide) -> dict:
+    """검토 화면 왼쪽 칸 — 이 슬라이드의 시야 바둑판과 검토율·간단한 통계 (229).
+
+    **가볍게 만든다.** 표지 경로·완료 여부·프레임 수만 낸다. 시야 목록 화면
+    (`dataset_detail`)처럼 표지에 마스크를 얹지 않는다 — 칸이 좁아 안 읽히고,
+    검토 화면은 이미 무거운 화면이다. 표지 고르는 규칙은 그쪽과 같다(합성본,
+    없으면 가장 선명한 프레임).
+
+    통계는 목록 화면의 집계(`_slide_summary`)를 그대로 쓴다 — 두 화면의 숫자가
+    갈라지면 어느 쪽이 맞는지 따지는 일이 생긴다.
+    """
+    reviewed = done_viewpoints(slide=slide)
+    tiles = []
+    for vp in _viewpoints_of(slide, light=True):
+        st = getattr(vp, "stack", None)
+        cover = st.focused_path if st else None
+        if cover is None:
+            fr = vp.sharpest_frame or next(iter(vp.frames.all()), None)
+            if fr and (Path(settings.DATA_ROOT) / fr.path).exists():
+                cover = fr.path
+        tiles.append({"id": vp.idx, "n": vp.n_frames, "cover_rel": cover,
+                      "reviewed": vp.id in reviewed})
+    n = len(tiles)
+    done = sum(1 for t in tiles if t["reviewed"])
+    return {"tiles": tiles, "n": n, "done": done,
+            "pct": round(100 * done / n) if n else 0,
+            **_slide_summary(slide)}
+
+
 def dataset_detail(slug: str) -> dict | None:
     slide = Slide.objects.filter(slug=slug).first()
     if slide is None:

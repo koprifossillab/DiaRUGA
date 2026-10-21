@@ -13,6 +13,7 @@
   세 번째가 있는 줄도 모른다.
 {% endcomment %}
 
+{% block mainclass %} class="wide"{% endblock %}
 {% block content %}
 <div class="crumb"><a href="{% url 'index' %}">데이터셋</a> / {{ label }}</div>
 {% comment %}

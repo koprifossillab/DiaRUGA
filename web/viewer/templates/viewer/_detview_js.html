@@ -1285,6 +1285,16 @@ window.initDetView = function (uid) {
     return Promise.all([flushSave(true), flushCat(true)]).then(go, go);
   }
 
+  // 왼쪽 칸의 시야 바둑판 (229). **떠나는 자리는 전부 `leave` 로** (116) —
+  // 저장을 밀어내고 나간 뒤에 옮긴다. 새 탭(수정키·가운데 단추)은 브라우저에 맡긴다
+  var vgridEl = document.getElementById('vgrid-' + uid);
+  if (vgridEl) vgridEl.addEventListener('click', function (ev) {
+    var a = ev.target.closest && ev.target.closest('a[href]');
+    if (!a || ev.metaKey || ev.ctrlKey || ev.shiftKey || ev.altKey || ev.button !== 0) return;
+    ev.preventDefault();
+    leave(a.getAttribute('href'));
+  });
+
   function flashNote(msg) {
     capNote.textContent = msg;
     setTimeout(function () { if (shots[current]) paint(shots[current]); }, 1600);
@@ -2667,6 +2677,12 @@ window.initDetView = function (uid) {
 
     catPaintNo(c);
     catSet(catSpEl, c.species || '');
+    // 오른쪽 칸의 도감이 그 종명으로 찾는다 (229). 종명 칸에 `input` 을 쏘면
+    // 저장이 나가므로 따로 알린다
+    var notesEl = document.getElementById('notes-' + uid);
+    if (notesEl && c.species) {
+      notesEl.dispatchEvent(new CustomEvent('catspecies', {detail: c.species}));
+    }
     catSet(catClsEl, c.cls || '');
     catSet(catGradeEl, c.grade || '');
     catSet(catPoseEl, c.pose || '');

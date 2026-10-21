@@ -572,6 +572,13 @@ def group(request, slug, gid):
         ctx["regroup_rows"] = regroup.frame_rows(
             Frame.objects.filter(slide=slide, viewpoint__idx=gid)
             .order_by("seq"))
+    # 왼쪽 칸의 시야 바둑판·검토율 (229). 다른 엔진을 보는 중이면 바둑판도
+    # 그 엔진으로 옮겨 다니게 `?batch=` 를 붙인다 — 맨 주소로 가면 엔진이 풀린다
+    if slide is not None:
+        ctx["vside"] = data.slide_tiles(slide)
+        ctx["vside_q"] = f"?batch={run_id}" if run_id else ""
+    # 도감 칸의 속명 한 줄 (229) — 많은 순. 한 줄이라 앞에 보이는 것이 자주 쓰는 속이어야 한다
+    ctx["atlas_genera"] = sorted(data.atlas_genera(), key=lambda r: (-r["n"], r["genus"]))
     return render(request, "viewer/group.html", ctx)
 
 

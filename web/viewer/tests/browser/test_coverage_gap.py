@@ -60,10 +60,13 @@ class CoverageGapTest(BrowserTestCase):
         # 사진은 그대로 보이고 도구만 잠긴다 — 빈 화면이라고 사진까지 없애지 않는다
         self.assertTrue(page.is_visible(".detview img, .detview .view img"),
                         "사진이 안 보인다")
-        tools = page.query_selector(".detview .tools")
-        if tools is not None:
-            self.assertEqual(tools.evaluate("e => getComputedStyle(e).display"),
-                             "none", "검출이 없는데 교정 도구가 보인다")
+        # **없으면 실패다** — 도구 자리를 옮기고 선택자를 안 따라가면 `None` 이
+        # 되어 아무것도 안 보는 시험이 된다 (229 에서 옮겨 보다가 알았다)
+        for sel in (".detview .tools", ".detview .drawtool"):
+            el = page.query_selector(sel)
+            self.assertIsNotNone(el, f"{sel} 가 화면에 없다")
+            self.assertEqual(el.evaluate("e => getComputedStyle(e).display"),
+                             "none", f"검출이 없는데 {sel} 가 보인다")
 
     def test_묶음_바꾸러_가는_길이_있다(self):
         """**막다른 화면을 만들지 않는다.** 무엇을 해야 하는지까지 적는다."""

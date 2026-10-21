@@ -41,6 +41,7 @@
   {% endif %}
 {% endblock %}
 
+{% block mainclass %} class="wide"{% endblock %}
 {% block content %}
 
 {% comment %}
@@ -180,7 +181,7 @@
     {# 같은 개체 묶음 (P11). 판이 하나뿐이면 묶을 것이 없어 links 도 안 온다 #}
     <script type="application/json" id="links-stack">{{ links|json_dumps }}</script>
   {% endif %}
-  {% include "viewer/_detection.html" with det=base_det base=base_rel uid="stack" title="검출결과 검토" shot=base_name image_id=base_image %}
+  {% include "viewer/_detection.html" with det=base_det base=base_rel uid="stack" title="검출결과 검토" shot=base_name image_id=base_image actions_here=True %}
 {% endif %}
 
 {% if not readonly and not stack and not frames %}
@@ -188,110 +189,8 @@
 {% endif %}
 
 {% comment %}
-  **오프라인 검토기를 여기서 꺼낸다** (사용자 2026-09-07). 지금 보고 있는 시야가
-  기본 범위다 — 어디를 꺼낼지는 대개 지금 보는 자리에서 정한다.
-
-  **접어 둔다.** 검토하는 동안 늘 보일 것이 아니고, 사진이 그만큼 밀린다.
-  자동 처리 중이면 서버가 `off` 를 안 준다(그때 꺼내 봐야 반입이 막힌다).
+  오프라인 꺼내기 · 시야 가르기는 검토 화면이면 오른쪽 칸 아래에 놓인다 (229).
+  그 칸이 안 그려지는 갈래(읽기 전용 · 검출 없음)에서만 여기 놓는다.
 {% endcomment %}
-{% if off %}{% include "viewer/_offline_pick.html" %}{% endif %}
-
-{% comment %}
-  시야 가르기 — 초점 시리즈가 잘못 묶였을 때.
-
-  **여기(group.html)에 둔다. `_detection.html` 이 아니다.** 그 조각은 읽기 전용
-  갈래(`?batch=`)와 공유하는데, 027 이 정확히 그 자리에서 났다 — "읽기 전용" 이라
-  적어 놓고 CSS 로 버튼만 감췄더니 한 번의 클릭이 교정 37건을 지웠다. 화면에
-  아예 없어야 하고, 서버(views.split_group)가 다시 막는다.
-
-  JS 를 쓰지 않는다. 체크박스와 POST 만으로 되는 일에 배선을 만들 이유가 없다 —
-  배선은 눌러 봐야 아는 고장을 만든다(브라우저는 045 이후 있지만, 안 만든 배선을
-  시험할 일은 애초에 없다).
-
-  프레임이 하나뿐이면 낼 이유가 없고, 검토가 막힌 슬라이드에서도 감춘다.
-  **읽기 전용(다른 엔진을 고른 상태)에서도 감춘다** — 그 화면에서 무엇을 눌러도
-  현재 검출과 그 교정이 사라지는 일은 없어야 한다. 서버가 막지는 않는다(같은
-  시야이므로 정당한 요청이다). 여기서 감추는 것으로 충분하다: 읽기 전용은
-  "저장이 안 되는 화면" 이지 "쓰기가 봉인된 시야" 가 아니다.
-{% endcomment %}
-{% if regroup_rows and not review_blocked and not readonly %}
-<details class="resplit">
-  <summary>시야 가르기 · 합치기 · 지우기</summary>
-  <div class="resplit-body">
-    <p class="warn">가르거나 합치거나 지운 시야의 <b>검출과 교정은 사라지고</b>,
-       가르거나 합친 시야는 합성·검출이 다시 돕니다. 검토를 시작하기 전에 합니다. 다른 시야는 건드리지 않습니다.</p>
-
-    {% if regroup_rows|length > 1 %}
-    <h4>가르기 — 이 시야가 사실은 여러 시야일 때</h4>
-    <p>자를 자리는 <b>사진과 사진 사이</b>에 있습니다. ✂ 칸을 켜면 그 왼쪽까지가
-       한 시야, 오른쪽부터가 다음 시야가 됩니다. 칸에 적힌 것은 <b>앞 사진과의
-       촬영 간격</b>이고, 1분이 넘게 벌어진 자리는 붉게 표시합니다 — 스테이지를
-       옮긴 자리는 대개 거기입니다.</p>
-    <form method="post" action="{% url 'split_group' slug id %}">
-      {% csrf_token %}
-      <div class="rg-strip">
-        {% for r in regroup_rows %}
-          {% if not forloop.first %}
-          <label class="rg-cut{% if r.gap_warn %} far{% endif %}"
-                 title="{{ r.prev_name|cut:'Snap-' }} 와 {{ r.short }} 사이에서 가른다">
-            <input type="checkbox" name="after" value="{{ r.prev_name }}">
-            <span class="sc">✂</span>
-            <span class="gap">{{ r.gap_label|default:"?" }}</span>
-          </label>
-          {% endif %}
-          <figure class="rg-fr">
-            <img loading="lazy" src="{% thumb r.rel 200 %}" alt="{{ r.short }}">
-            <figcaption>{{ r.short }}{% if r.is_sharpest %} ★{% endif %}
-              {% if r.at %}<time>{{ r.at|date:"H:i:s" }}</time>{% endif %}</figcaption>
-          </figure>
-        {% endfor %}
-      </div>
-      <button type="submit">가르기 — 무엇이 사라지는지 먼저 봅니다</button>
-    </form>
-    {% endif %}
-
-    {% if prev_id is not None or next_id is not None %}
-    <h4>합치기 — 이웃 시야가 사실은 같은 시야일 때</h4>
-    <p>바로 앞이나 뒤 시야와 하나로 합칩니다. 떨어진 시야는 사이의 것부터 합칩니다.</p>
-    <div class="rg-merge">
-      {% if prev_id is not None %}
-      <form method="post" action="{% url 'merge_group' slug id %}">
-        {% csrf_token %}<input type="hidden" name="with" value="{{ prev_id }}">
-        <button type="submit">← 앞 시야 g{{ prev_id }} 와 합치기</button>
-      </form>
-      {% endif %}
-      {% if next_id is not None %}
-      <form method="post" action="{% url 'merge_group' slug id %}">
-        {% csrf_token %}<input type="hidden" name="with" value="{{ next_id }}">
-        <button type="submit">뒤 시야 g{{ next_id }} 와 합치기 →</button>
-      </form>
-      {% endif %}
-      <span class="dim">누르면 합친 모습을 먼저 보여 줍니다.</span>
-    </div>
-
-    <h4>지우기 — 이 시야가 쓸모없을 때</h4>
-    <p>촬영 순서가 어긋나 생긴 묶음 같은 것을 지웁니다. 일부 사진만 버리려면
-       먼저 가르고 나서 떨어진 쪽을 지웁니다. 사진 파일은 그대로 두고, 이 시야에
-       들었던 사진은 어느 시야에도 안 든 채로 남습니다.</p>
-    <form method="post" action="{% url 'delete_group' slug id %}" class="rg-merge">
-      {% csrf_token %}
-      <button type="submit">g{{ id }} 지우기</button>
-      <span class="dim">누르면 무엇이 사라지는지 먼저 보여 줍니다.</span>
-    </form>
-    {% endif %}
-  </div>
-</details>
-<style>
-  .resplit { margin: 18px 0 0; border: 1px solid var(--line); border-radius: 6px; }
-  .resplit > summary { padding: 8px 12px; cursor: pointer; font-size: 13px; opacity: .8; }
-  .resplit-body { padding: 4px 14px 14px; }
-  .resplit h4 { font-size: 13px; margin: 16px 0 4px; }
-  .resplit p { font-size: 13px; line-height: 1.55; margin: 6px 0; max-width: 720px; }
-  .resplit p.warn { color: var(--warn); }
-  .resplit .dim { font-size: 12px; color: var(--dim); }
-  .rg-merge { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; margin: 8px 0; }
-  .rg-merge form { margin: 0; }
-</style>
-{% include "viewer/_regroup_strip_css.html" %}
-{% endif %}
+{% if readonly or not base_det %}{% include "viewer/_view_actions.html" %}{% endif %}
 {% endblock %}
