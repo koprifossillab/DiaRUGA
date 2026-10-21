@@ -344,8 +344,9 @@
     **지운 것을 보는 화면에는 이 체크박스를 안 둔다** (P16). 거기서는 파편도
     전부 내므로, 켜고 끌 수 있는 것처럼 보이면 눌러서 아무 일도 안 일어나는
     자리가 된다 — 이 화면이 파편 칩에서 이미 피한 그 자리다.
+    「합성본에 없음」(226) 도 같다 — 파편까지 다 낸다.
   {% endcomment %}
-  {% if not show_gone %}
+  {% if not show_gone and cls != "off_stack" %}
   <form method="get" class="fragtoggle">
     {% if cls %}<input type="hidden" name="cls" value="{{ cls }}">{% endif %}
     {% if q %}<input type="hidden" name="q" value="{{ q }}">{% endif %}

@@ -1200,6 +1200,11 @@ CATALOG_FILTERS = {
 }
 UNTYPED_FILTERS = ("untyped_rod", "untyped_round", "untyped_none",
                    "untyped_drawn")
+# 합성본에 없음 (226) — 4차는 합성본으로 배운다(P29). 프레임에만 있는 개체는
+# 합성본 라벨에서 빠져 그 자리가 배경으로 학습된다. 수를 칩에 함께 적는다.
+CATALOG_FILTERS["off_stack"] = ("합성본에 없음",
+                                lambda r: r.get("on_stack") is False)
+COUNTED_FILTERS = UNTYPED_FILTERS + ("off_stack",)
 
 
 def _catalog_hl(rows, hl):
@@ -1300,14 +1305,17 @@ def catalog(request, slug):
     # 말하기로 한 그 규칙이 여기서도 걸린다.
     if hl_row is not None and data.is_fragment(hl_row.get("cls")):
         show_frag = True
+    # **칩의 수는 파편 감추기 앞에서 센다** (225·226). 「합성본에 없음」 은 절반이
+    # 파편이라(10-21 · 280 중 143) 감춘 뒤에 세면 수가 반으로 줄어 보인다.
+    # 유형 미지정은 엔진이 파편을 안 붙여 어느 쪽에서 세도 같다.
+    untyped_n = {k: sum(1 for r in rows if CATALOG_FILTERS[k][1](r))
+                 for k in COUNTED_FILTERS}
+    # 「합성본에 없음」 을 골랐으면 파편도 낸다 — 파편 분류를 콕 집었을 때와
+    # 같은 이유다(칩을 누르고 수보다 적은 카드를 보면 자료가 없다고 읽는다)
+    if cls == "off_stack":
+        show_frag = True
     if not show_frag and not data.is_fragment(cls):
         rows = [r for r in rows if not data.is_fragment(r.get("cls"))]
-
-    # **유형 미지정 칩의 수** (225) — 고르기 전에 몇 개가 있는지 보여야 슬라이드를
-    # 돌며 찾는 일이 준다. 파편 감추기 뒤에 세지만, 엔진이 파편을 안 붙이므로
-    # 유형 미지정은 감춰지는 일이 없다.
-    untyped_n = {k: sum(1 for r in rows if CATALOG_FILTERS[k][1](r))
-                 for k in UNTYPED_FILTERS}
 
     members = data.group_members(cls)
     if cls in data.CLASSES:

@@ -1467,6 +1467,7 @@ def catalog_rows(slug: str, gone: bool = False) -> list[dict]:
         if (f["rep"] and f["rep"] != (r.get("image_id"), r.get("key"))
                 and f["rep_row"]):
             r["view"] = f["rep_row"]
+        r["on_stack"] = f["on_stack"]
         if f["n"] > 1:
             r["linked_n"] = f["n"]
             # **푸는 데 필요한 것은 `link_id` 하나다** (P16 5.3).
@@ -1543,6 +1544,9 @@ def object_facts(slide, viewpoint=None) -> dict:
         imgs = imgs.filter(viewpoint=viewpoint)
         objs = objs.filter(viewpoint=viewpoint)
     seqs = {pk: fseq.get(path) for pk, path in imgs.values_list("pk", "path")}
+    # 합성본을 가진 시야와 그 이미지 (226) — 「합성본에 없음」 거르개의 재료
+    stack_imgs = set(imgs.filter(kind="stack").values_list("pk", flat=True))
+    stack_vps = set(imgs.filter(kind="stack").values_list("viewpoint_id", flat=True))
     for obj in objs:
         members = list(obj.members.all())
         if not members:
@@ -1565,8 +1569,15 @@ def object_facts(slide, viewpoint=None) -> dict:
             a = shape.area(shape.points(poly))
             if a > big_a:
                 big, big_a = (m.image_id, poly, seqs.get(m.image_id)), a
+        # **합성본에 살아 있는 판정이 있나** (226). 합성본이 없는 시야는 물을
+        # 것이 없어 `None` 이다 — 한 장짜리 시야의 개체가 「합성본에 없음」 에
+        # 걸리면 고칠 수 없는 것을 고치라고 하게 된다.
+        on_stack = (any(m.image_id in stack_imgs and not m.removed
+                        for m in members)
+                    if obj.viewpoint_id in stack_vps else None)
         out[obj.pk] = {
             "n": len(members),
+            "on_stack": on_stack,
             "big": big,
             "rep": (rep.image_id, rep.mask_key) if rep else None,
             # **대표를 그릴 재료.** 대표 판에 현재 검출이 없으면 후보 줄이 없어
