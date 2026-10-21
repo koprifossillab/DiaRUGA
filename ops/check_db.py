@@ -49,7 +49,7 @@ sys.path.insert(0, str(APP / "pipeline"))
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "diarugaweb.settings")
 django.setup()
 
-from django.db.models import Count, F, Q                               # noqa: E402
+from django.db.models import Count, F, Prefetch, Q                     # noqa: E402
 
 import judge                                                        # noqa: E402
 from viewer.models import (Atlas, AtlasEntry, AtlasPlacement,
@@ -459,6 +459,10 @@ def _has_core_data(loc) -> bool:
         return False
 
 
+MEMBERS_WITH_IMAGE = Prefetch(
+    "members", queryset=ObjectReview.objects.select_related("image"))
+
+
 def check_links(slug=None):
     """같은 개체 묶음이 앞뒤가 맞는가 (P11).
 
@@ -473,7 +477,10 @@ def check_links(slug=None):
           .filter(n_members__gte=2))
     if slug:
         qs = qs.filter(viewpoint__slide__slug=slug)
-    links = list(qs.prefetch_related("members__image"))
+    # **이미지는 멤버와 한 번에 조인한다** (228). `prefetch_related("members__image")`
+    # 는 Django 5.2 에서 둘째 질의를 `id = ? OR id = ? …` 로 이어 붙여, 이미지가
+    # 1,000 장을 넘자 SQLite 의 식 깊이 한도에 걸려 이 검사가 죽었다(10-21 · 1,002).
+    links = list(qs.prefetch_related(MEMBERS_WITH_IMAGE))
     if not links:
         if VERBOSE:
             print("   (묶음이 아직 없다)")

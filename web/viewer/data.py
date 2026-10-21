@@ -65,6 +65,15 @@ def _group_rows() -> dict:
     return _groups
 
 
+# **멤버를 이미지와 함께 가져오는 문** (228). `prefetch_related("members__image")`
+# 는 Django 5.2 에서 둘째 질의를 `id = ? OR id = ? …` 로 이어 붙이고, 이미지가
+# 1,000 장을 넘으면 SQLite 의 식 깊이 한도("Expression tree is too large")에
+# 걸린다 — `check_db` 8번이 운영에서 그렇게 죽었다(10-21 · 1,002 장). 조인으로
+# 한 번에 가져오면 목록이 아무리 커도 식이 안 깊어진다.
+MEMBERS_WITH_IMAGE = Prefetch(
+    "members", queryset=ObjectReview.objects.select_related("image"))
+
+
 GROUP_PREFIX = "group:"
 
 
@@ -1345,7 +1354,7 @@ def link_mains(slide) -> dict:
     # 말라는 그 줄이다.
     links = (DiatomObject.objects.filter(viewpoint__slide=slide)
              .annotate(n_members=Count("members")).filter(n_members__gte=2)
-             .prefetch_related("members__image"))
+             .prefetch_related(MEMBERS_WITH_IMAGE))
     for link in links:
         members = list(link.members.all())
         # **사람이 세운 대표를 그대로 쓴다** (152).
@@ -1539,7 +1548,7 @@ def object_facts(slide, viewpoint=None) -> dict:
     imgs = Image.objects.filter(viewpoint__slide=slide)
     objs = (DiatomObject.objects.filter(viewpoint__slide=slide)
             .select_related("anchor", "viewpoint")
-            .prefetch_related("members__image"))
+            .prefetch_related(MEMBERS_WITH_IMAGE))
     if viewpoint is not None:
         imgs = imgs.filter(viewpoint=viewpoint)
         objs = objs.filter(viewpoint=viewpoint)
@@ -5024,7 +5033,7 @@ def _reelect_removed_reps(ids) -> int:
     for obj in (DiatomObject.objects.filter(pk__in=set(ids),
                                             members__is_rep=True,
                                             members__removed=True)
-                .distinct().prefetch_related("members__image")):
+                .distinct().prefetch_related(MEMBERS_WITH_IMAGE)):
         live = [m for m in obj.members.all() if not m.removed]
         if not live:
             continue
