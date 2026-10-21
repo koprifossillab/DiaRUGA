@@ -718,12 +718,13 @@ class ClassDef(models.Model):
         badge       배지 CSS 클래스. `base.html` 에 `.badge.<badge>` 규칙이 있어야 한다
         color       "R,G,B". **`base.html` 의 CSS 도 함께 고쳐야 한다** — 색은
                     아직 테이블에서 뿜어내지 않는다. 비면 마스크가 투명해진다
-        hotkey      검토 화면 단축키. 비면 그 분류만 메뉴로만 지정된다
+        hotkey      검토 화면 단축키. 비면 그 분류만 메뉴로만 지정된다 — **비워도
+                    된다**(227 · 앞으로 단축키 없는 분류가 많아진다)
         counted     개체 수로 세는가 (파편은 False)
         is_taxon    형태가 아니라 분류학으로 알아본 것인가 (메뉴에서 줄로 갈린다)
         sort_order  열·메뉴·단축키 순환의 차례
 
-    `check_db.py` 의 "4. 분류" 가 hotkey·color 가 빈 것을 잡는다.
+    `check_db.py` 의 "4. 분류" 가 color 가 빈 것을 잡는다(hotkey 는 적어만 둔다).
 
     **묶음(`group`)은 아홉째 칸이다** (224). 비어 있어도 되고, 대부분 비어 있다.
     """

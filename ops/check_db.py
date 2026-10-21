@@ -299,14 +299,14 @@ def check_classes(slug=None):
     report("사람이 지정한 분류가 ClassDef 에 있다", len(bad2), len(lab),
            f"정의되지 않은 분류: {list(bad2)}")
 
-    # 분류를 더하면서 단축키를 안 준 것. 예외가 나지 않고 그냥 **그 분류만
-    # 메뉴로만 지정된다** — 시야 하나를 훑는 속도가 분류마다 달라지고, 왜
-    # 느린지는 화면에 안 보인다. 검토 화면의 안내에도 안 나온다.
+    # **단축키는 고장으로 세지 않는다** (227 · 사용자 2026-10-21). Corethron 을
+    # 시작으로 단축키 없는 분류가 많아진다 — 그 분류는 우클릭 메뉴·카탈로그로
+    # 지정한다. 무엇이 비어 있는지는 적어 둔다(일부러 비운 것인지 사람이 본다).
     active = list(ClassDef.objects.filter(active=True)
                   .values("key", "hotkey", "color"))
     nokey = [c["key"] for c in active if not (c["hotkey"] or "").strip()]
-    report("활성 분류에 단축키가 있다", len(nokey), len(active),
-           f"단축키 없음: {nokey}")
+    if nokey:
+        print(f"   {'단축키 없는 분류 (메뉴로만 지정)':46s} {nokey}")
 
     # 색이 비면 마스크가 투명하게 그려진다 — "지정은 되는데 화면에서 안 보이는"
     # 상태다. 색이 CSS 에도 있어야 하는 것은 아직 기계로 못 본다(TODO).

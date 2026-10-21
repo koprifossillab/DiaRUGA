@@ -88,13 +88,17 @@ class BadgeCssTest(DiaRUGATestCase):
                                  f"ClassDef.color 는 {c.color} 다")
 
     def test_활성_분류의_여덟_칸이_다_차_있다(self):
-        """`check_db.py` 는 단축키·색만 본다. 나머지도 여기서 센다.
+        """`check_db.py` 는 색만 본다. 나머지도 여기서 센다.
 
         `counted`·`is_taxon` 은 불리언이라 "비어 있음" 이 없고, `sort_order` 는
         0 이 정상값이다 — 그 셋은 뺀다.
+
+        **단축키는 뺐다** (227 · 사용자 2026-10-21). Corethron 을 시작으로 단축키
+        없는 분류가 많아진다 — 비어 있으면 우클릭 메뉴·카탈로그로 지정한다.
+        채운 키끼리 겹치지 않는지는 `test_new_class_wiring.HotkeyTest` 가 본다.
         """
         for c in ClassDef.objects.filter(active=True):
-            for field in ("label", "short", "badge", "color", "hotkey"):
+            for field in ("label", "short", "badge", "color"):
                 with self.subTest(key=c.key, field=field):
                     self.assertTrue(getattr(c, field),
                                     f"{c.key} 의 {field} 가 비어 있다")

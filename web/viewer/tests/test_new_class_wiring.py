@@ -159,3 +159,45 @@ class ClassMenuTest(DiaRUGATestCase):
         html = self.client.get(
             reverse("group", args=["rs23", self.w.vp.idx])).content.decode()
         self.assertIn("rhizosolenia", html)
+
+
+class CorethronRowTest(DiaRUGATestCase):
+    """마이그레이션 `0050` 이 넣은 Corethron (227) — **단축키를 일부러 비웠다.**
+
+    단축키 없는 분류가 앞으로 많아진다(사용자 2026-10-21). 비어 있어도 메뉴에는
+    실려 우클릭·카탈로그로 지정되고, 키 안내 줄에는 안 나와야 한다 — 안내에 키
+    없는 분류가 끼면 누를 것이 없는 줄이 된다.
+    """
+
+    @classmethod
+    def setUpTestData(cls):
+        fx.make_classes()
+        cls.w = fx.make_world(slug="rs23", n_viewpoints=1, n_candidates=3)
+
+    def test_마이그레이션의_행(self):
+        row = ClassDef.objects.get(key="corethron")
+        self.assertEqual((row.label, row.short, row.badge, row.color),
+                         ("Corethron", "COR", "cor", "225,90,240"))
+        self.assertEqual(row.hotkey, "")
+        self.assertTrue(row.counted)
+        self.assertTrue(row.is_taxon)
+        self.assertIsNone(row.group)
+
+    def test_픽스처_표와_같은_값이다(self):
+        row = ClassDef.objects.get(key="corethron")
+        mirror = next(c for c in fx.CLASSES if c[0] == "corethron")
+        _, label, short, badge, color, hot, counted, taxon = mirror
+        self.assertEqual(
+            (row.label, row.short, row.badge, row.color, row.hotkey,
+             row.counted, row.is_taxon),
+            (label, short, badge, color, hot, counted, taxon))
+
+    def test_메뉴에는_실리고_키_안내에는_없다(self):
+        self.assertIn("corethron", [c["key"] for c in data.class_list()])
+        groups = data.hotkey_groups()["groups"]
+        self.assertNotIn("corethron",
+                         [c["key"] for g in groups for c in g["classes"]])
+        self.assertNotIn("", [g["hotkey"] for g in groups])
+
+    def test_세는_분류에_든다(self):
+        self.assertIn("corethron", [c["key"] for c in data.counted_classes()])

@@ -120,6 +120,8 @@ CLASSES = [
     ("rhizosolenia", "Rhizosolenia", "RHZ", "rhi", "185,130,255",  "t",   True,   True),
     ("dactyliosolen", "Dactyliosolen", "DAC", "dac", "185,130,255", "t",   True,   True),
     ("cylinder_frag", "원통상 파편", "원통파편", "cylf", "213,180,255", "t", False,  False),
+    # 단축키를 일부러 비웠다 (227) — 앞으로 단축키 없는 분류가 많아진다
+    ("corethron",   "Corethron",  "COR",  "cor",  "225,90,240",   "",    True,   True),
 ]
 
 # 분류 묶음 (224) — 열쇠 → (이름, 약칭, 안의 분류). 운영은 `0049` 가 넣는다
