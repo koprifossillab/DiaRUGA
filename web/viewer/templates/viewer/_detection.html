@@ -134,12 +134,35 @@
     </a>
     {% endfor %}
   </div>
+  {% comment %}
+    **숫자는 큰 글씨 셋 + 분류 막대 + 교정 셋** (230 · 사용자: "간단한 통계니까
+    막대그래프 같은 걸"). 한 줄로 이어 적으면 어느 수가 무엇인지 매번 다시
+    읽어야 했다. 막대 길이는 가장 많은 분류에 대한 비율이고 색은 마스크 색이다.
+  {% endcomment %}
   <div class="vstats">
-    <div class="vbar"><i style="width:{{ vside.pct }}%"></i></div>
-    <div>검출 {{ vside.n_auto }} → 검토 후 <b>{{ vside.n_detected }}</b>개
-      {% if vside.mean_detected %}· 시야당 {{ vside.mean_detected }}{% endif %}</div>
-    {% if vside.class_counts %}<div class="dim">{% for d in vside.class_counts %}{{ d.label }} {{ d.n }}{% if not forloop.last %} · {% endif %}{% endfor %}</div>{% endif %}
-    <div class="dim">사진 {{ vside.n_images }}장 · 삭제 {{ vside.n_removed }} · 되살림 {{ vside.n_accepted }} · 분류 지정 {{ vside.n_labeled }}</div>
+    <div class="vbar" title="검토 끝난 시야 {{ vside.done }}/{{ vside.n }}"><i style="width:{{ vside.pct }}%"></i></div>
+    <div class="vnums">
+      <div title="검출 {{ vside.n_auto }}개 → 검토 후 {{ vside.n_detected }}개"><b>{{ vside.n_detected }}</b><span>개체</span>
+        <small>검출 {{ vside.n_auto }}</small></div>
+      <div><b>{{ vside.mean_detected|default:"–" }}</b><span>시야당</span></div>
+      <div><b>{{ vside.n_images }}</b><span>사진</span></div>
+    </div>
+    {% if vside.class_bars %}
+    <div class="cbars">
+      {% for d in vside.class_bars %}
+      <div class="cbar" title="{{ d.label }} {{ d.n }}">
+        <span class="cl">{{ d.label }}</span>
+        <span class="tr"><i style="width:{{ d.pct }}%{% if d.color %};background:rgb({{ d.color }}){% endif %}"></i></span>
+        <span class="cn">{{ d.n }}</span>
+      </div>
+      {% endfor %}
+    </div>
+    {% endif %}
+    <div class="vedits">
+      <div><b>{{ vside.n_removed }}</b><span>삭제</span></div>
+      <div><b>{{ vside.n_accepted }}</b><span>되살림</span></div>
+      <div><b>{{ vside.n_labeled }}</b><span>분류 지정</span></div>
+    </div>
   </div>
   {% endif %}
 
@@ -158,16 +181,29 @@
   <b>두 손가락 = 확대</b> · 한 손가락 끌기 = 이동 · <b>탭 = 선택</b> ·
   <b>길게 누르기 = 메뉴</b>(삭제·유형·되살리기) · 빈 곳 탭 = 그 자리의 탈락 후보 펼쳐 보기
 </p>
-<p class="dim mousehint" style="font-size:11.5px;margin:2px 2px 0">
-  휠 = 확대 · 우클릭 드래그 = 이동 · <b>클릭 = 선택 (겹친 자리는 다시 클릭하면 다음 것)</b> · Shift+클릭 = 추가/해제 ·
-  드래그 = 범위 선택 · <b>선택 위에서 우클릭 = 오검출 삭제</b> ·
-  <b>빈 곳 클릭 = 그 자리의 탈락 후보 펼쳐 보기</b>
+{% comment %}
+  **안내는 표로 적는다 — 왼쪽이 글쇠, 오른쪽이 하는 일** (230 · 사용자). 한 문단에
+  이어 적으면 찾는 조작이 어디 있는지 처음부터 읽어야 했다. 글쇠는 글쇠 모양
+  (`kbd`)으로 — rash-company 의 `.hk` 를 따랐다. 마우스 조작은 익으면 안 보므로
+  접어 둔다(펼친 것은 브라우저 기본대로 그 화면에만 남는다).
+{% endcomment %}
+<details class="hintbox mousehint">
+  <summary>마우스</summary>
+  <dl class="hintlist">
+    <dt><kbd>휠</kbd></dt><dd>확대</dd>
+    <dt><kbd>우클릭</kbd> 끌기</dt><dd>이동</dd>
+    <dt><kbd>클릭</kbd></dt><dd><b>선택</b> <span class="dim">· 겹친 자리는 다시 클릭하면 다음 것</span></dd>
+    <dt><kbd>Shift</kbd>+<kbd>클릭</kbd></dt><dd>추가 · 해제</dd>
+    <dt>끌기</dt><dd>범위 선택</dd>
+    <dt>선택 위 <kbd>우클릭</kbd></dt><dd><b>오검출 삭제</b></dd>
+    <dt>빈 곳 <kbd>클릭</kbd></dt><dd>그 자리의 탈락 후보 펼쳐 보기</dd>
+  </dl>
   {% comment %}
     탈락 레이어를 켜면 클릭 우선순위가 바뀐다 — 켰을 때만이라 그 조건을 함께
     적는다. 안 적으면 "왜 개체가 안 골라지지" 가 된다.
   {% endcomment %}
-  · <b>탈락</b>을 켜면 클릭이 탈락 후보를 먼저 집는다 (검출 개체는 Shift+클릭)
-</p>
+  <p class="hintnote"><b>탈락</b>을 켜면 클릭이 탈락 후보를 먼저 집는다 (검출 개체는 <kbd>Shift</kbd>+<kbd>클릭</kbd>)</p>
+</details>
 {% comment %}
   단축키 안내. 목록을 여기 적지 않는다 — 분류를 더하면서 안내만 옛 목록으로
   남는 일이 이미 두 번 있었다. ClassDef 의 hotkey 가 그린다. 키를 안 준 분류는
@@ -183,13 +219,28 @@
   분류가 하나도 없어도 이 줄은 놓인다 — 삭제 키는 분류와 무관하다.
 {% endcomment %}
 {% hotkey_groups as hk %}
-<p class="dim keyhint mousehint" id="keyhint-{{ uid }}" style="font-size:11.5px;margin:2px 2px 0">
-  <b>단축키</b> — 개체를 고르고
-  <kbd>Space</kbd>&nbsp;<span title="오검출로 삭제 · 지운 것을 고르고 다시 누르면 되살립니다">삭제</span>{% if hk.groups %} ·
-  {% for h in hk.groups %}<kbd>{{ h.hotkey|upper }}</kbd>&nbsp;{% for c in h.classes %}{% if not forloop.first %} → {% endif %}<span title="{{ c.label }}">{{ c.short }}</span>{% endfor %}{% if not forloop.last %} · {% endif %}{% endfor %}{% if hk.cycles %}
-  <span class="dim">(→ 는 같은 키를 다시 누르면 넘어간다는 뜻)</span>{% endif %}{% endif %}
-  · 고르지 않고 <kbd>S</kbd><kbd>S</kbd>&nbsp;<span title="그린 개체는 남긴다 · Ctrl+Z 로 되돌림">이 판의 검출 전부 삭제</span>
-</p>
+{% comment %}
+  **`display` 를 잡지 않는다** — JS 가 읽기 전용에서 `hidden` 으로 감춘다
+  (CLAUDE.md 의 `[hidden]` 특이도 함정).
+{% endcomment %}
+<details class="hintbox keyhint mousehint" id="keyhint-{{ uid }}" open>
+  <summary>단축키</summary>
+  <div class="hintsub">개체를 고르고</div>
+  <dl class="hintlist">
+    <dt><kbd>Space</kbd></dt><dd><b>삭제</b> <span class="dim">· 지운 것을 고르고 누르면 되살림</span></dd>
+    {% for h in hk.groups %}<dt><kbd>{{ h.hotkey|upper }}</kbd></dt><dd>{% for c in h.classes %}{% if not forloop.first %}<span class="cyc" title="같은 키를 다시 누르면">→</span>{% endif %}<span title="{{ c.label }}">{{ c.label }}</span>{% endfor %}</dd>
+    {% endfor %}
+  </dl>
+  {% if hk.cycles %}<p class="hintnote">→ 는 같은 키를 다시 누르면 다음 것으로 넘어간다</p>{% endif %}
+  <div class="hintsub">고르지 않고</div>
+  <dl class="hintlist">
+    <dt><kbd>S</kbd><kbd>S</kbd></dt><dd title="그린 개체는 남긴다 · Ctrl+Z 로 되돌림">이 판의 검출 전부 삭제</dd>
+    <dt><kbd>D</kbd></dt><dd>마스크 그리기</dd>
+    <dt><kbd>Ctrl</kbd>+<kbd>Z</kbd></dt><dd>되돌리기</dd>
+    <dt><kbd>←</kbd><kbd>→</kbd></dt><dd>사진 넘기기</dd>
+    <dt><kbd>Ctrl</kbd>+<kbd>←</kbd><kbd>→</kbd></dt><dd>시야 넘기기</dd>
+  </dl>
+</details>
   </div>
 </aside>
 <div class="gut l" data-gut="left" title="끌어서 왼쪽 칸 폭을 바꿉니다 · 두 번 누르면 기본 폭"></div>
@@ -272,75 +323,117 @@
     {% endcomment %}
     <button type="button" id="hlzoom-{{ uid }}" hidden></button></div>
 
-  {# 레이어 토글 — 사진을 가리지 않고 원본을 확인할 수 있어야 한다 #}
-  <div class="layers" id="layers-{{ uid }}">
-    <label><input type="checkbox" data-layer="box" checked> bbox</label>
-    <label><input type="checkbox" data-layer="mask" checked> mask</label>
-    {% comment %}
-      mask 를 켰을 때만 뜻이 있는 선택지라 mask 가 꺼지면 같이 감춘다.
-      끄면 테두리만 그린다 — 채우면 정작 "이게 규조각인가" 를 볼 수 없을 때가 있다.
-    {% endcomment %}
-    <label class="fillopt"><input type="checkbox" data-layer="fill" checked> fill</label>
-    {% comment %}
-      탈락 후보 레이어. 기본은 꺼 둔다 — 시야당 100개가 넘어 켜 두면 사진이
-      묻힌다. 재현율을 눈으로 볼 때, 그리고 누락을 되살릴 때 켠다.
-    {% endcomment %}
-    <label title="문턱에서 떨어진 후보를 빨간 점선 테두리로 보여준다. 켜 두면 클릭이 탈락 후보를 먼저 집는다 — 검출 개체 뒤에 겹친 것도 고를 수 있다 (검출 개체를 고르려면 Shift+클릭)">
-      <input type="checkbox" data-layer="reject"> 탈락
-      <span class="dim">{{ det.rejected|length }}</span></label>
-  </div>
-
   {% comment %}
-    **마스크 그리기는 홀로 사진 오른쪽 위에 둔다** (194 · 사용자 2026-09-07).
-    검토하는 동안 손이 자주 가는 것은 이것 하나이고, 나머지와 한 줄에 섞여
-    있으면 폰에서 두 줄짜리 단추 무리에 묻힌다. 글자를 떼고 연필만 남긴다 —
-    표적이 커지고 사진을 덜 가린다.
+    **사진 위 도구는 세로 묶음 둘이다** (230 · 사용자 2026-10-22: "GSM 자세탭/도구탭
+    참고해서"). 왼쪽 위 「도구」 는 교정을 바꾸는 것, 오른쪽 위 「보기」 는 화면만
+    바꾸는 것이다. 단추마다 아이콘과 이름을 함께 단다 — 아이콘만으로는 무엇인지
+    모르고(GSM 041 과 같은 이유), 글자만이면 묶음이 한눈에 안 갈린다.
 
-    **`#tools-` 상자 밖으로 나갔다.** 도구 배선이 그 상자에 위임돼 있으므로
-    `_detview_js.html` 이 두 자리를 함께 듣고, 눌린 표시(`syncDrawBtn`)도
-    `.detview` 안에서 찾는다 — 한쪽만 고치면 **켜 놓고 잊는 실수**를 막으려고
-    둔 그 표시가 조용히 안 붙는다.
+    **「자세」 라고 부르지 않는다.** 이 저장소에서 자세는 개체의 자세(`pose`)다 —
+    한 낱말이 두 뜻을 겸하게 된다.
 
-    **옆에 「검출 전부 오검출로」 를 둔다** (220 · 사용자 2026-10-08). 검출이
-    시원찮은 판은 전부 지우고 다시 그리는 편이 빠르고, 그 두 조작이 늘 이어서
-    온다. 읽기 전용에서는 연필과 함께 감춰진다(`group.html` 이 `.drawtool` 을
-    통째로 감추고, 함수도 `readOnly` 에서 멈춘다).
+    **연필(그리기)이 도구 묶음의 맨 위다** (194: 손이 가장 자주 가는 것). 옆에
+    따로 서 있던 것을 묶음 안으로 들였다 — `#drawtool-` 상자는 그대로 두어
+    읽기 전용 갈래(`group.html` 이 `.drawtool` 을 감춘다)와 눌린 표시
+    (`syncDrawBtn` · `armWipe` 는 `.detview` 안에서 찾는다)가 안 바뀐다.
+    **배선은 `#tools-` 하나에 걸린다** — 연필 상자가 그 안에 들어왔으므로 따로
+    또 걸면 한 번 누를 때 두 번 돈다(켜졌다 바로 꺼진다).
+
+    **「배율 초기화」 는 「보기」 로 옮겼다** — 보는 일이라 읽기 전용에서도
+    된다. 접어 둔 셋(전체 선택·해제·삭제분)은 그대로 `⋯` 안이다 (194).
   {% endcomment %}
-  <div class="drawtool" id="drawtool-{{ uid }}">
-    <button type="button" data-act="wipe" title="두 번 누르면 이 판의 검출 전부 오검출로 (S 두 번) — 그린 개체는 남긴다 · Ctrl+Z 로 되돌림"
-            aria-label="이 판의 검출 전부 오검출로">⊘</button>
-    <button type="button" data-act="draw" title="마스크 그리기 (D)"
-            aria-label="마스크 그리기">✎</button>
-  </div>
-
-  {% comment %}
-    교정 도구는 사진 위에 얹는다. 스케일바와 마찬가지로 canvas 가 아니라
-    detview 의 자식이라 확대·이동 변환을 받지 않고 늘 같은 자리에 있다.
-
-    **넷은 접어 두었다** (194 · 사용자 2026-09-07: "전체선택, 해제, 배율초기화,
-    삭제분 숨기기 이런건 뭐 큰 의미 없으니"). 검토 한 시야를 보는 동안 한 번도
-    안 누르는 것들이라 늘 펼쳐 두면 자리만 먹는다 — 폰에서는 그 자리가 사진이다.
-    **감추는 것이 아니라 접는 것이다**: `⋯` 이 늘 보이고 한 번 누르면 넷이 다
-    나온다(051 이 말하는 "화면에서 아예 빼는 것" 은 할 수 없을 때 하는 일이고,
-    이것들은 할 수 있다).
-
-    펼친 판은 `position: absolute` 다 — 펼칠 때 아래 것들이 밀리면 방금 보던
-    자리를 잃는다.
-  {% endcomment %}
-  <div class="tools" id="tools-{{ uid }}">
-    <button type="button" data-act="undo">↶ 실행취소</button>
-    <button type="button" class="danger" data-act="clear">검토 전체 초기화</button>
+  <div class="tools toolcol tc-l" id="tools-{{ uid }}" role="toolbar" aria-label="도구">
+    <span class="tool-cap">도구</span>
+    <div class="drawtool" id="drawtool-{{ uid }}">
+      <button type="button" class="tool" data-act="draw" title="마스크 그리기 (D) — 눌러 가며 점을 찍고 첫 점을 다시 누르면 닫힌다"
+              aria-label="마스크 그리기">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path class="stroke" d="M4.5 19.5 5.6 15 15.8 4.8a2.1 2.1 0 0 1 3 3L8.6 18l-4.1 1.5Z"/><path class="stroke" d="m14 6.6 3 3"/></svg>
+        <span>그리기</span></button>
+      <button type="button" class="tool" data-act="wipe" title="두 번 누르면 이 판의 검출 전부 오검출로 (S 두 번) — 그린 개체는 남긴다 · Ctrl+Z 로 되돌림"
+              aria-label="이 판의 검출 전부 오검출로">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><circle class="stroke" cx="12" cy="12" r="8"/><path class="stroke" d="M6.4 17.6 17.6 6.4"/></svg>
+        <span>전부 지움</span></button>
+    </div>
+    <button type="button" class="tool" data-act="undo" title="실행취소 (Ctrl+Z)">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path class="stroke" d="M8.5 13.5 4 9l4.5-4.5"/><path class="stroke" d="M4 9h10a5.5 5.5 0 0 1 0 11h-3"/></svg>
+      <span>되돌리기</span></button>
+    {% comment %}
+      펼친 판은 묶음 **오른쪽 옆**으로 띄운다(`position: absolute`) — 펼칠 때
+      아래 것이 밀리면 방금 누르려던 단추가 도망간다.
+    {% endcomment %}
     <details class="moretools">
-      <summary title="그 밖의 도구">⋯</summary>
+      <summary class="tool" title="그 밖의 도구 — 전체 선택 · 해제 · 삭제분 보기">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><circle class="fill" cx="6" cy="12" r="1.8"/><circle class="fill" cx="12" cy="12" r="1.8"/><circle class="fill" cx="18" cy="12" r="1.8"/></svg>
+        <span>더보기</span></summary>
       <div class="morebox">
         <button type="button" data-act="all">전체 선택</button>
         <button type="button" data-act="none">해제</button>
-        <button type="button" data-act="reset">배율 초기화</button>
         <button type="button" data-act="ghosts">삭제분 숨기기</button>
       </div>
     </details>
+    <span class="tool-sep" aria-hidden="true"></span>
+    <button type="button" class="tool danger" data-act="clear" title="이 시야의 검토 기록을 모두 지운다 (묻고 나서)">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path class="stroke" d="M4.5 7h15M9.5 7V4.5h5V7M6.5 7l1 13h9l1-13M10 11v5M14 11v5"/></svg>
+      <span>초기화</span></button>
   </div>
 
+  {% comment %}
+    「보기」 — 화면만 바꾸고 교정은 안 건드린다. 그래서 읽기 전용에서도 남는다
+    (`group.html` 은 `.tools`·`.drawtool` 만 감춘다). 검출이 없는 판에서는
+    레이어가 뜻이 없어 `.layers` 만 감춘다.
+
+    레이어는 **체크박스를 그대로 둔다** — 켜고 끈 것은 `diaruga.layers` 에 남고
+    `applyLayers` 가 그 칸을 읽는다. 단추 모양은 `label` 이 입고, 칸은 모서리의
+    작은 점으로 남아 켜졌는지를 말한다.
+  {% endcomment %}
+  {# 잰 길이 — 「보기」 묶음 왼쪽에 뜬다. 끄면 걷힌다 #}
+  <output class="measout" id="measout-{{ uid }}" hidden></output>
+  <div class="viewtool toolcol tc-r" id="viewtool-{{ uid }}" role="toolbar" aria-label="보기">
+    <span class="tool-cap">보기</span>
+    <button type="button" class="tool" data-act="reset" title="배율 초기화 — 사진 전체가 보이게">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path class="stroke" d="M4.5 9V4.5H9M15 4.5h4.5V9M19.5 15v4.5H15M9 19.5H4.5V15"/><rect class="stroke tint" x="8.5" y="8.5" width="7" height="7" rx="1"/></svg>
+      <span>맞춤</span></button>
+    {% comment %}
+      **사진만 창 전체로 띄운다** (230 · 사용자). 사진 칸은 창 높이에 맞춰
+      잡혀 있어 양옆을 접어도 안 커진다 — 크게 보려면 이것을 누른다. 브라우저
+      전체 화면을 같이 켜고, 못 켜는 자리(오프라인 파일·권한)에서는 창 안에서만
+      채운다. Esc 는 브라우저가 받아 풀고, 그때 이쪽 표시도 따라 풀린다.
+    {% endcomment %}
+    <button type="button" class="tool" data-act="full" title="사진을 화면 전체로 (다시 누르거나 Esc 로 돌아온다)"
+            aria-pressed="false">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path class="stroke" d="M4.5 9.5v-5h5M4.5 4.5l5 5M19.5 9.5v-5h-5M19.5 4.5l-5 5M4.5 14.5v5h5M4.5 19.5l5-5M19.5 14.5v5h-5M19.5 19.5l-5-5"/></svg>
+      <span>전체 화면</span></button>
+    <button type="button" class="tool" data-act="measure" title="길이 재기 — 눌러 가며 잇고, 두 번 누르면(또는 Enter) 끝난다 · Backspace 한 점 무르기 · Esc 끄기. 저장하지 않는다">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path class="stroke" d="M3.8 15.6 15.6 3.8l4.6 4.6L8.4 20.2Z"/><path class="stroke" d="m7.2 12.2 1.8 1.8M9.9 9.5l2.6 2.6M12.6 6.8l1.8 1.8"/></svg>
+      <span>길이</span></button>
+    <span class="tool-sep" aria-hidden="true"></span>
+    <div class="layers" id="layers-{{ uid }}">
+      <label class="tool" title="bbox — 개체를 두른 네모">
+        <input type="checkbox" data-layer="box" checked>
+        <svg viewBox="0 0 24 24" aria-hidden="true"><rect class="stroke" x="4.5" y="6" width="15" height="12" rx="1" stroke-dasharray="2.6 2.2"/><circle class="fill" cx="4.5" cy="6" r="1.8"/><circle class="fill" cx="19.5" cy="18" r="1.8"/></svg>
+        <span>상자</span></label>
+      <label class="tool" title="mask — 개체 모양">
+        <input type="checkbox" data-layer="mask" checked>
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path class="stroke tint" d="M7.2 6.2c3-2.3 8.6-2 10.6 1.4s1.6 8.4-1.6 10.4-8.8 1.6-10.6-1.8-1.4-7.8 1.6-10Z"/></svg>
+        <span>마스크</span></label>
+      {% comment %}
+        mask 를 켰을 때만 뜻이 있는 선택지라 mask 가 꺼지면 같이 잠근다.
+        끄면 테두리만 그린다 — 채우면 정작 "이게 규조각인가" 를 볼 수 없을 때가 있다.
+      {% endcomment %}
+      <label class="tool fillopt" title="fill — 마스크를 채운다 (끄면 테두리만)">
+        <input type="checkbox" data-layer="fill" checked>
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path class="stroke solid" d="M12 3.8s-5.6 6-5.6 10a5.6 5.6 0 0 0 11.2 0c0-4-5.6-10-5.6-10Z"/></svg>
+        <span>채움</span></label>
+      {% comment %}
+        탈락 후보 레이어. 기본은 꺼 둔다 — 시야당 100개가 넘어 켜 두면 사진이
+        묻힌다. 재현율을 눈으로 볼 때, 그리고 누락을 되살릴 때 켠다.
+      {% endcomment %}
+      <label class="tool" title="탈락 — 문턱에서 떨어진 후보를 빨간 점선 테두리로 보여준다. 켜 두면 클릭이 탈락 후보를 먼저 집는다 — 검출 개체 뒤에 겹친 것도 고를 수 있다 (검출 개체를 고르려면 Shift+클릭)">
+        <input type="checkbox" data-layer="reject">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path class="stroke dash" d="M7.2 6.2c3-2.3 8.6-2 10.6 1.4s1.6 8.4-1.6 10.4-8.8 1.6-10.6-1.8-1.4-7.8 1.6-10Z"/></svg>
+        <span>탈락 <i class="n">{{ det.rejected|length }}</i></span></label>
+    </div>
+  </div>
   {% comment %}
     검토 완료 표시. 어느 시야를 다 봤는지 알 수 없으면 재현율을 실측할 수도,
     학습 데이터로 쓸 시야를 고를 수도 없다. review/*.json 에 저장한다.

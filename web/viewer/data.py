@@ -3781,9 +3781,18 @@ def slide_tiles(slide: Slide) -> dict:
                       "reviewed": vp.id in reviewed})
     n = len(tiles)
     done = sum(1 for t in tiles if t["reviewed"])
+    summary = _slide_summary(slide)
+    # **분류별 막대** (230 · 사용자: "간단한 통계니까 막대그래프 같은 걸"). 길이는
+    # 가장 많은 분류에 대한 비율이고, 색은 마스크 색 그대로다 — 사진에서
+    # 파랗던 것이 막대에서도 파래야 한다(`.badge.rod` 와 같은 이유).
+    colors = {r["key"]: r["color"] for r in _class_rows()}
+    top = max((c["n"] for c in summary["class_counts"]), default=0)
+    bars = [{**c, "color": colors.get(c["key"]) or "",
+             "pct": round(100 * c["n"] / top) if top else 0}
+            for c in summary["class_counts"]]
     return {"tiles": tiles, "n": n, "done": done,
             "pct": round(100 * done / n) if n else 0,
-            **_slide_summary(slide)}
+            "class_bars": bars, **summary}
 
 
 def dataset_detail(slug: str) -> dict | None:

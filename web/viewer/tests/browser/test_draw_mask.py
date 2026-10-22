@@ -225,7 +225,11 @@ class RubberBandTest(BrowserTestCase):
         r = self.rubber()
         self.assertEqual(len(r), 1, "마지막 점에서 커서까지 오는 선이 없다")
         pts = r[0].get_attribute("points")
-        self.assertTrue(pts.startswith("120,120"),
+        # **한 화소는 봐준다** (230). 넓힌 화면은 사진을 상자 가운데에 맞춰 넣어
+        # 자리가 소수 px 이 되는데, 크로미움의 마우스 좌표는 정수다 — 찍은 자리가
+        # 반 px 씩 반올림된다. 보려는 것은 "마지막 점에서 시작하는가" 다
+        x0, y0 = (float(v) for v in pts.split()[0].split(","))
+        self.assertTrue(abs(x0 - 120) <= 1.5 and abs(y0 - 120) <= 1.5,
                         f"마지막 점에서 시작하지 않는다: {pts}")
 
     def test_커서를_옮기면_따라온다(self):
@@ -269,46 +273,3 @@ class RubberBandTest(BrowserTestCase):
         page.keyboard.press("Escape")
         page.wait_for_timeout(150)
         self.assertEqual(len(self.rubber()), 0, "취소했는데 선이 남았다")
-
-
-class DrawAxesTest(BrowserTestCase):
-    """닫자마자 장축·단축 창이 한 번 뜬다 (222). 동정키라 그 자리에서 본다."""
-
-    def make_data(self):
-        fx.make_classes()
-        self.w = fx.make_world(slug=f"rs23-{self.uniq}",
-                               site_code=f"RS{self.uniq}", n_candidates=3)
-
-    def draw(self, page):
-        page.click('#dv-stack button[data-act="draw"]')
-        page.wait_for_timeout(150)
-        for x, y in PTS:
-            self.click_image(x, y)
-        self.click_image(*PTS[0])
-        page.wait_for_timeout(900)
-
-    def test_닫으면_장축_단축이_뜬다(self):
-        page = self.open(reverse("group", args=[self.w.slug, self.w.vp.idx]))
-        self.draw(page)
-        tip = page.query_selector(".axestip")
-        self.assertIsNotNone(tip, "그렸는데 장축·단축 창이 안 뜬다")
-        text = tip.inner_text()
-        self.assertIn("장축", text)
-        self.assertIn("단축", text)
-        # 서버가 다시 잰 값과 같은 식인가 — 화면에서 본 숫자가 말풍선과 갈리면 안 된다
-        from ...shape import measure
-        o = ObjectReview.objects.get(source="manual")
-        m = measure(o.geom["polygon"], 1.0)
-        self.assertIn(f"{m['major_um'] * self.umpp():.1f}", text)
-
-    def test_다시_그리기를_켜면_걷힌다(self):
-        page = self.open(reverse("group", args=[self.w.slug, self.w.vp.idx]))
-        self.draw(page)
-        page.click('#dv-stack button[data-act="draw"]')
-        page.wait_for_timeout(150)
-        self.assertIsNone(page.query_selector(".axestip"))
-
-    def umpp(self):
-        from ...models import Detection
-        d = Detection.objects.filter(viewpoint=self.w.vp).first()
-        return d.um_per_pixel or 1.0

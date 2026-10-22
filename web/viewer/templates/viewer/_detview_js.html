@@ -1432,7 +1432,18 @@ window.initDetView = function (uid) {
   // **`clientLeft` 는 테두리 두께다.** `offsetLeft` 는 자리를 잡아 준 상자의
   // *패딩 상자* 기준이고 `getBoundingClientRect` 는 *테두리 상자* 를 주므로,
   // 둘을 이으려면 그 두께를 더해야 한다 — 안 더하면 1px 씩 어긋난다.
+  //
+  // **230 부터는 화면 상자에서 변환을 덜어 낸다.** 넓힌 화면은 사진을 상자
+  // 가운데에 맞춰 넣어(폭·높이 중 작은 쪽) 자리와 폭이 소수 px 이 되는데,
+  // `offset*` 은 정수로 반올림한다 — 0.5px 씩 어긋나 찍은 점이 한 화소씩
+  // 밀렸다(시험이 120,120 을 120,119 로 받았다). `transform-origin: 0 0` 이라
+  // 화면 상자 = 배치 자리 + 이동, 폭 = 배치 폭 × 배율 이므로 정확히 되돌린다.
   function canvasBox() {
+    var cr = canvas.getBoundingClientRect(), vr = view.getBoundingClientRect();
+    if (cr.width && k) {
+      return { ox: cr.left - vr.left - tx, oy: cr.top - vr.top - ty,
+               w: cr.width / k, h: cr.height / k };
+    }
     return { ox: view.clientLeft + canvas.offsetLeft,
              oy: view.clientTop + canvas.offsetTop,
              w: canvas.offsetWidth || view.clientWidth || 1,
@@ -1574,6 +1585,15 @@ window.initDetView = function (uid) {
   }
 
   function hoverAt(ev) {
+    if (meas) {
+      hideTip();
+      if (!meas.done && canvas.contains(ev.target)) {
+        var mq = toImage(ev);
+        meas.at = [mq.x, mq.y];
+        measRender();
+      }
+      return;
+    }
     // **그리는 중에는 커서 자리를 그리기 상태에 넘긴다** (082) — 마지막 점에서
     // 여기까지 점선이 따라온다. 말풍선은 그때도 방해만 되므로 감춘다.
     if (drawing) {
@@ -2400,6 +2420,8 @@ window.initDetView = function (uid) {
   if (keyhint && readOnly) keyhint.hidden = true;
 
   document.addEventListener('keydown', function (e) {
+    // 길이 재기는 읽기 전용에서도 돈다 (230) — 그래서 그 갈림보다 먼저 본다
+    if (meas && window.__diarugaActive === uid && measKey(e)) return;
     if (readOnly) return;
     // Ctrl/⌘/Alt 조합은 다른 것들이 쓴다 (Ctrl+Z, Ctrl+화살표)
     if (e.ctrlKey || e.metaKey || e.altKey || e.repeat) return;
@@ -3879,8 +3901,8 @@ window.initDetView = function (uid) {
 
   function drawStart() {
     if (readOnly) return;
+    if (meas) measStop();
     drawing = { pts: [], at: null };
-    hideAxes();
     view.classList.add('drawing');
     sel.clear();
     closeMenu(); closeSpread();
@@ -3926,69 +3948,128 @@ window.initDetView = function (uid) {
     sel.clear(); sel.add(cands.length - 1);
     redraw(); syncDrawBtn();
     save();
-    showAxes(c);
   }
 
-  // --- 그린 개체의 장축·단축 (222) ------------------------------------------
+  // --- 길이 재기 (230 · 사용자: "GSM 의 기능 참고해서") ----------------------
   //
-  // 닫자마자 한 번 띄운다. **잰 값은 화면에만 쓴다** — 서버가 `shape.measure` 로
-  // 다시 잰 것이 말풍선·카탈로그에 놓인다. 그래서 계산을 `shape.fit_ellipse`
-  // (면적 모멘트가 같은 타원)와 **같은 식으로** 옮겨 왔다 — 식이 다르면 방금
-  // 본 숫자와 말풍선의 숫자가 갈린다. 거기를 고치면 여기도 함께 고친다.
-  function polyAxes(poly) {
-    var n = poly.length >> 1;
-    if (n < 3) return null;
-    var a2 = 0, sxx = 0, syy = 0, sxy = 0, cx = 0, cy = 0;
-    for (var i = 0; i < n; i++) {
-      var x0 = poly[2 * i], y0 = poly[2 * i + 1];
-      var j = (i + 1) % n, x1 = poly[2 * j], y1 = poly[2 * j + 1];
-      var cr = x0 * y1 - x1 * y0;
-      a2 += cr;
-      cx += (x0 + x1) * cr;
-      cy += (y0 + y1) * cr;
-      sxx += cr * (x0 * x0 + x0 * x1 + x1 * x1);
-      syy += cr * (y0 * y0 + y0 * y1 + y1 * y1);
-      sxy += cr * (2 * x0 * y0 + x0 * y1 + x1 * y0 + 2 * x1 * y1);
+  // GSM 의 「거리」 와 같은 손맛이다 — **눌러 가며 잇고, 두 번 누르면 끝난다.**
+  // 끝난 선은 다음에 누를 때까지 남는다(잰 값을 읽는 동안 사라지면 안 된다).
+  // 다시 누르면 새로 잰다. Esc 나 「길이」 단추로 끈다.
+  //
+  // **교정이 아니다** — 저장하지 않고 `history` 에도 안 들어간다. 그래서 읽기
+  // 전용에서도 된다(「보기」 묶음). 그리기와는 같이 켜지지 않는다 — 둘 다 클릭을
+  // 점 찍기로 쓴다.
+  //
+  // **배율을 모르면 px 로 적는다.** µm 을 지어내지 않는다 — 스케일바를 안
+  // 그리는 것(`updateScaleBar`)과 같은 줄이다. 그린 개체를 닫을 때 뜨던
+  // 장축·단축 창(222)은 이것이 생기면서 걷었다(사용자 2026-10-22).
+  var meas = null, measG = null;
+  var measBtn = viewTool && viewTool.querySelector('[data-act="measure"]');
+  var measOut = document.getElementById('measout-' + uid);
+  function measLayer() {
+    if (!measG) {
+      measG = document.createElementNS(SVGNS, 'g');
+      measG.setAttribute('class', 'measure');
     }
-    var ar = a2 / 2;
-    if (Math.abs(ar) < 1e-9) return null;
-    cx /= 6 * ar; cy /= 6 * ar;
-    var m20 = sxx / (12 * ar) - cx * cx, m02 = syy / (12 * ar) - cy * cy;
-    var m11 = sxy / (24 * ar) - cx * cy;
-    var diff = Math.hypot(m20 - m02, 2 * m11);
-    var l1 = (m20 + m02 + diff) / 2, l2 = (m20 + m02 - diff) / 2;
-    if (l1 <= 1e-9) return null;
-    // 장반경 a = 2√λ₁ 이고 화면에 내는 것은 지름(2a)이다 — `major_um` 과 같다
-    return { major: 4 * Math.sqrt(l1), minor: 4 * Math.sqrt(Math.max(l2, 0)) };
+    svg.appendChild(measG);           // 늘 맨 위 — `drawLayer` 와 같은 이유
+    return measG;
   }
-
-  var axesTip = null, axesTimer = null;
-  function hideAxes() {
-    clearTimeout(axesTimer);
-    if (axesTip) { axesTip.remove(); axesTip = null; }
+  function measLen(pts) {
+    var L = 0;
+    for (var i = 1; i < pts.length; i++) {
+      L += Math.hypot(pts[i][0] - pts[i - 1][0], pts[i][1] - pts[i - 1][1]);
+    }
+    return L;
   }
-  function showAxes(c) {
-    hideAxes();
-    var ax = polyAxes(c.polygon);
-    if (!ax) return;
-    // **배율을 모르면 px 로 적는다.** µm 을 지어내지 않는다 — 스케일바를 안
-    // 그리는 것(`updateScaleBar`)과 같은 줄이다.
-    var u = umPerImgPx ? ' µm' : ' px', f = umPerImgPx || 1;
-    axesTip = document.createElement('div');
-    axesTip.className = 'axestip';
-    axesTip.innerHTML = '<b>그린 개체</b><button type="button" title="닫기">×</button>' +
-      '<div>장축 <span>' + (ax.major * f).toFixed(1) + u + '</span></div>' +
-      '<div>단축 <span>' + (ax.minor * f).toFixed(1) + u + '</span></div>';
-    axesTip.querySelector('button').addEventListener('click', hideAxes);
-    document.body.appendChild(axesTip);
-    // 개체의 오른쪽 위에 둔다. 화면 밖으로 나가면 왼쪽으로 옮긴다.
-    var box = svg.getBoundingClientRect(), s = W ? box.width / W : 1;
-    var b = c.bbox_xywh, w = axesTip.offsetWidth, h = axesTip.offsetHeight;
-    var x = box.left + (b[0] + b[2]) * s + 10, y = box.top + b[1] * s;
-    if (x + w > window.innerWidth - 6) x = box.left + b[0] * s - w - 10;
-    axesTip.style.left = Math.max(4, Math.min(x, window.innerWidth - w - 4)) + 'px';
-    axesTip.style.top = Math.max(4, Math.min(y, window.innerHeight - h - 4)) + 'px';
-    axesTimer = setTimeout(hideAxes, 6000);
+  function measFmt(L) {
+    if (!umPerImgPx) return Math.round(L) + ' px';
+    var um = L * umPerImgPx;
+    return (um < 100 ? um.toFixed(1) : String(Math.round(um))) + ' µm';
+  }
+  function measRender() {
+    var g = measLayer();
+    g.textContent = '';
+    if (!meas) { if (measOut) measOut.hidden = true; return; }
+    var pts = meas.pts.slice();
+    if (!meas.done && meas.at && pts.length) {
+      var last = pts[pts.length - 1];
+      var rub = document.createElementNS(SVGNS, 'polyline');
+      rub.setAttribute('class', 'rubber');
+      rub.setAttribute('points', last[0] + ',' + last[1] + ' ' + meas.at[0] + ',' + meas.at[1]);
+      g.appendChild(rub);
+    }
+    if (pts.length > 1) {
+      var line = document.createElementNS(SVGNS, 'polyline');
+      line.setAttribute('points', pts.map(function (p) { return p[0] + ',' + p[1]; }).join(' '));
+      g.appendChild(line);
+    }
+    pts.forEach(function (p) {
+      var c = document.createElementNS(SVGNS, 'circle');
+      c.setAttribute('cx', p[0]); c.setAttribute('cy', p[1]);
+      c.setAttribute('r', 3.4);
+      g.appendChild(c);
+    });
+    if (!measOut) return;
+    // 그리는 중에는 커서까지 잇는 변을 더한 값 — 다음 점을 어디 찍을지 정하는 데 쓴다
+    var live = (!meas.done && meas.at && pts.length) ? pts.concat([meas.at]) : pts;
+    var n = Math.max(0, live.length - 1);
+    measOut.hidden = false;
+    measOut.innerHTML = n
+      ? '<b>' + measFmt(measLen(live)) + '</b>' +
+        (n > 1 ? '<span>' + n + '구간</span>' : '') +
+        '<small>' + (meas.done ? '사진을 누르면 새로 잰다 · Esc 끄기'
+                               : '두 번 누르면 끝 · Backspace 한 점 무르기') + '</small>'
+      : '<b>길이 재기</b><small>사진을 눌러 시작 · 두 번 누르면 끝</small>';
+  }
+  function measKey(e) {
+    if (e.ctrlKey || e.metaKey || e.altKey) return false;
+    var t = document.activeElement;
+    if (t && /^(INPUT|TEXTAREA|SELECT)$/.test(t.tagName)) return false;
+    if (e.key === 'Escape') { e.preventDefault(); measStop(); return true; }
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      if (meas.pts.length > 1) { meas.done = true; measRender(); }
+      return true;
+    }
+    if (e.key === 'Backspace') {
+      e.preventDefault();
+      if (meas.done) meas.done = false;
+      meas.pts.pop(); measRender();
+      return true;
+    }
+    return false;
+  }
+  function measStart() {
+    if (drawing) drawCancel();
+    meas = { pts: [], at: null, done: false };
+    view.classList.add('measuring');
+    if (measBtn) measBtn.classList.add('on');
+    hideTip(); closeMenu(); closeSpread();
+    measRender();
+  }
+  function measStop() {
+    if (!meas) return;
+    meas = null;
+    view.classList.remove('measuring');
+    if (measBtn) measBtn.classList.remove('on');
+    measRender();
+  }
+  function measPoint(q, e) {
+    if (meas.done) { meas = { pts: [], at: null, done: false }; }
+    var pts = meas.pts;
+    if (pts.length) {
+      // **두 번 누르기 = 끝.** 같은 자리를 다시 누른 것을 화면 화소로 잰다 —
+      // 이미지 좌표로 재면 배율에 따라 손맛이 달라진다(`drawPoint` 와 같은 줄)
+      var box = svg.getBoundingClientRect(), s = W ? box.width / W : 1;
+      var last = pts[pts.length - 1];
+      if (Math.hypot((q.x - last[0]) * s, (q.y - last[1]) * s) < 6) {
+        if (pts.length > 1) meas.done = true;
+        measRender();
+        return;
+      }
+    }
+    pts.push([q.x, q.y]);
+    measRender();
   }
 
   function drawPoint(p) {
@@ -4229,6 +4310,12 @@ window.initDetView = function (uid) {
 
     if (m === 'pan') return;
 
+    // 길이를 재는 중에도 클릭은 점 찍기다 (230) — 개체가 골라지면 안 된다
+    if (meas) {
+      if (m === null && d.btn === 0) measPoint(toImage(e), e);
+      return;
+    }
+
     // **그리는 중에는 클릭이 점 찍기다** (P09 3단계). 선택·범위선택으로
     // 흘려보내면 그리다가 개체가 골라지고, 그 상태에서 분류 단축키가 먹는다.
     if (drawing) {
@@ -4323,22 +4410,29 @@ window.initDetView = function (uid) {
   // **연필은 따로 산다** (194) — 사진 오른쪽 위. 배선은 한 벌이고 자리만 둘이다.
   var drawTool = document.getElementById('drawtool-' + uid);
   var doneBar = document.getElementById('donebar-' + uid);
+  // 「보기」 묶음 (230) — 맞춤 · 전체 화면 · 레이어. 배선은 도구와 한 벌이다
+  var viewTool = document.getElementById('viewtool-' + uid);
 
   // 사진 위에 있으므로 캔버스가 이 클릭을 확대·선택·이동으로 받으면 안 된다.
   ['wheel', 'mousedown', 'contextmenu'].forEach(function (ev) {
-    [tools, drawTool, doneBar].forEach(function (el) {
+    [tools, drawTool, doneBar, viewTool].forEach(function (el) {
       if (el) el.addEventListener(ev, function (e) { e.stopPropagation(); });
     });
   });
 
   function onTool(e) {
-    var act = e.target.dataset && e.target.dataset.act;
+    // **누른 것은 단추 안의 아이콘·이름일 수 있다** (230) — `e.target` 의
+    // `dataset` 만 보면 아이콘을 누른 클릭이 조용히 아무 일도 안 한다
+    var btn = e.target.closest && e.target.closest('[data-act]');
+    var act = btn && btn.dataset.act;
     if (!act) return;
     // 전파를 끊었으니 열려 있던 메뉴·펼침은 직접 닫는다.
     closeMenu(); closeSpread(); tip.style.display = 'none';
     if (act === 'all') { visible().forEach(function (c) { sel.add(cands.indexOf(c)); }); redraw(); }
     else if (act === 'none') { sel.clear(); redraw(); }
     else if (act === 'reset') { k = 1; tx = 0; ty = 0; applyTransform(); build(); }
+    else if (act === 'full') { setFull(!view.classList.contains('full')); }
+    else if (act === 'measure') { if (meas) measStop(); else measStart(); }
     else if (act === 'undo') { undo(); }
     else if (act === 'draw') {
       // 누르면 켜고 다시 누르면 끈다 — 켜 놓고 잊는 것이 가장 흔한 실수다.
@@ -4351,7 +4445,7 @@ window.initDetView = function (uid) {
     }
     else if (act === 'ghosts') {
       showGone = !showGone;
-      e.target.textContent = showGone ? '삭제분 숨기기' : '삭제분 보기';
+      btn.textContent = showGone ? '삭제분 숨기기' : '삭제분 보기';
       build();
     }
     else if (act === 'clear') {
@@ -4366,7 +4460,46 @@ window.initDetView = function (uid) {
   }
 
   tools.addEventListener('click', onTool);
-  if (drawTool) drawTool.addEventListener('click', onTool);
+  // 연필 상자는 230 부터 `#tools-` 안이다 — 안에 있으면 또 걸지 않는다(한 번
+  // 누를 때 두 번 돌아 켜졌다 바로 꺼진다)
+  if (drawTool && !tools.contains(drawTool)) drawTool.addEventListener('click', onTool);
+  if (viewTool) viewTool.addEventListener('click', onTool);
+
+  // --- 사진만 화면 전체로 (230) ----------------------------------------------
+  //
+  // **사진 칸을 창 위에 띄우는 것이 먼저고, 브라우저 전체 화면은 덧붙이는
+  // 것이다.** 전체 화면을 `.detview` 에 걸면 그 밖의 것은 화면에서 사라지는데,
+  // 우클릭 메뉴·말풍선·펼침판이 전부 `body` 에 붙는다 — 메뉴가 안 뜨는 검토
+  // 화면이 된다. 그래서 문서 전체를 전체 화면으로 올리고, 사진 칸은 CSS 로
+  // 창을 채운다(`.detview.full`). 못 올리는 자리(권한·오프라인 파일)에서도
+  // 창 안에서는 채워진다.
+  var fullBtn = viewTool && viewTool.querySelector('[data-act="full"]');
+  function setFull(on) {
+    view.classList.toggle('full', on);
+    document.documentElement.classList.toggle('photo-full', on);
+    if (fullBtn) {
+      fullBtn.classList.toggle('on', on);
+      fullBtn.setAttribute('aria-pressed', on ? 'true' : 'false');
+      fullBtn.querySelector('span').textContent = on ? '돌아가기' : '전체 화면';
+    }
+    try {
+      var de = document.documentElement;
+      if (on && !document.fullscreenElement && de.requestFullscreen) {
+        var pr = de.requestFullscreen();
+        if (pr && pr.catch) pr.catch(function () {});
+      } else if (!on && document.fullscreenElement && document.exitFullscreen) {
+        var px = document.exitFullscreen();
+        if (px && px.catch) px.catch(function () {});
+      }
+    } catch (err) { /* 창 안에서 채운 것으로 충분하다 */ }
+    applyTransform();
+    // 크기가 바뀐 뒤에 한 번 더 — 전체 화면 전환은 다음 그림에서 끝난다
+    setTimeout(applyTransform, 120);
+  }
+  // Esc 는 브라우저가 받아 전체 화면을 푼다 — 그때 사진 칸도 제자리로
+  document.addEventListener('fullscreenchange', function () {
+    if (!document.fullscreenElement && view.classList.contains('full')) setFull(false);
+  });
 
   // --- 이미지로 내보내기 (214) ---------------------------------------------
   //

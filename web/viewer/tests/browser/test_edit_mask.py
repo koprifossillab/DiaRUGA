@@ -14,8 +14,11 @@ from .base import BrowserTestCase
 from .. import factories as fx
 from ...models import ObjectReview
 
-# 픽스처 첫 개체 (40,50,60,40) — 폴리곤은 그 네 꼭짓점이다
-CORNER = (40, 50)
+# 픽스처 첫 개체 (40,50,60,40) — 폴리곤은 그 네 꼭짓점이다.
+# **오른쪽 아래 꼭짓점을 쓴다** (230) — 왼쪽 위는 사진 위 「도구」 묶음이 덮는다.
+# 사람도 그 자리는 끌어 옮겨 놓고 고친다
+CORNER = (100, 90)
+OUT = (120, 110)
 CENTER = (40 + 60 // 2, 50 + 40 // 2)
 
 
@@ -68,7 +71,7 @@ class EditMaskTest(BrowserTestCase):
         page.wait_for_timeout(900)
 
         self.start_edit()
-        self.drag(CORNER, (20, 30))            # 왼쪽 위 꼭짓점을 바깥으로
+        self.drag(CORNER, OUT)                 # 오른쪽 아래 꼭짓점을 바깥으로
         page.keyboard.press("Enter")
         page.wait_for_timeout(900)
 
@@ -78,12 +81,13 @@ class EditMaskTest(BrowserTestCase):
         self.assertEqual(o.mask_key, self.key, "키가 바뀌었다")
         self.assertEqual(o.label, "rod", "분류가 끊겼다")
         self.assertTrue(o.geom_edited)
-        self.assertLess(o.geom["bbox"][0], 40, "끈 점이 반영되지 않았다")
+        b = o.geom["bbox"]
+        self.assertGreater(b[0] + b[2], 100, "끈 점이 반영되지 않았다")
 
     def test_고친_모양이_저장된다(self):
         page = self.open_review()
         self.start_edit()
-        self.drag(CORNER, (20, 30))
+        self.drag(CORNER, OUT)
         page.keyboard.press("Enter")
         page.wait_for_timeout(900)
 
@@ -96,8 +100,8 @@ class EditMaskTest(BrowserTestCase):
     def test_선분을_누르면_점이_는다(self):
         page = self.open_review()
         self.start_edit()
-        # 위쪽 변의 한가운데
-        self.click_image(40 + 30, 50)
+        # 아래쪽 변의 한가운데
+        self.click_image(40 + 30, 90)
         page.wait_for_timeout(200)
         self.assertEqual(len(page.query_selector_all("svg.masks g.drawing circle")),
                          5, "선분을 눌렀는데 점이 안 늘었다")
@@ -129,14 +133,14 @@ class EditMaskTest(BrowserTestCase):
         단축키가 먹는다."""
         page = self.open_review()
         self.start_edit()
-        self.drag(CORNER, (20, 30))
+        self.drag(CORNER, OUT)
         self.assertLessEqual(len(page.query_selector_all(".box.sel")), 1,
                              "끌기가 범위선택이 됐다")
 
     def test_Esc_로_취소하면_안_바뀐다(self):
         page = self.open_review()
         self.start_edit()
-        self.drag(CORNER, (20, 30))
+        self.drag(CORNER, OUT)
         page.keyboard.press("Escape")
         page.wait_for_timeout(700)
         self.assertFalse(ObjectReview.objects.filter(geom_edited=True).exists(),
@@ -154,7 +158,7 @@ class EditMaskTest(BrowserTestCase):
         """
         page = self.open_review()
         self.start_edit()
-        self.drag(CORNER, (20, 30))
+        self.drag(CORNER, OUT)
         page.keyboard.press("Enter")
         page.wait_for_timeout(900)
 

@@ -95,11 +95,15 @@ class WipeDetectionsTest(BrowserTestCase):
         page = self.open_review()
         b = page.query_selector('#dv-stack button[data-act="wipe"]')
         self.assertTrue(b and b.is_visible(), "지우기 단추가 안 보인다")
-        # 레이어 토글과 겹치면 누를 수 없다 — 자리를 물렸는가
+        # 레이어 토글과 겹치면 누를 수 없다 — 230 부터 연필·지우기는 왼쪽 「도구」,
+        # 레이어는 오른쪽 「보기」 묶음이다. 지우기가 연필 바로 밑에 붙는다
         wb = b.bounding_box()
         lb = page.query_selector("#dv-stack .layers").bounding_box()
-        self.assertLessEqual(lb["x"] + lb["width"], wb["x"],
+        self.assertLessEqual(wb["x"] + wb["width"], lb["x"],
                              "레이어 토글이 지우기 단추를 덮는다")
+        db = page.query_selector('#dv-stack button[data-act="draw"]').bounding_box()
+        self.assertAlmostEqual(db["x"], wb["x"], delta=1)
+        self.assertLess(abs(wb["y"] - (db["y"] + db["height"])), 6, "지우기가 연필 곁에 없다")
 
     def test_그린_개체는_남긴다(self):
         page = self.open_review()
