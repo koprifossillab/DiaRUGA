@@ -107,34 +107,16 @@ DB 설계는 [devlog/20260730_P02_db-schema.md](devlog/20260730_P02_db-schema.md
 
 ## 지금 가장 급한 것
 
-- [ ] **검토 화면 「프레임 지움」 — 이 판에만 있는 검출만 오검출로** (231 ·
-      사용자 2026-10-23). 「전부 지움」 바로 아래 단추, **단축키 없음**. 다른 판과
-      묶인 개체(`linkOf(curImage, key)`)와 그린 개체는 남긴다. `전부 지움` 과 같이
-      두 번 눌러야 지우고(불은 `wipeMode` 로 갈라 든다 — 다른 단추나 `S` 를 누르면
-      지우지 않고 불만 옮긴다), `removeKeys` 를 타서 Ctrl+Z 한 번에 돌아온다.
-      **코드는 `work/20261023-sclee-ui` 에 커밋·push 했다**(4c70aa3 ·
-      `origin/main` 868cc71 에서 팠다 · `main` 병합 전) ·
-      `_detection.html` · `_detview_js.html` · `tests/browser/test_wipe_detections.py`
-      (`WipeSoloDetectionsTest` 셋). 시험 1,076 + 브라우저 47(wipe·link_label·
-      review_tools·readonly·draw_mask) 통과, 묶음 거르기를 빼면 첫 시험이 죽는
-      것도 봤다. **남은 것**: `main` 병합 · devlog 231 · `docs/20260811_viewer-guide.md`
-      의 도구 묶음 절 · 판(v0.35.1).
-      **멈춘 까닭** — admin 이 호스트 파이썬을 일괄로 올리는 중이다(10-23).
-      `/usr/bin/python3` 가 3.14 가 되어 `~/venv/DiaRUGA`(3.12 를 가리킨다)가
-      Django 를 못 불러온다. 이번 시험은 scratchpad 에 임시 venv(Django 5.2.16 ·
-      playwright 1.62.0)를 세워 돌렸다 — 업데이트가 끝나면 venv 부터 다시 세운다
-- [ ] **검토 화면 도감 칸 손보기** (사용자 2026-10-23 · 파이썬 업데이트 뒤에).
-      `_detection.html` 의 `.atlaspane` (229).
-  - **속명 줄 → 드롭다운.** 지금은 단추를 가로로 늘어놓고 휠로 옆으로 미는
-    줄(`#atlasgen-`)이라 고르기가 불편하다. 도감 화면(`atlas.html` 의
-    `<select name="genus">`)처럼 셀렉트로 — 고르면 바로 그 속으로 찾는다
-  - **정렬이 색인 건수 많은 순이다** — `views.py:581`
-    `sorted(..., key=lambda r: (-r["n"], r["genus"]))`. 이름으로 찾으려면 줄
-    전체를 훑어야 해서 불편하다는 것이 사용자 말이다. **이름순으로** 바꾼다
-    (도감 화면의 셀렉트와 같은 순서 — `data.atlas_genera` 가 주는 그대로인지 확인)
-  - **도판 확대·축소.** 지금은 `w=900` 한 장을 칸 폭에 맞춰 띄우고 누르면 새
-    탭으로만 간다. 칸 안에서 휠·단추로 확대·축소·끌어 옮기기가 되게 한다
-    (확대하면 더 큰 `w` 를 받아야 글자가 안 뭉개진다)
+- [ ] **`work/20261023-sclee-ui` 를 `main` 에 병합하고 판을 낸다** (231·232 ·
+      사용자가 정한다). 코드·시험·devlog 는 다 됐다 — 시험 1,349 통과(브라우저 포함).
+  - [231](devlog/20261023_231_wipe-solo-detections.md) 「프레임 지움」 — 「전부 지움」
+    아래 단추, 단축키 없음. 다른 판과 묶인 개체·그린 개체는 남긴다
+  - [232](devlog/20261023_232_atlas-pane-genus-list-and-zoom.md) 검토 화면 도감 칸 —
+    속명 줄을 이름순 `<select>` 로(229 가 `views.group` 에서 많은 순으로 다시
+    정렬하던 것을 걷었다) · 도판 확대·축소(휠·끌기·두 번 누르기·+/−/맞춤,
+    키우면 `w=2048`)
+  - 호스트 venv 는 10-23 에 3.14 로 다시 세웠다. **`manage.py test --parallel` 은
+    3.14 의 forkserver 기본값 때문에 깨진다** — 나란히 없이 돌린다
 
 - [x] **정보 편집에서 코드로 시료를 새로 만들어 붙이면 실제로는 안 붙는다**
       (`web/viewer/views.py` `dataset_edit` · 2026-09-18 · ForGIA 1단계 이식 중 발견)
