@@ -112,12 +112,12 @@ DB 설계는 [devlog/20260730_P02_db-schema.md](devlog/20260730_P02_db-schema.md
       묶인 개체(`linkOf(curImage, key)`)와 그린 개체는 남긴다. `전부 지움` 과 같이
       두 번 눌러야 지우고(불은 `wipeMode` 로 갈라 든다 — 다른 단추나 `S` 를 누르면
       지우지 않고 불만 옮긴다), `removeKeys` 를 타서 Ctrl+Z 한 번에 돌아온다.
-      **코드는 다 됐고 미커밋이다** — `~/projects/DiaRUGA-ui` 의
-      `work/20261023-sclee-ui`(`origin/main` 868cc71 에서 팠다) ·
+      **코드는 `work/20261023-sclee-ui` 에 커밋·push 했다**(4c70aa3 ·
+      `origin/main` 868cc71 에서 팠다 · `main` 병합 전) ·
       `_detection.html` · `_detview_js.html` · `tests/browser/test_wipe_detections.py`
       (`WipeSoloDetectionsTest` 셋). 시험 1,076 + 브라우저 47(wipe·link_label·
       review_tools·readonly·draw_mask) 통과, 묶음 거르기를 빼면 첫 시험이 죽는
-      것도 봤다. **남은 것**: 커밋 · devlog 231 · `docs/20260811_viewer-guide.md`
+      것도 봤다. **남은 것**: `main` 병합 · devlog 231 · `docs/20260811_viewer-guide.md`
       의 도구 묶음 절 · 판(v0.35.1).
       **멈춘 까닭** — admin 이 호스트 파이썬을 일괄로 올리는 중이다(10-23).
       `/usr/bin/python3` 가 3.14 가 되어 `~/venv/DiaRUGA`(3.12 를 가리킨다)가
