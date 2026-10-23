@@ -84,4 +84,6 @@ SAM-2 `2b90b9f`). 앞으로 Ubuntu 를 올려도 이 파이썬은 안 사라진�
 ## 확인
 
 - 시험(호스트 venv · 3.12.15): `test viewer --exclude-tag browser` 1,076개 OK
-- CI 가 구운 이미지 안에서 `pip --version` 이 26.1 이상인지 본다
+- CI(PR #18 · 태그) 세 갈래 통과 — 뷰어 시험 · 브라우저 레이어 · 이미지 굽기
+- 10-23 16:37 운영 `deploy.sh v0.35.2` → smoke 통과(슬라이드 20 · 교정 40274). 컨테이너 안 pip **26.2.2**
+- 테스트 인스턴스(`/DiaRUGATest/`)도 `testdeploy.sh v0.35.2` → smoke 통과
