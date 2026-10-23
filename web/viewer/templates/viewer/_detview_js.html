@@ -2455,8 +2455,7 @@ window.initDetView = function (uid) {
     // 들어오고, 다른 키를 누르거나 잠시 두면 꺼진다.
     if (e.key === 's') {
       e.preventDefault();
-      if (wipeTimer) { disarmWipe(); removeAllDetected(); }
-      else armWipe();
+      pressWipe('all');
       return;
     }
     disarmWipe();
@@ -3453,20 +3452,44 @@ window.initDetView = function (uid) {
   // `removeKeys` 를 그대로 탄다 — `history` 한 칸이라 Ctrl+Z 한 번에 전부
   // 돌아온다. 그래서 확인 창을 띄우지 않는다.
   // `S` 한 번 — ⊘ 에 불을 켜고 다음 `S` 를 기다린다 (223)
-  var wipeTimer = null;
+  //
+  // **「프레임 지움」(`solo`) 도 같은 불을 쓴다** (231). 다른 판과 묶인 개체를
+  // 남기는 것만 다르다 — 단추가 둘이라 **어느 쪽에 불이 켜졌는지**(`wipeMode`)
+  // 를 같이 들고, 다른 쪽을 누르면 지우지 않고 그쪽으로 불을 옮긴다.
+  var wipeTimer = null, wipeMode = '';
   var WIPE_ARM_MS = 1500;
-  function wipeButton() {
-    return view && view.querySelector('button[data-act="wipe"]');
+  function wipeButton(mode) {
+    return view && view.querySelector(
+      'button[data-act="' + (mode === 'solo' ? 'wipesolo' : 'wipe') + '"]');
   }
-  function armWipe() {
+  // 지울 대상 — `solo` 면 이 판에만 있는 것(묶음에 안 든 것)만이다
+  function wipeTargets(mode) {
+    var idxs = [];
+    cands.forEach(function (c, i) {
+      if (isManual(c) || removed.has(keyOf(c))) return;
+      if (mode === 'solo' && linkOf(curImage, keyOf(c))) return;
+      idxs.push(i);
+    });
+    return idxs;
+  }
+  function pressWipe(mode) {
+    if (wipeTimer && wipeMode === mode) { disarmWipe(); removeAllDetected(mode); }
+    else { disarmWipe(); armWipe(mode); }
+  }
+  function armWipe(mode) {
     if (readOnly || drawing || editing || previewing) return;
-    var n = cands.filter(function (c) {
-      return !isManual(c) && !removed.has(keyOf(c));
-    }).length;
-    if (!n) { saveState.textContent = '지울 검출이 없습니다'; return; }
-    var b = wipeButton();
+    var n = wipeTargets(mode).length;
+    if (!n) {
+      saveState.textContent = mode === 'solo' ? '이 판에만 있는 검출이 없습니다'
+                                              : '지울 검출이 없습니다';
+      return;
+    }
+    var b = wipeButton(mode);
     if (b) b.classList.add('armed');
-    var msg = 'S(또는 ⊘)를 한 번 더 누르면 이 판의 검출 ' + n + '개를 전부 오검출로 지웁니다';
+    wipeMode = mode || 'all';
+    var msg = mode === 'solo'
+      ? '프레임 지움을 한 번 더 누르면 이 판에만 있는 검출 ' + n + '개를 오검출로 지웁니다'
+      : 'S(또는 ⊘)를 한 번 더 누르면 이 판의 검출 ' + n + '개를 전부 오검출로 지웁니다';
     saveState.textContent = msg;
     wipeTimer = setTimeout(function () {
       disarmWipe();
@@ -3478,24 +3501,24 @@ window.initDetView = function (uid) {
     if (!wipeTimer) return;
     clearTimeout(wipeTimer);
     wipeTimer = null;
-    var b = wipeButton();
+    var b = wipeButton(wipeMode);
     if (b) b.classList.remove('armed');
+    wipeMode = '';
   }
 
-  function removeAllDetected() {
+  function removeAllDetected(mode) {
     if (readOnly) return;
     // 그리는 중이면 그 조작이 먼저다 (키 갈래와 같은 규칙)
     if (drawing || editing) return;
     // **캐러셀을 스치는 중에는 전역이 지나가는 판의 것이다** (074) — 여기서
     // 지우면 고른 판이 아닌 판의 상태를 고친다.
     if (previewing) return;
-    var idxs = [];
-    cands.forEach(function (c, i) {
-      if (!isManual(c) && !removed.has(keyOf(c))) idxs.push(i);
-    });
+    var idxs = wipeTargets(mode);
     if (!idxs.length) { saveState.textContent = '지울 검출이 없습니다'; return; }
     removeKeys(idxs);          // sel 을 비우고 build·save 까지 한다
-    saveState.textContent = '검출 전부 오검출로 — ' + idxs.length + '개 (Ctrl+Z 로 되돌림)';
+    saveState.textContent = (mode === 'solo' ? '이 판에만 있는 검출 오검출로 — '
+                                             : '검출 전부 오검출로 — ') +
+      idxs.length + '개 (Ctrl+Z 로 되돌림)';
   }
 
   function openMenu(e, d) {
@@ -4440,9 +4463,9 @@ window.initDetView = function (uid) {
     }
     else if (act === 'wipe') {
       // 단추도 `S` 와 같다 — 한 번은 불만, 이어서 한 번 더 눌러야 지운다 (223)
-      if (wipeTimer) { disarmWipe(); removeAllDetected(); }
-      else armWipe();
+      pressWipe('all');
     }
+    else if (act === 'wipesolo') { pressWipe('solo'); }
     else if (act === 'ghosts') {
       showGone = !showGone;
       btn.textContent = showGone ? '삭제분 숨기기' : '삭제분 보기';

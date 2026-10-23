@@ -15,7 +15,7 @@ from django.urls import reverse
 
 from .base import BrowserTestCase
 from .. import factories as fx
-from ...models import ObjectReview
+from ...models import Image, ObjectReview, RunBatch
 
 # 픽스처 개체(40,50 / 160,130 / 280,210)와 안 겹치는 빈 자리
 PTS = [(420, 300), (500, 300), (500, 360), (420, 360)]
@@ -127,3 +127,82 @@ class WipeDetectionsTest(BrowserTestCase):
         self.press("Control+z")
         self.assertEqual(self.removed_engine(), 0,
                          "되돌리기 한 번에 전부 안 돌아왔다")
+
+
+class WipeSoloDetectionsTest(BrowserTestCase):
+    """「프레임 지움」 — 이 판에만 있는 검출만 지운다 (231).
+
+    **다른 판과 묶인 개체는 남긴다.** 묶음은 사람이 "여러 판이 한 규조각" 이라고
+    정한 것이다 — 한 판에서 비우는 일이 그 판단까지 지우면 안 된다. 단축키는
+    없고(사용자 2026-10-23), 단추를 두 번 눌러야 지운다.
+    """
+
+    def make_data(self):
+        fx.make_classes()
+        self.w = fx.make_world(slug=f"rs23-{self.uniq}",
+                               site_code=f"RS{self.uniq}",
+                               n_frames=3, n_candidates=3)
+        self.extra = fx.add_frame_detections(self.w.vp, n_candidates=3)
+        batch = RunBatch.objects.get(label="sam2-시험")
+        self.stack_img = Image.objects.get(viewpoint=self.w.vp, kind="stack")
+        self.frame, self.frame_img, _ = self.extra[0]
+        # 합성본과 첫 프레임의 첫 개체를 한 개체로 묶는다 (test_link_label 과 같다)
+        self.key = self.w.keys()[0]
+        rows = [fx.new_review(viewpoint=self.w.vp, image=img, batch=batch,
+                              mask_key=self.key, bind_method="exact",
+                              geom={"bbox_xywh": [40, 50, 60, 40]})
+                for img in (self.stack_img, self.frame_img)]
+        fx.link_reviews(rows, rep=0)
+
+    def removed_on(self, img):
+        return set(ObjectReview.objects.filter(image=img, removed=True,
+                                               batch__isnull=False)
+                   .values_list("mask_key", flat=True))
+
+    def pick_frame(self):
+        page = self.open(reverse("group", args=[self.w.slug, self.w.vp.idx]))
+        page.wait_for_selector(".detview .box")
+        el = page.query_selector(f'.shot[data-detkey="{self.frame.name}"]')
+        el.scroll_into_view_if_needed()
+        el.hover()
+        page.wait_for_timeout(350)
+        el.click()
+        page.wait_for_timeout(400)
+        return page
+
+    def btn(self):
+        return '#dv-stack button[data-act="wipesolo"]'
+
+    def test_묶인_개체는_남기고_이_판에만_있는_것을_지운다(self):
+        page = self.pick_frame()
+        page.click(self.btn())
+        page.wait_for_timeout(300)
+        self.assertEqual(self.removed_on(self.frame_img), set(),
+                         "단추 한 번에 지워졌다")
+        page.click(self.btn())
+        page.wait_for_timeout(1200)
+        gone = self.removed_on(self.frame_img)
+        self.assertEqual(len(gone), 2, f"이 판에만 있는 둘이 안 지워졌다: {gone}")
+        self.assertNotIn(self.key, gone, "다른 판과 묶인 개체까지 지웠다")
+        self.assertEqual(self.removed_on(self.stack_img), set(),
+                         "다른 판(합성본)까지 지웠다")
+
+    def test_전부_지움_아래에_놓인다(self):
+        page = self.pick_frame()
+        sb = page.query_selector(self.btn())
+        self.assertTrue(sb and sb.is_visible(), "프레임 지움 단추가 안 보인다")
+        s, w = sb.bounding_box(), page.query_selector(
+            '#dv-stack button[data-act="wipe"]').bounding_box()
+        self.assertAlmostEqual(s["x"], w["x"], delta=1)
+        self.assertLess(abs(s["y"] - (w["y"] + w["height"])), 6,
+                        "프레임 지움이 전부 지움 바로 밑에 없다")
+
+    def test_S_는_전부_지움이다(self):
+        """단축키를 안 단다 — `S` 두 번은 묶인 것까지 전부 지운다(220 그대로)."""
+        page = self.pick_frame()
+        page.click(self.btn())                  # 프레임 지움에 불을 켜 놓고
+        page.wait_for_timeout(100)
+        page.keyboard.press("s")                # S 는 그 불을 쓰지 않는다
+        page.wait_for_timeout(1200)
+        self.assertEqual(self.removed_on(self.frame_img), set(),
+                         "프레임 지움 불이 S 로 이어졌다")

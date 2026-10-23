@@ -354,6 +354,16 @@
               aria-label="이 판의 검출 전부 오검출로">
         <svg viewBox="0 0 24 24" aria-hidden="true"><circle class="stroke" cx="12" cy="12" r="8"/><path class="stroke" d="M6.4 17.6 17.6 6.4"/></svg>
         <span>전부 지움</span></button>
+      {% comment %}
+        **「프레임 지움」 은 이 판에만 있는 검출만 지운다** (231 · 사용자
+        2026-10-23). 다른 판과 같은 개체로 묶인 것은 남긴다 — 묶음은 사람이
+        "여러 판이 한 규조각" 이라고 정한 것이라 한 판에서 비울 대상이 아니다.
+        **단축키는 없다** (사용자) — 단추만, `전부 지움` 과 같이 두 번 눌러야 지운다.
+      {% endcomment %}
+      <button type="button" class="tool" data-act="wipesolo" title="두 번 누르면 이 판에만 있는 검출을 오검출로 — 다른 판과 묶인 개체·그린 개체는 남긴다 · Ctrl+Z 로 되돌림"
+              aria-label="이 판에만 있는 검출 오검출로">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><rect class="stroke" x="4" y="5" width="16" height="14" rx="1.5"/><path class="stroke" d="M7.5 15.5 16.5 8.5"/></svg>
+        <span>프레임 지움</span></button>
     </div>
     <button type="button" class="tool" data-act="undo" title="실행취소 (Ctrl+Z)">
       <svg viewBox="0 0 24 24" aria-hidden="true"><path class="stroke" d="M8.5 13.5 4 9l4.5-4.5"/><path class="stroke" d="M4 9h10a5.5 5.5 0 0 1 0 11h-3"/></svg>
