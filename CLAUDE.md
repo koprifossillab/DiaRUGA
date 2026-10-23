@@ -125,7 +125,7 @@
 
 ```bash
 # venv 는 ~/venv/DiaRUGA 이다 (저장소 안의 .venv 가 아니다 — HANDOFF 8.3)
-python --version        # 3.14.4 (2026-10-23 호스트 업데이트 — 그 전엔 3.12.3)
+python --version        # 3.14.4 (2026-10-23 호스트 업데이트 — 그 전엔 3.12.3) · paleoadmin 의 ~/venv/DiaRUGA 는 uv 가 받은 3.12.15 (233)
 ```
 
 requirements 는 넷으로 갈라져 있다 (P03·032). 호스트 venv 는 `requirements.txt`
