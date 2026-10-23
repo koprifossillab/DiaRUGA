@@ -360,9 +360,10 @@
   }
   main.wide .detrow .dvside { flex: 1 1 168px; width: auto; }
   main.wide .detrow .notes { flex: 1 1 250px; width: auto; max-height: none; overflow: visible; }
-  /* **칸 폭을 내용이 정하지 않게 한다.** 속명 한 줄(`.atlasgen`)은 줄바꿈이 없어
-     최소 폭이 수천 px 이다 — flex 항목의 기본 최소 폭(auto)이 그것을 따라가
-     오른쪽 칸이 화면을 다 먹었다 */
+  /* **칸 폭을 내용이 정하지 않게 한다.** 229 의 속명 한 줄(`.atlasgen`)은 줄바꿈이
+     없어 최소 폭이 수천 px 였다 — flex 항목의 기본 최소 폭(auto)이 그것을 따라가
+     오른쪽 칸이 화면을 다 먹었다. 232 에서 목록으로 바꿨지만 긴 학명·도판도
+     같은 길로 칸을 밀므로 그대로 둔다 */
   main.wide .detrow .notes, main.wide .detrow .dvside, main.wide .detrow .dvcenter { min-width: 0; }
   /* 넓힌 화면에서는 오른쪽 칸 높이가 사진 칸에 맞춰 정해진다 — 그 안에서 카탈로그와
      도감이 반씩 나눈다. 칸 높이가 안 정해지는 자리(폰·오프라인)에서는 0 으로
@@ -1454,18 +1455,12 @@
     border: 1px solid var(--line); border-radius: 6px;
     background: var(--bg); color: inherit;
   }
-  /* 속명 한 줄 — 많은 순. 넘치면 옆으로 구른다(휠도 옆으로) */
+  /* 속 목록 (232) — 이름순. 찾기 칸과 같은 모양 */
   .notes .atlasgen {
-    flex: 0 0 auto; display: flex; width: 100%; min-width: 0; max-width: 100%; gap: 4px; overflow-x: auto; overflow-y: hidden;
-    white-space: nowrap; padding-bottom: 3px; scrollbar-width: thin;
-  }
-  .notes .atlasgen button {
-    flex: 0 0 auto; font: inherit; font-size: 11px; font-style: italic;
-    padding: 1px 7px; border-radius: 10px; cursor: pointer;
-    background: var(--bg); color: var(--dim); border: 1px solid var(--line);
-  }
-  .notes .atlasgen button:hover, .notes .atlasgen button.on {
-    color: var(--accent); border-color: var(--accent);
+    flex: 0 0 auto; font: inherit; font-size: 12px; padding: 3px 6px;
+    width: 100%; min-width: 0; max-width: 100%;
+    border: 1px solid var(--line); border-radius: 6px;
+    background: var(--bg); color: inherit;
   }
   .notes .atlasrows { display: flex; flex-wrap: wrap; gap: 4px; }
   .notes .atlasrows .arow {
@@ -1484,10 +1479,24 @@
   .notes .atlasplate figcaption .nm { font-style: italic; }
   .notes .atlasplate figcaption .open { margin-left: 4px; text-decoration: none; }
   .notes .atlasplate figcaption .open[hidden], .notes .atlasplate .big[hidden] { display: none; }
-  .notes .atlasplate img {
-    display: block; width: 100%; height: auto; border-radius: 5px;
-    border: 1px solid var(--line); background: #fff;
+  /* 도판 확대·축소 (232) — 상자가 잘라 내고 그림은 `transform` 으로 움직인다 */
+  .notes .atlasplate .pzoom {
+    overflow: hidden; border-radius: 5px; border: 1px solid var(--line);
+    background: #fff; touch-action: none;
   }
+  .notes .atlasplate .pzoom.zoomed { cursor: grab; }
+  .notes .atlasplate .pzoom.dragging { cursor: grabbing; }
+  .notes .atlasplate img {
+    display: block; width: 100%; height: auto; transform-origin: 0 0;
+    user-select: none;
+  }
+  .notes .atlasplate .pzctl { float: right; display: inline-flex; gap: 2px; }
+  .notes .atlasplate .pzctl button {
+    font: inherit; font-size: 11px; line-height: 1; padding: 2px 6px; cursor: pointer;
+    border: 1px solid var(--line); border-radius: 4px;
+    background: var(--bg); color: inherit;
+  }
+  .notes .atlasplate .pzctl button:hover { border-color: var(--accent); color: var(--accent); }
   .notes .atlasplate.failed img { display: none; }
   .notes .catbox { display: grid; gap: 6px; align-content: start; }
   /* **`display` 를 잡았으니 `[hidden]` 을 명시한다.** 브라우저 기본

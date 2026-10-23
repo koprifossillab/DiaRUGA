@@ -596,14 +596,33 @@
        data-suggest="{% url 'atlas_suggest' %}" data-img="{% url 'image' %}">
     <input type="search" class="atlasq" id="atlasq-{{ uid }}"
            placeholder="학명으로 찾기 (두 글자부터)" autocomplete="off">
-    {% if atlas_genera %}<div class="atlasgen" id="atlasgen-{{ uid }}" title="속명을 누르면 그 속으로 찾습니다">
-      {% for g in atlas_genera %}<button type="button" data-g="{{ g.genus }}" title="{{ g.genus }} · 색인 {{ g.n }}건">{{ g.genus }}</button>{% endfor %}
-    </div>{% endif %}
+    {% comment %}
+      **속은 고르는 목록이다** (232 · 사용자 2026-10-23: "선택이 너무 불편하네,
+      드롭다운 같은 걸로"). 229 는 단추를 많은 순으로 한 줄에 늘어놓고 휠로
+      옆으로 밀었다 — 이름으로 짚어 갈 수가 없었다. 도감 화면의 속 목록(196)과
+      같이 **이름순**이다(`data.atlas_genera` 가 주는 그대로).
+    {% endcomment %}
+    {% if atlas_genera %}<select class="atlasgen" id="atlasgen-{{ uid }}" aria-label="속으로 찾기"
+            title="속을 고르면 그 속으로 찾습니다 — 목록을 연 채로 글자를 치면 그 이름으로 간다">
+      <option value="">속으로 찾기 ({{ atlas_genera|length }}속)</option>
+      {% for g in atlas_genera %}<option value="{{ g.genus }}">{{ g.genus }} ({{ g.n }})</option>{% endfor %}
+    </select>{% endif %}
     <div class="atlasrows" id="atlasrows-{{ uid }}"></div>
     <figure class="atlasplate" id="atlasplate-{{ uid }}" hidden>
       <figcaption><b class="nm"></b> <span class="dim at"></span>
-        <a class="open" href="" target="_blank" rel="noopener" title="도감 화면에서 이 쪽을 연다">↗</a></figcaption>
-      <a class="big" href="" target="_blank" rel="noopener"><img alt="" loading="lazy"></a>
+        <a class="open" href="" target="_blank" rel="noopener" title="도감 화면에서 이 쪽을 연다">↗</a>
+        <span class="pzctl">
+          <button type="button" data-z="out" title="축소" aria-label="축소">−</button>
+          <button type="button" data-z="in" title="확대" aria-label="확대">+</button>
+          <button type="button" data-z="fit" title="맞춤 (두 번 누르기)" aria-label="맞춤">맞춤</button>
+        </span></figcaption>
+      {% comment %}
+        **도판은 칸 안에서 확대·축소한다** (232 · 사용자 2026-10-23). 휠은 커서
+        자리를 붙잡고 키우고, 끌면 옮기고, 두 번 누르면 맞춤으로 돌아온다.
+        229 는 도판을 누르면 새 탭으로 갔다 — 끌기와 겹치므로 그 길은 `↗` 만 남긴다.
+        상자의 크기는 `img` 의 배치가 정하고 `transform` 은 배치를 안 바꾼다.
+      {% endcomment %}
+      <div class="big pzoom"><img alt="" loading="lazy" draggable="false"></div>
     </figure>
   </div>
   <script>
@@ -617,6 +636,66 @@
     var fig = document.getElementById("atlasplate-" + uid);
     var img = fig.querySelector("img");
     var last = "", timer = null, seq = 0;
+
+    // --- 도판 확대·축소 (232) ------------------------------------------------
+    // 배율 `zk` 와 이동 `zx`·`zy`(상자 px). 상자 밖으로 빈자리가 안 생기게 잡는다.
+    // 키우면 칸 폭(대개 300px 안팎)보다 훨씬 큰 그림이 필요하다 — 처음엔 `w=900`
+    // 을 받고, 900 을 넘겨 보게 되면 서버가 주는 가장 큰 `w=2048` 로 한 번 바꾼다.
+    var box = fig.querySelector(".pzoom");
+    var zk = 1, zx = 0, zy = 0, plateRel = "", bigLoaded = false;
+    var Z_MIN = 1, Z_MAX = 8;
+    function zoomApply() {
+      var w = box.clientWidth, h = box.clientHeight;
+      zx = Math.min(0, Math.max(w - w * zk, zx));
+      zy = Math.min(0, Math.max(h - h * zk, zy));
+      img.style.transform = zk === 1 ? "" :
+        "translate(" + zx + "px," + zy + "px) scale(" + zk + ")";
+      box.classList.toggle("zoomed", zk > 1);
+      if (zk * w > 900 && !bigLoaded && plateRel) {
+        bigLoaded = true;
+        img.src = IMG + "?p=" + encodeURIComponent(plateRel) + "&w=2048";
+      }
+    }
+    function zoomReset() { zk = 1; zx = 0; zy = 0; zoomApply(); }
+    // (cx, cy) 는 상자 안 좌표 — 그 자리가 커서 밑에 그대로 남게 옮긴다
+    function zoomAt(f, cx, cy) {
+      var nk = Math.min(Z_MAX, Math.max(Z_MIN, zk * f));
+      zx = cx - (cx - zx) * nk / zk;
+      zy = cy - (cy - zy) * nk / zk;
+      zk = nk;
+      zoomApply();
+    }
+    box.addEventListener("wheel", function (e) {
+      if (fig.classList.contains("failed")) return;
+      e.preventDefault();
+      var r = box.getBoundingClientRect();
+      zoomAt(e.deltaY < 0 ? 1.25 : 0.8, e.clientX - r.left, e.clientY - r.top);
+    }, {passive: false});
+    var drag = null;
+    box.addEventListener("pointerdown", function (e) {
+      if (zk === 1 || e.button !== 0) return;
+      drag = {x: e.clientX, y: e.clientY, zx: zx, zy: zy};
+      box.setPointerCapture(e.pointerId);
+      box.classList.add("dragging");
+    });
+    box.addEventListener("pointermove", function (e) {
+      if (!drag) return;
+      zx = drag.zx + e.clientX - drag.x;
+      zy = drag.zy + e.clientY - drag.y;
+      zoomApply();
+    });
+    function dragEnd() { drag = null; box.classList.remove("dragging"); }
+    box.addEventListener("pointerup", dragEnd);
+    box.addEventListener("pointercancel", dragEnd);
+    box.addEventListener("dblclick", zoomReset);
+    fig.querySelector(".pzctl").addEventListener("click", function (e) {
+      var b = e.target.closest("button[data-z]");
+      if (!b) return;
+      var w = box.clientWidth / 2, h = box.clientHeight / 2;
+      if (b.dataset.z === "in") zoomAt(1.5, w, h);
+      else if (b.dataset.z === "out") zoomAt(1 / 1.5, w, h);
+      else zoomReset();
+    });
 
     function showPlate(row) {
       var pl = row.plate;
@@ -632,8 +711,10 @@
         fig.querySelector(".open").hidden = false;
         fig.querySelector(".big").hidden = false;
         fig.querySelector(".open").href = pl.plate_url;
-        fig.querySelector(".big").href = pl.plate_url;
         fig.classList.remove("failed");
+        plateRel = pl.plate_rel;
+        bigLoaded = false;
+        zoomReset();
         img.src = IMG + "?p=" + encodeURIComponent(pl.plate_rel) + "&w=900";
       }
       fig.hidden = false;
@@ -687,25 +768,22 @@
         .catch(function () {});
     }
 
-    // 속명 줄 — 누르면 그 속으로 찾는다. 세로 휠은 옆으로 돌린다
+    // 속 목록 — 고르면 그 속으로 찾는다 (232)
     var gen = document.getElementById("atlasgen-" + uid);
     if (gen) {
-      gen.addEventListener("click", function (e) {
-        var b = e.target.closest("button[data-g]");
-        if (!b) return;
-        gen.querySelectorAll("button.on").forEach(function (x) { x.classList.remove("on"); });
-        b.classList.add("on");
-        q.value = b.dataset.g;
+      gen.addEventListener("change", function () {
+        var g = gen.value;
+        if (!g) return;
+        q.value = g;
         last = "";
-        search(b.dataset.g, false);
-        b.blur();
+        search(g, false);
       });
-      gen.addEventListener("wheel", function (e) {
-        if (Math.abs(e.deltaY) > Math.abs(e.deltaX)) { gen.scrollLeft += e.deltaY; e.preventDefault(); }
-      }, {passive: false});
     }
 
     q.addEventListener("input", function () {
+      // 손으로 친 이름이 고른 속과 달라지면 목록을 되돌린다 — 안 그러면 목록이
+      // 지금 찾은 것과 다른 속을 가리킨 채 남는다
+      if (gen && gen.value && q.value.trim() !== gen.value) gen.value = "";
       clearTimeout(timer);
       timer = setTimeout(function () { search(q.value, false); }, 220);
     });

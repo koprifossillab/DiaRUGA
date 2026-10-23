@@ -577,8 +577,10 @@ def group(request, slug, gid):
     if slide is not None:
         ctx["vside"] = data.slide_tiles(slide)
         ctx["vside_q"] = f"?batch={run_id}" if run_id else ""
-    # 도감 칸의 속명 한 줄 (229) — 많은 순. 한 줄이라 앞에 보이는 것이 자주 쓰는 속이어야 한다
-    ctx["atlas_genera"] = sorted(data.atlas_genera(), key=lambda r: (-r["n"], r["genus"]))
+    # 도감 칸의 속 목록 (229 · 232) — **이름순**(`atlas_genera` 가 주는 그대로).
+    # 229 는 많은 순으로 다시 정렬했는데 한 줄 단추일 때의 규칙이었다 — 목록이
+    # 되면 이름으로 짚어 가므로 이름순이어야 찾는다(196 의 도감 화면과 같다)
+    ctx["atlas_genera"] = data.atlas_genera()
     return render(request, "viewer/group.html", ctx)
 
 
