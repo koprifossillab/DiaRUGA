@@ -107,6 +107,23 @@ DB 설계는 [devlog/20260730_P02_db-schema.md](devlog/20260730_P02_db-schema.md
 
 ## 지금 가장 급한 것
 
+- [ ] **검토 화면 「프레임 지움」 — 이 판에만 있는 검출만 오검출로** (231 ·
+      사용자 2026-10-23). 「전부 지움」 바로 아래 단추, **단축키 없음**. 다른 판과
+      묶인 개체(`linkOf(curImage, key)`)와 그린 개체는 남긴다. `전부 지움` 과 같이
+      두 번 눌러야 지우고(불은 `wipeMode` 로 갈라 든다 — 다른 단추나 `S` 를 누르면
+      지우지 않고 불만 옮긴다), `removeKeys` 를 타서 Ctrl+Z 한 번에 돌아온다.
+      **코드는 다 됐고 미커밋이다** — `~/projects/DiaRUGA-ui` 의
+      `work/20261023-sclee-ui`(`origin/main` 868cc71 에서 팠다) ·
+      `_detection.html` · `_detview_js.html` · `tests/browser/test_wipe_detections.py`
+      (`WipeSoloDetectionsTest` 셋). 시험 1,076 + 브라우저 47(wipe·link_label·
+      review_tools·readonly·draw_mask) 통과, 묶음 거르기를 빼면 첫 시험이 죽는
+      것도 봤다. **남은 것**: 커밋 · devlog 231 · `docs/20260811_viewer-guide.md`
+      의 도구 묶음 절 · 판(v0.35.1).
+      **멈춘 까닭** — admin 이 호스트 파이썬을 일괄로 올리는 중이다(10-23).
+      `/usr/bin/python3` 가 3.14 가 되어 `~/venv/DiaRUGA`(3.12 를 가리킨다)가
+      Django 를 못 불러온다. 이번 시험은 scratchpad 에 임시 venv(Django 5.2.16 ·
+      playwright 1.62.0)를 세워 돌렸다 — 업데이트가 끝나면 venv 부터 다시 세운다
+
 - [x] **정보 편집에서 코드로 시료를 새로 만들어 붙이면 실제로는 안 붙는다**
       (`web/viewer/views.py` `dataset_edit` · 2026-09-18 · ForGIA 1단계 이식 중 발견)
       → **고쳤다** ([205](devlog/20260918_205_edit-attach-new-sample.md) · `v0.29.1`).
