@@ -125,7 +125,7 @@
 
 ```bash
 # venv 는 ~/venv/DiaRUGA 이다 (저장소 안의 .venv 가 아니다 — HANDOFF 8.3)
-python --version        # 3.12.3
+python --version        # 3.14.4 (2026-10-23 호스트 업데이트 — 그 전엔 3.12.3)
 ```
 
 requirements 는 넷으로 갈라져 있다 (P03·032). 호스트 venv 는 `requirements.txt`
@@ -295,8 +295,9 @@ docker compose run --rm pipeline python pipeline/segment_diatoms.py --slide <slu
 **자동 시험이 있다 — 고치고 나면 이것부터 돌린다** (P08 · 064).
 
 ```bash
-python web/manage.py test viewer --exclude-tag browser   # 1,076개 · 30초
-python web/manage.py test viewer                         # 1,342개 (브라우저 266개 포함, 660초)
+python web/manage.py test viewer --exclude-tag browser   # 1,076개 · 35초
+python web/manage.py test viewer                         # 1,349개 (브라우저 273개 포함, 590초)
+# 3.14 는 multiprocessing 기본이 forkserver 라 --parallel 이 깨진다 — 나란히 없이 돌린다
 ```
 
 호스트 venv 로 돈다 — `dbrun.sh` 를 안 거친다. 규약이 막으려는 "같은 파일을 두
