@@ -68,7 +68,7 @@
   보일 슬라이드 고르기 (203). 권역과 무관하다 — 한국 지도에도 붙는다.
 
   끈 슬라이드는 오른쪽 칸의 줄·(전부 꺼진) 지점·지역과 그 마커가 `mhid` 로
-  감춰지고, 마커의 「시야 N」과 코어의 「슬라이드 N장」은 남은 줄로 다시 센다
+  감춰지고, 코어의 「슬라이드 N장」은 남은 줄로 다시 센다
   — 숫자가 안 따라오면 감춘 것이 보이는 것과 같은 수를 말한다. **`[hidden]` 을
   안 쓴다** — 클래스 규칙의 display 에 진다(063). 감추는 규칙은 `base.html` 의
   `.mhid` 다.
@@ -116,18 +116,12 @@
       if (lb) lb.textContent = off_n;
       boxes[b.dataset.core] = b;
     });
-    var siteVp = {};
     wrap.querySelectorAll('.maptree .mcore[data-core]').forEach(function (core) {
-      var shown = 0, vp = 0, b = boxes[core.dataset.core];
-      if (b) b.querySelectorAll('.mslide[data-slug]').forEach(function (tr) {
-        if (tr.classList.contains('mhid')) return;
-        shown++; vp += Number(tr.dataset.vp) || 0;
-      });
+      var b = boxes[core.dataset.core],
+          shown = b ? b.querySelectorAll('.mslide[data-slug]:not(.mhid)').length : 0;
       core.classList.toggle('mhid', shown === 0);
       var nsl = core.querySelector('.nsl');
       if (nsl) nsl.textContent = shown;
-      var site = core.closest('.msite');
-      if (site) siteVp[site.dataset.site] = (siteVp[site.dataset.site] || 0) + vp;
       markers('core', core.dataset.core).forEach(function (a) {
         a.classList.toggle('mhid', shown === 0);
       });
@@ -137,8 +131,6 @@
       site.classList.toggle('mhid', gone);
       markers('site', site.dataset.site).forEach(function (a) {
         a.classList.toggle('mhid', gone);
-        var sub = a.querySelector('.sub');
-        if (sub) sub.textContent = '시야 ' + (siteVp[site.dataset.site] || 0);
       });
     });
     var lbl = document.getElementById('mapfilter-n');

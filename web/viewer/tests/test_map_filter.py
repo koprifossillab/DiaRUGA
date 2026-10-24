@@ -58,7 +58,7 @@ class MapFilterRenderTest(DiaRUGATestCase):
     def test_줄과_마커와_체크박스가_같은_열쇠를_든다(self):
         html = self.html("ant")
         for slug in ("s0", "wap"):
-            self.assertIn(f'data-slug="{slug}" data-vp=', html)
+            self.assertIn(f'<tr class="mslide" data-slug="{slug}">', html)
             self.assertIn(f'<input type="checkbox" data-slug="{slug}" checked>', html)
         self.assertIn('data-site="WAP13">', html)      # 전체 지도의 마커
         self.assertIn('id="mapfilter-all"', html)
@@ -67,7 +67,7 @@ class MapFilterRenderTest(DiaRUGATestCase):
         html = self.html("kr")
         self.assertIn('id="mapfilter"', html)
         self.assertIn('data-site="BP">', html)
-        self.assertIn('data-slug="bp" data-vp=', html)
+        self.assertIn('<tr class="mslide" data-slug="bp">', html)
         self.assertIn('class="msite" data-site="BP"', html)
 
     def test_나무에는_코어까지_오른쪽에는_관찰이_놓인다(self):
@@ -79,7 +79,7 @@ class MapFilterRenderTest(DiaRUGATestCase):
         self.assertIn('class="mcorebox" data-core="RS21-GC02"', html)
         self.assertIn('class="mcorebox" data-core="WAP13-GC47"', html)
         detail = html[html.index('id="mapdetail"'):]
-        self.assertIn('data-slug="wap" data-vp=', detail)
+        self.assertIn('data-slug="wap"', detail)
         # 한국도 같은 세 칸이다
         self.assertIn('class="mcorebox" data-core="BP-BP09"', self.html("kr"))
 

@@ -13,7 +13,7 @@
   display 에 진다(063).
 
   `data-core` 는 나무의 `.mcore` 와 같은 열쇠(`<지역 코드>-<지점 코드>`)이고,
-  줄의 `data-slug`·`data-vp` 는 보일 슬라이드 고르기가 줄을 감추고 다시 세는
+  줄의 `data-slug` 는 보일 슬라이드 고르기가 줄을 감추고 다시 세는
   데 쓴다(`_map.html`).
 {% endcomment %}
   <div class="mapdetail" id="mapdetail">
@@ -50,7 +50,7 @@
         </thead>
         <tbody>
         {% for d in g.rows %}
-          <tr class="mslide{% if d.hidden %} rowhidden{% endif %}" data-slug="{{ d.slug }}" data-vp="{{ d.n_groups }}">
+          <tr class="mslide{% if d.hidden %} rowhidden{% endif %}" data-slug="{{ d.slug }}">
             <td class="dsname" title="{{ d.label }}">
               {% comment %}
                 노두는 위치가 전부 `OC` 라 줄끼리 안 갈린다 — 시료 번호를 쓴다.

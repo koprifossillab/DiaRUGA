@@ -62,10 +62,6 @@ class MapFilterTest(BrowserTestCase):
             f".mapdetail .mslide[data-slug='{self.b}']"), "table-row")
         self.assertEqual(page.inner_text(
             f".maptree .msite[data-site='{self.site}'] .nsl"), "1")
-        # 마커의 시야 수도 남은 줄로 다시 센다 (2 + 3 → 3)
-        # SVG 글자라 `inner_text` 가 안 된다 — `text_content` 로 읽는다
-        self.assertEqual(page.text_content(
-            f".antmap:not(.rossmap) a[data-site='{self.site}'] .sub"), "시야 3")
         self.assertEqual(page.inner_text("#mapfilter-n"), "감춤 1장")
 
         # 다시 열어도 남는다

@@ -69,7 +69,10 @@
           {% if not p.exact %}<circle class="halo" r="260"/>{% endif %}
           <circle class="dot" r="70"/>
           <text class="tag" y="-150">{{ p.code }}</text>
-          <text class="sub" y="-150" dy="115">시야 {{ p.n_viewpoints }}</text>
+          {% comment %}
+            「시야 N」 줄은 걷었다 (234) — 지점이 가까우면 이름표끼리 겹치고,
+            지도에서 볼 값이 아니다. 개수는 마우스를 올리면 나온다(아래 title).
+          {% endcomment %}
           <title>{{ p.label }} · {{ p.core_codes|join:", " }} · 슬라이드 {{ p.n_slides }}장 · 시야 {{ p.n_viewpoints }}개
 {% if p.exact %}실측 좌표{% else %}대략 위치 ({{ p.approx_note }}) — 정확한 좌표가 아직 없습니다{% endif %}</title>
         </g>
