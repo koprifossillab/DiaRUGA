@@ -30,6 +30,7 @@
     </div>
   {% endif %}
   {% include "viewer/_map_legend.html" %}
+  {% include "viewer/_map_detail.html" %}
 </div>
 {% if antmap.kind != "kr" %}
 <script>
@@ -66,11 +67,14 @@
 {% comment %}
   보일 슬라이드 고르기 (203). 권역과 무관하다 — 한국 지도에도 붙는다.
 
-  끈 슬라이드는 나무 줄·(전부 꺼진) 지점·지역과 그 마커가 `mhid` 로 감춰지고,
-  마커의 「시야 N」과 코어의 「슬라이드 N장」은 남은 줄로 다시 센다 — 숫자가
-  안 따라오면 감춘 것이 보이는 것과 같은 수를 말한다. **`[hidden]` 을 안 쓴다**
-  — `.maptree .mslide` 의 display 에 진다(063). 감추는 규칙은 `base.html` 의
+  끈 슬라이드는 오른쪽 칸의 줄·(전부 꺼진) 지점·지역과 그 마커가 `mhid` 로
+  감춰지고, 마커의 「시야 N」과 코어의 「슬라이드 N장」은 남은 줄로 다시 센다
+  — 숫자가 안 따라오면 감춘 것이 보이는 것과 같은 수를 말한다. **`[hidden]` 을
+  안 쓴다** — 클래스 규칙의 display 에 진다(063). 감추는 규칙은 `base.html` 의
   `.mhid` 다.
+
+  코어 고르기(234)도 여기 있다 — 고른 코어가 감춰지면 다른 코어로 옮겨야 해서
+  두 일이 한 자리에서 돈다.
 {% endcomment %}
 <script>
 (function () {
@@ -97,17 +101,27 @@
     box.querySelectorAll('input[data-slug]').forEach(function (cb) {
       cb.checked = !off[cb.dataset.slug];
     });
-    wrap.querySelectorAll('.maptree .mslide[data-slug]').forEach(function (li) {
-      var h = !!off[li.dataset.slug];
-      li.classList.toggle('mhid', h);
-      if (h) n++;
+    // 슬라이드 줄은 오른쪽 칸에 있다 (234). 나무의 코어는 그 칸의 같은 열쇠
+    // 상자에서 남은 줄을 센다.
+    var boxes = {};
+    wrap.querySelectorAll('.mapdetail .mcorebox[data-core]').forEach(function (b) {
+      var off_n = 0;
+      b.querySelectorAll('.mslide[data-slug]').forEach(function (tr) {
+        var h = !!off[tr.dataset.slug];
+        tr.classList.toggle('mhid', h);
+        if (h) { n++; off_n++; }
+      });
+      b.classList.toggle('someoff', off_n > 0);
+      var lb = b.querySelector('.mdoff');
+      if (lb) lb.textContent = off_n;
+      boxes[b.dataset.core] = b;
     });
     var siteVp = {};
     wrap.querySelectorAll('.maptree .mcore[data-core]').forEach(function (core) {
-      var shown = 0, vp = 0;
-      core.querySelectorAll('.mslide[data-slug]').forEach(function (li) {
-        if (li.classList.contains('mhid')) return;
-        shown++; vp += Number(li.dataset.vp) || 0;
+      var shown = 0, vp = 0, b = boxes[core.dataset.core];
+      if (b) b.querySelectorAll('.mslide[data-slug]').forEach(function (tr) {
+        if (tr.classList.contains('mhid')) return;
+        shown++; vp += Number(tr.dataset.vp) || 0;
       });
       core.classList.toggle('mhid', shown === 0);
       var nsl = core.querySelector('.nsl');
@@ -129,12 +143,51 @@
     });
     var lbl = document.getElementById('mapfilter-n');
     if (lbl) lbl.textContent = n ? '감춤 ' + n + '장' : '';
+    // 고른 코어가 통째로 감춰졌으면 보이는 첫 코어로 옮긴다
+    var cur = wrap.querySelector('.maptree .mcore.on');
+    if (!cur || cur.classList.contains('mhid')) pick(null);
   }
+
+  // --- 코어 고르기 (234) ---------------------------------------------------
+  // 나무에서 코어를 누르면 오른쪽 칸에 그 코어의 상자를 낸다. 고른 것은
+  // 기억한다 — 권역을 오가도 코어 열쇠에 지역 코드가 들어 있어 겹치지 않는다.
+  // 기억한 코어가 이 화면에 없거나 감춰졌으면 보이는 첫 코어를 고른다.
+  var PICK = 'diaruga.mapcore';
+  function pick(key, remember) {
+    var cores = Array.prototype.slice.call(
+      wrap.querySelectorAll('.maptree .mcore[data-core]'));
+    var ok = function (c) { return !c.classList.contains('mhid'); };
+    var el = cores.filter(function (c) { return c.dataset.core === key && ok(c); })[0]
+          || cores.filter(ok)[0] || null;
+    cores.forEach(function (c) {
+      var on = c === el;
+      c.classList.toggle('on', on);
+      var btn = c.querySelector('.mpick');
+      if (btn) btn.setAttribute('aria-pressed', on ? 'true' : 'false');
+    });
+    var k = el ? el.dataset.core : null;
+    wrap.querySelectorAll('.mapdetail .mcorebox[data-core]').forEach(function (b) {
+      b.classList.toggle('on', b.dataset.core === k);
+    });
+    var d = wrap.querySelector('.mapdetail');
+    if (d) d.classList.toggle('picked', !!k);
+    if (remember && k) {
+      try { localStorage.setItem(PICK, k); } catch (e) { /* 사생활 모드 */ }
+    }
+  }
+  wrap.addEventListener('click', function (e) {
+    var btn = e.target.closest('.maptree .mpick');
+    if (!btn) return;
+    pick(btn.closest('.mcore').dataset.core, true);
+  });
   function current() {
     return Array.prototype.map.call(
       box.querySelectorAll('input[data-slug]:not(:checked)'),
       function (cb) { return cb.dataset.slug; });
   }
+  var saved = null;
+  try { saved = localStorage.getItem(PICK); } catch (e) { saved = null; }
+  pick(saved);
   apply(load());
   box.addEventListener('change', function (e) {
     if (!e.target.matches('input[data-slug]')) return;

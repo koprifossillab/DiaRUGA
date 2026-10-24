@@ -44,10 +44,14 @@ class MapFilterTest(BrowserTestCase):
         page.click("#viewtoggle button[data-view=map]")
         return page
 
+    def pick(self, page, core):
+        page.click(f".maptree .mcore[data-core='{core}'] .mpick")
+
     def test_체크를_끄면_줄이_사라지고_숫자가_따라온다(self):
         page = self.open_map()
-        row = f".maptree .mslide[data-slug='{self.a}']"
-        self.assertEqual(self.display(row), "flex")
+        self.pick(page, f"{self.site}-GC02")
+        row = f".mapdetail .mslide[data-slug='{self.a}']"
+        self.assertEqual(self.display(row), "table-row")
         self.assertEqual(page.inner_text(
             f".maptree .msite[data-site='{self.site}'] .nsl"), "2")
 
@@ -55,7 +59,7 @@ class MapFilterTest(BrowserTestCase):
         page.uncheck(f"#mapfilter input[data-slug='{self.a}']")
         self.assertEqual(self.display(row), "none")
         self.assertEqual(self.display(
-            f".maptree .mslide[data-slug='{self.b}']"), "flex")
+            f".mapdetail .mslide[data-slug='{self.b}']"), "table-row")
         self.assertEqual(page.inner_text(
             f".maptree .msite[data-site='{self.site}'] .nsl"), "1")
         # 마커의 시야 수도 남은 줄로 다시 센다 (2 + 3 → 3)
@@ -70,7 +74,7 @@ class MapFilterTest(BrowserTestCase):
                          "감춘 것을 다시 열었을 때 잊었다")
         page.click("#mapfilter summary")
         page.click("#mapfilter-all")
-        self.assertEqual(self.display(row), "flex")
+        self.assertEqual(self.display(row), "table-row")
         self.assertEqual(page.inner_text("#mapfilter-n"), "")
 
     def test_전부_끄면_지점과_마커까지_사라진다(self):
@@ -96,3 +100,52 @@ class MapFilterTest(BrowserTestCase):
             f".maptree .msite[data-site='{self.site}']"), "none")
         page.click("#mapzoom button[data-zoom=all]")
         self.assertNotEqual(self.display(wap), "none")
+
+
+class MapCorePickTest(BrowserTestCase):
+    """지도 화면의 세 칸 (234) — 나무에서 코어를 고르면 오른쪽 칸에 그 코어의
+    관찰이 놓인다. 상자를 다 그려 두고 클래스로 갈아 끼우므로 `display` 로만
+    잡힌다."""
+
+    make_data = MapFilterTest.make_data
+    display = MapFilterTest.display
+    open_map = MapFilterTest.open_map
+
+    def box(self, core):
+        return f".mapdetail .mcorebox[data-core='{core}']"
+
+    def test_고른_코어만_오른쪽에_놓이고_기억된다(self):
+        rs, wap = f"{self.site}-GC02", f"WAP{self.uniq}-GC47"
+        page = self.open_map()
+        # 처음에는 무엇이든 하나가 골라져 있다 — 빈 칸으로 열지 않는다
+        self.assertEqual(page.locator(".mapdetail .mcorebox.on").count(), 1)
+        self.assertEqual(self.display(".mapdetail .mdempty"), "none")
+
+        page.click(f".maptree .mcore[data-core='{wap}'] .mpick")
+        self.assertEqual(self.display(self.box(wap)), "block")
+        self.assertEqual(self.display(self.box(rs)), "none")
+        self.assertEqual(page.get_attribute(
+            f".maptree .mcore[data-core='{wap}'] .mpick", "aria-pressed"), "true")
+
+        page.click(f".maptree .mcore[data-core='{rs}'] .mpick")
+        self.assertEqual(self.display(self.box(rs)), "block")
+        self.assertEqual(self.display(self.box(wap)), "none")
+        self.assertEqual(self.display(
+            f"{self.box(rs)} .mslide[data-slug='{self.b}']"), "table-row")
+
+        page = self.open_map()
+        self.assertEqual(self.display(self.box(rs)), "block",
+                         "고른 코어를 다시 열었을 때 잊었다")
+
+    def test_고른_코어를_통째로_감추면_다른_코어로_옮긴다(self):
+        rs = f"{self.site}-GC02"
+        page = self.open_map()
+        page.click(f".maptree .mcore[data-core='{rs}'] .mpick")
+        page.click("#mapfilter summary")
+        page.uncheck(f"#mapfilter input[data-slug='{self.a}']")
+        # 하나만 끄면 그대로 있고, 감춘 수를 적는다
+        self.assertEqual(self.display(self.box(rs)), "block")
+        self.assertEqual(page.inner_text(f"{self.box(rs)} .mdoff"), "1")
+        page.uncheck(f"#mapfilter input[data-slug='{self.b}']")
+        self.assertEqual(self.display(self.box(rs)), "none")
+        self.assertEqual(page.locator(".mapdetail .mcorebox.on").count(), 1)

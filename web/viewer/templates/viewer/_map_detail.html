@@ -1,0 +1,84 @@
+{% comment %}
+  지도 화면의 오른쪽 칸 — 고른 코어의 관찰과 숫자 (234).
+
+  지도 · 지역/코어 나무 · 이것의 세 칸이다. 나무가 슬라이드까지 품던 때는
+  오른쪽이 통째로 비었다. 코어를 고르면 여기에 그 코어 하나가 놓인다.
+
+  **숫자는 표 보기와 같은 것을 쓴다**(`groups` · `data.datasets_by_locality`).
+  지도용 자료(`antmap.points`)에는 검출·분류 수가 없고, 따로 세면 두 보기의
+  숫자가 갈라진다. 머리의 숫자는 표의 머리줄과 같다 — 숨긴 슬라이드까지 센다.
+
+  코어마다 상자를 하나씩 다 그려 두고 고른 것만 낸다(`.on`). 고르는 데
+  서버를 다시 부르지 않는다. **`[hidden]` 을 안 쓴다** — 클래스 규칙의
+  display 에 진다(063).
+
+  `data-core` 는 나무의 `.mcore` 와 같은 열쇠(`<지역 코드>-<지점 코드>`)이고,
+  줄의 `data-slug`·`data-vp` 는 보일 슬라이드 고르기가 줄을 감추고 다시 세는
+  데 쓴다(`_map.html`).
+{% endcomment %}
+  <div class="mapdetail" id="mapdetail">
+    <p class="dim mdempty">왼쪽 목록에서 코어를 고르면 그 코어의 관찰과 통계가 여기에 놓입니다.</p>
+    {% for g in groups %}{% if not g.no_core %}
+    <section class="mcorebox" data-core="{{ g.site_code }}-{{ g.core }}">
+      <div class="mdhead">
+        <b>{{ g.core }}</b>
+        <span class="dim">{% if g.site %}{{ g.site }} · {% endif %}슬라이드 {{ g.n }}장{% if g.n_hidden %} <span class="hidemark" title="숨긴 슬라이드 {{ g.n_hidden }}장이 더 있습니다 — 아래 숫자에는 들어 있습니다">※{{ g.n_hidden }}</span>{% endif %}</span>
+        <a class="dsedit corelink" href="{% url 'core' g.site_code g.core %}"
+           title="{{ g.core }} 를 깊이 방향으로 봅니다">코어 보기</a>
+      </div>
+      <div class="stat-row">
+        <div class="stat"><b>{{ g.totals.n_images }}</b><span>사진</span></div>
+        <div class="stat"><b>{{ g.totals.n_groups }}</b><span>시야</span></div>
+        <div class="stat"><b>{{ g.totals.n_counted }}</b><span>검출</span></div>
+        <div class="stat"><b>{{ g.totals.reviewed_groups }}<span class="dim" style="font-size:13px">/{{ g.totals.n_groups }}</span></b><span>검토</span></div>
+      </div>
+      <div class="stat-row cardstats2">
+        {% for c in g.totals.counted_cols %}<div class="stat{% if c.is_group %} grpcol{% elif c.in_group %} ingrp{% endif %}" title="{{ c.label }}"><b>{{ c.n }}</b><span>{{ c.short }}</span></div>{% endfor %}
+      </div>
+      <div class="scroll">
+      <table class="dslist mdlist">
+        <thead>
+          <tr>
+            <th title="시추코어는 깊이(cm), 노두 시료는 OC">위치</th>
+            <th>사진</th>
+            <th>시야</th>
+            <th>검출</th>
+            <th>시야당</th>
+            {% for c in count_classes %}<th title="{{ c.label }}"{% if c.is_group %} class="grpcol"{% elif c.in_group %} class="ingrp"{% endif %}>{{ c.short }}</th>{% endfor %}
+            <th class="revcol">검토</th>
+          </tr>
+        </thead>
+        <tbody>
+        {% for d in g.rows %}
+          <tr class="mslide{% if d.hidden %} rowhidden{% endif %}" data-slug="{{ d.slug }}" data-vp="{{ d.n_groups }}">
+            <td class="dsname" title="{{ d.label }}">
+              {% comment %}
+                노두는 위치가 전부 `OC` 라 줄끼리 안 갈린다 — 시료 번호를 쓴다.
+              {% endcomment %}
+              <a href="{% url 'dataset' d.slug %}">{% if d.sample_kind == "outcrop" and d.sample_code %}{{ d.sample_code }}{% else %}{% include "viewer/_depth.html" with sample_kind=d.sample_kind depth_cm=d.depth_cm dash=1 short=1 only %}{% endif %}</a>
+              {% include "viewer/_obs.html" with d=d only %}
+              {% if d.state != "done" %}<span class="dsstate" title="{{ d.state_note }}">{{ d.state }}</span>{% endif %}
+            </td>
+            <td>{{ d.n_images }}</td>
+            <td>{{ d.n_groups }}</td>
+            {% if d.mean_counted is not None %}
+              <td title="검출 개체 {{ d.n_detected }}개 중 세는 분류{% if d.excluded %} — 합계에서 뺐습니다{% endif %}">{{ d.n_counted }}{% if d.excluded %}<span class="exmark">*</span>{% endif %}</td>
+              <td{% if d.detected_groups < d.n_groups %} class="partial" title="{{ d.n_groups }}개 시야 중 {{ d.detected_groups }}개만 검출됨 — 평균은 그 시야들 기준"{% endif %}>
+                {{ d.mean_counted }}{% if d.detected_groups < d.n_groups %}<span class="dim">*</span>{% endif %}</td>
+              {% for c in d.counted_cols %}<td{% if c.is_group %} class="grpcol"{% elif c.in_group %} class="ingrp"{% endif %}>{{ c.n }}</td>{% endfor %}
+            {% else %}
+              <td colspan="{{ count_classes|length|add:2 }}" class="dim nodet">검출 결과 없음</td>
+            {% endif %}
+            <td class="revcol">
+              <div class="revnum">{{ d.reviewed_groups }}<span class="dim">/{{ d.n_groups }}</span></div>
+              <div class="bar"><i style="width:{% widthratio d.reviewed_groups d.n_groups 100 %}%"></i></div>
+            </td>
+          </tr>
+        {% endfor %}
+        </tbody>
+      </table>
+      </div>
+      <p class="dim mdnote">이 브라우저에서 감춘 슬라이드 <span class="mdoff"></span>장은 목록에서 뺐습니다 — 위 숫자에는 들어 있습니다.</p>
+    </section>
+    {% endif %}{% endfor %}
+  </div>

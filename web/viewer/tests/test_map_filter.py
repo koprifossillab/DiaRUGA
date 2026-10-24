@@ -70,6 +70,19 @@ class MapFilterRenderTest(DiaRUGATestCase):
         self.assertIn('data-slug="bp" data-vp=', html)
         self.assertIn('class="msite" data-site="BP"', html)
 
+    def test_나무에는_코어까지_오른쪽에는_관찰이_놓인다(self):
+        """세 칸 (234) — 슬라이드 줄은 나무가 아니라 고른 코어의 상자에 있다."""
+        html = self.html("ant")
+        tree = html[html.index('<ul class="maptree">'):html.index('id="mapdetail"')]
+        self.assertNotIn('class="mslide', tree)
+        self.assertIn('class="mhead mpick"', tree)
+        self.assertIn('class="mcorebox" data-core="RS21-GC02"', html)
+        self.assertIn('class="mcorebox" data-core="WAP13-GC47"', html)
+        detail = html[html.index('id="mapdetail"'):]
+        self.assertIn('data-slug="wap" data-vp=', detail)
+        # 한국도 같은 세 칸이다
+        self.assertIn('class="mcorebox" data-core="BP-BP09"', self.html("kr"))
+
     @unittest.skipUnless(shutil.which("node"), "node 가 없다")
     def test_인라인_스크립트가_파싱된다(self):
         blocks = [b for b in js_blocks(self.html("ant")) if "diaruga.maphide" in b]

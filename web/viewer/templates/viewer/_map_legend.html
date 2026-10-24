@@ -1,5 +1,6 @@
 {% comment %}
-  지도 옆 범례와 지역 → 코어 → 슬라이드 목록. 권역과 무관하게 같다.
+  지도 옆 범례와 지역 → 코어 목록. 권역과 무관하게 같다. 고른 코어의 관찰은
+  오른쪽 칸(`_map_detail.html`)에 놓인다 (234).
 
   **바깥의 mapwrap 은 여기서 닫지 않는다.** `_map.html` 이 연 것은
   `_map.html` 이 닫는다 — 원래 한 파일이던 것을 가르면서 닫는 </div> 가
@@ -52,13 +53,13 @@
       </div>
     </details>
 {% comment %}
-      지역 → 코어 → 슬라이드. 깊이순이다 — 같은 코어에서 깊이에 따른 변화를
-      보는 것이 이 시료의 목적이라 그 순서로 읽혀야 한다.
+      지역 → 코어. **슬라이드 줄은 여기 없다** (234) — 지도 화면이 세 칸이 되면서
+      코어를 고르면 오른쪽 칸(`_map_detail.html`)에 그 코어의 관찰과 숫자가
+      놓인다. 예전에는 이 나무가 슬라이드까지 품고 있어 오른쪽이 통째로 비었다.
 
-      `data-site`·`data-core`·`data-slug` 는 위 고르기와 로스해 확대가 줄을
-      찾는 열쇠다. `outross` 는 로스해 틀 밖의 지점 — 확대 상태에서는 CSS 가
-      감춘다(`.mapstage.zoomRoss ~ .maplegend`). 마커와 같은 판정이다
-      (`views._map_ctx`).
+      `data-site`·`data-core` 는 위 고르기와 로스해 확대가 줄을 찾는 열쇠다.
+      `outross` 는 로스해 틀 밖의 지점 — 확대 상태에서는 CSS 가 감춘다
+      (`.mapstage.zoomRoss ~ .maplegend`). 마커와 같은 판정이다(`views._map_ctx`).
     {% endcomment %}
     <ul class="maptree">
     {% for p in antmap.points %}
@@ -71,26 +72,13 @@
         <ul>
         {% for c in p.cores %}
           <li class="mcore{% if c.ross_out %} outross{% endif %}" data-core="{{ p.code }}-{{ c.code }}">
-            <div class="mhead"><span class="mono">{{ c.code }}</span>
-              <span class="dim">슬라이드 <span class="nsl">{{ c.n_slides }}</span>장</span></div>
-            <ul>
-            {% for sl in c.slides %}
-              {% comment %}
-                여기는 이름이 아니라 깊이만 적는 자리다 — 같은 깊이의 관찰 둘이
-                **글자 그대로 같아 보인다.** 배지가 그것을 가른다.
-              {% endcomment %}
-              <li class="mslide{% if sl.hidden %} rowhidden{% endif %}" data-slug="{{ sl.slug }}" data-vp="{{ sl.n_viewpoints }}">
-                <a href="{% url 'dataset' sl.slug %}">
-                  {% include "viewer/_depth.html" with sample_kind=sl.sample_kind depth_cm=sl.depth_cm dash=1 short=1 only %}
-                </a>
-                {% include "viewer/_obs.html" with d=sl only %}
-                <span class="dim vp">시야 {{ sl.n_viewpoints }}{% if sl.excluded %}<span class="exmark">*</span>{% endif %}</span>
-                {% if sl.state != "done" %}<span class="dsstate rev">{{ sl.state }}</span>
-                {% elif sl.reviewed == sl.n_viewpoints %}<span class="mdone rev" title="검토를 마쳤습니다">완료</span>
-                {% else %}<span class="dim rev" title="검토를 마친 시야">{{ sl.reviewed }}/{{ sl.n_viewpoints }}</span>{% endif %}
-              </li>
-            {% endfor %}
-            </ul>
+            {% comment %}
+              고르는 자리라 단추다 — 키보드로도 닿아야 한다. 슬라이드 수는 보일
+              슬라이드 고르기가 다시 센다(`.nsl`).
+            {% endcomment %}
+            <button type="button" class="mhead mpick" aria-pressed="false"
+                    title="{{ c.code }} 의 관찰을 오른쪽에 봅니다"><span class="mono">{{ c.code }}</span>
+              <span class="dim">슬라이드 <span class="nsl">{{ c.n_slides }}</span>장</span></button>
           </li>
         {% endfor %}
         </ul>
