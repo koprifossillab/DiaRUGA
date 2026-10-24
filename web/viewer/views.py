@@ -3333,6 +3333,25 @@ HEALTH_TABLES = (("slide", Slide), ("viewpoint", Viewpoint),
                  ("detection", Detection), ("objectreview", ObjectReview))
 
 
+SPLASH_ASSETS = {"logo.gif": "image/gif", "logo.png": "image/png"}
+
+
+def splash_asset(request, name):
+    """첫 화면 로고 (235 · `base.html` 의 `#splash`).
+
+    이 배포에는 정적 파일을 내보내는 길이 없어(`STATIC_ROOT` 도 nginx 자리도
+    없다) 뷰가 직접 낸다. 이름은 둘만 받는다 — 경로를 받지 않는다. 파일은
+    판과 함께만 바뀌므로 하루 캐시를 준다.
+    """
+    ctype = SPLASH_ASSETS.get(name)
+    if not ctype:
+        raise Http404(name)
+    from .context import SPLASH_DIR
+    resp = FileResponse((SPLASH_DIR / name).open("rb"), content_type=ctype)
+    resp["Cache-Control"] = "public, max-age=86400"
+    return resp
+
+
 def healthz(request):
     """판·DB·안전망 상태를 한 번에 낸다 (`.guides/web/operations.md` §4).
 

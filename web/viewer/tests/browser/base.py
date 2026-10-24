@@ -52,6 +52,7 @@ class BrowserTestCase(StaticLiveServerTestCase):
     """
 
     _seq = 0        # setUp 이 올린다. 시험마다 다른 슬러그를 만드는 데 쓴다
+    skip_splash = True  # 첫 화면 로고(235)를 본 것으로 치고 연다 — setUp 참고
 
     @classmethod
     def setUpClass(cls):
@@ -122,6 +123,12 @@ class BrowserTestCase(StaticLiveServerTestCase):
         self.errors = []
         self.ctx = self._browser.new_context(viewport={"width": 1400,
                                                        "height": 900})
+        # 첫 화면 로고(235)는 탭마다 한 번 2.4초 화면을 덮는다 — 그동안 클릭이
+        # 덮개에 막혀 모든 시험이 그만큼 기다린다. 본 것으로 적어 두고 연다.
+        # 덮개 자체는 `test_splash.py` 가 이 줄 없이 본다.
+        if self.skip_splash:
+            self.ctx.add_init_script(
+                "try { sessionStorage.setItem('diaruga.splash', '1') } catch (e) {}")
         self.page = self.ctx.new_page()
         # **이 두 줄이 이 겹의 값어치다.** 화면이 200 이어도 JS 가 죽어 있으면
         # 아무 버튼도 안 듣는다 (045).

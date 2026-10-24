@@ -7,6 +7,7 @@ urlpatterns = [
     path("img", views.image, name="image"),
     path("crop", views.crop, name="crop"),
     path("healthz", views.healthz, name="healthz"),
+    path("splash/<str:name>", views.splash_asset, name="splash_asset"),
     path("review", views.save_review, name="save_review"),
     # 지점 하나 — 위치 방향으로 본 화면. **지점 코드는 지역마다 겹칠 수 있다**
     # (`Locality` 의 unique 가 `(site, code)` 다). 주소도 그 짝이어야 한다.

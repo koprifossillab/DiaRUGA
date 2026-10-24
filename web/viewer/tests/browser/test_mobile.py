@@ -40,6 +40,10 @@ class MobileTestCase(BrowserTestCase):
         self.ctx = self._browser.new_context(
             viewport={"width": 412, "height": 915}, has_touch=True,
             is_mobile=True, device_scale_factor=2)
+        # 맥락을 새로 만들어 부모가 건 첫 화면 로고 건너뛰기(235)가 빠진다
+        if self.skip_splash:
+            self.ctx.add_init_script(
+                "try { sessionStorage.setItem('diaruga.splash', '1') } catch (e) {}")
         self.page = self.ctx.new_page()
         self.page.on("pageerror",
                      lambda e: self.errors.append(f"pageerror: {e}"))

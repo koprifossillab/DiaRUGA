@@ -2625,8 +2625,82 @@
   // head 에 두는 이유: 본문의 인라인 스크립트가 이것보다 먼저 돈다.
   window.ROOT = '{% url "index" %}'.replace(/\/$/, '');
 </script>
+{% comment %}
+  첫 화면 (234 · 사용자 요청 2026-10-24). 탭을 새로 열어 들어올 때 로고가
+  그려지는 GIF 를 한 번 보이고 걷는다. 213 의 잠금 화면(`work/20260923-sclee`,
+  병합 안 됨)에 있던 로고만 가져왔다 — 코드는 묻지 않는다.
+
+  **탭마다 한 번이다**(`sessionStorage` 의 `diaruga.splash`). 같은 탭 안에서
+  페이지를 옮길 때마다 2.4초를 붙들면 검토가 일이 된다. 저장소가 막힌
+  브라우저(사생활 모드 일부)에서는 아예 안 띄운다 — 못 적으면 매번 뜬다.
+
+  `<head>` 에서 `splashing` 을 붙이는 이유: 본문이 한 번 그려진 뒤에 덮으면
+  화면이 깜빡인다. 덮개는 `<body>` 맨 앞의 `splash` 블록이고,
+  오프라인 꾸러미(`offline_review`·`offline_catalog`)는 그 블록을 비운다 — 서버
+  없이 열리는 파일이라 로고 주소가 없다.
+
+  **바탕색을 박아 둔다**(`#0f1115`). GIF 가 반투명을 못 담아 이 색 위에 구워져
+  있다(`tools/splash_logo.py` 의 BG) — 테마 토큰을 쓰면 밝은 테마에서 GIF 둘레에
+  네모가 비친다. 둘을 함께 바꾼다.
+{% endcomment %}
+<script>
+(function () {
+  try { if (sessionStorage.getItem('diaruga.splash')) return; } catch (e) { return; }
+  document.documentElement.classList.add('splashing');
+})();
+</script>
+<style>
+  #splash { display: none; }
+  .splashing #splash {
+    display: flex; position: fixed; inset: 0; z-index: 10000;
+    align-items: center; justify-content: center;
+    background: #0f1115; cursor: pointer; transition: opacity .4s;
+  }
+  #splash.out { opacity: 0; }
+  #splash img { display: block; width: min(560px, 92vw); height: auto; aspect-ratio: 680 / 280; }
+</style>
 </head>
 <body>
+{% block splash %}
+<div id="splash" aria-hidden="true"><img alt="" width="680" height="280"></div>
+<script>
+(function () {
+  var root = document.documentElement, box = document.getElementById('splash');
+  if (!box || !root.classList.contains('splashing')) return;
+  // 띄운 순간 적는다 — 다 보기 전에 페이지를 옮겨도 다시 안 뜬다
+  try { sessionStorage.setItem('diaruga.splash', '1'); } catch (e) { /* 위에서 걸렀다 */ }
+  var img = box.querySelector('img'), ms = {{ splash_ms|default:0 }},
+      gif = '{% url "splash_asset" "logo.gif" %}',
+      png = '{% url "splash_asset" "logo.png" %}', done = false;
+  function close() {
+    if (done) return;
+    done = true;
+    box.classList.add('out');
+    setTimeout(function () { root.classList.remove('splashing'); }, 420);
+  }
+  // 누르거나 키를 치면 바로 걷는다
+  box.addEventListener('click', close);
+  document.addEventListener('keydown', close, { once: true });
+  var still = !ms || (window.matchMedia &&
+      matchMedia('(prefers-reduced-motion: reduce)').matches);
+  if (still) { img.src = png; setTimeout(close, 700); return; }
+  // 원본을 미리 풀어 둔다 — GIF 끝 장면에서 바꾸는 순간에 비는 틈이 없게.
+  // GIF 는 끝 장면이 원본과 같아(`tools/splash_logo.py`) 바뀌는 것이 안 보인다
+  var pre = new Image();
+  pre.src = png;
+  var ready = pre.decode ? pre.decode().catch(function () {}) : Promise.resolve();
+  img.addEventListener('load', function once() {
+    img.removeEventListener('load', once);
+    setTimeout(function () { ready.then(function () { img.src = png; }); }, ms + 100);
+    setTimeout(close, ms + 900);
+  });
+  img.addEventListener('error', close);
+  // 망이 느려 GIF 가 안 오면 기다리지 않는다
+  setTimeout(function () { if (!img.complete) close(); }, 4000);
+  img.src = gif;
+})();
+</script>
+{% endblock %}
 {% comment %}
   DiaRUGA = **Dia**tom **R**efocusing **U**sing **G**enus-level **AI**.
   화면에는 풀어 쓰지 않는다 — 이름은 이름으로 서고, 뜻은 여기 남겨 둔다.

@@ -49,7 +49,9 @@ Django 의 시험 러너는 `DEBUG` 를 끄고 돌리므로 시험에도 안 샌
 이름을 적으면 그것이 이긴다 — 개발 서버에서 다른 이름을 쓰고 싶으면
 `DIARUGA_ENV_LABEL` 을 준다.
 """
+import json
 import os
+from pathlib import Path
 
 from django.conf import settings
 
@@ -61,6 +63,15 @@ DEFAULT_PREVIEW_URL = "/DiaRUGA-preview/"
 # 여기서 갈라야 할 것은 *개발이냐 테스트냐* 가 아니라 **운영이냐 아니냐**다.
 DEFAULT_DEV_LABEL = "Test Server"
 
+# 첫 화면 로고 GIF 가 끝 장면에 닿는 시각 (235). `tools/splash_logo.py` 가 GIF 와
+# 함께 적는다 — 화면이 이때 원본 PNG 로 바꾼다. 못 읽으면 0 이고, 화면은 그러면
+# GIF 를 건너뛰고 PNG 만 잠깐 보인다.
+SPLASH_DIR = Path(__file__).resolve().parent / "assets" / "splash"
+try:
+    SPLASH_MS = int(json.loads((SPLASH_DIR / "logo.json").read_text())["build_ms"])
+except (OSError, ValueError, KeyError):
+    SPLASH_MS = 0
+
 
 def version(request):
     return {
@@ -71,4 +82,5 @@ def version(request):
         # 적은 것이 이기고, 없으면 `DEBUG` 가 대신 세운다 (머리말 참고).
         "env_label": (os.environ.get("DIARUGA_ENV_LABEL", "").strip()
                       or (DEFAULT_DEV_LABEL if settings.DEBUG else "")),
+        "splash_ms": SPLASH_MS,
     }
