@@ -296,7 +296,7 @@ docker compose run --rm pipeline python pipeline/segment_diatoms.py --slide <slu
 
 ```bash
 python web/manage.py test viewer --exclude-tag browser   # 1,077개 · 35초
-python web/manage.py test viewer                         # 1,352개 (브라우저 275개 포함, 560초)
+python web/manage.py test viewer                         # 1,353개 (브라우저 276개 포함, 560초)
 # 3.14 는 multiprocessing 기본이 forkserver 라 --parallel 이 깨진다 — 나란히 없이 돌린다
 ```
 
