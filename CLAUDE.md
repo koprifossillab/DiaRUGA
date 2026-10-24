@@ -295,8 +295,8 @@ docker compose run --rm pipeline python pipeline/segment_diatoms.py --slide <slu
 **자동 시험이 있다 — 고치고 나면 이것부터 돌린다** (P08 · 064).
 
 ```bash
-python web/manage.py test viewer --exclude-tag browser   # 1,076개 · 35초
-python web/manage.py test viewer                         # 1,349개 (브라우저 273개 포함, 590초)
+python web/manage.py test viewer --exclude-tag browser   # 1,077개 · 35초
+python web/manage.py test viewer                         # 1,352개 (브라우저 275개 포함, 560초)
 # 3.14 는 multiprocessing 기본이 forkserver 라 --parallel 이 깨진다 — 나란히 없이 돌린다
 ```
 
