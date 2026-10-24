@@ -103,3 +103,24 @@ class AtlasPaneTest(BrowserTestCase):
         page.click('#atlasplate-stack button[data-z="out"]')
         self.assertEqual(page.eval_on_selector(
             "#atlasplate-stack img", "i => i.style.transform"), "")
+
+    def test_속을_고르고_사진을_누르면_단축키가_돌아온다(self):
+        """236 — 속 목록에 초점이 남아 단축키가 전부 물러났다.
+
+        사진의 mousedown 이 preventDefault 라 눌러도 초점이 안 옮겨 갔다.
+        화살표는 사진을 넘기는 대신 목록의 속을 바꿨다.
+        """
+        page = self.pick_alphaia()
+        page.focus(SEL)                  # 사람이 목록을 눌러 고르면 초점이 남는다
+        self.assertEqual(page.evaluate("document.activeElement.id"),
+                         "atlasgen-stack", "전제가 안 섰다 — 목록에 초점이 없다")
+        before = page.text_content("#savestate-stack") or ""
+        self.click_image(5, 5)
+        self.assertNotEqual(page.evaluate("document.activeElement.tagName"),
+                            "SELECT", "사진을 눌렀는데 목록에 초점이 남았다")
+        page.keyboard.press("ArrowDown")
+        self.assertEqual(page.input_value(SEL), "Alphaia",
+                         "화살표가 목록의 속을 바꿨다")
+        page.keyboard.press("w")
+        self.assertNotEqual(page.text_content("#savestate-stack") or "", before,
+                            "분류 단축키가 안 들었다")

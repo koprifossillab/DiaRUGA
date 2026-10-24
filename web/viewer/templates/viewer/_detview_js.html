@@ -5103,6 +5103,17 @@ window.initDetView = function (uid) {
     clearHighlight();
   }, true);
 
+  // **사진을 누르면 입력칸의 초점을 놓는다** (236). 단축키는 초점이 입력칸에
+  // 있으면 전부 물러나는데, 위의 mousedown 이 끌기 때문에 preventDefault 를
+  // 불러 브라우저가 초점을 옮기지 않는다 — 도감 칸 속 목록(232)에서 하나를
+  // 고르고 사진으로 돌아오면 단축키가 안 듣고 화살표는 목록의 속을 바꿨다.
+  view.addEventListener('mousedown', function (e) {
+    var t = document.activeElement;
+    if (!t || !/^(INPUT|TEXTAREA|SELECT)$/.test(t.tagName)) return;
+    if (e.target && /^(INPUT|TEXTAREA|SELECT)$/.test(e.target.tagName)) return;
+    t.blur();
+  }, true);
+
   applyTransform();
   build();
   catFill();
