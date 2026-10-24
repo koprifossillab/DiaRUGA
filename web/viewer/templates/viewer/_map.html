@@ -9,6 +9,12 @@
   없고, 지도 하나 때문에 외부 의존성과 사내망 TLS 문제를 들일 이유가 없다.
 {% endcomment %}
 <div class="mapwrap">
+{% comment %}
+  지도 칸은 권역과 무관하게 `.mapstage` 하나다 — 도법·출처 한 줄을 지도 바로
+  아래 왼쪽에 붙이려고 한국도 같은 틀에 넣는다 (234). 예전에는 그 줄이 가운데
+  나무 맨 위에 있었다. 확대 단추와 스크립트는 남극에만 있다.
+{% endcomment %}
+  <div class="mapstage" id="mapstage">
   {% if antmap.kind == "kr" %}
     {% include "viewer/_map_kr.html" %}
   {% else %}
@@ -17,7 +23,6 @@
     갈아탄다(`.mapstage` 의 `zoomRoss`). 고른 것은 `localStorage` 에 남는다.
     전체 지도 위의 틀 사각형과 "로스해" 이름도 확대로 가는 문이다.
 {% endcomment %}
-    <div class="mapstage" id="mapstage">
       <div class="mapzoom" id="mapzoom" role="group" aria-label="지도 범위">
         <button type="button" data-zoom="all" class="on" aria-pressed="true">남극 전체</button>
         <button type="button" data-zoom="ross" aria-pressed="false">로스해</button>
@@ -27,8 +32,16 @@
       </div>
       {% include "viewer/_map_ant.html" %}
       {% include "viewer/_map_ross.html" with ross=antmap.ross only %}
-    </div>
   {% endif %}
+    <div class="mapnote">
+      {% if antmap.kind == "kr" %}
+        <b>EPSG:5179</b> · 횡메르카토르(UTM-K) · 국가 경계 Natural Earth 1:10m
+      {% else %}
+        <b>EPSG:3031</b> · 남극점 중심 극구면투영 · 해안선 Natural Earth 1:50m
+        (로스해 확대는 1:10m · 빙붕은 빗금)
+      {% endif %}
+    </div>
+  </div>
   {% include "viewer/_map_legend.html" %}
   {% include "viewer/_map_detail.html" %}
 </div>
@@ -105,15 +118,11 @@
     // 상자에서 남은 줄을 센다.
     var boxes = {};
     wrap.querySelectorAll('.mapdetail .mcorebox[data-core]').forEach(function (b) {
-      var off_n = 0;
       b.querySelectorAll('.mslide[data-slug]').forEach(function (tr) {
         var h = !!off[tr.dataset.slug];
         tr.classList.toggle('mhid', h);
-        if (h) { n++; off_n++; }
+        if (h) n++;
       });
-      b.classList.toggle('someoff', off_n > 0);
-      var lb = b.querySelector('.mdoff');
-      if (lb) lb.textContent = off_n;
       boxes[b.dataset.core] = b;
     });
     wrap.querySelectorAll('.maptree .mcore[data-core]').forEach(function (core) {

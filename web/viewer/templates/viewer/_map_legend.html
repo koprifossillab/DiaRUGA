@@ -8,14 +8,6 @@
   표 아래에 늘 함께 보였다.
 {% endcomment %}
   <div class="maplegend">
-    <div class="mapnote">
-      {% if antmap.kind == "kr" %}
-        <b>EPSG:5179</b> · 횡메르카토르(UTM-K) · 국가 경계 Natural Earth 1:10m
-      {% else %}
-        <b>EPSG:3031</b> · 남극점 중심 극구면투영 · 해안선 Natural Earth 1:50m
-        (로스해 확대는 1:10m · 빙붕은 빗금)
-      {% endif %}
-    </div>
     {% if antmap.any_approx %}
 {% comment %}
       한 줄이면 된다. 나머지는 마커에 마우스를 올리면 나오고, 옅은 원과 주황

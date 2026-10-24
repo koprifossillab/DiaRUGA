@@ -152,9 +152,8 @@ class MapCorePickTest(BrowserTestCase):
         page.click(f".maptree .mcore[data-core='{rs}'] .mpick")
         page.click("#mapfilter summary")
         page.uncheck(f"#mapfilter input[data-slug='{self.a}']")
-        # 하나만 끄면 그대로 있고, 감춘 수를 적는다
+        # 하나만 끄면 그대로 있다
         self.assertEqual(self.display(self.box(rs)), "block")
-        self.assertEqual(page.inner_text(f"{self.box(rs)} .mdoff"), "1")
         page.uncheck(f"#mapfilter input[data-slug='{self.b}']")
         self.assertEqual(self.display(self.box(rs)), "none")
         self.assertEqual(page.locator(".mapdetail .mcorebox.on").count(), 1)

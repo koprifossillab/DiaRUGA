@@ -976,7 +976,8 @@
 
   /* 트리는 짧은 줄뿐이라 넓을 이유가 없다. 남는 폭은 지도가 가져간다. */
   .maplegend { flex: 0 1 260px; min-width: 220px; font-size: 12.5px; }
-  .maplegend .mapnote { color: var(--dim); font-size: 11.5px; margin-bottom: 10px; }
+  /* 도법·출처 — 지도 바로 아래 왼쪽 (234) */
+  .mapstage .mapnote { color: var(--dim); font-size: 11.5px; margin-top: 6px; }
   .maplegend .mapwarn {
     padding: 9px 12px; border-radius: 6px; margin-bottom: 12px; line-height: 1.55;
     background: var(--warn-bg); color: var(--warn-fg); border: 1px solid var(--warn-line);
@@ -1013,8 +1014,7 @@
   }
   .mapdetail .mdlist { margin-top: 12px; }
   .mapdetail .mdlist .dsname a { font-variant-numeric: tabular-nums; }
-  .mapdetail .mdnote { font-size: 11.5px; margin-top: 6px; display: none; }
-  .mapdetail .mcorebox.someoff .mdnote { display: block; }
+
   .antmap .sites a.mhid { display: none; }
   /* 로스해 확대 상태에서는 나무도 틀 안의 것만 (203). `.mapstage` 와
      `.maplegend` 는 `.mapwrap` 안의 형제라 `~` 로 닿는다. */
