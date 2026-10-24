@@ -62,11 +62,18 @@ class MapPointsFallbackTest(DiaRUGATestCase):
         rs21 = pts["RS21"]
         self.assertTrue(rs21["exact"], "지점 좌표가 있는데 대략값으로 물러났다")
         self.assertEqual(rs21["approx_note"], "")
-        lats = [la for (sc, _), (la, _) in CORES.items() if sc == "RS21"]
-        lons = [lo for (sc, _), (_, lo) in CORES.items() if sc == "RS21"]
-        x, y = data._polar_xy(sum(lats) / 4, sum(lons) / 4)
-        self.assertAlmostEqual(rs21["x"], x, delta=0.2)
-        self.assertAlmostEqual(rs21["y"], y, delta=0.2)
+        # **평균은 투영한 좌표에서 낸다** (234). 코어가 날짜변경선을 사이에
+        # 두고 있어(176°E 와 −170°대) 경도를 그대로 평균하면 −85° 가 되어 남극
+        # 반도 쪽에 찍혔다 — 예전 이 시험은 그 계산을 기댓값으로 박아 두고 있었다.
+        # 그래서 식이 아니라 성질을 본다: 지역 점은 제 코어들 가까이에 있다
+        # (RS21 코어는 서로 300 km 가까이 퍼져 있다 — 고치기 전에는 2,046 km).
+        xy = [data._polar_xy(la, lo) for (sc, _), (la, lo) in CORES.items()
+              if sc == "RS21"]
+        for cx, cy in xy:
+            self.assertLess(((rs21["x"] - cx) ** 2 + (rs21["y"] - cy) ** 2) ** .5,
+                            300, "지역 점이 제 코어에서 300 km 넘게 떨어졌다")
+        self.assertAlmostEqual(rs21["x"], sum(x for x, _ in xy) / 4, delta=0.2)
+        self.assertAlmostEqual(rs21["y"], sum(y for _, y in xy) / 4, delta=0.2)
         # 두 지역이 한 점에 겹치지 않는다 — 197 앞에는 둘 다 (-75, 175) 였다
         self.assertGreater(abs(pts["RS23"]["x"] - rs21["x"]), 100)
 

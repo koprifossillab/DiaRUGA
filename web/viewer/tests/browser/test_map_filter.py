@@ -133,6 +133,19 @@ class MapCorePickTest(BrowserTestCase):
         self.assertEqual(self.display(
             f"{self.box(rs)} .mslide[data-slug='{self.b}']"), "table-row")
 
+        # 지도에서도 그 지점을 짚는다 — 전체 지도는 지역, 확대는 지점 마커
+        def picked(sel):
+            return page.evaluate(
+                "s => document.querySelector(s).classList.contains('picked')", sel)
+        def stroke(sel):
+            return page.evaluate(
+                "s => getComputedStyle(document.querySelector(s + ' .dot')).strokeOpacity", sel)
+        full = ".antmap:not(.rossmap) a[data-site='{}']"
+        self.assertTrue(picked(full.format(self.site)))
+        self.assertFalse(picked(full.format(f"WAP{self.uniq}")))
+        self.assertTrue(picked(f".rossmap a[data-core='{rs}']"))
+        self.assertEqual(stroke(full.format(self.site)), "0.35")
+
         page = self.open_map()
         self.assertEqual(self.display(self.box(rs)), "block",
                          "고른 코어를 다시 열었을 때 잊었다")

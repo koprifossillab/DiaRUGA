@@ -901,6 +901,9 @@
     paint-order: stroke; stroke: var(--bg); stroke-width: 40;
   }
   .antmap a:hover .dot { stroke: var(--accent); }
+  /* 오른쪽 칸에 고른 코어의 지점 (234) — 약하게만. 옅은 테두리와 이름 색 */
+  .antmap .sites a.picked .dot { stroke: var(--accent); stroke-opacity: .35; stroke-width: 80; }
+  .antmap .sites a.picked .tag { fill: var(--accent); }
   .antmap a { text-decoration: none; }
 
   /* --- 로스해 확대 (EPSG:3031 · 180° 돌림) --- */

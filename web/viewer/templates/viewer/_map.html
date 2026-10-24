@@ -171,6 +171,13 @@
     });
     var d = wrap.querySelector('.mapdetail');
     if (d) d.classList.toggle('picked', !!k);
+    // 지도에서도 그 지점을 약하게 짚는다 — 전체 지도·한국은 지역 마커
+    // (`data-site`), 로스해 확대는 지점 마커(`data-core`)다.
+    var site = el ? el.closest('.msite').dataset.site : null;
+    wrap.querySelectorAll('.antmap .sites a').forEach(function (a) {
+      a.classList.toggle('picked', a.dataset.core ? a.dataset.core === k
+                                                  : !!site && a.dataset.site === site);
+    });
     if (remember && k) {
       try { localStorage.setItem(PICK, k); } catch (e) { /* 사생활 모드 */ }
     }

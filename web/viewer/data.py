@@ -782,17 +782,24 @@ def map_points(area: str | None = None,
         loc_xy = [(loc.lat, loc.lon) for loc in site.localities.all()
                   if loc.lat is not None and loc.lon is not None
                   and slides_of(loc)]
+        #
+        # **평균은 투영한 좌표에서 낸다** (234). 경도를 그대로 더하면 날짜변경선을
+        # 사이에 둔 지점들이 지구 반대편으로 간다 — RS21 의 코어가 176°E 하나와
+        # −170°대 셋이라 경도 평균이 −85° 가 되어 로스해가 아니라 남극반도 쪽에
+        # 찍혔다. 투영 평면에서는 이웃한 점끼리의 평균이라 그런 일이 없다.
         if site.lat is not None and site.lon is not None:
-            lat, lon, exact, note = site.lat, site.lon, True, ""
+            x, y = project(site.lat, site.lon)
+            exact, note = True, ""
         elif loc_xy:
-            lat = sum(la for la, _ in loc_xy) / len(loc_xy)
-            lon = sum(lo for _, lo in loc_xy) / len(loc_xy)
+            pxy = [project(la, lo) for la, lo in loc_xy]
+            x = sum(px for px, _ in pxy) / len(pxy)
+            y = sum(py for _, py in pxy) / len(pxy)
             exact, note = True, ""
         elif approx:
-            lat, lon, exact, note = approx[0], approx[1], False, approx[2]
+            x, y = project(approx[0], approx[1])
+            exact, note = False, approx[2]
         else:
             continue                    # 어디인지 짐작할 수도 없으면 안 찍는다
-        x, y = project(lat, lon)
 
         # 지점 아래에 관찰을 매단다. 시료의 위치순이다 — 한 지점에서 위치에 따른
         # 변화를 보는 것이 이 시료의 목적이라 그 순서로 읽혀야 한다.
