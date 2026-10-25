@@ -23,7 +23,7 @@
 
 ## 뷰어
 
-### `v0.37.0` — 10-25 (마이그레이션 없음 · 배포 대기 · 뒤처리 `import_atlas.py`)
+### `v0.37.0` — 10-25 (마이그레이션 없음 · 18:31 배포 · 뒤처리 `import_atlas.py` 18:32 돌림)
 
 **도감 검색 결과의 바둑판 보기 · 종 2~5개 나란히 비교** ([238](devlog/20261025_238_atlas-grid-and-compare.md))
 
@@ -34,7 +34,7 @@
 **논문 도판 넷에 크롭을 붙인다** ([239](devlog/20261025_239_paper-plate-crops-four.md))
 
 - 1936 Skvortzov · 1985 Akiba & Yanagisawa · 1992 갈말 · 1993 Chaetoceros. 크롭이 있는 종 313 → 462. 크롭 파일은 이미 `/data3` 에 있다
-- **배포 뒤 `import_atlas.py` 를 돌려야 운영에 닿는다**
+- 배포 뒤 `import_atlas.py` 를 돌렸다(자리 4,002)
 
 **`check_db` 11번이 분류 이름의 첫 낱말로 속을 맞춘다** ([237](devlog/20261025_237_eucampia-fragment-class.md) 덧)
 
