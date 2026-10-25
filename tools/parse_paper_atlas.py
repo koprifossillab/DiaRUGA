@@ -68,29 +68,35 @@ PAPER_META = {
         title="Skvortzov, B.V. (1936) 함남 안변의 신생대 화석 규조 "
               "(Bull. Geol. Surv. Tyosen 12, Harbin)",
         short="1936 Skvortzov 안변",
+        crop_prefix="1936skv",
     ),
     "1992_lee_galmal_quaternary_flora": dict(
         atlas_key="1992-lee-galmal",
         title="Lee, Y.G. (1992) 철원 갈말면 제4기 규조토 "
               "(J. Paleont. Soc. Korea 8(1):1–23)",
         short="1992 Lee 갈말",
+        crop_prefix="1992lee",
     ),
     "1993_lee_chaetoceros_yeonil": dict(
         atlas_key="1993-lee-chaetoceros",
         title="Lee, Y.G. (1993) 포항 연일층군 Chaetoceros "
               "(J. Paleont. Soc. Korea 9(1):24–52)",
         short="1993 Lee Chaetoceros",
+        crop_prefix="1993lee",
     ),
     "1985_akiba_yanagisawa_dsdp87_zonal_markers": dict(
         atlas_key="1985-akiba-yanagisawa",
         title="Akiba, F. & Yanagisawa, Y. (1985) 북태평양 신생대 분대 표준종 "
               "(DSDP Init. Repts. Leg 87, ch.7)",
         short="1985 Akiba & Yanagisawa",
+        crop_prefix="1985aki",
     ),
     # P22(169~177)가 도판을 딴 8편(2026-08-28~31) — 캡션 학명마다 크롭 PNG 가
     # 있다(`Diadiction/plate/plate_<crop_prefix>_pl<N>_fig<NN 또는 글자>_*.png`).
     # `crop_prefix` 가 있는 논문만 `build()` 가 그림 하나당 자리를 하나씩 내고
-    # `crop_image` 를 채운다 — 없는 넷(위)은 도판 쪽 단위 그대로 둔다
+    # `crop_image` 를 채운다. 위 넷은 P23 때 접두사가 파이썬 키와 어긋나
+    # 빠졌다가 239 에서 붙었다 — 접두사는 `crop_plates.py` 가 키에서 지어
+    # 낸 것(`1936skv`)을 그대로 적는다
     "2017_yun_ulleung_basin": dict(
         atlas_key="2017-yun-ulleung",
         title="Yun, S.M. 외 (2017) 울릉분지 코어 규조 "
@@ -174,6 +180,11 @@ PAPER_META = {
         crop_prefix="1990ger",
     ),
 }
+
+# 크롭 파일 이름 (`sync_paper_plate_images.NAME_RE` 와 같다)
+CROP_NAME = re.compile(r"^plate_(?P<prefix>[a-z0-9]+)_pl(?P<plate>\d+)"
+                       r"_fig(?P<fig>[0-9A-Za-z]+)_.*\.png$")
+APPROX_NOTE = "그림 보기는 이 도판에 실린 이 종의 사진 중 하나다 — 그림 번호는 안 짚었다"
 
 # 캡션의 속명 약자 → 온전한 속. **사람이 원문으로 확인한 것**이라 `build()` 의
 # "바로 앞의 같은 글자 속" 규칙과 대조하는 검산표다(둘 다 맞아야 쓴다).
@@ -308,6 +319,9 @@ def build(paper: str) -> dict:
     crop_prefix = meta.get("crop_prefix")
     missing_crops: list[str] = []
 
+    def crop_rel(plate: int, tag: str) -> str:
+        return f"atlas/{meta['atlas_key']}/crops/pl{plate}_fig{tag}.png"
+
     def crop_of(plate: int, fig) -> str | None:
         """그림 하나의 크롭 상대경로 (`/img?p=` 가 먹는 `DATA_ROOT` 기준).
 
@@ -315,15 +329,44 @@ def build(paper: str) -> dict:
         만들지 않고 `pl<N>_fig<...>_` 접두사로 글롭해 하나를 찾는다.
         서빙 경로는 이름을 뗀 고정 모양(`crops/pl<N>_fig<NN>.png`)으로
         둔다 — DB 는 이미 `name` 을 들고 있어 파일명에 또 실을 이유가 없다.
+
+        **같은 그림의 다른 장(`6b`·`10b`)도 그 그림이다** — 1985 는 한 그림을
+        여러 상자로 잘라 둘째부터 소문자를 붙였고(`crop_plates.caption_lookup`),
+        첫 장이 없는 그림이 있다. 그때는 둘째 장을 쓴다.
         """
         fig_s = f"{fig:02d}" if isinstance(fig, int) else str(fig)
-        hits = sorted(PLATE_DIR.glob(f"plate_{crop_prefix}_pl{plate}_fig{fig_s}_*.png"))
-        if not hits:
-            missing_crops.append(f"pl{plate} fig{fig_s}")
-            return None
-        return f"atlas/{meta['atlas_key']}/crops/pl{plate}_fig{fig_s}.png"
+        if (plate, fig_s) in crop_tags:
+            return crop_rel(plate, fig_s)
+        if isinstance(fig, int):
+            alt = sorted(t for pl, t in crop_tags if pl == plate
+                         and re.fullmatch(rf"0*{fig}[a-z]", t))
+            if alt:
+                return crop_rel(plate, alt[0])
+        missing_crops.append(f"pl{plate} fig{fig_s}")
+        return None
+
+    crop_tags: set[tuple[int, str]] = set()
+    # `<첫 그림>p<순번>` — 상자가 너무 많아 그림 번호를 안 짚고 "이 종의 사진
+    # 중 하나" 로 자른 것(1985 · `crop_plates.caption_lookup`). 첫 그림의
+    # 캡션이 그 종이다. **그림 번호로는 못 쓴다** — 정확한 크롭이 하나도
+    # 없는 (도판, 종)에만 첫 자리에 하나 붙이고 주석으로 밝힌다
+    approx: dict[tuple[int, str], list[str]] = {}
+    if crop_prefix:
+        for f in PLATE_DIR.glob(f"plate_{crop_prefix}_pl*_fig*_*.png"):
+            m = CROP_NAME.match(f.name)
+            if not m or m.group("prefix") != crop_prefix:
+                continue
+            plate, tag = int(m.group("plate")), m.group("fig")
+            crop_tags.add((plate, tag))
+            pm = re.fullmatch(r"(\d+)p\d+", tag)
+            if pm:
+                head = merge_comma(caps.get(plate, {}).get(int(pm.group(1))) or "")
+                if not head or head == "__unnamed":
+                    raise SystemExit(f"근사 크롭의 종을 못 짚는다: {f.name}")
+                approx.setdefault((plate, head), []).append(tag)
 
     entries = []
+    n_approx = 0
     for seq, name in enumerate(order, start=1):
         by_plate: dict[int, list] = {}
         for plate, fig in occurrences[name]:
@@ -339,6 +382,14 @@ def build(paper: str) -> dict:
                 for plate in sorted(by_plate)
                 for fig in sorted(by_plate[plate], key=fig_sort_key)
             ]
+            for plate in sorted(by_plate):
+                tags = approx.get((plate, name))
+                here = [p for p in placements if p["plate"] == plate]
+                if not tags or any(p["crop_image"] for p in here):
+                    continue
+                here[0]["crop_image"] = crop_rel(plate, sorted(tags)[0])
+                here[0]["note"] = APPROX_NOTE
+                n_approx += 1
         else:
             placements = [
                 place(plate=plate, figures=format_figs(by_plate[plate]),
@@ -361,6 +412,9 @@ def build(paper: str) -> dict:
                 " / ".join(f"`{f}`" for f in forms) + f" 로 적혀 있다 ({where})")
         entries.append(e)
 
+    if n_approx:
+        print(f"  · 근사 크롭을 붙였다({n_approx}자리 — 그림 번호를 안 짚은 것)",
+              file=sys.stderr)
     if missing_crops:
         print(f"  ! 크롭을 못 찾았다({len(missing_crops)}개): "
               f"{', '.join(missing_crops[:10])}"
