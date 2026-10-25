@@ -16,6 +16,7 @@
 
     python tools/sync_paper_plate_images.py
     python tools/sync_paper_plate_images.py --only 1991_lee_yeonil_biostratigraphy
+    python tools/sync_paper_plate_images.py --only korean        # 한국 도감 그림 (240)
     python tools/sync_paper_plate_images.py --dry-run
 """
 from __future__ import annotations
@@ -63,6 +64,8 @@ def main() -> int:
     args = ap.parse_args()
 
     papers = {k: v for k, v in PAPER_META.items() if v.get("crop_prefix")}
+    # 한국 도감의 그림 크롭도 같은 이름 모양이다 (240 · `crop_atlas_figures.py`)
+    papers["korean"] = dict(crop_prefix="korean", atlas_key="korean", short="한국 도감")
     if args.only:
         papers = {k: v for k, v in papers.items() if k == args.only}
         if not papers:
