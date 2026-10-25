@@ -196,12 +196,30 @@ def kr_pages() -> dict:
     d = tomllib.loads(KR_PAGES.read_text(encoding="utf-8"))
     return {"offset": d["offset"]["book_minus_pdf"],
             "pages": d["source"]["pages"],
-            "plates": {int(k): v for k, v in d["plates"].items()}}
+            "plates": {int(k): v for k, v in d["plates"].items()},
+            "plate_fix": d.get("plate_fix", {}),
+            "plate_fill": d.get("plate_fill", {})}
+
+
+# 도판 그림 크롭 (240 · `tools/crop_atlas_figures.py publish` 가 둔다). 이름의
+# `pl<N>` 은 **그림이 실제로 놓인 도판**이라 색인의 `pl.` 와 다를 수 있다
+KR_CROP = re.compile(r"^plate_korean_pl(\d+)_fig(\d{3})_.*\.png$")
+
+
+def kr_crops() -> dict[str, str]:
+    """항목 번호 → 크롭 상대경로(`/img?p=` 가 먹는 `DATA_ROOT` 기준)."""
+    out = {}
+    for f in sorted((DIADICTION / "plate").glob("plate_korean_pl*_fig*_*.png")):
+        m = KR_CROP.match(f.name)
+        if m:
+            out[m.group(2)] = f"atlas/korean/crops/pl{m.group(1)}_fig{m.group(2)}.png"
+    return out
 
 
 def parse_korean(text: str) -> tuple[list[dict], int]:
     """`**169. *이름***` + `<sub>자리</sub>` + `- 생태/분포/비고:` 세 줄짜리다."""
     pages = kr_pages()
+    crops = kr_crops()
     body, offset = head_of(text, "## 종별 상세")
     entries: list[dict] = []
     sect = None
@@ -244,8 +262,25 @@ def parse_korean(text: str) -> tuple[list[dict], int]:
                 n = p["book_page"] - pages["offset"]
                 if 1 <= n <= pages["pages"]:
                     p["pdf_page"] = n
+            # **색인의 `pl.` 가 틀린 자리는 정정표가 덮는다** (240 ·
+            # `korean_pages.toml` 의 `[plate_fix]`). 색인 원문은 안 고친다 —
+            # 원래 값은 `note` 에 남긴다. 색인이 정정표가 아는 값과 다르면
+            # 색인이 바뀐 것이니 멈춘다(정정을 다시 봐야 한다)
+            fix = pages["plate_fix"].get(entries[-1]["item_no"])
+            if fix and fix.get("actual") is not None:
+                if p["plate"] != fix.get("index"):
+                    raise SystemExit(f"#{entries[-1]['item_no']} 색인 pl.{p['plate']} 이 "
+                                     f"정정표의 index={fix.get('index')} 와 다르다")
+                p["note"] = f"〔색인은 pl.{p['plate']} · 실제 그림은 Plate {fix['actual']} — {fix['why']}〕"
+                p["plate"] = fix["actual"]
+            fill = pages["plate_fill"].get(entries[-1]["item_no"])
+            if fill and p["plate"] is None:
+                p["note"] = f"〔색인에 pl. 이 없다 · 그림은 Plate {fill['actual']} — {fill['why']}〕"
+                p["plate"] = fill["actual"]
             if p["plate"] is not None:
                 p["pdf_plate_page"] = pages["plates"].get(p["plate"])
+            if not entries[-1]["placements"]:
+                p["crop_image"] = crops.get(entries[-1]["item_no"])
             entries[-1]["placements"].append(p)
             continue
         m = KR_BODY.match(line)

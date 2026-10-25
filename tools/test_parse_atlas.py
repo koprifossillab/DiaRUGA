@@ -114,6 +114,34 @@ check("책 쪽은 있다", kr[1]["placements"][0]["book_page"], 370)
 check("변종", kr[1]["rank"], "infraspecies")
 check("변종 표기", kr[1]["infra"], "var. ovata IWAHASHI")
 
+print("\n2b. 한국 — 정정표가 pl. 을 덮고, 색인이 바뀌면 멈춘다 (240)")
+_pages, _crops = pa.kr_pages, pa.kr_crops
+
+
+def with_fix(fix, fill=None):
+    def pages():
+        d = _pages()
+        return {**d, "plate_fix": fix, "plate_fill": fill or {}}
+    pa.kr_pages, pa.kr_crops = pages, lambda: {"169": "atlas/korean/crops/pl23_fig169.png"}
+    try:
+        return pa.parse_korean(KOREAN)[0]
+    except SystemExit:
+        return None
+    finally:
+        pa.kr_pages, pa.kr_crops = _pages, _crops
+
+
+fx = with_fix({"169": {"index": 21, "actual": 23, "why": "시험"}},
+              {"170": {"index": "없음", "actual": 24, "why": "시험"}})
+check("실제 도판으로 덮는다", fx[0]["placements"][0]["plate"], 23)
+check("도판 쪽도 실제 도판을 따른다", fx[0]["placements"][0]["pdf_plate_page"],
+      _pages()["plates"][23])
+check("원래 값을 note 에 남긴다", "색인은 pl.21" in fx[0]["placements"][0]["note"], True)
+check("크롭이 붙는다", fx[0]["placements"][0]["crop_image"], "atlas/korean/crops/pl23_fig169.png")
+check("pl. 이 없던 것을 채운다", fx[1]["placements"][0]["plate"], 24)
+check("색인이 정정표와 다르면 멈춘다",
+      with_fix({"169": {"index": 99, "actual": 23, "why": "시험"}}), None)
+
 print("\n3. Schmidt — 〔…〕 가 둘이다. 하나만 걷는다")
 sc, marked = pa.parse_schmidt(SCHMIDT)
 check("항목 수", len(sc), 2)
