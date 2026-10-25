@@ -1890,6 +1890,39 @@ def atlas_index(request):
     return render(request, "viewer/atlas.html", ctx)
 
 
+def atlas_compare(request):
+    """도감 종 2~5개를 나란히 (238). **읽기만 한다.**
+
+    고른 종은 주소의 `e`(반복)에 실린다 — `<도감>:<표제어>` 이고 준 차례가
+    칸의 차례다. 새로고침해도 공유해도 같은 비교가 열린다. 바둑판 보기의
+    고르기 칸이 여기로 보낸다. 하나만 남으면 비교가 아니지만 화면은 그대로
+    낸다 — 칸을 빼다 하나가 남았을 때 빈 화면으로 튕기면 무엇이 있었는지를
+    잃는다. 다섯을 넘으면 앞의 다섯만 놓고 그렇게 말한다.
+    """
+    keys = request.GET.getlist("e")
+    got = data.atlas_compare(keys)
+    rows = got["rows"]
+    base = reverse("atlas_compare")
+    shown = [r["key"] for r in rows]
+    for r in rows:
+        rest = [k for k in shown if k != r["key"]]
+        # 칸을 빼는 링크. 못 찾은 열쇠는 들고 가지 않는다 — 띠가 한 번 말했다
+        r["drop_url"] = base + ("?" + urlencode([("e", k) for k in rest])
+                                if rest else "")
+    # 한 종이라도 값이 있는 줄만 낸다 — 다 빈 줄은 비교할 것이 없다
+    has = {
+        "taxon": any(r["taxon"] for r in rows),
+        "occurrences": any(r["occurrences"] for r in rows),
+        "biodatums": any(r["biodatums"] for r in rows),
+        **{k: any(r["extra"].get(k) for r in rows)
+           for k in ("ecology", "distribution", "original_note")},
+    }
+    return render(request, "viewer/atlas_compare.html", {
+        "rows": rows, "has": has, "missing": got["missing"], "over": got["over"],
+        "max": data.ATLAS_COMPARE_MAX,
+    })
+
+
 def _atlas_area_groups(plates, area=""):
     """도감 카드를 권역별로 (196). `[{code, label, books, papers}]` — 권역
     차례는 `atlas.AREAS` 다. **권역을 모르는 도감은 "권역 미정" 으로 따로
