@@ -175,8 +175,9 @@ class CheckAtlasTest(DiaRUGATestCase):
         # 나머지가 늘 걸려 "치우면 풀린다" 를 볼 수가 없다
         self.taxa = list(ClassDef.objects.filter(is_taxon=True, active=True))
         self.assertTrue(self.taxa, "is_taxon 분류가 픽스처에 있어야 한다")
-        self.imp.put(doc([entry(i + 1, f"{c.label} sp", c.label)
-                          for i, c in enumerate(self.taxa)]), 0)
+        genera = sorted({c.label.split()[0] for c in self.taxa})
+        self.imp.put(doc([entry(i + 1, f"{g} sp", g)
+                          for i, g in enumerate(genera)]), 0)
 
     def run_check(self):
         self.chk.problems.clear()
@@ -196,6 +197,12 @@ class CheckAtlasTest(DiaRUGATestCase):
 
         c.label = was
         c.save(update_fields=["label"])
+        self.assertNotIn("분류(is_taxon)의 속이 도감에 없다", self.run_check())
+
+    def test_속의_파편은_그_속으로_맞춘다(self):
+        """`Eucampia 파편` 은 도감에 `Eucampia` 만 있어도 안 걸린다 (237)."""
+        self.assertTrue(ClassDef.objects.filter(key="eucampia_frag",
+                                                is_taxon=True).exists())
         self.assertNotIn("분류(is_taxon)의 속이 도감에 없다", self.run_check())
 
     def test_도감이_안_들어와_있으면_건너뛴다(self):

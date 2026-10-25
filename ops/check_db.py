@@ -834,8 +834,10 @@ def check_atlas(slug=None):
     # **`label` 로 맞춘다.** `ClassDef` 에 속 칸을 따로 두면 "분류를 더할 때
     # 채울 것" 이 여덟에서 아홉이 되고, 그 목록은 하나라도 비면 예외 없이
     # 조용히 다르게 구르는 자리다(038·040). 이름이 곧 속인 동안은 이것으로 선다
+    # **첫 낱말이 속이다** (237) — 속의 파편(`Eucampia 파편`)은 이름 전체가
+    # 속명이 아니지만 그 속의 것이다
     taxa = list(ClassDef.objects.filter(is_taxon=True, active=True))
-    off = [c for c in taxa if c.label not in genera]
+    off = [c for c in taxa if c.label.split()[0] not in genera]
     report("분류(is_taxon)의 속이 도감에 없다", len(off), len(taxa),
            "속명 표기가 갈렸거나 색인의 속명이 잘못 펴진 자리다 (119)",
            [f"{c.key} ({c.label})" for c in off])
