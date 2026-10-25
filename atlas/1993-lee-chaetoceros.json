@@ -28,18 +28,29 @@
      "pdf_plate_page": null,
      "volume": null,
      "note": null,
-     "crop_image": null
+     "crop_image": "atlas/1993-lee-chaetoceros/crops/pl1_fig01.png"
     },
     {
      "plate": 2,
      "plate_label": null,
-     "figures": "4, 7",
+     "figures": "4",
      "book_page": null,
      "pdf_page": 16,
      "pdf_plate_page": null,
      "volume": null,
      "note": null,
-     "crop_image": null
+     "crop_image": "atlas/1993-lee-chaetoceros/crops/pl2_fig04.png"
+    },
+    {
+     "plate": 2,
+     "plate_label": null,
+     "figures": "7",
+     "book_page": null,
+     "pdf_page": 16,
+     "pdf_plate_page": null,
+     "volume": null,
+     "note": null,
+     "crop_image": "atlas/1993-lee-chaetoceros/crops/pl2_fig07.png"
     }
    ],
    "extra": {},
@@ -59,13 +70,35 @@
     {
      "plate": 1,
      "plate_label": null,
-     "figures": "2-4",
+     "figures": "2",
      "book_page": null,
      "pdf_page": 12,
      "pdf_plate_page": null,
      "volume": null,
      "note": null,
-     "crop_image": null
+     "crop_image": "atlas/1993-lee-chaetoceros/crops/pl1_fig02.png"
+    },
+    {
+     "plate": 1,
+     "plate_label": null,
+     "figures": "3",
+     "book_page": null,
+     "pdf_page": 12,
+     "pdf_plate_page": null,
+     "volume": null,
+     "note": null,
+     "crop_image": "atlas/1993-lee-chaetoceros/crops/pl1_fig03.png"
+    },
+    {
+     "plate": 1,
+     "plate_label": null,
+     "figures": "4",
+     "book_page": null,
+     "pdf_page": 12,
+     "pdf_plate_page": null,
+     "volume": null,
+     "note": null,
+     "crop_image": "atlas/1993-lee-chaetoceros/crops/pl1_fig04.png"
     },
     {
      "plate": 3,
@@ -76,7 +109,7 @@
      "pdf_plate_page": null,
      "volume": null,
      "note": null,
-     "crop_image": null
+     "crop_image": "atlas/1993-lee-chaetoceros/crops/pl3_fig18.png"
     }
    ],
    "extra": {},
@@ -102,7 +135,7 @@
      "pdf_plate_page": null,
      "volume": null,
      "note": null,
-     "crop_image": null
+     "crop_image": "atlas/1993-lee-chaetoceros/crops/pl1_fig05.png"
     },
     {
      "plate": 3,
@@ -113,7 +146,7 @@
      "pdf_plate_page": null,
      "volume": null,
      "note": null,
-     "crop_image": null
+     "crop_image": "atlas/1993-lee-chaetoceros/crops/pl3_fig08.png"
     }
    ],
    "extra": {},
@@ -139,7 +172,7 @@
      "pdf_plate_page": null,
      "volume": null,
      "note": null,
-     "crop_image": null
+     "crop_image": "atlas/1993-lee-chaetoceros/crops/pl1_fig06.png"
     },
     {
      "plate": 3,
@@ -150,7 +183,7 @@
      "pdf_plate_page": null,
      "volume": null,
      "note": null,
-     "crop_image": null
+     "crop_image": "atlas/1993-lee-chaetoceros/crops/pl3_fig15.png"
     }
    ],
    "extra": {},
@@ -170,13 +203,24 @@
     {
      "plate": 1,
      "plate_label": null,
-     "figures": "7, 9",
+     "figures": "7",
      "book_page": null,
      "pdf_page": 12,
      "pdf_plate_page": null,
      "volume": null,
      "note": null,
-     "crop_image": null
+     "crop_image": "atlas/1993-lee-chaetoceros/crops/pl1_fig07.png"
+    },
+    {
+     "plate": 1,
+     "plate_label": null,
+     "figures": "9",
+     "book_page": null,
+     "pdf_page": 12,
+     "pdf_plate_page": null,
+     "volume": null,
+     "note": null,
+     "crop_image": "atlas/1993-lee-chaetoceros/crops/pl1_fig09.png"
     }
    ],
    "extra": {},
@@ -196,13 +240,24 @@
     {
      "plate": 1,
      "plate_label": null,
-     "figures": "8, 12",
+     "figures": "8",
      "book_page": null,
      "pdf_page": 12,
      "pdf_plate_page": null,
      "volume": null,
      "note": null,
-     "crop_image": null
+     "crop_image": "atlas/1993-lee-chaetoceros/crops/pl1_fig08.png"
+    },
+    {
+     "plate": 1,
+     "plate_label": null,
+     "figures": "12",
+     "book_page": null,
+     "pdf_page": 12,
+     "pdf_plate_page": null,
+     "volume": null,
+     "note": null,
+     "crop_image": "atlas/1993-lee-chaetoceros/crops/pl1_fig12.png"
     }
    ],
    "extra": {},
@@ -228,7 +283,7 @@
      "pdf_plate_page": null,
      "volume": null,
      "note": null,
-     "crop_image": null
+     "crop_image": "atlas/1993-lee-chaetoceros/crops/pl1_fig10.png"
     }
    ],
    "extra": {},
@@ -254,7 +309,7 @@
      "pdf_plate_page": null,
      "volume": null,
      "note": null,
-     "crop_image": null
+     "crop_image": "atlas/1993-lee-chaetoceros/crops/pl1_fig11.png"
     }
    ],
    "extra": {},
@@ -280,7 +335,7 @@
      "pdf_plate_page": null,
      "volume": null,
      "note": null,
-     "crop_image": null
+     "crop_image": "atlas/1993-lee-chaetoceros/crops/pl1_fig13.png"
     }
    ],
    "extra": {},
@@ -306,7 +361,7 @@
      "pdf_plate_page": null,
      "volume": null,
      "note": null,
-     "crop_image": null
+     "crop_image": "atlas/1993-lee-chaetoceros/crops/pl1_fig15.png"
     },
     {
      "plate": 2,
@@ -317,7 +372,7 @@
      "pdf_plate_page": null,
      "volume": null,
      "note": null,
-     "crop_image": null
+     "crop_image": "atlas/1993-lee-chaetoceros/crops/pl2_fig19.png"
     },
     {
      "plate": 3,
@@ -328,7 +383,7 @@
      "pdf_plate_page": null,
      "volume": null,
      "note": null,
-     "crop_image": null
+     "crop_image": "atlas/1993-lee-chaetoceros/crops/pl3_fig19.png"
     }
    ],
    "extra": {},
@@ -354,7 +409,7 @@
      "pdf_plate_page": null,
      "volume": null,
      "note": null,
-     "crop_image": null
+     "crop_image": "atlas/1993-lee-chaetoceros/crops/pl1_fig16.png"
     }
    ],
    "extra": {},
@@ -380,7 +435,7 @@
      "pdf_plate_page": null,
      "volume": null,
      "note": null,
-     "crop_image": null
+     "crop_image": "atlas/1993-lee-chaetoceros/crops/pl1_fig19.png"
     },
     {
      "plate": 2,
@@ -391,7 +446,7 @@
      "pdf_plate_page": null,
      "volume": null,
      "note": null,
-     "crop_image": null
+     "crop_image": "atlas/1993-lee-chaetoceros/crops/pl2_fig17.png"
     },
     {
      "plate": 3,
@@ -402,7 +457,7 @@
      "pdf_plate_page": null,
      "volume": null,
      "note": null,
-     "crop_image": null
+     "crop_image": "atlas/1993-lee-chaetoceros/crops/pl3_fig10.png"
     }
    ],
    "extra": {},
@@ -428,7 +483,7 @@
      "pdf_plate_page": null,
      "volume": null,
      "note": null,
-     "crop_image": null
+     "crop_image": "atlas/1993-lee-chaetoceros/crops/pl1_fig21.png"
     }
    ],
    "extra": {},
@@ -454,7 +509,7 @@
      "pdf_plate_page": null,
      "volume": null,
      "note": null,
-     "crop_image": null
+     "crop_image": "atlas/1993-lee-chaetoceros/crops/pl1_fig24.png"
     }
    ],
    "extra": {},
@@ -480,7 +535,7 @@
      "pdf_plate_page": null,
      "volume": null,
      "note": null,
-     "crop_image": null
+     "crop_image": "atlas/1993-lee-chaetoceros/crops/pl2_fig01.png"
     },
     {
      "plate": 3,
@@ -491,7 +546,7 @@
      "pdf_plate_page": null,
      "volume": null,
      "note": null,
-     "crop_image": null
+     "crop_image": "atlas/1993-lee-chaetoceros/crops/pl3_fig09.png"
     }
    ],
    "extra": {},
@@ -511,13 +566,35 @@
     {
      "plate": 2,
      "plate_label": null,
-     "figures": "2, 3, 8",
+     "figures": "2",
      "book_page": null,
      "pdf_page": 16,
      "pdf_plate_page": null,
      "volume": null,
      "note": null,
-     "crop_image": null
+     "crop_image": "atlas/1993-lee-chaetoceros/crops/pl2_fig02.png"
+    },
+    {
+     "plate": 2,
+     "plate_label": null,
+     "figures": "3",
+     "book_page": null,
+     "pdf_page": 16,
+     "pdf_plate_page": null,
+     "volume": null,
+     "note": null,
+     "crop_image": "atlas/1993-lee-chaetoceros/crops/pl2_fig03.png"
+    },
+    {
+     "plate": 2,
+     "plate_label": null,
+     "figures": "8",
+     "book_page": null,
+     "pdf_page": 16,
+     "pdf_plate_page": null,
+     "volume": null,
+     "note": null,
+     "crop_image": "atlas/1993-lee-chaetoceros/crops/pl2_fig08.png"
     }
    ],
    "extra": {},
@@ -537,13 +614,35 @@
     {
      "plate": 2,
      "plate_label": null,
-     "figures": "5, 6, 27",
+     "figures": "5",
+     "book_page": null,
+     "pdf_page": 16,
+     "pdf_plate_page": null,
+     "volume": null,
+     "note": null,
+     "crop_image": "atlas/1993-lee-chaetoceros/crops/pl2_fig05.png"
+    },
+    {
+     "plate": 2,
+     "plate_label": null,
+     "figures": "6",
      "book_page": null,
      "pdf_page": 16,
      "pdf_plate_page": null,
      "volume": null,
      "note": null,
      "crop_image": null
+    },
+    {
+     "plate": 2,
+     "plate_label": null,
+     "figures": "27",
+     "book_page": null,
+     "pdf_page": 16,
+     "pdf_plate_page": null,
+     "volume": null,
+     "note": null,
+     "crop_image": "atlas/1993-lee-chaetoceros/crops/pl2_fig27.png"
     },
     {
      "plate": 3,
@@ -554,7 +653,7 @@
      "pdf_plate_page": null,
      "volume": null,
      "note": null,
-     "crop_image": null
+     "crop_image": "atlas/1993-lee-chaetoceros/crops/pl3_fig29.png"
     }
    ],
    "extra": {},
@@ -580,7 +679,7 @@
      "pdf_plate_page": null,
      "volume": null,
      "note": null,
-     "crop_image": null
+     "crop_image": "atlas/1993-lee-chaetoceros/crops/pl2_fig09.png"
     }
    ],
    "extra": {},
@@ -606,7 +705,7 @@
      "pdf_plate_page": null,
      "volume": null,
      "note": null,
-     "crop_image": null
+     "crop_image": "atlas/1993-lee-chaetoceros/crops/pl2_fig10.png"
     }
    ],
    "extra": {},
@@ -632,7 +731,7 @@
      "pdf_plate_page": null,
      "volume": null,
      "note": null,
-     "crop_image": null
+     "crop_image": "atlas/1993-lee-chaetoceros/crops/pl2_fig12.png"
     }
    ],
    "extra": {},
@@ -658,7 +757,7 @@
      "pdf_plate_page": null,
      "volume": null,
      "note": null,
-     "crop_image": null
+     "crop_image": "atlas/1993-lee-chaetoceros/crops/pl2_fig13.png"
     },
     {
      "plate": 3,
@@ -669,7 +768,7 @@
      "pdf_plate_page": null,
      "volume": null,
      "note": null,
-     "crop_image": null
+     "crop_image": "atlas/1993-lee-chaetoceros/crops/pl3_fig16.png"
     }
    ],
    "extra": {},
@@ -695,7 +794,7 @@
      "pdf_plate_page": null,
      "volume": null,
      "note": null,
-     "crop_image": null
+     "crop_image": "atlas/1993-lee-chaetoceros/crops/pl2_fig14.png"
     }
    ],
    "extra": {},
@@ -715,13 +814,24 @@
     {
      "plate": 2,
      "plate_label": null,
-     "figures": "16, 24",
+     "figures": "16",
      "book_page": null,
      "pdf_page": 16,
      "pdf_plate_page": null,
      "volume": null,
      "note": null,
-     "crop_image": null
+     "crop_image": "atlas/1993-lee-chaetoceros/crops/pl2_fig16.png"
+    },
+    {
+     "plate": 2,
+     "plate_label": null,
+     "figures": "24",
+     "book_page": null,
+     "pdf_page": 16,
+     "pdf_plate_page": null,
+     "volume": null,
+     "note": null,
+     "crop_image": "atlas/1993-lee-chaetoceros/crops/pl2_fig24.png"
     }
    ],
    "extra": {},
@@ -747,7 +857,7 @@
      "pdf_plate_page": null,
      "volume": null,
      "note": null,
-     "crop_image": null
+     "crop_image": "atlas/1993-lee-chaetoceros/crops/pl2_fig18.png"
     }
    ],
    "extra": {},
@@ -773,7 +883,7 @@
      "pdf_plate_page": null,
      "volume": null,
      "note": null,
-     "crop_image": null
+     "crop_image": "atlas/1993-lee-chaetoceros/crops/pl2_fig20.png"
     },
     {
      "plate": 3,
@@ -784,7 +894,7 @@
      "pdf_plate_page": null,
      "volume": null,
      "note": null,
-     "crop_image": null
+     "crop_image": "atlas/1993-lee-chaetoceros/crops/pl3_fig03.png"
     }
    ],
    "extra": {},
@@ -804,13 +914,24 @@
     {
      "plate": 2,
      "plate_label": null,
-     "figures": "23, 25",
+     "figures": "23",
      "book_page": null,
      "pdf_page": 16,
      "pdf_plate_page": null,
      "volume": null,
      "note": null,
-     "crop_image": null
+     "crop_image": "atlas/1993-lee-chaetoceros/crops/pl2_fig23.png"
+    },
+    {
+     "plate": 2,
+     "plate_label": null,
+     "figures": "25",
+     "book_page": null,
+     "pdf_page": 16,
+     "pdf_plate_page": null,
+     "volume": null,
+     "note": null,
+     "crop_image": "atlas/1993-lee-chaetoceros/crops/pl2_fig25.png"
     }
    ],
    "extra": {},
@@ -836,7 +957,7 @@
      "pdf_plate_page": null,
      "volume": null,
      "note": null,
-     "crop_image": null
+     "crop_image": "atlas/1993-lee-chaetoceros/crops/pl3_fig01.png"
     }
    ],
    "extra": {},
@@ -856,13 +977,24 @@
     {
      "plate": 3,
      "plate_label": null,
-     "figures": "2, 26",
+     "figures": "2",
      "book_page": null,
      "pdf_page": 24,
      "pdf_plate_page": null,
      "volume": null,
      "note": null,
-     "crop_image": null
+     "crop_image": "atlas/1993-lee-chaetoceros/crops/pl3_fig02.png"
+    },
+    {
+     "plate": 3,
+     "plate_label": null,
+     "figures": "26",
+     "book_page": null,
+     "pdf_page": 24,
+     "pdf_plate_page": null,
+     "volume": null,
+     "note": null,
+     "crop_image": "atlas/1993-lee-chaetoceros/crops/pl3_fig26.png"
     }
    ],
    "extra": {},
@@ -888,7 +1020,7 @@
      "pdf_plate_page": null,
      "volume": null,
      "note": null,
-     "crop_image": null
+     "crop_image": "atlas/1993-lee-chaetoceros/crops/pl3_fig04.png"
     }
    ],
    "extra": {},
@@ -908,13 +1040,24 @@
     {
      "plate": 3,
      "plate_label": null,
-     "figures": "5, 6",
+     "figures": "5",
      "book_page": null,
      "pdf_page": 24,
      "pdf_plate_page": null,
      "volume": null,
      "note": null,
-     "crop_image": null
+     "crop_image": "atlas/1993-lee-chaetoceros/crops/pl3_fig05.png"
+    },
+    {
+     "plate": 3,
+     "plate_label": null,
+     "figures": "6",
+     "book_page": null,
+     "pdf_page": 24,
+     "pdf_plate_page": null,
+     "volume": null,
+     "note": null,
+     "crop_image": "atlas/1993-lee-chaetoceros/crops/pl3_fig06.png"
     }
    ],
    "extra": {},
@@ -940,7 +1083,7 @@
      "pdf_plate_page": null,
      "volume": null,
      "note": null,
-     "crop_image": null
+     "crop_image": "atlas/1993-lee-chaetoceros/crops/pl3_fig11.png"
     }
    ],
    "extra": {},
@@ -966,7 +1109,7 @@
      "pdf_plate_page": null,
      "volume": null,
      "note": null,
-     "crop_image": null
+     "crop_image": "atlas/1993-lee-chaetoceros/crops/pl3_fig12.png"
     }
    ],
    "extra": {},
@@ -992,7 +1135,7 @@
      "pdf_plate_page": null,
      "volume": null,
      "note": null,
-     "crop_image": null
+     "crop_image": "atlas/1993-lee-chaetoceros/crops/pl3_fig22.png"
     }
    ],
    "extra": {},
@@ -1018,7 +1161,7 @@
      "pdf_plate_page": null,
      "volume": null,
      "note": null,
-     "crop_image": null
+     "crop_image": "atlas/1993-lee-chaetoceros/crops/pl3_fig28.png"
     }
    ],
    "extra": {},

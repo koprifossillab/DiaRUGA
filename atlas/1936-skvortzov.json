@@ -22,13 +22,24 @@
     {
      "plate": 1,
      "plate_label": null,
-     "figures": "1, 2",
+     "figures": "1",
      "book_page": 40,
      "pdf_page": 41,
      "pdf_plate_page": null,
      "volume": null,
      "note": null,
-     "crop_image": null
+     "crop_image": "atlas/1936-skvortzov/crops/pl1_fig01.png"
+    },
+    {
+     "plate": 1,
+     "plate_label": null,
+     "figures": "2",
+     "book_page": 40,
+     "pdf_page": 41,
+     "pdf_plate_page": null,
+     "volume": null,
+     "note": null,
+     "crop_image": "atlas/1936-skvortzov/crops/pl1_fig02.png"
     }
    ],
    "extra": {},
@@ -54,7 +65,7 @@
      "pdf_plate_page": null,
      "volume": null,
      "note": null,
-     "crop_image": null
+     "crop_image": "atlas/1936-skvortzov/crops/pl1_fig03.png"
     }
    ],
    "extra": {},
@@ -74,13 +85,46 @@
     {
      "plate": 1,
      "plate_label": null,
-     "figures": "4, 9, 16, 26",
+     "figures": "4",
      "book_page": 40,
      "pdf_page": 41,
      "pdf_plate_page": null,
      "volume": null,
      "note": null,
-     "crop_image": null
+     "crop_image": "atlas/1936-skvortzov/crops/pl1_fig04.png"
+    },
+    {
+     "plate": 1,
+     "plate_label": null,
+     "figures": "9",
+     "book_page": 40,
+     "pdf_page": 41,
+     "pdf_plate_page": null,
+     "volume": null,
+     "note": null,
+     "crop_image": "atlas/1936-skvortzov/crops/pl1_fig09.png"
+    },
+    {
+     "plate": 1,
+     "plate_label": null,
+     "figures": "16",
+     "book_page": 40,
+     "pdf_page": 41,
+     "pdf_plate_page": null,
+     "volume": null,
+     "note": null,
+     "crop_image": "atlas/1936-skvortzov/crops/pl1_fig16.png"
+    },
+    {
+     "plate": 1,
+     "plate_label": null,
+     "figures": "26",
+     "book_page": 40,
+     "pdf_page": 41,
+     "pdf_plate_page": null,
+     "volume": null,
+     "note": null,
+     "crop_image": "atlas/1936-skvortzov/crops/pl1_fig26.png"
     }
    ],
    "extra": {},
@@ -100,13 +144,35 @@
     {
      "plate": 1,
      "plate_label": null,
-     "figures": "5, 10, 17",
+     "figures": "5",
      "book_page": 40,
      "pdf_page": 41,
      "pdf_plate_page": null,
      "volume": null,
      "note": null,
-     "crop_image": null
+     "crop_image": "atlas/1936-skvortzov/crops/pl1_fig05.png"
+    },
+    {
+     "plate": 1,
+     "plate_label": null,
+     "figures": "10",
+     "book_page": 40,
+     "pdf_page": 41,
+     "pdf_plate_page": null,
+     "volume": null,
+     "note": null,
+     "crop_image": "atlas/1936-skvortzov/crops/pl1_fig10.png"
+    },
+    {
+     "plate": 1,
+     "plate_label": null,
+     "figures": "17",
+     "book_page": 40,
+     "pdf_page": 41,
+     "pdf_plate_page": null,
+     "volume": null,
+     "note": null,
+     "crop_image": "atlas/1936-skvortzov/crops/pl1_fig17.png"
     }
    ],
    "extra": {},
@@ -132,7 +198,7 @@
      "pdf_plate_page": null,
      "volume": null,
      "note": null,
-     "crop_image": null
+     "crop_image": "atlas/1936-skvortzov/crops/pl1_fig06.png"
     }
    ],
    "extra": {},
@@ -158,7 +224,7 @@
      "pdf_plate_page": null,
      "volume": null,
      "note": null,
-     "crop_image": null
+     "crop_image": "atlas/1936-skvortzov/crops/pl1_fig07.png"
     }
    ],
    "extra": {},
@@ -184,7 +250,7 @@
      "pdf_plate_page": null,
      "volume": null,
      "note": null,
-     "crop_image": null
+     "crop_image": "atlas/1936-skvortzov/crops/pl1_fig08.png"
     }
    ],
    "extra": {},
@@ -204,13 +270,24 @@
     {
      "plate": 1,
      "plate_label": null,
-     "figures": "11, 21",
+     "figures": "11",
      "book_page": 40,
      "pdf_page": 41,
      "pdf_plate_page": null,
      "volume": null,
      "note": null,
-     "crop_image": null
+     "crop_image": "atlas/1936-skvortzov/crops/pl1_fig11.png"
+    },
+    {
+     "plate": 1,
+     "plate_label": null,
+     "figures": "21",
+     "book_page": 40,
+     "pdf_page": 41,
+     "pdf_plate_page": null,
+     "volume": null,
+     "note": null,
+     "crop_image": "atlas/1936-skvortzov/crops/pl1_fig21.png"
     }
    ],
    "extra": {},
@@ -230,13 +307,35 @@
     {
      "plate": 1,
      "plate_label": null,
-     "figures": "12, 23, 24",
+     "figures": "12",
      "book_page": 40,
      "pdf_page": 41,
      "pdf_plate_page": null,
      "volume": null,
      "note": null,
      "crop_image": null
+    },
+    {
+     "plate": 1,
+     "plate_label": null,
+     "figures": "23",
+     "book_page": 40,
+     "pdf_page": 41,
+     "pdf_plate_page": null,
+     "volume": null,
+     "note": null,
+     "crop_image": "atlas/1936-skvortzov/crops/pl1_fig23.png"
+    },
+    {
+     "plate": 1,
+     "plate_label": null,
+     "figures": "24",
+     "book_page": 40,
+     "pdf_page": 41,
+     "pdf_plate_page": null,
+     "volume": null,
+     "note": null,
+     "crop_image": "atlas/1936-skvortzov/crops/pl1_fig24.png"
     }
    ],
    "extra": {},
@@ -256,13 +355,57 @@
     {
      "plate": 1,
      "plate_label": null,
-     "figures": "13, 14, 20, 30, 33",
+     "figures": "13",
      "book_page": 40,
      "pdf_page": 41,
      "pdf_plate_page": null,
      "volume": null,
      "note": null,
-     "crop_image": null
+     "crop_image": "atlas/1936-skvortzov/crops/pl1_fig13.png"
+    },
+    {
+     "plate": 1,
+     "plate_label": null,
+     "figures": "14",
+     "book_page": 40,
+     "pdf_page": 41,
+     "pdf_plate_page": null,
+     "volume": null,
+     "note": null,
+     "crop_image": "atlas/1936-skvortzov/crops/pl1_fig14.png"
+    },
+    {
+     "plate": 1,
+     "plate_label": null,
+     "figures": "20",
+     "book_page": 40,
+     "pdf_page": 41,
+     "pdf_plate_page": null,
+     "volume": null,
+     "note": null,
+     "crop_image": "atlas/1936-skvortzov/crops/pl1_fig20.png"
+    },
+    {
+     "plate": 1,
+     "plate_label": null,
+     "figures": "30",
+     "book_page": 40,
+     "pdf_page": 41,
+     "pdf_plate_page": null,
+     "volume": null,
+     "note": null,
+     "crop_image": "atlas/1936-skvortzov/crops/pl1_fig30.png"
+    },
+    {
+     "plate": 1,
+     "plate_label": null,
+     "figures": "33",
+     "book_page": 40,
+     "pdf_page": 41,
+     "pdf_plate_page": null,
+     "volume": null,
+     "note": null,
+     "crop_image": "atlas/1936-skvortzov/crops/pl1_fig33.png"
     }
    ],
    "extra": {},
@@ -288,7 +431,7 @@
      "pdf_plate_page": null,
      "volume": null,
      "note": null,
-     "crop_image": null
+     "crop_image": "atlas/1936-skvortzov/crops/pl1_fig15.png"
     }
    ],
    "extra": {},
@@ -314,7 +457,7 @@
      "pdf_plate_page": null,
      "volume": null,
      "note": null,
-     "crop_image": null
+     "crop_image": "atlas/1936-skvortzov/crops/pl1_fig18.png"
     }
    ],
    "extra": {},
@@ -340,7 +483,7 @@
      "pdf_plate_page": null,
      "volume": null,
      "note": null,
-     "crop_image": null
+     "crop_image": "atlas/1936-skvortzov/crops/pl1_fig19.png"
     }
    ],
    "extra": {},
@@ -366,7 +509,7 @@
      "pdf_plate_page": null,
      "volume": null,
      "note": null,
-     "crop_image": null
+     "crop_image": "atlas/1936-skvortzov/crops/pl1_fig22.png"
     }
    ],
    "extra": {},
@@ -386,13 +529,24 @@
     {
      "plate": 1,
      "plate_label": null,
-     "figures": "25, 35",
+     "figures": "25",
      "book_page": 40,
      "pdf_page": 41,
      "pdf_plate_page": null,
      "volume": null,
      "note": null,
-     "crop_image": null
+     "crop_image": "atlas/1936-skvortzov/crops/pl1_fig25.png"
+    },
+    {
+     "plate": 1,
+     "plate_label": null,
+     "figures": "35",
+     "book_page": 40,
+     "pdf_page": 41,
+     "pdf_plate_page": null,
+     "volume": null,
+     "note": null,
+     "crop_image": "atlas/1936-skvortzov/crops/pl1_fig35.png"
     },
     {
      "plate": 2,
@@ -403,7 +557,7 @@
      "pdf_plate_page": null,
      "volume": null,
      "note": null,
-     "crop_image": null
+     "crop_image": "atlas/1936-skvortzov/crops/pl2_fig07.png"
     },
     {
      "plate": 3,
@@ -414,7 +568,7 @@
      "pdf_plate_page": null,
      "volume": null,
      "note": null,
-     "crop_image": null
+     "crop_image": "atlas/1936-skvortzov/crops/pl3_fig01.png"
     }
    ],
    "extra": {},
@@ -440,7 +594,7 @@
      "pdf_plate_page": null,
      "volume": null,
      "note": null,
-     "crop_image": null
+     "crop_image": "atlas/1936-skvortzov/crops/pl1_fig27.png"
     },
     {
      "plate": 3,
@@ -451,7 +605,7 @@
      "pdf_plate_page": null,
      "volume": null,
      "note": null,
-     "crop_image": null
+     "crop_image": "atlas/1936-skvortzov/crops/pl3_fig08.png"
     }
    ],
    "extra": {},
@@ -477,7 +631,7 @@
      "pdf_plate_page": null,
      "volume": null,
      "note": null,
-     "crop_image": null
+     "crop_image": "atlas/1936-skvortzov/crops/pl1_fig28.png"
     }
    ],
    "extra": {},
@@ -503,7 +657,7 @@
      "pdf_plate_page": null,
      "volume": null,
      "note": null,
-     "crop_image": null
+     "crop_image": "atlas/1936-skvortzov/crops/pl1_fig29.png"
     }
    ],
    "extra": {},
@@ -523,24 +677,46 @@
     {
      "plate": 1,
      "plate_label": null,
-     "figures": "31, 37",
+     "figures": "31",
      "book_page": 40,
      "pdf_page": 41,
      "pdf_plate_page": null,
      "volume": null,
      "note": null,
-     "crop_image": null
+     "crop_image": "atlas/1936-skvortzov/crops/pl1_fig31.png"
+    },
+    {
+     "plate": 1,
+     "plate_label": null,
+     "figures": "37",
+     "book_page": 40,
+     "pdf_page": 41,
+     "pdf_plate_page": null,
+     "volume": null,
+     "note": null,
+     "crop_image": "atlas/1936-skvortzov/crops/pl1_fig37.png"
     },
     {
      "plate": 2,
      "plate_label": null,
-     "figures": "12, 17",
+     "figures": "12",
      "book_page": 43,
      "pdf_page": 44,
      "pdf_plate_page": null,
      "volume": null,
      "note": null,
-     "crop_image": null
+     "crop_image": "atlas/1936-skvortzov/crops/pl2_fig12.png"
+    },
+    {
+     "plate": 2,
+     "plate_label": null,
+     "figures": "17",
+     "book_page": 43,
+     "pdf_page": 44,
+     "pdf_plate_page": null,
+     "volume": null,
+     "note": null,
+     "crop_image": "atlas/1936-skvortzov/crops/pl2_fig17.png"
     }
    ],
    "extra": {},
@@ -560,13 +736,24 @@
     {
      "plate": 1,
      "plate_label": null,
-     "figures": "32, 34",
+     "figures": "32",
      "book_page": 40,
      "pdf_page": 41,
      "pdf_plate_page": null,
      "volume": null,
      "note": null,
-     "crop_image": null
+     "crop_image": "atlas/1936-skvortzov/crops/pl1_fig32.png"
+    },
+    {
+     "plate": 1,
+     "plate_label": null,
+     "figures": "34",
+     "book_page": 40,
+     "pdf_page": 41,
+     "pdf_plate_page": null,
+     "volume": null,
+     "note": null,
+     "crop_image": "atlas/1936-skvortzov/crops/pl1_fig34.png"
     },
     {
      "plate": 2,
@@ -577,7 +764,7 @@
      "pdf_plate_page": null,
      "volume": null,
      "note": null,
-     "crop_image": null
+     "crop_image": "atlas/1936-skvortzov/crops/pl2_fig18.png"
     }
    ],
    "extra": {},
@@ -603,7 +790,7 @@
      "pdf_plate_page": null,
      "volume": null,
      "note": null,
-     "crop_image": null
+     "crop_image": "atlas/1936-skvortzov/crops/pl1_fig36.png"
     }
    ],
    "extra": {},
@@ -629,7 +816,7 @@
      "pdf_plate_page": null,
      "volume": null,
      "note": null,
-     "crop_image": null
+     "crop_image": "atlas/1936-skvortzov/crops/pl2_fig01.png"
     }
    ],
    "extra": {},
@@ -655,7 +842,7 @@
      "pdf_plate_page": null,
      "volume": null,
      "note": null,
-     "crop_image": null
+     "crop_image": "atlas/1936-skvortzov/crops/pl2_fig02.png"
     }
    ],
    "extra": {},
@@ -681,7 +868,7 @@
      "pdf_plate_page": null,
      "volume": null,
      "note": null,
-     "crop_image": null
+     "crop_image": "atlas/1936-skvortzov/crops/pl2_fig03.png"
     }
    ],
    "extra": {},
@@ -701,13 +888,24 @@
     {
      "plate": 2,
      "plate_label": null,
-     "figures": "4, 15",
+     "figures": "4",
      "book_page": 43,
      "pdf_page": 44,
      "pdf_plate_page": null,
      "volume": null,
      "note": null,
-     "crop_image": null
+     "crop_image": "atlas/1936-skvortzov/crops/pl2_fig04.png"
+    },
+    {
+     "plate": 2,
+     "plate_label": null,
+     "figures": "15",
+     "book_page": 43,
+     "pdf_page": 44,
+     "pdf_plate_page": null,
+     "volume": null,
+     "note": null,
+     "crop_image": "atlas/1936-skvortzov/crops/pl2_fig15.png"
     }
    ],
    "extra": {},
@@ -727,13 +925,46 @@
     {
      "plate": 2,
      "plate_label": null,
-     "figures": "5, 6, 8, 11",
+     "figures": "5",
      "book_page": 43,
      "pdf_page": 44,
      "pdf_plate_page": null,
      "volume": null,
      "note": null,
-     "crop_image": null
+     "crop_image": "atlas/1936-skvortzov/crops/pl2_fig05.png"
+    },
+    {
+     "plate": 2,
+     "plate_label": null,
+     "figures": "6",
+     "book_page": 43,
+     "pdf_page": 44,
+     "pdf_plate_page": null,
+     "volume": null,
+     "note": null,
+     "crop_image": "atlas/1936-skvortzov/crops/pl2_fig06.png"
+    },
+    {
+     "plate": 2,
+     "plate_label": null,
+     "figures": "8",
+     "book_page": 43,
+     "pdf_page": 44,
+     "pdf_plate_page": null,
+     "volume": null,
+     "note": null,
+     "crop_image": "atlas/1936-skvortzov/crops/pl2_fig08.png"
+    },
+    {
+     "plate": 2,
+     "plate_label": null,
+     "figures": "11",
+     "book_page": 43,
+     "pdf_page": 44,
+     "pdf_plate_page": null,
+     "volume": null,
+     "note": null,
+     "crop_image": "atlas/1936-skvortzov/crops/pl2_fig11.png"
     }
    ],
    "extra": {},
@@ -759,7 +990,7 @@
      "pdf_plate_page": null,
      "volume": null,
      "note": null,
-     "crop_image": null
+     "crop_image": "atlas/1936-skvortzov/crops/pl2_fig09.png"
     }
    ],
    "extra": {},
@@ -785,7 +1016,7 @@
      "pdf_plate_page": null,
      "volume": null,
      "note": null,
-     "crop_image": null
+     "crop_image": "atlas/1936-skvortzov/crops/pl2_fig10.png"
     }
    ],
    "extra": {},
@@ -811,7 +1042,7 @@
      "pdf_plate_page": null,
      "volume": null,
      "note": null,
-     "crop_image": null
+     "crop_image": "atlas/1936-skvortzov/crops/pl2_fig13.png"
     }
    ],
    "extra": {},
@@ -837,7 +1068,7 @@
      "pdf_plate_page": null,
      "volume": null,
      "note": null,
-     "crop_image": null
+     "crop_image": "atlas/1936-skvortzov/crops/pl2_fig14.png"
     }
    ],
    "extra": {},
@@ -863,7 +1094,7 @@
      "pdf_plate_page": null,
      "volume": null,
      "note": null,
-     "crop_image": null
+     "crop_image": "atlas/1936-skvortzov/crops/pl2_fig16.png"
     }
    ],
    "extra": {},
@@ -889,7 +1120,7 @@
      "pdf_plate_page": null,
      "volume": null,
      "note": null,
-     "crop_image": null
+     "crop_image": "atlas/1936-skvortzov/crops/pl2_fig19.png"
     }
    ],
    "extra": {},
@@ -915,7 +1146,7 @@
      "pdf_plate_page": null,
      "volume": null,
      "note": null,
-     "crop_image": null
+     "crop_image": "atlas/1936-skvortzov/crops/pl3_fig02.png"
     }
    ],
    "extra": {},
@@ -941,7 +1172,7 @@
      "pdf_plate_page": null,
      "volume": null,
      "note": null,
-     "crop_image": null
+     "crop_image": "atlas/1936-skvortzov/crops/pl3_fig03.png"
     }
    ],
    "extra": {},
@@ -961,13 +1192,24 @@
     {
      "plate": 3,
      "plate_label": null,
-     "figures": "4, 11",
+     "figures": "4",
      "book_page": 46,
      "pdf_page": 47,
      "pdf_plate_page": null,
      "volume": null,
      "note": null,
-     "crop_image": null
+     "crop_image": "atlas/1936-skvortzov/crops/pl3_fig04.png"
+    },
+    {
+     "plate": 3,
+     "plate_label": null,
+     "figures": "11",
+     "book_page": 46,
+     "pdf_page": 47,
+     "pdf_plate_page": null,
+     "volume": null,
+     "note": null,
+     "crop_image": "atlas/1936-skvortzov/crops/pl3_fig11.png"
     }
    ],
    "extra": {},
@@ -993,7 +1235,7 @@
      "pdf_plate_page": null,
      "volume": null,
      "note": null,
-     "crop_image": null
+     "crop_image": "atlas/1936-skvortzov/crops/pl3_fig05.png"
     }
    ],
    "extra": {},
@@ -1019,7 +1261,7 @@
      "pdf_plate_page": null,
      "volume": null,
      "note": null,
-     "crop_image": null
+     "crop_image": "atlas/1936-skvortzov/crops/pl3_fig06.png"
     }
    ],
    "extra": {},
@@ -1045,7 +1287,7 @@
      "pdf_plate_page": null,
      "volume": null,
      "note": null,
-     "crop_image": null
+     "crop_image": "atlas/1936-skvortzov/crops/pl3_fig07.png"
     }
    ],
    "extra": {},
@@ -1071,7 +1313,7 @@
      "pdf_plate_page": null,
      "volume": null,
      "note": null,
-     "crop_image": null
+     "crop_image": "atlas/1936-skvortzov/crops/pl3_fig09.png"
     }
    ],
    "extra": {},
@@ -1097,18 +1339,40 @@
      "pdf_plate_page": null,
      "volume": null,
      "note": null,
-     "crop_image": null
+     "crop_image": "atlas/1936-skvortzov/crops/pl3_fig10.png"
     },
     {
      "plate": 4,
      "plate_label": null,
-     "figures": "1, 6, 7",
+     "figures": "1",
      "book_page": 49,
      "pdf_page": 50,
      "pdf_plate_page": null,
      "volume": null,
      "note": null,
-     "crop_image": null
+     "crop_image": "atlas/1936-skvortzov/crops/pl4_fig01.png"
+    },
+    {
+     "plate": 4,
+     "plate_label": null,
+     "figures": "6",
+     "book_page": 49,
+     "pdf_page": 50,
+     "pdf_plate_page": null,
+     "volume": null,
+     "note": null,
+     "crop_image": "atlas/1936-skvortzov/crops/pl4_fig06.png"
+    },
+    {
+     "plate": 4,
+     "plate_label": null,
+     "figures": "7",
+     "book_page": 49,
+     "pdf_page": 50,
+     "pdf_plate_page": null,
+     "volume": null,
+     "note": null,
+     "crop_image": "atlas/1936-skvortzov/crops/pl4_fig07.png"
     }
    ],
    "extra": {},
@@ -1134,7 +1398,7 @@
      "pdf_plate_page": null,
      "volume": null,
      "note": null,
-     "crop_image": null
+     "crop_image": "atlas/1936-skvortzov/crops/pl3_fig12.png"
     }
    ],
    "extra": {},
@@ -1160,7 +1424,7 @@
      "pdf_plate_page": null,
      "volume": null,
      "note": null,
-     "crop_image": null
+     "crop_image": "atlas/1936-skvortzov/crops/pl4_fig02.png"
     }
    ],
    "extra": {},
@@ -1186,7 +1450,7 @@
      "pdf_plate_page": null,
      "volume": null,
      "note": null,
-     "crop_image": null
+     "crop_image": "atlas/1936-skvortzov/crops/pl4_fig03.png"
     }
    ],
    "extra": {},
@@ -1212,7 +1476,7 @@
      "pdf_plate_page": null,
      "volume": null,
      "note": null,
-     "crop_image": null
+     "crop_image": "atlas/1936-skvortzov/crops/pl4_fig04.png"
     }
    ],
    "extra": {},
@@ -1238,7 +1502,7 @@
      "pdf_plate_page": null,
      "volume": null,
      "note": null,
-     "crop_image": null
+     "crop_image": "atlas/1936-skvortzov/crops/pl4_fig05.png"
     }
    ],
    "extra": {},
@@ -1264,7 +1528,7 @@
      "pdf_plate_page": null,
      "volume": null,
      "note": null,
-     "crop_image": null
+     "crop_image": "atlas/1936-skvortzov/crops/pl4_fig08.png"
     }
    ],
    "extra": {},
@@ -1290,7 +1554,7 @@
      "pdf_plate_page": null,
      "volume": null,
      "note": null,
-     "crop_image": null
+     "crop_image": "atlas/1936-skvortzov/crops/pl4_fig09.png"
     }
    ],
    "extra": {},
@@ -1316,7 +1580,7 @@
      "pdf_plate_page": null,
      "volume": null,
      "note": null,
-     "crop_image": null
+     "crop_image": "atlas/1936-skvortzov/crops/pl4_fig10.png"
     }
    ],
    "extra": {},
@@ -1342,7 +1606,7 @@
      "pdf_plate_page": null,
      "volume": null,
      "note": null,
-     "crop_image": null
+     "crop_image": "atlas/1936-skvortzov/crops/pl4_fig11.png"
     }
    ],
    "extra": {},
