@@ -157,6 +157,35 @@ check("해설면/도판면", [sc[0]["placements"][0]["pdf_page"],
                         sc[0]["placements"][0]["pdf_plate_page"]], [154, 155])
 check("그림", sc[0]["placements"][0]["figures"], "15—20")
 
+print("\n3b. Schmidt — 자리 크롭은 권·쪽·그림 범위로 짚고, 정정표가 그림을 덮는다")
+check("범위를 편다", pa.figure_numbers("1—8"), [str(i) for i in range(1, 9)])
+check("OCR 이 쉼표를 마침표로 읽은 것", pa.figure_numbers("54.55"), ["54", "55"])
+check("이어진 번호는 범위 조각", pa.figure_tag(["21", "22"]), "21-22")
+check("거꾸로 가면 범위로 안 접는다", pa.figure_tag(["28", "24"]), "28_24")
+_scc, _scf = pa.sc_crops, pa.sc_fig_fixes
+
+
+def with_sc(crops, fixes):
+    pa.sc_crops, pa.sc_fig_fixes = (lambda: crops), (lambda: fixes)
+    try:
+        return pa.parse_schmidt(SCHMIDT)[0]
+    finally:
+        pa.sc_crops, pa.sc_fig_fixes = _scc, _scf
+
+
+p0 = sc[0]["placements"][0]
+k = (p0["volume"], p0["pdf_plate_page"], "15-20")
+s0 = with_sc({k}, {})[0]["placements"][0]
+check("크롭이 붙는다", s0["crop_image"],
+      f"atlas/schmidt/crops/b{p0['volume'][-1]}p{p0['pdf_plate_page']}_fig15-20.png")
+check("다른 쪽의 같은 그림 범위에는 안 붙는다",
+      with_sc({(p0["volume"], p0["pdf_plate_page"] + 2, "15-20")}, {})[0]["placements"][0]["crop_image"], None)
+fk = (f"{p0['volume'].lower()}/{p0['pdf_plate_page']}", "15—20")
+s1 = with_sc({(p0["volume"], p0["pdf_plate_page"], "15-21")}, {fk: ("15—21", "시험")})[0]["placements"][0]
+check("정정표가 그림을 덮는다", s1["figures"], "15—21")
+check("고친 그림으로 크롭을 찾는다", s1["crop_image"] is not None, True)
+check("원래 값을 note 에 남긴다", "색인 OCR 은 그림 15—20" in (s1["note"] or ""), True)
+
 print("\n4. 동남극 — 자리 여럿·시료·비고")
 ea, marked = pa.parse_east(EAST)
 check("항목 수", len(ea), 2)

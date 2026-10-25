@@ -65,6 +65,7 @@ from harvest_worms import DIADICTION, binomial  # noqa: E402
 # 색인에 둘 있어서다(`tafel_numbering.py` 의 `〔Tafel 아님 …〕`은 색인의 자료다).
 # 여기서 `〔[^〕]*〕` 로 새로 짜면 그 자료를 조용히 지운다
 from annotate_index import MARK  # noqa: E402
+from crop_atlas_figures import figure_numbers, figure_tag, sc_fig_fixes  # noqa: E402
 
 OUT = Path(__file__).resolve().parent.parent / "atlas"
 
@@ -298,11 +299,41 @@ SC_OCC = re.compile(
 # 색인이 인용에 직접 단 주석. **`annotate_index` 의 표시와 다른 것이다** — 이쪽은
 # 색인의 자료라 버리지 않고 그 자리에 싣는다 (`tafel_numbering.py` · 121)
 SC_NOTE = re.compile(r"\s*〔(Tafel 아님[^〕]*)〕\s*")
+# 자리 크롭 (`crop_atlas_figures.py publish --book schmidt`). 권·쪽으로 짚는다 —
+# Tafel 번호는 OCR 이라 열쇠가 못 된다(126). 그림 조각 뒤의 학명은 대문자로 시작한다
+SC_CROP = re.compile(r"^plate_schmidt_b(\d)p(\d+)_fig([0-9a-z_-]+?)_(?=[A-Z]).*\.png$")
+
+
+def sc_crops() -> set[tuple[str, int, str]]:
+    """(권, PDF 쪽, 그림 조각) — NAS `plate/` 에 자리 크롭이 있는 것."""
+    out = set()
+    for f in (DIADICTION / "plate").glob("plate_schmidt_b*p*_fig*_*.png"):
+        if m := SC_CROP.match(f.name):
+            out.add((f"Band{m.group(1)}", int(m.group(2)), m.group(3)))
+    return out
+
+
+def sc_crop_of(pl: dict, crops: set, fixes: dict) -> str | None:
+    """자리 → 크롭 경로. 색인 OCR 이 그림 번호를 틀린 자리는 정정표가 덮는다 —
+    `figures` 를 바로잡고 원래 값을 `note` 에 남긴다(한국 도감 `plate_fix` 와 같은 방식)."""
+    if not (pl["figures"] and pl["pdf_plate_page"]):
+        return None
+    key = f"{pl['volume'].lower()}/{pl['pdf_plate_page']}"
+    if (key, pl["figures"]) in fixes:
+        real, _ = fixes[(key, pl["figures"])]
+        note = f"색인 OCR 은 그림 {pl['figures']} — 도판을 보고 고쳤다"
+        pl["note"] = f"{pl['note']} · {note}" if pl["note"] else note
+        pl["figures"] = real
+    tag = figure_tag(figure_numbers(pl["figures"]))
+    if (pl["volume"], pl["pdf_plate_page"], tag) in crops:
+        return f"atlas/schmidt/crops/b{pl['volume'][-1]}p{pl['pdf_plate_page']}_fig{tag}.png"
+    return None
 
 
 def parse_schmidt(text: str) -> tuple[list[dict], int]:
     """한 줄에 표제어와 자리가 다 있다. 자리가 여럿이면 `;` 로 잇는다."""
     body, offset = head_of(text, "## 학명 색인 (알파벳순)")
+    crops, fixes = sc_crops(), sc_fig_fixes()
     entries: list[dict] = []
     marked = 0
     for i, raw in enumerate(body.splitlines(), start=offset):
@@ -326,6 +357,8 @@ def parse_schmidt(text: str) -> tuple[list[dict], int]:
                 plate=num(om.group(1)), figures=figs(om.group(2)),
                 volume=f"Band{om.group(3)}", note=note,
                 pdf_page=num(om.group(4)), pdf_plate_page=num(om.group(5))))
+            pl = e["placements"][-1]
+            pl["crop_image"] = sc_crop_of(pl, crops, fixes)
         entries.append(e)
     return entries, marked
 

@@ -17,6 +17,7 @@
     python tools/sync_paper_plate_images.py
     python tools/sync_paper_plate_images.py --only 1991_lee_yeonil_biostratigraphy
     python tools/sync_paper_plate_images.py --only korean        # 한국 도감 그림 (240)
+    python tools/sync_paper_plate_images.py --only schmidt       # Schmidt 자리 크롭
     python tools/sync_paper_plate_images.py --dry-run
 """
 from __future__ import annotations
@@ -30,6 +31,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from harvest_worms import DIADICTION  # noqa: E402
+from parse_atlas import SC_CROP  # noqa: E402
 from parse_paper_atlas import PAPER_META  # noqa: E402
 
 PLATE_DIR = DIADICTION / "plate"
@@ -66,7 +68,7 @@ def main() -> int:
     papers = {k: v for k, v in PAPER_META.items() if v.get("crop_prefix")}
     # 한국 도감의 그림 크롭도 같은 이름 모양이다 (240 · `crop_atlas_figures.py`)
     papers["korean"] = dict(crop_prefix="korean", atlas_key="korean", short="한국 도감")
-    if args.only:
+    if args.only and args.only != "schmidt":
         papers = {k: v for k, v in papers.items() if k == args.only}
         if not papers:
             print(f"{args.only}: crop_prefix 가 있는 논문이 아니다", file=sys.stderr)
@@ -77,6 +79,22 @@ def main() -> int:
         return 2
 
     total = 0
+    if not args.only or args.only == "schmidt":
+        # Schmidt 는 이름 모양이 다르다 — 도판 번호 대신 권·쪽(`b4p155`), 그림은 범위(240 다음)
+        n = 0
+        dest_dir = OUT / "schmidt" / "crops"
+        for src in sorted(PLATE_DIR.glob("plate_schmidt_b*p*_fig*_*.png")):
+            m = SC_CROP.match(src.name)
+            if not m:
+                continue
+            if not args.dry_run:
+                dest_dir.mkdir(parents=True, exist_ok=True)
+                shutil.copyfile(src, dest_dir / f"b{m.group(1)}p{m.group(2)}_fig{m.group(3)}.png")
+            n += 1
+        total += n
+        print(f"Schmidt — {n}개 → {dest_dir}{' (dry-run)' if args.dry_run else ''}")
+        if args.only:
+            papers = {}
     for paper, meta in papers.items():
         n, _ = sync_one(paper, meta, args.dry_run)
         total += n

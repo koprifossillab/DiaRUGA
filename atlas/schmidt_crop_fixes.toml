@@ -1,0 +1,580 @@
+# Schmidt 도판 그림 크롭의 사람 정정 (`tools/crop_atlas_figures.py --book schmidt`)
+#
+# 쪽 열쇠는 "권/PDF 쪽"(1부터)이다 — Tafel 번호는 OCR 이라 열쇠가 못 된다(126).
+# 좌표는 쪽 이미지(`/data3/DiaRUGA/atlas/schmidt/<권>/pNNNN.png`) 픽셀이다.
+#
+# - `figures` — **색인 그림 표기의 OCR 오류.** `index` 는 색인 원문 그대로이고
+#   (`atlas/schmidt.json` 의 figures 와 글자까지 같아야 덮인다), `real` 은 도판을 보고
+#   고친 값이다. 대부분 3↔8 혼동이다. 쪽의 번호 범위 밖이거나 거꾸로 가는 범위,
+#   같은 종이면 그림이 닮았다는 것으로 판정했다. `parse_atlas.py` 가 figures 를 덮고
+#   원래 값을 자리의 note 에 남긴다(한국 도감 `[plate_fix]` 와 같은 방식)
+# - `junk` — 그림이 아닌 것(스캔에 붙은 손글씨 쪽지 등). 잉크에서 지운다
+# - `skip` — 눈검사에서 끝내 틀린 자리 크롭의 그림 조각(`1-8` · `21_24`). 그 자리에는
+#   크롭을 안 붙인다 — 틀리게 붙이는 것보다 낫다. 이유는 `skip_note`
+# - `fix` — 한국 도감 정정표와 같은 점 짚기·오려내기(아직 없다)
+#
+# 그림 번호 자체(쪽마다 어느 번호가 어디 있나)는 사람이 327쪽을 다 보고 확정한
+# labels 에서 온다 — 241 devlog. 확신이 없어 넣지 않은 후보도 거기 적었다.
+
+["band1/27"]
+skip = ["1"]
+skip_note = "1 군더더기"
+
+["band1/41"]
+skip = ["1"]
+skip_note = "1 남의그림"
+
+["band1/53"]
+skip = ["3"]
+skip_note = "3 군더더기"
+
+["band1/57"]
+skip = ["4"]
+skip_note = "4 군더더기"
+
+["band1/59"]
+skip = ["4"]
+skip_note = "4 섞임"
+
+["band1/61"]
+skip = ["5"]
+skip_note = "5 잘림"
+
+["band1/63"]
+skip = ["3"]
+skip_note = "3 군더더기"
+
+["band1/65"]
+skip = ["16", "17"]
+skip_note = "16 섞임 · 17 잘림"
+
+["band1/69"]
+skip = ["1", "3"]
+skip_note = "1 군더더기 · 3 군더더기"
+
+["band1/77"]
+skip = ["10"]
+skip_note = "10 섞임"
+
+["band1/79"]
+skip = ["11", "7", "8-9"]
+skip_note = "11 섞임 · 7 잘림 · 8-9 섞임"
+
+["band1/87"]
+skip = ["9"]
+skip_note = "9 섞임"
+
+["band1/93"]
+skip = ["1-2"]
+skip_note = "1-2 섞임"
+
+["band1/95"]
+skip = ["8_9_10_12"]
+skip_note = "8_9_10_12 군더더기"
+
+["band1/99"]
+skip = ["2"]
+skip_note = "2 군더더기"
+
+["band1/105"]
+skip = ["1"]
+skip_note = "1 군더더기"
+
+["band1/107"]
+skip = ["61"]
+skip_note = "61 섞임"
+
+["band1/117"]
+figures = [
+  {index = "27", real = "26", note = "Navicula maxima 의 두 번째 줄. 27—29 는 Navicula elongata 가 부르고(셋 다 같은 줄무늬·가운데 결절 꼴), maxima 의 다른 그림 36 은 줄무늬 없는 흐린 선형인데 26 이 바로 그 꼴이며 26 을 부르는 항목이 없다"},
+]
+skip = ["27_29"]
+skip_note = "27_29 섞임"
+
+["band1/121"]
+figures = [
+  {index = "12", real = "1.2", note = "Campylodiscus eximius. 이 판의 그림은 1–8 뿐이다. 1 과 2 는 같은 꼴(두 갈래 가운데 점무늬 + 방사 늑골)이고 1·2 를 부르는 항목이 따로 없다 — 마침표가 빠진 '1.2' 로 본다"},
+]
+
+["band1/123"]
+skip = ["15", "6"]
+skip_note = "15 군더더기 · 6 잘림"
+
+["band1/129"]
+skip = ["13-14", "15", "9"]
+skip_note = "13-14 섞임 · 15 잘림 · 9 섞임"
+
+["band1/133"]
+skip = ["1", "27"]
+skip_note = "1 군더더기 · 27 군더더기"
+
+["band1/137"]
+skip = ["15"]
+skip_note = "15 남의그림"
+
+["band1/163"]
+skip = ["10"]
+skip_note = "10 섞임"
+
+["band1/169"]
+skip = ["1"]
+skip_note = "1 섞임"
+
+["band1/195"]
+skip = ["1"]
+skip_note = "1 잘림"
+
+["band1/199"]
+skip = ["8"]
+skip_note = "8 섞임"
+
+["band1/245"]
+skip = ["6"]
+skip_note = "6 군더더기"
+
+["band1/247"]
+skip = ["8"]
+skip_note = "8 잘림"
+
+["band1/253"]
+skip = ["10"]
+skip_note = "10 잘림"
+
+["band1/263"]
+figures = [
+  {index = "80", real = "30", note = "쪽 번호가 1~31 이다. 8↔3 OCR 혼동. 30 은 짧은 뿔의 작은 띠 면 그림으로 Odontella obtusa 꼴에 맞는다"},
+]
+skip = ["1-4", "26-27"]
+skip_note = "1-4 군더더기 · 26-27 잘림"
+
+["band1/269"]
+skip = ["11-18"]
+skip_note = "11-18 섞임"
+
+["band1/273"]
+skip = ["1", "15-17"]
+skip_note = "1 섞임 · 15-17 잘림"
+
+["band1/277"]
+skip = ["15", "6"]
+skip_note = "15 군더더기 · 6 섞임"
+
+["band1/283"]
+skip = ["15"]
+skip_note = "15 남의그림"
+
+["band1/285"]
+skip = ["6"]
+skip_note = "6 섞임"
+
+["band1/293"]
+skip = ["16", "18", "23-25"]
+skip_note = "16 섞임 · 18 섞임 · 23-25 섞임"
+
+["band1/299"]
+skip = ["15"]
+skip_note = "15 섞임"
+
+["band1/301"]
+skip = ["1"]
+skip_note = "1 잘림"
+
+["band1/305"]
+skip = ["54-55"]
+skip_note = "54-55 남의그림"
+
+["band2/11"]
+skip = ["8"]
+skip_note = "8 잘림"
+
+["band2/13"]
+skip = ["18", "20"]
+skip_note = "18 섞임 · 20 남의그림"
+
+["band2/21"]
+skip = ["11", "12", "16", "17", "18", "8"]
+skip_note = "11 섞임 · 12 잘림 · 16 섞임 · 17 섞임 · 18 잘림 · 8 섞임"
+
+["band2/31"]
+skip = ["6", "8"]
+skip_note = "6 잘림 · 8 섞임"
+
+["band2/33"]
+skip = ["1"]
+skip_note = "1 섞임"
+
+["band2/35"]
+figures = [
+  {index = "80", real = "30", note = "쪽 번호가 1~43 이다. 30 은 Dictyoneis marginata 17·20·28 과 같은 점무늬 잘록한 판"},
+]
+skip = ["3-5"]
+skip_note = "3-5 잘림"
+
+["band2/41"]
+skip = ["11", "8"]
+skip_note = "11 섞임 · 8 남의그림"
+
+["band2/43"]
+skip = ["1"]
+skip_note = "1 섞임"
+
+["band2/47"]
+skip = ["1"]
+skip_note = "1 섞임"
+
+["band2/53"]
+skip = ["2-4"]
+skip_note = "2-4 섞임"
+
+["band2/55"]
+skip = ["1", "3"]
+skip_note = "1 섞임 · 3 섞임"
+
+["band2/57"]
+skip = ["10"]
+skip_note = "10 군더더기"
+
+["band2/59"]
+skip = ["1"]
+skip_note = "1 잘림"
+
+["band2/61"]
+figures = [
+  {index = "18", real = "13", note = "쪽 번호가 1~16 이다. 13 은 뿔이 많은 Biddulphia 띠면(multicornis 꼴)"},
+]
+skip = ["11", "13", "9"]
+skip_note = "11 섞임 · 13 섞임 · 9 군더더기"
+
+["band2/67"]
+skip = ["56"]
+skip_note = "56 남의그림"
+
+["band2/69"]
+figures = [
+  {index = "80—39", real = "30—39", note = "거꾸로 가는 범위. 쪽 번호가 1~69 이고 30~39 가 같은 Melosira sulcata 무리"},
+]
+skip = ["3-10", "40-42"]
+skip_note = "3-10 잘림 · 40-42 잘림"
+
+["band2/73"]
+skip = ["6"]
+skip_note = "6 섞임"
+
+["band2/75"]
+figures = [
+  {index = "27—80", real = "27—30", note = "쪽 번호가 1~51 이다. 27~30 은 Skeletonema 의 사슬 그림 넷"},
+]
+junk = [[2167, 3181, 2873, 3344]]
+junk_note = "손글씨 쪽지 \"50번 Melosira solida\" — 47 을 덮는다"
+skip = ["1-6", "18", "19", "21", "36", "45", "46", "8-13"]
+skip_note = "1-6 군더더기 · 18 섞임 · 19 섞임 · 21 섞임 · 36 잘림 · 45 섞임 · 46 섞임 · 8-13 섞임"
+
+["band2/77"]
+skip = ["1", "81"]
+skip_note = "1 군더더기 · 81 섞임"
+
+["band2/79"]
+skip = ["51"]
+skip_note = "51 섞임"
+
+["band2/85"]
+figures = [
+  {index = "81", real = "31", note = "쪽 번호가 1~46 이다. 3→8 한 글자"},
+]
+junk = [[2150, 2920, 2870, 3150]]
+junk_note = "손글씨 쪽지 \"41번??\""
+skip = ["16", "38"]
+skip_note = "16 군더더기 · 38 섞임"
+
+["band2/87"]
+figures = [
+  {index = "80", real = "30", note = "쪽 번호가 1~44 이다. 3→8 한 글자"},
+  {index = "86", real = "36", note = "쪽 번호가 1~44 이다. 3→8 한 글자"},
+]
+skip = ["11", "36", "9"]
+skip_note = "11 섞임 · 36 군더더기 · 9 섞임"
+
+["band2/89"]
+figures = [
+  {index = "81", real = "31", note = "쪽 번호가 1~53 이다. 3→8 한 글자"},
+]
+
+["band2/91"]
+skip = ["15_17"]
+skip_note = "15_17 섞임"
+
+["band2/93"]
+skip = ["1", "27", "9"]
+skip_note = "1 군더더기 · 27 섞임 · 9 섞임"
+
+["band2/95"]
+figures = [
+  {index = "80", real = "30", note = "쪽 번호가 1~47 이다. 3→8 한 글자 (Cocconeis japonica)"},
+  {index = "82", real = "32", note = "쪽 번호가 1~47 이다. 3→8 한 글자 (Cocconeis praestans)"},
+  {index = "86", real = "36", note = "쪽 번호가 1~47 이다. 3→8 한 글자 (Cocconeis campechiana)"},
+  {index = "87", real = "37", note = "쪽 번호가 1~47 이다. 3→8 한 글자 (Cocconeis coarctata)"},
+]
+skip = ["30"]
+skip_note = "30 섞임"
+
+["band2/99"]
+figures = [
+  {index = "80", real = "30", note = "쪽 번호가 1~65 이다. 3→8 한 글자 (Cocconeis subtilis)"},
+  {index = "81", real = "31", note = "쪽 번호가 1~65 이다. 3→8 한 글자 (Cocconeis eximia)"},
+]
+skip = ["17", "28"]
+skip_note = "17 군더더기 · 28 섞임"
+
+["band2/103"]
+figures = [
+  {index = "86", real = "36", note = "쪽 번호가 1~58 이다. 3→8 한 글자 (Cocconeis distans)"},
+]
+skip = ["6", "9"]
+skip_note = "6 군더더기 · 9 섞임"
+
+["band2/105"]
+skip = ["14", "18", "8"]
+skip_note = "14 섞임 · 18 섞임 · 8 잘림"
+
+["band2/107"]
+skip = ["12"]
+skip_note = "12 잘림"
+
+["band2/109"]
+figures = [
+  {index = "81", real = "31", note = "쪽 번호가 1~41 이다. 3→8 한 글자 (Cocconeis recurva)"},
+]
+skip = ["1", "19", "25", "27", "40", "8"]
+skip_note = "1 군더더기 · 19 섞임 · 25 섞임 · 27 섞임 · 40 섞임 · 8 섞임"
+
+["band2/113"]
+junk = [[2200, 3717, 2867, 3950]]
+junk_note = "손글씨 쪽지 \"57번\" — 60·61 을 덮는다"
+skip = ["10", "25-27", "7"]
+skip_note = "10 잘림 · 25-27 잘림 · 7 잘림"
+
+["band2/117"]
+skip = ["23", "9-10"]
+skip_note = "23 섞임 · 9-10 섞임"
+
+["band2/121"]
+skip = ["18"]
+skip_note = "18 군더더기"
+
+["band2/125"]
+skip = ["18", "8"]
+skip_note = "18 섞임 · 8 섞임"
+
+["band2/129"]
+skip = ["16", "18", "21", "6", "7"]
+skip_note = "16 섞임 · 18 잘림 · 21 섞임 · 6 잘림 · 7 섞임"
+
+["band2/131"]
+skip = ["10", "11", "12", "19", "4"]
+skip_note = "10 잘림 · 11 잘림 · 12 섞임 · 19 잘림 · 4 잘림"
+
+["band2/139"]
+figures = [
+  {index = "80", real = "30", note = "쪽 번호가 1~47 이다. 3→8 한 글자 (Surirella alternans)"},
+  {index = "82", real = "32", note = "쪽 번호가 1~47 이다. 3→8 한 글자 (Navicula cuspidata)"},
+]
+
+["band2/141"]
+skip = ["50", "9"]
+skip_note = "50 군더더기 · 9 군더더기"
+
+["band2/161"]
+figures = [
+  {index = "83", real = "33", note = "쪽 번호가 1~52 이다. 3→8 한 글자 (Cyclotella hispalensis)"},
+]
+
+["band2/185"]
+skip = ["1"]
+skip_note = "1 섞임"
+
+["band3/11"]
+skip = ["10"]
+skip_note = "10 섞임"
+
+["band3/37"]
+skip = ["10", "6"]
+skip_note = "10 섞임 · 6 섞임"
+
+["band3/39"]
+skip = ["1", "11", "12"]
+skip_note = "1 군더더기 · 11 섞임 · 12 군더더기"
+
+["band3/47"]
+figures = [
+  {index = "91", real = "21", note = "N. pusilla 19·20 다음. 쪽의 번호는 1~21 이고, 21 은 19·20 과 같은 작은 피침형 그림이다"},
+]
+skip = ["18", "7-9"]
+skip_note = "18 섞임 · 7-9 군더더기"
+
+["band3/49"]
+skip = ["7", "8", "9"]
+skip_note = "7 섞임 · 8 섞임 · 9 섞임"
+
+["band3/55"]
+skip = ["6"]
+skip_note = "6 섞임"
+
+["band3/57"]
+skip = ["50-54", "55-59"]
+skip_note = "50-54 군더더기 · 55-59 군더더기"
+
+["band3/61"]
+figures = [
+  {index = "36—87", real = "36—37", note = "Asterionella formosa: 36 은 끝이 부푼 낱 세포, 37 은 별꼴 군체다. 쪽의 번호는 1~55"},
+  {index = "81—35", real = "31—35", note = "Ceratoneis arcus: 31~35 가 굽은 활꼴로 같은 무리다. 81 은 이 쪽에 없다"},
+]
+
+["band3/97"]
+skip = ["1", "20-25"]
+skip_note = "1 군더더기 · 20-25 군더더기"
+
+["band3/99"]
+skip = ["13-17", "18"]
+skip_note = "13-17 섞임 · 18 잘림"
+
+["band3/111"]
+skip = ["14-19"]
+skip_note = "14-19 잘림"
+
+["band3/113"]
+skip = ["44-51"]
+skip_note = "44-51 섞임"
+
+["band4/17"]
+skip = ["1"]
+skip_note = "1 잘림"
+
+["band4/19"]
+skip = ["1"]
+skip_note = "1 잘림"
+
+["band4/73"]
+figures = [
+  {index = "89, 40", real = "39, 40", note = "쪽 번호가 52 까지다. 39·40 은 같은 꼴의 작은 피침형"},
+  {index = "28, 24", real = "23, 24", note = "23·24 는 같은 꼴의 점무늬 타원형. 28 은 27·29 와 한 무리"},
+]
+
+["band4/75"]
+skip = ["6", "7"]
+skip_note = "6 섞임 · 7 섞임"
+
+["band4/79"]
+figures = [
+  {index = "8-5", real = "3-5", note = "거꾸로 가는 범위. 3·4·5 가 성긴 줄무늬의 같은 꼴 Cymbella, 8 은 결이 다르다"},
+]
+skip = ["29-31"]
+skip_note = "29-31 군더더기"
+
+["band4/95"]
+figures = [
+  {index = "8—6", real = "3—6", note = "거꾸로 가는 범위. 3·4·5·6 이 굵고 끝이 둥근 같은 꼴, 8 은 가늘다"},
+]
+
+["band4/117"]
+figures = [
+  {index = "11—18", real = "11—13", note = "쪽 번호가 13 까지다. 11·12·13 은 같은 꼴의 가는 Pinnularia"},
+]
+skip = ["1"]
+skip_note = "1 잘림"
+
+["band4/123"]
+figures = [
+  {index = "82", real = "32", note = "쪽 번호가 35 까지다. 3→8 혼동. 32 는 짝 없는 홀그림이라 모양 대조는 못 했다"},
+]
+skip = ["32"]
+skip_note = "32 섞임"
+
+["band4/125"]
+skip = ["10-12", "26-27"]
+skip_note = "10-12 섞임 · 26-27 군더더기"
+
+["band4/127"]
+figures = [
+  {index = "35—88", real = "35—38", note = "쪽 번호가 47 까지다. 35~38 은 같은 꼴(가운데가 부푼 피침형, 끝이 뾰족)"},
+]
+
+["band4/129"]
+figures = [
+  {index = "83—35", real = "33—35", note = "거꾸로 가는 범위, 쪽 번호가 48 까지다. 33·34 는 같은 꼴(마디가 부푼 가는 것), 35 는 띠 쪽에서 본 것"},
+]
+
+["band4/131"]
+figures = [
+  {index = "86, 37", real = "36, 37", note = "쪽 번호가 56 까지다. 36·37 은 같은 꼴(머리가 튀어나온 넓은 피침형)"},
+  {index = "88, 89", real = "38, 39", note = "3→8 혼동. 38·39 는 작은 피침형 이웃. 모양 근거는 36·37 보다 약하다"},
+  {index = "18—16", real = "13—16", note = "거꾸로 가는 범위. 13~16 은 같은 꼴의 마름모 피침형 넷이 한 줄"},
+]
+skip = ["13-16"]
+skip_note = "13-16 섞임"
+
+["band4/133"]
+figures = [
+  {index = "80—83", real = "30—33", note = "쪽 번호가 59 까지다. 30~33 은 같은 꼴(가운데가 넓은 피침형) 한 줄"},
+  {index = "84—86", real = "34—36", note = "34~36 은 같은 꼴(끝이 둥근 타원형) 한 줄"},
+  {index = "87—41", real = "37—41", note = "거꾸로 가는 범위. 37~39 는 같은 꼴의 작은 피침형, 40·41 은 같은 줄의 큰 것"},
+]
+
+["band4/135"]
+figures = [
+  {index = "30—82", real = "30—32", note = "쪽 번호가 105 지만 82 까지 펴면 다른 종 자리와 겹친다. 30~32 는 같은 꼴(가는 선형) 한 무리"},
+  {index = "108—105", real = "103—105", note = "거꾸로 가는 범위. 103~105 는 같은 꼴(둥근 타원형) 한 줄"},
+]
+skip = ["78-79"]
+skip_note = "78-79 잘림"
+
+["band4/153"]
+figures = [
+  {index = "34—87", real = "34—37", note = "34—87 이면 38—43·52—57·74—82 등 다른 종 자리를 다 덮는다. 34~37 은 한 줄(36 은 작은 것, 37 은 띠 쪽)"},
+]
+
+["band4/155"]
+figures = [
+  {index = "29—82", real = "29—32", note = "쪽 번호가 66 까지다. 29—32 는 같은 꼴의 큰 피침형 넷"},
+  {index = "28, 24", real = "23, 24", note = "23·24 는 같은 꼴(양 끝 머리 모양의 가는 것), 27·28 이 한 짝"},
+]
+
+["band4/157"]
+figures = [
+  {index = "59—68", real = "59—63", note = "쪽 번호가 63 까지다. 59~63 은 같은 꼴(가는 피침형) 다섯"},
+]
+
+["band4/171"]
+skip = ["16-24"]
+skip_note = "16-24 섞임"
+
+["band4/187"]
+skip = ["1"]
+skip_note = "1 잘림"
+
+["band4/193"]
+skip = ["3-5"]
+skip_note = "3-5 잘림"
+
+["band4/211"]
+skip = ["13-14"]
+skip_note = "13-14 군더더기"
+
+["band4/219"]
+skip = ["12-16", "24-26", "32-33"]
+skip_note = "12-16 섞임 · 24-26 섞임 · 32-33 군더더기"
+
+["band4/225"]
+skip = ["8-10"]
+skip_note = "8-10 섞임"
+
+["band4/227"]
+skip = ["1", "2"]
+skip_note = "1 잘림 · 2 군더더기"
+
+["band4/239"]
+skip = ["1"]
+skip_note = "1 군더더기"
+
+["band4/261"]
+skip = ["1-2"]
+skip_note = "1-2 잘림"
