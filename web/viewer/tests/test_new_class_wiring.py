@@ -103,13 +103,16 @@ class HotkeyTest(DiaRUGATestCase):
         **같은 묶음 안의 속은 예외다** (224 · 사용자 2026-10-21) — 원통상의
         Rhizosolenia·Dactyliosolen 은 `t` 를 나눠 갖는다. 순환이 가르는 것이
         "같은 형태 안의 갈래" 로 넓어졌다.
+
+        **속의 파편도 그 속과 한 주인이다** (237) — Eucampia 파편은 `e` 를
+        Eucampia 와 나눠 갖는다. 원형·봉상과 같은 본체·파편 순환이다.
         """
         taxa = ClassDef.objects.filter(active=True, is_taxon=True)
         seen = {}
         for t in taxa:
             if not t.hotkey:
                 continue
-            owner = t.group_id or t.key
+            owner = t.group_id or t.key.removesuffix("_frag")
             seen.setdefault(t.hotkey, set()).add(owner)
         bad = {k: v for k, v in seen.items() if len(v) > 1}
         self.assertEqual(bad, {}, f"묶음이 다른 속끼리 겹친다: {bad}")
@@ -201,3 +204,39 @@ class CorethronRowTest(DiaRUGATestCase):
 
     def test_세는_분류에_든다(self):
         self.assertIn("corethron", [c["key"] for c in data.counted_classes()])
+
+
+class EucampiaFragRowTest(DiaRUGATestCase):
+    """마이그레이션 `0051` 이 넣은 Eucampia 파편 (237) — **`e` 순환에 든다.**
+
+    원형·봉상의 파편과 같은 모양이다: 본체와 키를 나눠 갖고, 세지 않는다.
+    """
+
+    @classmethod
+    def setUpTestData(cls):
+        fx.make_classes()
+
+    def test_마이그레이션의_행(self):
+        row = ClassDef.objects.get(key="eucampia_frag")
+        self.assertEqual((row.label, row.short, row.badge, row.color, row.hotkey),
+                         ("Eucampia 파편", "Euc파편", "eucf", "255,168,216", "e"))
+        self.assertFalse(row.counted)
+        self.assertTrue(row.is_taxon)
+
+    def test_픽스처_표와_같은_값이다(self):
+        row = ClassDef.objects.get(key="eucampia_frag")
+        mirror = next(c for c in fx.CLASSES if c[0] == "eucampia_frag")
+        _, label, short, badge, color, hot, counted, taxon = mirror
+        self.assertEqual(
+            (row.label, row.short, row.badge, row.color, row.hotkey,
+             row.counted, row.is_taxon),
+            (label, short, badge, color, hot, counted, taxon))
+
+    def test_e_를_누르면_Eucampia_다음에_파편이다(self):
+        groups = {g["hotkey"]: [c["key"] for c in g["classes"]]
+                  for g in data.hotkey_groups()["groups"]}
+        self.assertEqual(groups["e"], ["eucampia", "eucampia_frag"])
+
+    def test_세는_분류에_안_든다(self):
+        self.assertNotIn("eucampia_frag",
+                         [c["key"] for c in data.counted_classes()])
