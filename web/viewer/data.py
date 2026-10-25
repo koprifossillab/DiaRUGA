@@ -6002,6 +6002,24 @@ def atlas_search(q: str = "", atlas_key: str = "", genus: str = "",
     total = qs.count()
     offset = max(0, min(offset, max(0, total - 1)))
     page = list(qs[offset:offset + ATLAS_PER_PAGE])
+    rows = _atlas_rows(page)
+    return {
+        "q": q, "atlas_key": atlas_key, "genus": genus, "area": area,
+        "total": total, "offset": offset, "per_page": ATLAS_PER_PAGE,
+        "rows": rows,
+        "shown_from": offset + 1 if rows else 0,
+        "shown_to": offset + len(rows),
+        "prev_offset": offset - ATLAS_PER_PAGE if offset > 0 else None,
+        "next_offset": (offset + ATLAS_PER_PAGE
+                        if offset + ATLAS_PER_PAGE < total else None),
+    }
+
+
+def _atlas_rows(page) -> list[dict]:
+    """도감 항목들 → 화면 행. 검색 결과(목록·바둑판)와 비교 화면이 같이 쓴다
+    (238). **한 번에 묻는다** — 출현·이명·기준면을 행마다 되물으면 105 가
+    된다.
+    """
     occs = _occurrences_by_binomial(e.binomial for e in page)
     taxa = _taxon_names_by_binomial(e.binomial for e in page)
     datums = _biodatums_by_binomial(e.binomial for e in page)
@@ -6027,17 +6045,75 @@ def atlas_search(q: str = "", atlas_key: str = "", genus: str = "",
             # "출현" 줄을 안 내는 것과 같은 원칙
             "taxon": (taxa[e.binomial] if taxa.get(e.binomial, {}).get("status") == "synonym"
                       else None),
+            # 비교에 담는 열쇠 (238) — `<도감>:<표제어>`. **`id` 도 `seq` 도
+            # 안 쓴다**: 이 행은 반입마다 지우고 다시 만들고(`AtlasEntry`
+            # 머리말), `seq` 는 색인에 한 줄만 끼어도 밀린다. 주소는 공유되어
+            # 살아야 하므로 이름으로 짚는다 — 도감 코드에는 `:` 가 못 든다
+            "key": f"{e.atlas.key}:{e.name}",
         })
-    return {
-        "q": q, "atlas_key": atlas_key, "genus": genus, "area": area,
-        "total": total, "offset": offset, "per_page": ATLAS_PER_PAGE,
-        "rows": rows,
-        "shown_from": offset + 1 if rows else 0,
-        "shown_to": offset + len(rows),
-        "prev_offset": offset - ATLAS_PER_PAGE if offset > 0 else None,
-        "next_offset": (offset + ATLAS_PER_PAGE
-                        if offset + ATLAS_PER_PAGE < total else None),
-    }
+    for row in rows:
+        row["figure"] = _row_figure(row["places"])
+    return rows
+
+
+def _row_figure(places) -> dict | None:
+    """바둑판 칸에 띄울 그림 하나 (238). **크롭이 먼저, 도판 쪽이 그다음이다.**
+
+    논문 도판은 그림 하나를 뗀 크롭(`crop_rel`)이 있어 그 종만 보인다.
+    다권 도감은 크롭이 없어 도판 한 쪽 전체가 온다 — 새로 자르지 않는다
+    (사용자 2026-10-25: 이미 있는 도판·크롭을 그대로 쓴다). 해설면은 글자라
+    안 띄운다. 주석이 달린 자리도 안 띄운다(아래). 그림이 없으면 `None` 이고
+    칸이 그렇게 말한다. **디스크를 안 짚는다** — 주소는 화면이 상대경로로 만든다(`_placement_dict`).
+    """
+    for p in places:
+        if p["crop_rel"]:
+            return {"rel": p["crop_rel"], "url": p["plate_url"], "crop": True,
+                    "label": f"fig. {p['figures']}" if p["figures"] else ""}
+    for p in places:
+        # **주석이 달린 자리는 도판이 아니다** — 실측 21건 전부가 `Tafel 아님 ·
+        # 권 뒤 Verzeichnis(색인)` 이고 그 "도판 쪽" 은 글자뿐인 색인 쪽이다.
+        # 칸에 띄우면 그 종의 그림이 색인 쪽으로 보인다(운영 사본에서 봤다)
+        if p["plate_rel"] and not p["note"]:
+            return {"rel": p["plate_rel"], "url": p["plate_url"], "crop": False,
+                    "label": f"도판 p.{p['pdf_plate_page']}"}
+    return None
+
+
+ATLAS_COMPARE_MAX = 5
+
+
+def atlas_compare(keys) -> dict:
+    """비교 화면에 놓을 항목들 (238). `keys` 는 `<도감>:<표제어>` 이고 **준
+    순서 그대로** 놓는다 — 사람이 고른 차례가 곧 칸의 차례다.
+
+    한국 도감에 표제어가 한 번 겹친다(`Cocconeis placentula EHRENBERG` —
+    항목번호가 둘). 그때는 앞엣것(`seq`)을 놓는다. **못 찾은 열쇠는
+    버리지 않고 `missing` 으로 돌려준다** — 재반입으로 표제어가 고쳐졌거나
+    잘못 옮긴 주소다. 조용히 빼면 다섯을 골랐는데 넷이 뜬 까닭을 모른다.
+    """
+    from .models import AtlasEntry
+    want, seen = [], set()
+    for k in keys:
+        k = (k or "").strip()
+        atlas_key, sep, name = k.partition(":")
+        if not sep or not atlas_key or not name or k in seen:
+            continue
+        seen.add(k)
+        want.append((k, atlas_key, name))
+    over = max(0, len(want) - ATLAS_COMPARE_MAX)
+    want = want[:ATLAS_COMPARE_MAX]
+    if not want:
+        return {"rows": [], "missing": [], "over": over}
+    cond = Q()
+    for _, atlas_key, name in want:
+        cond |= Q(atlas__key=atlas_key, name=name)
+    found = {}
+    for e in _atlas_entry_qs().filter(cond).order_by("seq"):
+        found.setdefault(f"{e.atlas.key}:{e.name}", e)
+    entries = [found[k] for k, _, _ in want if k in found]
+    return {"rows": _atlas_rows(entries),
+            "missing": [k for k, _, _ in want if k not in found],
+            "over": over}
 
 
 def _atlas_entry_qs():

@@ -100,6 +100,8 @@ urlpatterns = [
     # 생층서 기준면 범위 그림 (P28). 도감의 형제 — 카드의 「기준면」 줄이
     # 여기로 온다. `atlas/<도감>/<권>/` 보다 앞에 둔다
     path("atlas/datums/", views.biodatum_chart, name="biodatum"),
+    # 종 2~5개를 나란히 (238). 고른 종은 `?e=<도감>:<표제어>` 반복이다
+    path("atlas/compare/", views.atlas_compare, name="atlas_compare"),
     path("atlas/<slug:atlas>/<slug:vol>/", views.atlas_volume,
          name="atlas_volume"),
     path("atlas/<slug:atlas>/<slug:vol>/<int:n>/", views.atlas_page,

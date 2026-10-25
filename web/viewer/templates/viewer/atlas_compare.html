@@ -1,0 +1,200 @@
+{% extends "viewer/base.html" %}
+{% block title %}도감 비교 — DiaRUGA{% endblock %}
+{% block subtitle %}<a href="{% url 'atlas' %}" id="cmpback" data-en="Atlas">도감</a> · <b data-en="Compare">비교</b> · {{ rows|length }}종{% endblock %}
+{% block nav %}{% include "viewer/_atlaslang.html" %}{% endblock %}
+
+{% block content %}
+{% comment %}
+  도감 종 2~5개를 나란히 (238). **고른 종은 주소가 든다**(`?e=<도감>:<표제어>`
+  반복) — 새로고침·공유에도 같은 비교가 열린다. 바둑판 보기의 고르기 칸이
+  여기로 보낸다.
+
+  **표로 놓는다.** 종마다 카드를 따로 세우면 "생태" 가 칸마다 다른 높이에
+  놓여 옆 종과 같은 줄을 비교할 수 없다. 줄이 곧 항목(그림·자리·생태…)이고,
+  **한 종이라도 값이 있는 줄만 낸다** — 다 빈 줄은 비교할 것이 없다. 값이
+  있는 줄에서 빈 칸은 「—」로 말한다: 그 종에 그 자료가 없다는 것도 비교다.
+
+  **좁은 화면은 가로로 민다.** 칸을 세로로 쌓으면 나란히 놓는 뜻이 사라진다
+  — 칸 너비를 못 박아(240px) 표가 화면보다 넓어지면 감싼 칸이 가로로 구르고,
+  한 칸씩 걸려 멈춘다(`scroll-snap`).
+{% endcomment %}
+<style>
+  .cmpwrap { overflow-x: auto; scroll-snap-type: x proximity;
+             -webkit-overflow-scrolling: touch; margin: 8px 0 16px; }
+  .cmp { border-collapse: separate; border-spacing: 10px 0; table-layout: fixed;
+         width: 100%; }
+  .cmp col { width: 240px; }
+  /* base 의 `th` 는 숫자 표의 머리라 대문자·11px·오른쪽 맞춤이다 — 학명이
+     `NAVICULA` 로 찍히면 안 된다(대소문자가 곧 속·종의 구분이다). 다 걷는다 */
+  .cmp td, .cmp th { vertical-align: top; text-align: left; min-width: 240px;
+                     scroll-snap-align: start; padding: 6px 4px;
+                     text-transform: none; letter-spacing: normal;
+                     border-bottom: none; color: inherit; font-size: inherit; }
+  .cmp thead th { border-bottom: 2px solid var(--line); }
+  .cmp .cname { font-size: 1rem; overflow-wrap: anywhere; }
+  .cmp .cmeta { font-size: .8rem; font-weight: normal; margin-top: 3px; }
+  .cmp .cdrop { font-size: .78rem; font-weight: normal; }
+  .cmp tr.sec th { font-size: .8rem; color: var(--dim); font-weight: normal;
+                   padding: 12px 4px 2px; border-bottom: 1px solid var(--line);
+                   position: sticky; left: 0; }
+  .cmp td { font-size: .88rem; overflow-wrap: anywhere; }
+  .cfig { display: block; margin-bottom: 8px; text-decoration: none; color: inherit; }
+  /* 도판은 흰 종이라 어두운 테마에서도 흰 바탕을 깐다(도감 화면과 같다) */
+  .cfig img { width: 100%; display: block; background: #fff; border-radius: 4px;
+              min-height: 40px; }
+  .cfig.failed img { display: none; }
+  .cfig .cap { font-size: .76rem; color: var(--dim); padding-top: 2px; }
+  .cfig.failed .cap { color: var(--warn-fg); }
+  .cplaces { display: flex; flex-direction: column; gap: 3px; }
+  .warnchip { background: var(--warn-bg); color: var(--warn-fg); }
+  .pnote { font-size: .82rem; color: var(--warn-fg); }
+</style>
+
+{% if missing %}
+  {% comment %}
+    **못 찾은 것을 조용히 빼지 않는다.** 다섯을 골랐는데 넷이 뜨면 까닭을
+    모른다 — 재반입으로 표제어가 고쳐졌거나 주소가 잘못 옮겨진 것이다.
+  {% endcomment %}
+  <p class="warn"><span data-en="Not found in the atlas index (the entry may have been renamed on re-import): ">도감 색인에서 못 찾았습니다(재반입으로 표제어가 바뀌었을 수 있습니다): </span>
+    {% for k in missing %}<code>{{ k }}</code>{% if not forloop.last %} · {% endif %}{% endfor %}</p>
+{% endif %}
+{% if over %}
+  <p class="warn"><span data-en="Only the first five are shown — ">앞의 다섯 종만 놓았습니다 — </span>{{ over }}<span data-en=" more were dropped."> 종은 뺐습니다.</span></p>
+{% endif %}
+
+{% if not rows %}
+  <p class="warn"><span data-en="Nothing to compare. Pick 2–5 species in the atlas grid view.">비교할 종이 없습니다. 도감 검색 결과의 바둑판 보기에서 2~5종을 고르세요.</span>
+    <a href="{% url 'atlas' %}" data-en="Go to the atlas">도감으로</a></p>
+{% else %}
+  {% if rows|length == 1 %}
+    <p class="dim"><span data-en="Only one species left — add more from the atlas grid view.">한 종만 남았습니다 — 도감 바둑판 보기에서 더 고르세요.</span></p>
+  {% endif %}
+  <div class="cmpwrap">
+  <table class="cmp" id="cmp" style="min-width: {% widthratio rows|length 1 250 %}px">
+    <thead><tr>
+      {% for r in rows %}
+        <th data-key="{{ r.key }}">
+          <div class="cname"><i>{{ r.name }}</i></div>
+          <div class="cmeta dim">{{ r.atlas.short }}{% if r.item_no %} #{{ r.item_no }}{% endif %}
+            {% if r.genus_guess %}<span class="chip warnchip" data-en="Genus inferred">속명 추정</span>{% endif %}
+            {% if r.rank == 'genus_only' %}<span class="chip" data-en="Genus only">속까지</span>
+            {% elif r.rank == 'unreadable' %}<span class="chip warnchip" data-en="Unreadable">못 읽음</span>{% endif %}
+          </div>
+          <a class="cdrop" href="{{ r.drop_url }}" data-en="Remove">빼기</a>
+        </th>
+      {% endfor %}
+    </tr></thead>
+    <tbody>
+      {% comment %}
+        **그림** — 자리마다 하나. 크롭이 있으면 크롭, 없으면 도판 한 쪽이다
+        (바둑판 칸과 같은 규칙 · 새로 자르지 않는다). 해설면은 글자라 안 낸다.
+        주석이 달린 자리(`Tafel 아님 · Verzeichnis`)도 그 쪽이 색인이라 안 낸다.
+      {% endcomment %}
+      <tr class="sec"><th colspan="{{ rows|length }}" data-en="Figures">그림</th></tr>
+      <tr>{% for r in rows %}<td>
+        {% for pl in r.places %}
+          {% if pl.crop_rel or pl.plate_rel and not pl.note %}
+            <a class="cfig" {% if pl.plate_url %}href="{{ pl.plate_url }}"{% endif %}>
+              <img loading="lazy" alt="{{ r.name }}"
+                   src="{% url 'image' %}?p={% if pl.crop_rel %}{{ pl.crop_rel|urlencode }}{% else %}{{ pl.plate_rel|urlencode }}{% endif %}&amp;w=600">
+              <div class="cap">{% if pl.volume %}{{ pl.volume }} {% endif %}{{ pl.where }}{% if pl.figures %} fig. {{ pl.figures }}{% endif %}{% if pl.pdf_plate_page %} · p.{{ pl.pdf_plate_page }}{% endif %}</div>
+            </a>
+          {% endif %}
+        {% endfor %}
+        {% if not r.figure %}<span class="dim" data-en="No figure">그림 없음</span>{% endif %}
+      </td>{% endfor %}</tr>
+
+      <tr class="sec"><th colspan="{{ rows|length }}" data-en="Locations">자리</th></tr>
+      <tr>{% for r in rows %}<td><div class="cplaces">
+        {% for pl in r.places %}
+          <span>{% if pl.volume %}<span class="dim">{{ pl.volume }}</span> {% endif %}{{ pl.where }}{% if pl.figures %} <span class="dim">fig. {{ pl.figures }}</span>{% endif %}{% if pl.book_page %} <span class="dim">책 p.{{ pl.book_page }}</span>{% endif %}
+            {% if pl.text_url %}<a href="{{ pl.text_url }}">해설 p.{{ pl.pdf_page }}</a>{% endif %}
+            {% if pl.plate_url %}<a href="{{ pl.plate_url }}">도판 p.{{ pl.pdf_plate_page }}</a>{% endif %}
+            {% if pl.note %}<span class="pnote">{{ pl.note }}</span>{% endif %}</span>
+        {% empty %}<span class="dim" data-en="No location recorded">자리가 안 적혀 있다</span>{% endfor %}
+      </div></td>{% endfor %}</tr>
+
+      {% if has.taxon %}
+      <tr class="sec"><th colspan="{{ rows|length }}" data-en="Currently accepted name">현재 통용 학명</th></tr>
+      <tr>{% for r in rows %}<td>{% if r.taxon %}
+        <span class="chip warnchip" title="AlgaeBase 확인 — 이 표기는 이명이다"
+              data-en-title="AlgaeBase-verified — this name is a synonym" data-en="Synonym">이명</span>
+        <i>{{ r.taxon.valid_name }}</i>{% if r.taxon.note %} <span class="pnote">{{ r.taxon.note }}</span>{% endif %}
+      {% else %}—{% endif %}</td>{% endfor %}</tr>
+      {% endif %}
+
+      {% if has.ecology %}
+      <tr class="sec"><th colspan="{{ rows|length }}" data-en="Ecology">생태</th></tr>
+      <tr>{% for r in rows %}<td>{{ r.extra.ecology|default:"—" }}</td>{% endfor %}</tr>
+      {% endif %}
+
+      {% if has.distribution %}
+      <tr class="sec"><th colspan="{{ rows|length }}" data-en="Distribution">분포</th></tr>
+      <tr>{% for r in rows %}<td>{{ r.extra.distribution|default:"—" }}</td>{% endfor %}</tr>
+      {% endif %}
+
+      {% if has.original_note %}
+      <tr class="sec"><th colspan="{{ rows|length }}" data-en="As printed">원문 표기</th></tr>
+      <tr>{% for r in rows %}<td>{{ r.extra.original_note|default:"—" }}</td>{% endfor %}</tr>
+      {% endif %}
+
+      {% if has.occurrences %}
+      <tr class="sec"><th colspan="{{ rows|length }}" data-en="Occurrence">출현</th></tr>
+      <tr>{% for r in rows %}<td>
+        {% for o in r.occurrences %}<div>{{ o.region }} <span class="dim">({{ o.authors }}, {{ o.year }})</span>{% if o.note %} <span class="pnote">{{ o.note }}</span>{% endif %}</div>
+        {% empty %}—{% endfor %}
+      </td>{% endfor %}</tr>
+      {% endif %}
+
+      {% if has.biodatums %}
+      <tr class="sec"><th colspan="{{ rows|length }}" data-en="Datum">기준면</th></tr>
+      <tr>{% for r in rows %}<td>
+        {% for b in r.biodatums %}<div>{{ b.datum }} {{ b.age }}{% if b.uncertainty %}±{{ b.uncertainty }}{% endif %} Ma
+          <span class="dim">({{ b.ref_label }}{% if b.via_label %} — {{ b.via_label }} 경유{% endif %}{% if b.infra %} · {{ b.infra }}{% endif %}{% if b.variant %} · {{ b.variant_label }}{% endif %})</span></div>
+        {% empty %}—{% endfor %}
+      </td>{% endfor %}</tr>
+      {% endif %}
+    </tbody>
+  </table>
+  </div>
+{% endif %}
+
+<script>
+(function () {
+  // **보고 있는 비교가 곧 담은 것이다** (238). 주소로 받은 종을 도감 화면의
+  // 담은 목록에 그대로 적는다 — 여기서 빼고 돌아갔는데 도감 화면에 그대로
+  // 담겨 있으면 무엇을 비교하고 있는지가 두 자리에서 갈린다.
+  var rows = [{% for r in rows %}{k: "{{ r.key|escapejs }}", n: "{{ r.name|escapejs }}"}{% if not forloop.last %}, {% endif %}{% endfor %}];
+  try { localStorage.setItem('diaruga.atlas.compare', JSON.stringify(rows)); } catch (err) { /* 사생활 모드 */ }
+
+  // 검색 결과에서 왔으면 그 결과로 돌아간다 — 도감 첫 화면으로 보내면
+  // 검색을 다시 해야 한다
+  var back = document.getElementById('cmpback');
+  if (back) back.addEventListener('click', function (e) {
+    var ref = document.referrer || '';
+    if (ref.indexOf(back.href) === 0 && ref.indexOf('/compare/') < 0 && history.length > 1) {
+      e.preventDefault();
+      history.back();
+    }
+  });
+
+  var cmp = document.getElementById('cmp');
+  if (!cmp) return;
+  function failed(img) {
+    var a = img.closest('.cfig');
+    if (!a || a.classList.contains('failed')) return;
+    a.classList.add('failed');
+    var cap = a.querySelector('.cap');
+    var en = false;
+    try { en = localStorage.getItem('diaruga.atlas.lang') === 'en'; } catch (err) { /* 사생활 모드 */ }
+    if (cap) cap.textContent += en ? ' — not rendered yet' : ' — 아직 안 떴습니다';
+  }
+  cmp.addEventListener('error', function (e) {
+    if (e.target.tagName === 'IMG') failed(e.target);
+  }, true);
+  cmp.querySelectorAll('.cfig img').forEach(function (img) {
+    if (img.complete && img.naturalWidth === 0) failed(img);
+  });
+})();
+</script>
+{% endblock %}
