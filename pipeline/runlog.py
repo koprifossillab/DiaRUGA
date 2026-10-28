@@ -12,9 +12,78 @@
 새 실행이 시작할 때 같은 종류의 옛 `running` 을 닫아도 안전하다. 죽은 것을
 치우는 일을 살아 있는 것이 한다.
 """
+import hashlib
+import importlib.util
+import os
+import subprocess
+import sys
 from datetime import timedelta
+from pathlib import Path
 
 from django.utils import timezone
+
+
+def _main_script() -> Path | None:
+    """지금 도는 스크립트 파일. `python -c`·`python -` 이면 없다."""
+    f = getattr(sys.modules.get("__main__"), "__file__", None)
+    return Path(f).resolve() if f else None
+
+
+def git_commit(where: Path | None = None) -> str:
+    """`where` 가 git 저장소 안이면 HEAD 의 짧은 커밋, 아니면 빈 문자열."""
+    where = where or _main_script() or Path.cwd()
+    try:
+        out = subprocess.run(["git", "rev-parse", "--short", "HEAD"],
+                             capture_output=True, text=True, timeout=5,
+                             cwd=where if where.is_dir() else where.parent)
+        return out.stdout.strip() if out.returncode == 0 else ""
+    except (OSError, subprocess.SubprocessError):
+        return ""
+
+
+def blob_id(path: Path) -> str:
+    """파일의 git blob id — `git hash-object` 와 같은 값.
+
+    저장소에서 `git log --all --find-object=<id>` 로 어느 커밋의 파일인지 찾힌다.
+    """
+    body = path.read_bytes()
+    return hashlib.sha1(b"blob %d\0" % len(body) + body).hexdigest()
+
+
+def image_tag() -> str:
+    """지금 도는 이미지의 판. 컨테이너 밖이면 빈 문자열.
+
+    **두 컨테이너가 같은 `.env` 를 받아 `IMAGE_TAG`·`PIPELINE_TAG` 가 둘 다 있다**
+    (compose 의 `env_file`). 어느 쪽 이미지인지는 이미지에 적혀 있지 않아서
+    `torch` 로 가른다 — 파이프라인 이미지에만 있다(`poll_nas.sh` 의 `rundb` 주석과
+    같은 구분이다). 둘 다 없으면 호스트다.
+    """
+    if not (os.environ.get("IMAGE_TAG") or os.environ.get("PIPELINE_TAG")):
+        return ""
+    if importlib.util.find_spec("torch") is not None:
+        return os.environ.get("PIPELINE_TAG", "")
+    return os.environ.get("IMAGE_TAG", "")
+
+
+def code_version(script: Path | None = None) -> str:
+    """실행 이력에 적을 코드 판. 커밋을 알면 커밋, 모르면 `blob:<id>@<이미지 판>`.
+
+    **컨테이너에는 git 이 없다** — `/srv/DiaRUGA/scripts` 는 저장소가 아니라
+    `dbsync.sh`·`sync_to_srv.sh` 가 파일만 옮겨 놓은 자리다. 그래서 스크립트마다
+    가진 `git_version()` 이 컨테이너에서 빈 값을 내고, 08-03 뒤로 컨테이너에서 돈
+    실행이 전부 코드 판 없이 남았다(10-28 운영 DB · detect 147건 중 147건).
+
+    blob 은 **도는 스크립트 하나**의 것이다 — 그것이 부르는 `judge.py` 같은 옆
+    모듈은 안 담긴다. 이미지 판이 Django 쪽(`/app`)을 말한다. 64자 칸에 들어간다.
+    """
+    script = script or _main_script()
+    v = git_commit(script)
+    if v:
+        return v
+    if script is None or not script.is_file():
+        return ""
+    tag = image_tag()
+    return f"blob:{blob_id(script)[:12]}" + (f"@{tag}" if tag else "")
 
 
 def close_stale(kind: str, older_than_min: float = 5.0) -> int:
@@ -58,9 +127,14 @@ def start(kind: str, batch_label: str = "", batch_note: str = "", **fields):
 
     `batch_label` 을 주면 그 이름의 묶음에 매단다 — 여러 슬라이드에 걸친 한 번의
     작업을 나중에 한 덩어리로 보기 위해서다.
+
+    **`code_version` 이 비었으면 여기서 채운다.** 부르는 쪽은 저마다의
+    `git_version()` 을 넘기는데 컨테이너에서는 그것이 빈 값이다(`code_version()`).
     """
     from viewer.models import Run                       # noqa: PLC0415
 
+    if not fields.get("code_version"):
+        fields["code_version"] = code_version()
     n = close_stale(kind)
     if n:
         print(f"  끝나지 않은 {kind} 실행 {n}개를 닫았다")

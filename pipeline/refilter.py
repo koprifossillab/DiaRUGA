@@ -55,6 +55,7 @@ from django.db import transaction                                   # noqa: E402
 from django.utils import timezone                                   # noqa: E402
 
 import judge                                                        # noqa: E402
+import runlog                                                       # noqa: E402
 from viewer.models import (Candidate, Detection, Run, RunBatch,     # noqa: E402
                            Slide, ThresholdSet)
 
@@ -207,7 +208,10 @@ def main():
                                          "slide": args.slide or "*",
                                          "from_defaults": args.defaults},
                                  host=socket.gethostname(),
-                                 code_version=git_version())
+                                 # 컨테이너에서는 git 이 없어 비므로 runlog 가
+                                 # blob id 로 채운다 (`runlog.code_version`)
+                                 code_version=(git_version()
+                                               or runlog.code_version()))
 
     tot_before = tot_after = tot_changed = 0
     per_cls = Counter()

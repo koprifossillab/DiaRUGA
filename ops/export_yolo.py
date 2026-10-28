@@ -201,20 +201,13 @@ def git_version():
 def code_version() -> str:
     """이 꾸러미를 만든 코드. 커밋을 알면 커밋, 모르면 이 파일의 git blob id.
 
-    **컨테이너에는 git 이 없다** — `/srv/DiaRUGA/scripts` 는 저장소가 아니라
-    `dbsync.sh` 가 파일만 옮겨 놓은 자리라 `git_version()` 이 빈 값을 낸다. 4차 첫
-    꾸러미가 그렇게 `?` 로 나갔다(10-28). blob id 는 `git hash-object` 와 같은 값이라
-    저장소에서 `git log --all --find-object=<id>` 로 어느 커밋의 파일인지 찾힌다.
+    **컨테이너에는 git 이 없다** — 4차 첫 꾸러미가 그렇게 `?` 로 나갔다(10-28).
+    blob id 는 `runlog.blob_id` 가 잰다(`git log --all --find-object=<id>` 로 찾힌다).
 
     라벨 규칙(`viewer.data`)은 이 파일이 아니라 이미지 안에 있다 — 그쪽은
-    `IMAGE_TAG` 가 따로 말한다(`MANIFEST.json` 의 `image_tag`).
+    `MANIFEST.json` 의 `image_tag` 가 따로 말한다. 그래서 여기서는 `@<판>` 을 안 붙인다.
     """
-    v = git_version()
-    if v:
-        return v
-    body = Path(__file__).resolve().read_bytes()
-    blob = hashlib.sha1(b"blob %d\0" % len(body) + body).hexdigest()
-    return f"blob:{blob[:12]}"
+    return git_version() or f"blob:{runlog.blob_id(Path(__file__).resolve())[:12]}"
 
 
 # --- 라벨 만들기 ------------------------------------------------------------
@@ -449,7 +442,7 @@ def main():
                  f"덮어쓰면 어느 판으로 학습했는지 알 수 없게 된다")
 
     code_ver = code_version()
-    image_tag = os.environ.get("IMAGE_TAG", "")
+    image_tag = runlog.image_tag()
     run = runlog.start("export", params={
         "out": str(out_dir), "seg": args.seg, "classes": classes,
         "batch": args.batch, "scheme": args.scheme,
