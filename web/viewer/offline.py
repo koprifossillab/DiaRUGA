@@ -303,6 +303,14 @@ def dets_by_image(ctx: dict) -> dict:
     return out
 
 
+def _batches_of(slide: Slide, gids) -> dict:
+    """`{"<gid>": 주 묶음 pk}` — 꺼낼 때 시야마다 무엇을 보고 있었나 (P32)."""
+    prim = data.primary_batch_map(slide=slide)
+    idx = dict(slide.viewpoints.values_list("pk", "idx"))
+    want = {int(g) for g in gids}
+    return {str(idx[pk]): b for pk, b in prim.items() if idx.get(pk) in want}
+
+
 def _head(slide: Slide, kind: str, gids: list[int]) -> dict:
     """결과 파일이 되돌려 보낼 머리. **어디서 왔는가가 전부 여기 있다.**"""
     return {
@@ -318,8 +326,14 @@ def _head(slide: Slide, kind: str, gids: list[int]) -> dict:
         "label": slide.name,
         # 검토 대상 묶음. **다르면 반입을 거절한다** — 다른 엔진의 판 위에
         # 만든 교정은 키가 거의 전부 어긋난다(051).
+        #
+        # **시야마다의 주 묶음이 진짜 열쇠다** (P32 · `batches`). 한 범위에 3차
+        # 정답 시야와 4차 시야가 섞이므로 들여올 때 시야마다 대조한다(`plan`).
+        # `batch` 는 옛 뷰어가 읽는 칸이라 남긴다 — `batches` 가 없는 옛 파일은
+        # 지금도 이것으로 통째로 대조한다.
         "batch": data.review_batch_id(),
         "batch_label": data.review_batch_label(),
+        "batches": _batches_of(slide, gids),
         "made_at": timezone.now().isoformat(timespec="seconds"),
         "gids": list(gids),
     }
@@ -460,10 +474,8 @@ def estimate(slide: Slide, gids: list[int], kind: str = "review",
     # 동정기 — **개체 하나에 판 수만큼 크롭**이다. 개체 수는 판정에서 센다
     # (카드는 개체 단위다 — P18). 정확히는 `catalog_rows` 가 접어야 알지만
     # 그것은 한 판을 통째로 만드는 함수라 미리보기에서 부를 것이 아니다.
-    n_obj = (ObjectReview.objects
-             .filter(viewpoint__in=vps, batch_id=data.review_batch_id(),
-                     removed=False, diatom_object__isnull=False)
-             .values("diatom_object").distinct().count())
+    # 시야마다 그 주 묶음의 판정으로 센다 (P32 · `data.primary_cards`)
+    n_obj = sum(data.primary_cards(ids=[v.pk for v in vps]).values())
     per_vp = (shots / len(vps)) if vps else 0
     n_crops = round(n_obj * per_vp)
     return {"n_views": len(vps), "n_cards": n_obj, "n_shots": n_crops,
@@ -671,9 +683,18 @@ def plan(res: dict) -> dict:
         return out
     out["slide"] = slide
 
-    # **묶음이 다르면 통째로 멈춘다.** 다른 엔진의 판 위에서 한 교정은 키가
-    # 거의 전부 어긋난다(051) — 줄마다 거절할 일이 아니라 파일이 안 맞는 것이다.
-    if head.get("batch") != data.review_batch_id():
+    # **묶음이 다르면 멈춘다.** 다른 엔진의 판 위에서 한 교정은 키가 거의 전부
+    # 어긋난다(051).
+    #
+    # **시야마다 대조한다** (P32). 파일에 `batches` 가 있으면 시야마다 지금의
+    # 주 묶음과 맞춰 **어긋난 시야의 줄만** 거절한다(`guard`) — 한 범위에 3차
+    # 정답 시야와 4차 시야가 섞이고, 검토 대상을 옮기는 날 들고 나간 파일이 통째로
+    # 막히면 그 사이 한 동정까지 버리게 된다. 옛 파일은 전역 묶음으로 통째로 본다.
+    then_b = head.get("batches")
+    now_b = ({str(k): v for k, v in _batches_of(slide, then_b).items()}
+             if isinstance(then_b, dict) else None)
+    fz = data.frozen_batch_ids()
+    if then_b is None and head.get("batch") != data.review_batch_id():
         out["stop"] = (f"꺼낼 때의 검토 대상 묶음({head.get('batch_label')})과 "
                        f"지금({data.review_batch_label()})이 다릅니다. "
                        "묶음을 되돌리거나, 지금 묶음으로 다시 꺼내 검토하십시오.")
@@ -718,6 +739,10 @@ def plan(res: dict) -> dict:
         now = look(gid)
         if not now["by_image"] and now["det"] is None:
             return "reject", "이 서버에 없는 시야입니다", None
+        if now_b is not None and then_b.get(str(gid)) != now_b.get(str(gid)):
+            return ("reject", "꺼낼 때와 지금 이 시야가 보는 묶음이 다릅니다 — "
+                              "다른 엔진의 판 위에서 한 일이라 짚을 자리가 없습니다",
+                    None)
         if image is None:
             det = now["det"]
             image = now["base_image"]
@@ -739,6 +764,21 @@ def plan(res: dict) -> dict:
                                 "덮어쓰면 그 판단이 사라집니다", det)
         return "ok", "", det
 
+    def frozen_why(gid: int) -> str:
+        """얼린 시야면 그 까닭 — 판 교정·완료는 서버가 거절한다(P32 ②).
+
+        적용 단계에서도 409 로 막히지만 **미리보기에서 줄마다 말한다** — 고르게
+        해 놓고 적용에서 무더기로 실패하면 무엇이 왜 안 됐는지 읽을 수가 없다.
+        동정(카탈로그)·시야 코멘트 줄은 받는다.
+        """
+        vp = slide.viewpoints.filter(idx=gid).first()
+        if vp is None:
+            return ""
+        b = data.primary_batch_id(vp)
+        if b not in fz:
+            return ""
+        return data.frozen_message(b, answer=vp.batch_id is not None)
+
     for e in res.get("review") or []:
         try:
             gid = int(e.get("gid"))
@@ -746,6 +786,8 @@ def plan(res: dict) -> dict:
             continue
         image = e.get("image")
         status, why, det = guard(gid, image, whole=True)
+        if status != "reject" and frozen_why(gid):
+            status, why = "reject", frozen_why(gid)
         # **판까지 주소에 넣는다** — 시야 하나에 판이 여럿이고 교정도 판마다다.
         token = f"review:{gid}:{image if image is not None else ''}"
         row("review", gid, token,
@@ -759,6 +801,8 @@ def plan(res: dict) -> dict:
         # **완료는 시야에 붙는 표시라 판의 교정과 층이 다르다** (116) —
         # 판이 달라졌어도 표시 하나는 짚을 수 있다.
         status, why, det = guard(gid, None, whole=False)
+        if status != "reject" and frozen_why(gid):
+            status, why = "reject", frozen_why(gid)
         now_done = bool((det or {}).get("review_done"))
         what = ("검토 완료로 표시" if e.get("done") else "검토 완료를 해제")
         if det is not None and now_done == bool(e.get("done")):

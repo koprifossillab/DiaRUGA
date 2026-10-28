@@ -2292,6 +2292,29 @@ def frozen_message(batch_id, answer: bool = True) -> str:
     return (FROZEN_MSG if answer else FROZEN_WAIT_MSG).format(label=label)
 
 
+def primary_cards(*, slide=None, ids=None) -> dict:
+    """슬라이드 pk → 카드(개체) 수. **시야마다 그 주 묶음의 판정으로** 센다(P32).
+
+    카드는 개체 단위이고(P18) 판정은 `(이미지, 묶음)` 에 붙는다. 전역 검토 대상
+    하나로 세면 주 묶음이 다른 시야(한국·Smear · 4차로 옮긴 뒤의 3차 정답)의
+    개체가 통째로 빠진다 — 오프라인 꺼내기 패널이 "카드 0" 을 말하게 된다.
+    """
+    prim = primary_batch_map(slide=slide, ids=ids)
+    by = defaultdict(list)
+    for v, b in prim.items():
+        if b is not None:
+            by[b].append(v)
+    if not by:
+        return {}
+    q = Q()
+    for b, vids in by.items():
+        q |= Q(batch_id=b, viewpoint_id__in=vids)
+    return dict(ObjectReview.objects
+                .filter(q, removed=False, diatom_object__isnull=False)
+                .values_list("viewpoint__slide_id")
+                .annotate(n=Count("diatom_object", distinct=True)))
+
+
 class FrozenError(ValueError):
     """얼린 시야에 모양·지우기·그리기·완료를 쓰려 했다.
 

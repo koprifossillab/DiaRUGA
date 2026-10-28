@@ -22,7 +22,8 @@ from django.urls import reverse
 from . import factories as fx
 from .base import DiaRUGATestCase
 from .. import data, offline
-from ..models import Candidate, ObjectReview, RunBatch, ViewpointReview
+from ..models import (Candidate, ObjectReview, RunBatch, Viewpoint,
+                      ViewpointReview)
 
 
 class OfflineImportTest(DiaRUGATestCase):
@@ -193,12 +194,46 @@ class OfflineImportTest(DiaRUGATestCase):
         self.apply(self.result(head=b["head"], review=[e]), [self.token(e)])
         self.assertFalse(ObjectReview.objects.filter(removed=True).exists())
 
-    def test_묶음이_다르면_통째로_멈춘다(self):
+    def test_옛_파일은_묶음이_다르면_통째로_멈춘다(self):
+        """시야마다의 묶음(`batches`, P32)이 없는 옛 파일 — 전역 묶음으로 본다."""
         b, e = self.review_edit(removed=[self.keys()[0]])
         head = dict(b["head"], batch=(b["head"]["batch"] or 0) + 999)
+        head.pop("batches", None)
         html = self.preview(self.result(head=head, review=[e])).content.decode()
         self.assertIn("넣을 수 없습니다", html)
         self.assertIn("묶음", html)
+
+    def test_시야의_묶음이_바뀌면_그_줄만_거절한다(self):
+        """한 범위에 3차 정답 시야와 4차 시야가 섞인다(P32 ④) — 검토 대상을 옮긴
+        날 들고 나간 파일이 통째로 막히면 다른 시야에서 한 일까지 버린다."""
+        b, e0 = self.review_edit(removed=[self.keys(0)[0]], gid=0)
+        _b, e1 = self.review_edit(removed=[self.keys(1)[0]], gid=1)
+        head = dict(b["head"])
+        head["batches"] = dict(head["batches"], **{"0": 999999})
+        rows = {r["gid"]: r for r in offline.plan(
+            self.result(head=head, review=[e0, e1]))["rows"]}
+        self.assertEqual(rows[0]["status"], "reject")
+        self.assertIn("묶음이 다릅니다", rows[0]["why"])
+        self.assertEqual(rows[1]["status"], "ok", rows[1]["why"])
+
+    def test_얼린_시야는_교정을_거절하고_동정은_받는다(self):
+        """판 교정·완료는 서버가 거절한다(P32 ②) — 미리보기에서 줄마다 말한다."""
+        fx.review_done(self.w.vp)
+        rb = RunBatch.objects.get(for_review=True)
+        Viewpoint.objects.filter(pk=self.w.vp.pk).update(batch=rb)
+        RunBatch.objects.filter(pk=rb.pk).update(frozen=True, code="S1")
+        b, e = self.review_edit(removed=[self.keys()[0]])
+        cb = offline.catalog_bundle("rs23", [self.gid])
+        card = cb["cards"][0]
+        out = offline.plan(self.result(
+            head=b["head"], review=[e], done=[{"gid": self.gid, "done": False}],
+            catalog=[{"gid": card["gid"], "image": card["image"],
+                      "key": card["key"], "species": "Eucampia antarctica"}]))
+        by = {r["kind"]: r for r in out["rows"]}
+        self.assertEqual(by["review"]["status"], "reject")
+        self.assertIn("얼린", by["review"]["why"])
+        self.assertEqual(by["done"]["status"], "reject")
+        self.assertEqual(by["catalog"]["status"], "ok", by["catalog"]["why"])
 
     # --- 파일의 판 (P25 "파일의 판") ---------------------------------------
     #

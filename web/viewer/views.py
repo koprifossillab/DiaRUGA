@@ -3155,10 +3155,8 @@ def offline_pick_ctx(slide: Slide, kind: str, gids: str = "") -> dict | None:
     ids = list(slide.viewpoints.order_by("idx").values_list("idx", "n_frames"))
     if not ids:
         return None
-    cards = (ObjectReview.objects
-             .filter(viewpoint__slide=slide, batch_id=data.review_batch_id(),
-                     removed=False, diatom_object__isnull=False)
-             .values("diatom_object").distinct().count())
+    # 시야마다 그 주 묶음의 판정으로 센다 (P32 · `data.primary_cards`)
+    cards = data.primary_cards(slide=slide).get(slide.pk, 0)
     return {
         "slug": slide.slug,
         "kind": kind,
@@ -3189,11 +3187,10 @@ def _offline_slides() -> list[dict]:
     """
     # 개체 수는 따로 센다 — 같은 질의에 조인을 더 걸면 위의 합계가 부풀어
     # 오른다(다대일 조인이 행을 늘린다).
-    cards = dict(ObjectReview.objects
-                 .filter(batch_id=data.review_batch_id(), removed=False,
-                         diatom_object__isnull=False)
-                 .values_list("viewpoint__slide_id")
-                 .annotate(n=Count("diatom_object", distinct=True)))
+    #
+    # 시야마다 그 주 묶음의 판정으로 센다 (P32 · `data.primary_cards`) — 슬라이드
+    # 전부를 한 번에 푼다
+    cards = data.primary_cards()
     rows = []
     for sl in Slide.objects.order_by("name"):
         ids = list(sl.viewpoints.order_by("idx")
