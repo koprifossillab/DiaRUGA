@@ -198,6 +198,25 @@ def git_version():
         return ""
 
 
+def code_version() -> str:
+    """이 꾸러미를 만든 코드. 커밋을 알면 커밋, 모르면 이 파일의 git blob id.
+
+    **컨테이너에는 git 이 없다** — `/srv/DiaRUGA/scripts` 는 저장소가 아니라
+    `dbsync.sh` 가 파일만 옮겨 놓은 자리라 `git_version()` 이 빈 값을 낸다. 4차 첫
+    꾸러미가 그렇게 `?` 로 나갔다(10-28). blob id 는 `git hash-object` 와 같은 값이라
+    저장소에서 `git log --all --find-object=<id>` 로 어느 커밋의 파일인지 찾힌다.
+
+    라벨 규칙(`viewer.data`)은 이 파일이 아니라 이미지 안에 있다 — 그쪽은
+    `IMAGE_TAG` 가 따로 말한다(`MANIFEST.json` 의 `image_tag`).
+    """
+    v = git_version()
+    if v:
+        return v
+    body = Path(__file__).resolve().read_bytes()
+    blob = hashlib.sha1(b"blob %d\0" % len(body) + body).hexdigest()
+    return f"blob:{blob[:12]}"
+
+
 # --- 라벨 만들기 ------------------------------------------------------------
 def bbox_line(c: dict, w: int, h: int, cls: int) -> str | None:
     """YOLO 상자 한 줄: `cls cx cy bw bh` (전부 0~1 로 정규화).
@@ -429,12 +448,14 @@ def main():
         sys.exit(f"{out_dir} 가 이미 있다. 지우거나 다른 이름을 줄 것 — "
                  f"덮어쓰면 어느 판으로 학습했는지 알 수 없게 된다")
 
+    code_ver = code_version()
+    image_tag = os.environ.get("IMAGE_TAG", "")
     run = runlog.start("export", params={
         "out": str(out_dir), "seg": args.seg, "classes": classes,
         "batch": args.batch, "scheme": args.scheme,
         "val_frac": args.val_frac, "holdout_slide": holdout, "seed": args.seed,
         "db": str(db_path), "db_sha256": db_sha,
-    }, host=socket.gethostname(), code_version=git_version())
+    }, host=socket.gethostname(), code_version=code_ver)
 
     try:
         manifest_vps = {s: [] for s in SPLITS}
@@ -465,7 +486,8 @@ def main():
             # val_slide 는 학습에 걸지 않고 나중에 `model.val(data=…)` 로 따로 잰다.
             val_line += "# val_slide 는 따로 잰다: images/val_slide\n"
         yaml = (f"# {timezone.now():%Y-%m-%d} · export_yolo.py · "
-                f"{git_version() or '?'}\n"
+                f"{code_ver}"
+                f"{' · 이미지 ' + image_tag if image_tag else ''}\n"
                 f"path: .\n"
                 f"train: images/train\n"
                 f"{val_line}"
@@ -480,7 +502,10 @@ def main():
 
         manifest = {
             "created_at": timezone.now().isoformat(),
-            "code_version": git_version(),
+            "code_version": code_ver,
+            # 라벨을 만드는 판정 함수(`viewer.data`)가 사는 이미지. 호스트에서
+            # 돌리면 비고, 그때는 `code_version` 의 커밋이 둘 다를 말한다.
+            "image_tag": image_tag,
             "host": socket.gethostname(),
             "run_id": run.id,
             "args": vars(args),
