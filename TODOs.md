@@ -109,7 +109,8 @@ DB 설계는 [devlog/20260730_P02_db-schema.md](devlog/20260730_P02_db-schema.md
 
 - [ ] **YOLO 4차 학습 — 자료는 만들었다** ([P29](devlog/20261021_P29_yolo-4th-round.md)
       6절 3 · 2026-10-28). 3차 정답 사본(`DiaRUGA_20261028_151451_yolo3-final-inspected.db` · sha256 `5d620f22…` ·
-      `backup/manual/` 원본 + `backup/answer/` 이 장비·NAS 두 벌 — P31 5.1.1)에서 `export_yolo.py --src-db … --seg` 로 구웠다(코드 `f656b12`).
+      `backup/manual/` 원본 + `backup/answer/` 이 장비·NAS 두 벌 — P31 5.1.1)에서 `export_yolo.py --src-db … --seg` 로 구웠다(코드 `44d0f23` ·
+      이미지 `v0.37.2`).
       클래스 일곱(`round · round_frag · rod · rod_frag · chaetoceros · eucampia · other`) ·
       시야 train 278 / val 69 / val_slide 31 · 개체 4,308 / 982 / 21 · 480 MB.
 
@@ -120,8 +121,11 @@ DB 설계는 [devlog/20260730_P02_db-schema.md](devlog/20260730_P02_db-schema.md
 
       두 벌 다 `SHA256SUMS` 전수 통과 · 파일 760개 `diff -r` 같음. 학습 기계로 옮길 때도
       `SHA256SUMS` 로 다시 확인하고, **꾸러미 디렉토리 안에서** 학습한다(HANDOFF 8.2).
-      `data.yaml`·`MANIFEST.json` 의 코드 판이 `?` 다 — 컨테이너의 `/srv/DiaRUGA/scripts`
-      에 git 이 없어서다. 실제 코드는 위 커밋이다(환경변수로 받게 고칠 것).
+      코드 판은 `blob:060677335732` 로 적혀 있다 — 컨테이너에 git 이 없어 파일의 blob id 를
+      적는다(`git log --all --find-object=060677335732` → `44d0f23`). 처음 구운 판은 `?` 였고
+      같은 사본에서 다시 구워 바꿨다(이미지·라벨·yaml 본문은 바이트까지 같다).
+      **파이프라인 스크립트들(`segment_diatoms.py` 등)의 `git_version()` 도 컨테이너에서
+      빈 값이다** — 운영 `Run.code_version` 이 비어 있을 것이다. 같은 방법으로 고칠 수 있다
 
       **다음** — 같은 꾸러미 · `imgsz=1280` · 100 에폭으로 `yolo11m-seg` · `11l-seg` ·
       `11x-seg` 를 나란히 돌린다(사용자 10-28 · P04 의 "11x 는 시험 대상" · 025 남은 일 6).
