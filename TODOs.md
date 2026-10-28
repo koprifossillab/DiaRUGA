@@ -108,8 +108,8 @@ DB 설계는 [devlog/20260730_P02_db-schema.md](devlog/20260730_P02_db-schema.md
 ## 지금 가장 급한 것
 
 - [ ] **YOLO 4차 학습 — 자료는 만들었다** ([P29](devlog/20261021_P29_yolo-4th-round.md)
-      6절 3 · 2026-10-28). 3차 정답 사본(`backup/manual/DiaRUGA_20261028_151451_yolo3-final-inspected.db`
-      · sha256 `5d620f22…`)에서 `export_yolo.py --src-db … --seg` 로 구웠다(코드 `f656b12`).
+      6절 3 · 2026-10-28). 3차 정답 사본(`DiaRUGA_20261028_151451_yolo3-final-inspected.db` · sha256 `5d620f22…` ·
+      `backup/manual/` 원본 + `backup/answer/` 이 장비·NAS 두 벌 — P31 5.1.1)에서 `export_yolo.py --src-db … --seg` 로 구웠다(코드 `f656b12`).
       클래스 일곱(`round · round_frag · rod · rod_frag · chaetoceros · eucampia · other`) ·
       시야 train 278 / val 69 / val_slide 31 · 개체 4,308 / 982 / 21 · 480 MB.
 
