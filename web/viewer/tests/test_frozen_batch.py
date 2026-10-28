@@ -249,3 +249,70 @@ class FrozenBatchTest(DiaRUGATestCase):
         self.review(self.open_vp, 200, only="done", done=True)
         self.assertTrue(ViewpointReview.objects.get(
             viewpoint=self.open_vp, batch=self.other.batch).done)
+
+
+class CountReviewedOnlyTest(DiaRUGATestCase):
+    """산출은 **검토를 마친 시야만, 시야마다 마지막으로 완료한 묶음의 기록으로** 센다
+    (P31 ⑥ · P32 ③).
+
+    검토 대상을 4차로 옮기는 순간을 그대로 세운다 — 3차에서 끝낸 g0 은 정답으로
+    남고(칸 = 3차), g1 은 4차로 덮인다(칸이 비어 따라간다). 옮기기 전의 규칙(검토
+    대상 묶음의 검출을 검토 여부와 상관없이 센다)이면 산출이 그 순간 엔진 숫자로
+    뒤집힌다 — 369cm 가 검토분 8.2 · 미검토분 25.4 /시야였다(10-27).
+
+    3차 검출은 시야마다 셋, 4차는 둘이다(`add_other_engine` 기본).
+    """
+
+    @classmethod
+    def setUpTestData(cls):
+        fx.make_classes()
+        cls.w = fx.make_world(slug="rs23", n_viewpoints=2, n_candidates=3)
+        cls.answer_vp, cls.covered_vp = cls.w.viewpoints
+        cls.third = RunBatch.objects.get(for_review=True)
+        fx.review_done(cls.answer_vp, cls.third)
+        Viewpoint.objects.filter(pk=cls.answer_vp.pk).update(batch=cls.third)
+        cls.fourth = None
+        for vp in cls.w.viewpoints:
+            run = fx.add_other_engine(vp, label="yolo-4차", current=True)
+            cls.fourth = run.batch
+        # 검토 대상을 4차로 옮긴다
+        RunBatch.objects.update(for_review=False)
+        RunBatch.objects.filter(pk=cls.fourth.pk).update(for_review=True)
+
+    def setUp(self):
+        for vp in self.w.viewpoints:                 # 칸을 DB 로만 바꿨다
+            vp.refresh_from_db()
+
+    def summary(self):
+        return data._summary_by_sql(self.w.slide)
+
+    def test_미검토_시야는_안_센다(self):
+        s = self.summary()
+        self.assertEqual(s["detected_groups"], 1)
+        self.assertEqual(s["n_auto"], 3, "4차로 덮인 미검토 시야의 엔진 출력이 섞였다")
+
+    def test_옮겨도_정답_시야는_3차_기록으로_센다(self):
+        self.assertEqual(data.primary_batch_id(self.answer_vp), self.third.pk)
+        self.assertEqual(self.summary()["n_auto"], 3)
+
+    def test_4차에서_끝내면_4차_기록으로_들어온다(self):
+        self.assertEqual(data.primary_batch_id(self.covered_vp), self.fourth.pk)
+        fx.review_done(self.covered_vp, self.fourth)
+        s = self.summary()
+        self.assertEqual(s["detected_groups"], 2)
+        self.assertEqual(s["n_auto"], 3 + 2)
+
+    def test_더_최근_묶음의_완료가_이긴다(self):
+        """같은 시야를 두 회차에서 다 끝냈으면 나중 회차다(묶음이 생긴 때)."""
+        fx.review_done(self.answer_vp, self.fourth)
+        self.assertEqual(self.summary()["n_auto"], 2)
+
+    def test_비교_화면도_같은_규칙이다(self):
+        col = data.compare_slides([self.w.slug])["cols"][0]
+        self.assertEqual(col["detected_groups"], 1)
+
+    def test_표지는_주_묶음의_판이다(self):
+        """시야 목록의 표지 — 누르면 열리는 검토 화면과 같은 판이어야 한다."""
+        _masks, n_kept = data._kept_masks(self.w.slide)
+        self.assertEqual(n_kept.get(self.answer_vp.pk), 3)     # 3차 정답
+        self.assertEqual(n_kept.get(self.covered_vp.pk), 2)    # 4차

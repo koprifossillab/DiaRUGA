@@ -2713,12 +2713,11 @@ def _summary_by_sql(slide: Slide) -> dict:
                                  "n_auto": 0, "n_labeled": 0}
     per_cls.update({k: v for k, v in row["per_cls"].items() if k in per_cls})
 
-    # 검출이 돈 **시야 수** — 평균의 분모다. **검출 수가 아니다**: 시야 하나에
+    # 세는 **시야 수** — 평균의 분모다. **검출 수가 아니다**: 시야 하나에
     # 현재 검출이 여럿이면(합성본 + 프레임마다) 분모가 4.6배가 되어 시야당 평균이
     # 그만큼 작아진다. 분자는 대표 이미지 하나만 세므로 둘이 어긋난다 (P09 5.3).
-    detected_groups = (Detection.objects
-                       .filter(viewpoint__slide=slide).reviewing()
-                       .values("viewpoint_id").distinct().count())
+    # 분자와 같은 `rep` 에서 센다 — 검토를 마친 시야만이다(P32 ③).
+    detected_groups = row.get("counted_groups", 0)
     return {"per_cls": per_cls, "n_detected": row["n_detected"],
             "n_auto": row["n_auto"], "n_labeled": row["n_labeled"],
             "detected_groups": detected_groups}
@@ -2750,18 +2749,33 @@ def _summary_by_sql(slide: Slide) -> dict:
 # 낮지만(엔진이 다르면 `exact` 가 0%다) 겹치면 `LEFT JOIN` 이 행을 불려 개수가
 # 조용히 는다. `IS` 로 비교하는 것은 사람이 그린 개체가 `batch IS NULL` 이라서다.
 _SUMMARY_SQL = """
-WITH rep AS (
+WITH cnt AS (
+    -- **검토를 마친 시야만, 시야마다 마지막으로 완료한 묶음의 기록으로 센다**
+    -- (P31 ⑥ · P32 ③). 미검토 시야의 엔진 출력은 파편을 개체로 세고 빽빽한
+    -- 시야에서 놓친다 — 369cm 가 검토분 8.2 · 미검토분 25.4 /시야였다(10-27).
+    -- 검토 대상을 4차로 옮겨도 3차에서 끝낸 시야는 3차 기록으로 센다.
+    -- "마지막" 은 묶음이 생긴 때(`started_at`)다 — 완료를 누른 때가 아니다.
+    SELECT viewpoint_id, batch_id FROM (
+        SELECT w.viewpoint_id, w.batch_id,
+               ROW_NUMBER() OVER (PARTITION BY w.viewpoint_id
+                                  ORDER BY b.started_at DESC, b.id DESC) AS k
+          FROM viewer_viewpointreview w
+          JOIN viewer_runbatch b ON b.id = w.batch_id
+         WHERE w.done) AS t
+     WHERE k = 1
+),
+rep AS (
     SELECT d.id AS det_id, d.viewpoint_id, d.image_id, run.batch_id,
            ROW_NUMBER() OVER (
                PARTITION BY d.viewpoint_id
                ORDER BY CASE i.kind WHEN 'stack' THEN 0 ELSE 1 END, d.id) AS rn
       FROM viewer_detection d
       JOIN viewer_image i ON i.id = d.image_id
-      LEFT JOIN viewer_run run ON run.id = d.run_id
-      LEFT JOIN viewer_runbatch rb ON rb.id = run.batch_id
-     -- **검토 대상 묶음의 것만** (P10 1단계). `is_current` 만 보면 나란히 쌓아
-     -- 둔 다른 엔진의 검출까지 세어 개수가 몇 배가 된다.
-     WHERE d.is_current AND rb.for_review
+      JOIN viewer_run run ON run.id = d.run_id
+      -- 그 묶음의 것만. `is_current` 만 보면 나란히 쌓아 둔 다른 엔진의 검출까지
+      -- 세어 개수가 몇 배가 된다(P10 1단계)
+      JOIN cnt ON cnt.viewpoint_id = d.viewpoint_id AND cnt.batch_id = run.batch_id
+     WHERE d.is_current
 )
 SELECT v.slide_id AS slide_id,
        CASE WHEN o.label IS NOT NULL AND o.label <> '' THEN o.label
@@ -2816,6 +2830,16 @@ WHERE r.batch_id IS NULL AND r.source = 'manual' AND {where}
 GROUP BY v.slide_id, eff_cls, species
 """
 
+# 세는 시야 수 — 시야당 평균의 분모 (P32 ③). 위와 **같은 `rep`** 에서 센다:
+# 분자(개체)와 분모(시야)가 다른 기준이면 "시야당" 이 아무 뜻도 없다.
+_COUNTED_GROUPS_SQL = _SUMMARY_SQL.split("SELECT v.slide_id AS slide_id,")[0] + """
+SELECT v.slide_id, COUNT(*)
+  FROM rep
+  JOIN viewer_viewpoint v ON v.id = rep.viewpoint_id
+ WHERE rep.rn = 1 AND {where}
+ GROUP BY v.slide_id
+"""
+
 
 # 시야 목록의 표지에 얹을 마스크. **화면에 남는 개체만** 가져온다.
 #
@@ -2830,18 +2854,24 @@ GROUP BY v.slide_id, eff_cls, species
 # 마스크라 여럿을 그리면 같은 규조각이 겹쳐 그려지고, `n_kept` 도 함께 부푼다 —
 # 그 수가 시야 목록의 "검토" 칸이다.
 _COVER_SQL = """
-WITH rep AS (
+WITH prim AS (
+    -- **시야마다 그 주 묶음** (P32). 표지는 검토 화면과 같은 판이어야 한다 —
+    -- 시야를 누르면 열리는 그림이다. 주 묶음은 파이썬이 풀어 넘긴다
+    -- (`primary_batch_map` — 규칙을 SQL 로 두 벌 적지 않는다)
+    SELECT CAST(j.key AS INTEGER) AS viewpoint_id, j.value AS batch_id
+      FROM json_each(%s) AS j
+),
+rep AS (
     SELECT d.id AS det_id, d.viewpoint_id, d.image_id, run.batch_id,
            ROW_NUMBER() OVER (
                PARTITION BY d.viewpoint_id
                ORDER BY CASE i.kind WHEN 'stack' THEN 0 ELSE 1 END, d.id) AS rn
       FROM viewer_detection d
       JOIN viewer_image i ON i.id = d.image_id
-      LEFT JOIN viewer_run run ON run.id = d.run_id
-      LEFT JOIN viewer_runbatch rb ON rb.id = run.batch_id
-     -- **검토 대상 묶음의 것만** (P10 1단계). `is_current` 만 보면 나란히 쌓아
-     -- 둔 다른 엔진의 검출까지 세어 개수가 몇 배가 된다.
-     WHERE d.is_current AND rb.for_review
+      JOIN viewer_run run ON run.id = d.run_id
+      JOIN prim ON prim.viewpoint_id = d.viewpoint_id
+               AND prim.batch_id = run.batch_id
+     WHERE d.is_current
 )
 SELECT rep.viewpoint_id, c.polygon,
        CASE WHEN o.label IS NOT NULL AND o.label <> '' THEN o.label
@@ -2871,8 +2901,10 @@ def _kept_masks(slide: Slide) -> tuple[dict[int, list[dict]], dict[int, int]]:
     """
     masks: dict[int, list[dict]] = {}
     n_kept: dict[int, int] = {}
+    prim = {str(v): b for v, b in primary_batch_map(slide=slide).items()
+            if b is not None}
     with connection.cursor() as cur:
-        cur.execute(_COVER_SQL, [slide.id])
+        cur.execute(_COVER_SQL, [json.dumps(prim), slide.id])
         for vp_id, poly, cls in cur.fetchall():
             n_kept[vp_id] = n_kept.get(vp_id, 0) + 1
             p = json.loads(poly) if poly else []
@@ -2913,6 +2945,11 @@ def _summary_rows(where: str, params: list) -> dict[int, dict]:
             r["n_detected"] += n_kept
             r["n_auto"] += n_auto
             r["n_labeled"] += n_labeled
+        cur.execute(_COUNTED_GROUPS_SQL.format(where=where), list(params))
+        for slide_id, n in cur.fetchall():
+            out.setdefault(slide_id, {"per_cls": {}, "per_sp": {},
+                                      "n_detected": 0, "n_auto": 0,
+                                      "n_labeled": 0})["counted_groups"] = n
     return out
 
 
@@ -3367,12 +3404,10 @@ def compare_slides(slugs: list[str]) -> dict:
     summary = _summary_rows(f"v.slide_id IN ({marks})", ids)
     n_groups = dict(Viewpoint.objects.filter(slide_id__in=ids)
                     .values_list("slide_id").annotate(n=Count("id")))
-    # 검출이 돈 시야 수 — `_summary_by_sql` 과 같은 셈이다. 시야 전부에 검출이
-    # 안 돌았으면 열의 수가 다른 열과 같은 밀도가 아니다.
-    det_groups = dict(
-        Detection.objects.reviewing().filter(viewpoint__slide_id__in=ids)
-        .values_list("viewpoint__slide_id")
-        .annotate(n=Count("viewpoint_id", distinct=True)))
+    # 세는 시야 수 — `_summary_by_sql` 과 같은 셈이다(분자와 같은 `rep` ·
+    # 검토를 마친 시야만 · P32 ③). 시야 전부를 안 셌으면 열의 수가 다른 열과
+    # 같은 밀도가 아니다.
+    det_groups = {sid: r.get("counted_groups", 0) for sid, r in summary.items()}
     refs = _core_refs(slides)
 
     counted_keys = [c["key"] for c in counted_classes()]

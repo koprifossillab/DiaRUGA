@@ -177,7 +177,7 @@
     <tr class="sub">
       <th>시야</th>
       {% for c in cols %}
-        <th title="시야 {{ c.n_groups }}개{% if c.detected_groups < c.n_groups %} 중 검출이 돈 시야 {{ c.detected_groups }}개{% endif %}"><b>{% if c.detected_groups < c.n_groups %}{{ c.detected_groups }}/{% endif %}{{ c.n_groups }}</b><span class="u">시야</span></th>
+        <th title="시야 {{ c.n_groups }}개{% if c.detected_groups < c.n_groups %} 중 검토를 마쳐 센 시야 {{ c.detected_groups }}개{% endif %}"><b>{% if c.detected_groups < c.n_groups %}{{ c.detected_groups }}/{% endif %}{{ c.n_groups }}</b><span class="u">시야</span></th>
       {% endfor %}
     </tr>
     <tr class="sub">

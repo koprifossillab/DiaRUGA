@@ -63,7 +63,7 @@
             <td>{{ d.n_groups }}</td>
             {% if d.mean_counted is not None %}
               <td title="검출 개체 {{ d.n_detected }}개 중 세는 분류{% if d.excluded %} — 합계에서 뺐습니다{% endif %}">{{ d.n_counted }}{% if d.excluded %}<span class="exmark">*</span>{% endif %}</td>
-              <td{% if d.detected_groups < d.n_groups %} class="partial" title="{{ d.n_groups }}개 시야 중 {{ d.detected_groups }}개만 검출됨 — 평균은 그 시야들 기준"{% endif %}>
+              <td{% if d.detected_groups < d.n_groups %} class="partial" title="{{ d.n_groups }}개 시야 중 검토를 마친 {{ d.detected_groups }}개로 셈 — 평균은 그 시야들 기준"{% endif %}>
                 {{ d.mean_counted }}{% if d.detected_groups < d.n_groups %}<span class="dim">*</span>{% endif %}</td>
               {% for c in d.counted_cols %}<td{% if c.is_group %} class="grpcol"{% elif c.in_group %} class="ingrp"{% endif %}>{{ c.n }}</td>{% endfor %}
             {% else %}
