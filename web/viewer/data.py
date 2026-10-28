@@ -4048,14 +4048,22 @@ def dataset_detail(slug: str) -> dict | None:
     # **검토 대상 묶음의 것만**, 그리고 시야마다 하나 (P10 1단계). 프레임별
     # 검출이 올라오면 한 시야에 여럿이라 dict 가 아무거나 집는다 — 합성본을
     # 먼저 놓아 `representative_detection` 과 같은 것을 고르게 한다.
+    #
+    # **시야마다 그 주 묶음의 것이다** (P32) — 표지를 누르면 열리는 검토 화면과
+    # 같은 판이어야 한다.
+    prim = primary_batch_map(slide=slide)
     dets = {}
-    for d in (Detection.objects.filter(viewpoint__slide=slide).reviewing()
+    for d in (Detection.objects.filter(viewpoint__slide=slide, is_current=True,
+                                       run__batch_id__in=[b for b in set(prim.values())
+                                                          if b is not None])
               .select_related("image")
               .order_by("viewpoint_id",
                         Case(When(image__kind="stack", then=0), default=1),
                         "id")
-              .values("viewpoint_id", "image_path", "width", "height")):
-        dets.setdefault(d["viewpoint_id"], d)
+              .values("viewpoint_id", "image_path", "width", "height",
+                      "run__batch_id")):
+        if d["run__batch_id"] == prim.get(d["viewpoint_id"]):
+            dets.setdefault(d["viewpoint_id"], d)
     reviewed = done_viewpoints(slide=slide)
     # **이 묶음에 검출이 없는 시야** (P10 4단계). 목록에서도 세어 낸다 — 시야를
     # 하나씩 열어 보고서야 아는 것은 063 이 "소속을 잃은 행은 그냥 사라진다" 로
@@ -4235,8 +4243,19 @@ def group_detail(slug: str, gid: int, run_id: int | None = None) -> dict | None:
     slide = Slide.objects.filter(slug=slug).first()
     if slide is None:
         return None
-    # 묶음 갈래는 위에서 이미 돌아갔다 — 여기는 현재 검출만 본다
-    vp = _viewpoints_of(slide, only_current=True).filter(idx=gid).first()
+    # 묶음 갈래는 위에서 이미 돌아갔다 — 여기는 현재 검출만 본다.
+    #
+    # **그 시야의 주 묶음으로 당겨 온다** (P32). 전역 검토 대상으로 거른 채 당겨
+    # 오면 `current_detections` 가 주 묶음을 골라도 남는 검출이 없다 — 한국·Smear
+    # 시야(주 묶음 `sam2-전수`)가 그렇게 **검출 없는 빈 화면**으로 열렸다(10-28
+    # 사본에서 봤다). 4차로 옮긴 뒤의 3차 정답 시야도 같은 자리다.
+    head = Viewpoint.objects.filter(slide=slide, idx=gid).first()
+    if head is None:
+        return None
+    pb = primary_batch_id(head)
+    vp = (_viewpoints_of(slide, only_current=True, batch_id=pb)
+          .filter(idx=gid).first() if pb is not None
+          else _viewpoints_of(slide, only_current=True).filter(idx=gid).first())
     if vp is None:
         return None
 

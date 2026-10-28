@@ -114,6 +114,20 @@ class FrozenBatchTest(DiaRUGATestCase):
         self.assertTrue(ObjectReview.objects.filter(
             viewpoint=self.open_vp, batch=self.other.batch, removed=True).exists())
 
+    def test_검토_화면이_주_묶음의_검출을_그린다(self):
+        """전역 검토 대상으로 거른 채 시야를 당겨 오면 주 묶음의 검출이 안 남아
+        빈 화면이 된다 — 한국·Smear 시야가 그렇게 열렸다(10-28 사본)."""
+        d = data.group_detail(self.w.slug, self.open_vp.idx)
+        self.assertEqual(d["base_det"]["batch_id"], self.other.batch_id)
+        self.assertTrue(d["base_det"]["candidates"])
+        self.assertFalse(d["base_det"].get("preview_only"))
+        self.assertEqual(d["review_batch"], "yolo-열림")
+
+    def test_시야_목록의_표지가_주_묶음의_판이다(self):
+        g = {x["id"]: x for x in data.dataset_detail(self.w.slug)["groups"]}
+        self.assertEqual(g[self.open_vp.idx]["n_detected"], 2)  # yolo-열림 은 둘
+        self.assertFalse(g[self.open_vp.idx]["missing"])
+
     def test_카탈로그가_시야마다_자기_묶음을_낸다(self):
         rows = data.candidate_rows(self.w.slug)
         by_vp = {(r["group_id"], r["batch_id"]) for r in rows}
