@@ -22,6 +22,11 @@ class CompareFilterTest(BrowserTestCase):
                                sample_code="231cm", depth_cm=231.0, n_candidates=4)
         fx.add_review(self.a.vp, self.a.keys()[2],
                       species="Fragilariopsis kerguelensis")
+        # **산출은 검토를 마친 시야만 센다** (P32 ③) — 비교 화면은 검토가 끝난
+        # 슬라이드를 놓고 보는 화면이라 그 모양으로 세운다(`test_compare` 와 같다)
+        for w in (self.a, self.b):
+            for vp in w.viewpoints:
+                fx.review_done(vp)
 
     def _url(self):
         return (f"{reverse('compare')}?s={self.a.slide.slug}"
