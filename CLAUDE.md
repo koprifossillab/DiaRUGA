@@ -98,7 +98,7 @@
 | 분류(속·형태)를 더한다 | `ClassDef` 머리말의 **채울 것 여덟**, `devlog/20260804_038`~`040` |
 | 앞으로 할 일을 고른다 | `TODOs.md`, `devlog/20260729_P01_roadmap.md` |
 | 판정 기준·문턱을 만진다 | `pipeline/judge.py` 머리말, `devlog/20260731_007_*.md` |
-| 검출기를 학습시킨다 | `devlog/20260803_P04_yolo-training.md`, `023`(자료 꾸러미), `025`(첫 판 성적) |
+| 검출기를 학습시킨다 | `devlog/20260803_P04_yolo-training.md`, `023`(자료 꾸러미), `025`(첫 판 성적), 4차는 `P29`·`P31` · **회차마다 할 일은 아래 "YOLO 회차마다"** |
 | 이미지·검출·교정의 관계를 만진다 | `devlog/20260805_P06_*`(계획·결정), `055`(실행), `models.py` 의 `Image` |
 | 데스크탑 앱을 만든다 | `devlog/20260805_P05_desktop-app.md` (계획), `docs/20260805_desktop-app-review.md` (근거), `049`(CPU 실측), jikhanjung/devdocs `guides/desktop/` (`../devdocs/guides/desktop/` — kopri 판에는 아직 없다, `.guides/desktop/README.md`) |
 | 판을 내보낸다 | **`docs/20260813_release-flow.md`** (절차 · 태그가 이미지를 만든다) |
@@ -655,6 +655,33 @@ python ops/export_review.py --db <백업> --out /tmp/before && diff -r /tmp/befo
 
 **그래도 `ops/backup_db.py` 는 계속 첫 안전망이다** — 내보내기는 교정만 담는다.
 **큰 작업 전에는 반드시 사본을 뜬다.**
+
+### YOLO 회차마다 — 정답 사본을 먼저 두 자리에 (P31 5.1.1)
+
+학습 회차를 한 번 돌릴 때마다 **손으로 한 번** 하는 일이다. 자동화하지 않는다 —
+이 순서를 지키는 것으로 충분하다(2026-10-28 · 3차 → 4차 때 처음 했다).
+
+1. 최종 검수가 끝나면 사본을 뜬다 — `dbrun.sh backup_db.py --note yolo<N>-final-inspected`.
+   `backup/manual/` 에 생기고, 이것이 그 회차의 **정답**이다(학습 자료의 원본이자 다음
+   회차 재현율의 기준)
+2. `review/` 를 **그 사본에서** 내보내 git 에 올린다(`export_review.py --db <사본>`)
+3. 사본을 **`/data3/DiaRUGA/backup/answer/` 와 NAS `/nfs/temp-share/DiaRUGA/backup/answer/`**
+   에 복사한다 — **학습 자료보다 먼저.** 이름은 그대로, `chmod 444`. 받은 쪽을
+   `mode=ro&immutable=1` 로 열어 sha256 · `integrity_check` · 행 수를 원본과 맞춘다.
+   `manual/` 원본은 지우지 않는다
+4. 학습 자료는 그 사본에서 뽑는다 —
+   `dbrun.sh export_yolo.py --src-db <사본> --out /data3/DiaRUGA/datasets/yolo-v<N>-seg --seg`
+   (`--dry-run` 먼저). NAS `/nfs/temp-share/DiaRUGA/datasets/` 에 복사하고 `SHA256SUMS` 로 확인한다
+5. P31 5.1.1 의 `answer/` 목록과 `TODOs.md` 에 한 줄씩 적는다
+
+- **`manual/` 에만 두지 않는 이유** — 거기는 "일이 끝나면 지워도 되는" 자리이고 NAS 로
+  안 간다. 4차 때 학습 자료가 NAS 에 먼저 올라가 **원본이 한 디스크에만 있는 상태**가 됐었다.
+  `answer/` 는 두 정리 스크립트(`backup_db.py`·`sync_backup_nas.py`)가 하위 디렉토리를 안
+  봐서 안 지워진다 — 대신 아무도 안 세는 자리라 P31 5.1.1 에 목록을 둔다
+- **정답 사본을 sqlite·Django 로 그냥 열지 않는다** — Django 는 열면서 `journal_mode=WAL`
+  을 걸어 파일 머리가 바뀌고, 그러면 sha256 이 어긋나 어느 판에서 뽑았는지 말할 수 없다.
+  `--src-db` 가 스스로 임시 복사본을 뜨는 것이 그래서다(dry-run 을 돌린 복사본으로 이어
+  내보냈다가 manifest 의 sha256 이 원본과 어긋난 적이 있다)
 
 ## 커밋
 
