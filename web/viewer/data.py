@@ -2279,12 +2279,17 @@ def viewpoint_frozen(vp, batch_id=None) -> bool:
 FROZEN_MSG = ("이 시야는 얼린 묶음({label})의 정답이라 모양·지우기·그리기·완료를 "
               "바꿀 수 없습니다. 카탈로그에서 유형·종명·등급·자세·코멘트만 고칠 수 "
               "있습니다.")
+# 칸이 비어 얼린 검토 대상을 따라가는 시야 — 정답이 아니라 다음 회차를 기다린다
+# (P31 ② · 369cm 미검토 · RS14-GC04). "정답" 이라고 적으면 실제와 어긋난다
+FROZEN_WAIT_MSG = ("검토 대상 묶음({label})이 얼어 있어 이 시야는 다음 회차의 검출을 "
+                   "기다립니다 — 모양·지우기·그리기·완료는 그때 합니다. 동정은 지금도 "
+                   "적을 수 있습니다.")
 
 
-def frozen_message(batch_id) -> str:
+def frozen_message(batch_id, answer: bool = True) -> str:
     label = (RunBatch.objects.filter(pk=batch_id)
              .values_list("label", flat=True).first() or "?")
-    return FROZEN_MSG.format(label=label)
+    return (FROZEN_MSG if answer else FROZEN_WAIT_MSG).format(label=label)
 
 
 class FrozenError(ValueError):
@@ -2303,7 +2308,7 @@ def guard_frozen(vp, batch_id=None) -> None:
     """
     bid = primary_batch_id(vp) if batch_id is None else batch_id
     if bid is not None and RunBatch.objects.filter(pk=bid, frozen=True).exists():
-        raise FrozenError(frozen_message(bid))
+        raise FrozenError(frozen_message(bid, answer=vp.batch_id is not None))
 
 
 def pipeline_status() -> dict:
@@ -4212,11 +4217,14 @@ def group_detail(slug: str, gid: int, run_id: int | None = None) -> dict | None:
     # 버튼이 죽는데 앞쪽에 남은 것이 있다. 돌아갔다는 것은 화면이 말한다 —
     # 말없이 뒤로 보내면 같은 자리를 도는 것으로 읽힌다.
     # **고른 묶음에서 완료한 것만 건너뛴다** (073). 묶음을 갈면 그 묶음의
-    # 검출은 아직 아무도 안 본 것이라 다시 돌아야 한다.
-    done = set(ViewpointReview.objects
-               .filter(viewpoint__slide=slide, done=True,
-                       batch_id=review_batch_id())
-               .values_list("viewpoint__idx", flat=True))
+    # 검출은 아직 아무도 안 본 것이라 다시 돌아야 한다. 시야마다 그 주 묶음으로
+    # 본다(P32). **얼린 시야도 건너뛴다** — 고칠 수 없는 시야로 보내면 헛걸음이다.
+    done_pk = done_viewpoints(slide=slide)
+    prim = primary_batch_map(slide=slide)
+    fz = frozen_batch_ids()
+    skip = {pk for pk, b in prim.items() if b in fz} | done_pk
+    done = set(Viewpoint.objects.filter(pk__in=list(skip))
+               .values_list("idx", flat=True)) if skip else set()
     todo = [i for i in ids if i not in done and i != gid]
     ahead = [i for i in todo if i > gid]
     todo_id = ahead[0] if ahead else (todo[0] if todo else None)
@@ -4331,8 +4339,16 @@ def group_detail(slug: str, gid: int, run_id: int | None = None) -> dict | None:
         # **왜 비었는가** (P10 4단계). 검출이 아예 없는 것과 **다른 묶음에는
         # 있는 것**은 다른 말이다 — 뒤엣것을 "검출은 아직입니다" 라고 적으면
         # 사람이 돌리러 간다. 조용히 다른 묶음으로 물러나지도 않는다(P10 3.6).
-        "review_batch": review_batch_label(),
+        # 이 시야의 주 묶음 이름(P32) — 전역 검토 대상이 아니다
+        "review_batch": (RunBatch.objects.filter(pk=prim.get(vp.pk))
+                         .values_list("label", flat=True).first() or ""),
         "elsewhere": batches_elsewhere(vp=vp).get(vp.id, []),
+        # **얼린 묶음의 정답 시야** (P32 ②). 화면은 마스크를 읽기 전용으로 열고
+        # 카탈로그 칸의 동정만 살린다(`fz-<uid>` 표식). 저장 문은 서버가 막는다.
+        "frozen": prim.get(vp.pk) in fz,
+        "frozen_msg": (frozen_message(prim.get(vp.pk),
+                                      answer=vp.batch_id is not None)
+                       if prim.get(vp.pk) in fz else ""),
         # 오른쪽 칸의 카탈로그 칸이 쓰는 것들 (183). 카탈로그 화면과 **같은
         # 목록을 같은 자리에서** 받는다 — 두 화면이 다른 값을 내밀면 같은 개체를
         # 두 번 다르게 적게 된다.

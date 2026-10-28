@@ -181,6 +181,23 @@
     {# 같은 개체 묶음 (P11). 판이 하나뿐이면 묶을 것이 없어 links 도 안 온다 #}
     <script type="application/json" id="links-stack">{{ links|json_dumps }}</script>
   {% endif %}
+  {% if frozen %}
+    {% comment %}
+      **얼린 묶음의 정답 시야** (P32 ②). 마스크는 읽기 전용, 카탈로그 칸의 동정만
+      산다. `fz-<uid>` 표식이 JS 의 `readOnly` 를 켜서 키보드·우클릭·그리기·탈락
+      펼침판·저장이 기존 읽기 전용 갈래를 그대로 탄다 — 갈래를 새로 짜면 반응하는
+      자리를 하나씩 다시 세야 한다(051). 동정 칸 다섯만 `frozen` 으로 다시 연다.
+
+      도구를 감추는 CSS 는 읽기 전용 갈래와 같다(그 머리말 — `.detview` 를 붙여야
+      특이도에서 이기고, `.drawtool` 을 빠뜨리면 연필이 남는다). 저장은 서버가
+      거절한다(`data.guard_frozen`).
+    {% endcomment %}
+    <style>
+      .detview .tools, .detview .drawtool, .detview .donebar { display: none; }
+    </style>
+    <span id="fz-stack" hidden></span>
+    <div class="note frozenbar">{{ frozen_msg }}</div>
+  {% endif %}
   {% include "viewer/_detection.html" with det=base_det base=base_rel uid="stack" title="검출결과 검토" shot=base_name image_id=base_image actions_here=True %}
 {% endif %}
 

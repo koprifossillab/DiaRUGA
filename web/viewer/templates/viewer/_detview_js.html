@@ -1730,12 +1730,22 @@ window.initDetView = function (uid) {
   // **읽기 전용 화면에서는 아예 보내지 않는다.** CSS 로 도구를 감추는 것으로는
   // 못 막는다 — 마스크 클릭 자체가 save() 를 부르고, 그 POST 는 그 시야의
   // 교정을 통째로 갈아치운다. 실제로 /engine/ 에서 그렇게 37건을 잃었다.
-  var readOnly = document.getElementById('ro-' + uid) !== null;
+  //
+  // **얼린 묶음의 정답 시야도 읽기 전용이다** (P32 ② · `fz-<uid>`). 마스크 쪽은
+  // 이 갈래를 그대로 타고(키보드·우클릭·그리기·탈락 펼침판·판 저장), 카탈로그
+  // 칸의 동정 다섯만 `frozen` 으로 다시 연다 — 갈래를 따로 짜면 반응하는 자리를
+  // 하나씩 다시 세야 한다(051).
+  var frozen = document.getElementById('fz-' + uid) !== null;
+  var readOnly = document.getElementById('ro-' + uid) !== null || frozen;
 
   // 막혀 있으면 막혀 있다고 적는다. 표식 하나(`ro-<uid>`)로 저장 차단과 화면
   // 표시가 함께 갈린다 — 따로 두면 한쪽만 켜진 화면이 나온다.
   var roFlag = document.getElementById('roflag-' + uid);
   if (roFlag && readOnly) roFlag.hidden = false;
+  if (roFlag && frozen) {
+    var roSub = roFlag.querySelector('span');
+    if (roSub) roSub.textContent = '정답 · 얼림 — 모양은 잠겨 있고 동정만 적습니다';
+  }
   // 시야 코멘트도 잠근다. 적을 수는 있는데 저장이 안 되면 적은 것을 잃는다.
   // 규격의 keepalive 상한은 64 KiB 다. 헤더·인코딩 여유를 두고 잡는다.
   var KEEPALIVE_MAX = 60000;
@@ -1985,7 +1995,7 @@ window.initDetView = function (uid) {
   // 뒤집힐 때 옛 값이 나중에 앉는다 — 카탈로그 카드가 카드 한 장을 통째로
   // 보내는 것과 같은 규칙이다.
   function saveCat(key, fields) {
-    if (readOnly) return;
+    if (readOnly && !frozen) return;
     catQueue = { key: key, fields: fields };
     catPending = true;
     clearTimeout(catTimer);
@@ -2001,7 +2011,7 @@ window.initDetView = function (uid) {
   function postCat(keepalive) {
     var q = catQueue;
     catPending = false;
-    if (readOnly || !q) return Promise.resolve();
+    if ((readOnly && !frozen) || !q) return Promise.resolve();
     // **검출이 없는 판에는 저장할 곳이 없다** (`postReview` 와 같은 규칙 · 180 B1).
     // 서버도 그 이미지에 현재 검출이 없으면 409 로 물린다.
     if (curImage === '') {
@@ -2022,7 +2032,9 @@ window.initDetView = function (uid) {
         species: q.fields.species,
         grade: q.fields.grade,
         pose: q.fields.pose,
-        note: q.fields.note
+        note: q.fields.note,
+        // 얼린 시야의 유형만 이 문으로 온다(`catTouched`). 안 실으면 서버가 안 건드린다
+        cls: q.fields.cls
       })
     }).then(function (r) {
       return r.json().then(function (j) { return [r.ok, j]; },
@@ -2714,18 +2726,29 @@ window.initDetView = function (uid) {
     catPaintMeta(c, key);
 
     // 지운 개체는 읽기만 한다 — 되살리기 전에 동정하는 것은 순서가 뒤집힌 일이다.
-    var lock = readOnly || removed.has(key);
+    var lock = (readOnly && !frozen) || removed.has(key);
     [catSpEl, catClsEl, catGradeEl, catPoseEl, catNoteEl].forEach(function (el) {
       if (el) el.disabled = lock;
     });
-    if (readOnly) catSay('읽기 전용입니다 — 동정은 현재 검출에서 적습니다');
+    if (readOnly && !frozen) catSay('읽기 전용입니다 — 동정은 현재 검출에서 적습니다');
     else if (removed.has(key)) catSay('지운 개체입니다 — Space 로 되살린 뒤 적습니다');
   }
 
   // 칸을 만졌다 — 유형만 이 화면의 문으로, 나머지는 카탈로그의 문으로 간다.
   function catTouched(fromCls) {
     var c = catPick();
-    if (!c || readOnly || removed.has(keyOf(c))) return;
+    if (!c || (readOnly && !frozen) || removed.has(keyOf(c))) return;
+    if (fromCls && frozen) {
+      // **얼린 시야의 유형은 카탈로그 문으로 간다** (P32). `setLabel` 의 길은 판
+      // payload(`/review`)라 서버가 통째로 거절한다 — 유형 바꾸기는 동정으로 열어
+      // 두었다(P31 5절 2).
+      c.cls = catClsEl.value || '';
+      c.cls_user = !!c.cls;
+      saveCat(keyOf(c), Object.assign(catFields(), { cls: c.cls }));
+      redraw();
+      catFill();
+      return;
+    }
     if (fromCls) {
       // **유형은 `setLabel` 이다** (104). `labels` 는 판 payload 가 통째로
       // 보내는 것이라 다른 문으로 적으면 다음 저장이 그것을 지운다. 실행취소도
@@ -3673,7 +3696,7 @@ window.initDetView = function (uid) {
       떠나면 안 된다 (116 — "떠나는 자리는 전부 그 문으로 보낸다").
     {% endcomment %}
     // **주소가 없으면 이 항목은 없다** (P25) — 오프라인 파일에는 갈 화면이 없다.
-    var toCard = (CATALOG_URL && !readOnly && live.length === 1) ? live[0] : -1;
+    var toCard = (CATALOG_URL && (!readOnly || frozen) && live.length === 1) ? live[0] : -1;
     if (toCard >= 0 && cands[toCard]) {
       items.push({ sep: true });
       items.push({ label: '📇 이 개체 카드로 (화면을 떠납니다)',

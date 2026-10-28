@@ -571,8 +571,12 @@ def group(request, slug, gid):
     ctx["off"] = (None if (slide is None or ctx.get("review_blocked")
                            or ctx.get("readonly"))
                   else offline_pick_ctx(slide, "review", str(gid)))
-    # 가르기·합치기 칸이 그리는 프레임 줄 — 썸네일과 촬영 간격 (2026-09-29)
-    if slide is not None and not ctx.get("readonly"):
+    # 가르기·합치기 칸이 그리는 프레임 줄 — 썸네일과 촬영 간격 (2026-09-29).
+    # **얼린 정답 시야에는 안 낸다**(P32 ②) — 서버가 거절하는 일을 화면이 되는
+    # 것처럼 보이면 안 된다(051). 칸이 빈 시야(4차를 기다리는 것)는 가를 수 있다
+    answer = ctx.get("frozen") and Viewpoint.objects.filter(
+        slide=slide, idx=gid, batch__frozen=True).exists()
+    if slide is not None and not ctx.get("readonly") and not answer:
         ctx["regroup_rows"] = regroup.frame_rows(
             Frame.objects.filter(slide=slide, viewpoint__idx=gid)
             .order_by("seq"))

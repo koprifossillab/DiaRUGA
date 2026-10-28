@@ -208,6 +208,41 @@ class FrozenBatchTest(DiaRUGATestCase):
                         content_type="application/json")
         self.assertEqual(r.status_code, 409, r.content[:300])
 
+    # --- 검토 화면 ------------------------------------------------------------
+
+    def page(self, vp):
+        r = self.c.get(reverse("group", args=[self.w.slug, vp.idx]))
+        self.assertEqual(r.status_code, 200)
+        return r.content.decode()
+
+    def test_정답_시야는_얼림_표식으로_열린다(self):
+        html = self.page(self.answer_vp)
+        self.assertIn('id="fz-stack"', html)
+        self.assertIn("얼린 묶음(sam2-시험)", html)
+        self.assertNotIn('id="ro-stack"', html)      # 읽기 전용 갈래와 다른 자리다
+
+    def test_정답_시야에는_가르기_칸이_없다(self):
+        """서버가 거절하는 일을 화면이 되는 것처럼 보이면 안 된다(051)."""
+        self.assertNotIn('name="after"', self.page(self.answer_vp))
+
+    def test_칸이_빈_시야는_잠겨도_가르기_칸이_있다(self):
+        html = self.page(self.loose_vp)
+        self.assertIn('id="fz-stack"', html)
+        self.assertIn('name="after"', html)
+
+    def test_칸이_빈_시야를_정답이라_부르지_않는다(self):
+        """다음 회차를 기다리는 시야다 — "정답" 이라 적으면 실제와 어긋난다."""
+        html = self.page(self.loose_vp)
+        self.assertIn("다음 회차의 검출을 기다립니다", html)
+        self.assertNotIn("의 정답이라", html)
+
+    def test_얼지_않은_시야에는_표식이_없다(self):
+        self.assertNotIn('id="fz-stack"', self.page(self.open_vp))
+
+    def test_다음_미검토가_얼린_시야를_건너뛴다(self):
+        d = data.group_detail(self.w.slug, self.answer_vp.idx)
+        self.assertEqual(d["todo_id"], self.open_vp.idx)
+
     # --- 얼지 않은 시야: 그대로 돈다 ----------------------------------------
 
     def test_얼지_않은_시야는_완료할_수_있다(self):
