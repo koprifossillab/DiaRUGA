@@ -107,6 +107,29 @@ DB 설계는 [devlog/20260730_P02_db-schema.md](devlog/20260730_P02_db-schema.md
 
 ## 지금 가장 급한 것
 
+- [ ] **YOLO 4차 학습 — 자료는 만들었다** ([P29](devlog/20261021_P29_yolo-4th-round.md)
+      6절 3 · 2026-10-28). 3차 정답 사본(`backup/manual/DiaRUGA_20261028_151451_yolo3-final-inspected.db`
+      · sha256 `5d620f22…`)에서 `export_yolo.py --src-db … --seg` 로 구웠다(코드 `f656b12`).
+      클래스 일곱(`round · round_frag · rod · rod_frag · chaetoceros · eucampia · other`) ·
+      시야 train 278 / val 69 / val_slide 31 · 개체 4,308 / 982 / 21 · 480 MB.
+
+      | 자리 | 경로 |
+      |---|---|
+      | 이 장비 | `/data3/DiaRUGA/datasets/yolo-v4-seg` |
+      | NAS | `/nfs/temp-share/DiaRUGA/datasets/yolo-v4-seg` (`N:\DiaRUGA\datasets\yolo-v4-seg`) |
+
+      두 벌 다 `SHA256SUMS` 전수 통과 · 파일 760개 `diff -r` 같음. 학습 기계로 옮길 때도
+      `SHA256SUMS` 로 다시 확인하고, **꾸러미 디렉토리 안에서** 학습한다(HANDOFF 8.2).
+      `data.yaml`·`MANIFEST.json` 의 코드 판이 `?` 다 — 컨테이너의 `/srv/DiaRUGA/scripts`
+      에 git 이 없어서다. 실제 코드는 위 커밋이다(환경변수로 받게 고칠 것).
+
+      **다음** — 같은 꾸러미 · `imgsz=1280` · 100 에폭으로 `yolo11m-seg` · `11l-seg` ·
+      `11x-seg` 를 나란히 돌린다(사용자 10-28 · P04 의 "11x 는 시험 대상" · 025 남은 일 6).
+      11m 이 기준선이다. 이번 `val_slide` 는 개체 21개라 **`val` 을 클래스별 · 밀도별로
+      보는 것이 주 기준**이고 `val_slide` 는 무너지는지만 본다. eucampia(train 60) ·
+      other(121) 는 큰 모델이 외우기 쉽다 — 클래스별로 본다. 11x 의 학습 메모리(11m-seg
+      batch 8 이 22.8 GB)와 운영 3060 Ti 추론 시간은 재 본 적이 없다
+
 - [x] **도감 종 목록에 바둑판 보기** (사용자 2026-10-25 · [238](devlog/20261025_238_atlas-grid-and-compare.md) · `v0.37.0`). `/atlas/` 에서 종 목록을
       볼 때 **도판 이미지를 칸마다 띄우는 보기**를 둔다 — 지금 목록 보기와 오가는
       단추로. 이미지는 도판(`plate/`)에서 잘라 둔 것을 그대로 쓴다(다시 만들지
