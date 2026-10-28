@@ -103,6 +103,9 @@
   {% else %}시야 {{ marked_n }}개를 미검토로 되돌렸습니다.
     <span class="dim">시야 코멘트와 개체 교정은 그대로입니다 — 완료 표시만 내렸습니다.</span>
   {% endif %}
+  {% if marked_frozen and marked_frozen != "0" %}
+    <span class="dim">얼린 묶음의 정답 시야 {{ marked_frozen }}개는 건드리지 않았습니다.</span>
+  {% endif %}
 </div>
 {% endif %}
 

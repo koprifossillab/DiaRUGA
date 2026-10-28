@@ -48,7 +48,26 @@ from django.db.models import F
 from django.utils import timezone
 
 from .images import ensure_frame_image
-from .models import Frame, Run, Viewpoint
+from .models import Frame, Run, RunBatch, Viewpoint
+
+
+def _frozen_bad(vps) -> list[str]:
+    """얼린 묶음의 정답 시야를 건드리면 그 까닭들 (P32 ②).
+
+    가르기·합치기·지우기는 시야를 새로 만들거나 지워 **그 아래 검출·교정이 통째로
+    사라진다** — 정답이 사라지면 다음 회차의 재현율을 잴 기준이 없다. 미리보기와
+    적용이 함께 쓰는 `resolve_*` 에서 걸러, 확인 화면에도 까닭이 뜨게 한다.
+
+    **칸(`Viewpoint.batch`)에 얼린 묶음이 적힌 시야만 막는다** — 그것이 정답이다.
+    칸이 비어 얼린 검토 대상을 따라가는 시야(4차를 기다리는 것)는 막지 않는다:
+    RS14-GC04 처럼 **시야를 다시 갈라야 하는 슬라이드**가 거기 있고(215), 그 시야에는
+    지킬 정답이 없다.
+    """
+    frozen = dict(RunBatch.objects.filter(frozen=True).values_list("id", "label"))
+    return [f"g{vp.idx}: 얼린 묶음({frozen[vp.batch_id]})의 정답 시야라 "
+            f"가르거나 합치거나 지울 수 없다"
+            for vp in vps if vp.batch_id in frozen]
+
 
 # idx 를 다시 매기는 동안 유일 제약에 걸리지 않도록 잠깐 치워 두는 자리.
 # 슬라이드 하나의 시야 수보다 훨씬 크면 된다 (가장 큰 슬라이드가 86개다).
@@ -123,6 +142,7 @@ def resolve_cuts(slide, specs):
                        f"프레임이다 — 여기서 가를 것이 없다")
             continue
         cuts.setdefault(fr.viewpoint_id, set()).add(fr.name)
+    bad += _frozen_bad(Viewpoint.objects.filter(pk__in=list(cuts)))
     return cuts, bad
 
 
@@ -275,6 +295,7 @@ def resolve_merge(slide, idxs):
     elif vps[-1].idx - vps[0].idx != len(vps) - 1:
         bad.append("이웃한 시야만 합칠 수 있다 — "
                    + ", ".join(f"g{vp.idx}" for vp in vps))
+    bad += _frozen_bad(vps)
     return vps, bad
 
 
@@ -387,6 +408,9 @@ def resolve_delete(slide, idx):
         return None, [f"그런 시야가 없다: g{idx}"]
     if slide.viewpoints.count() < 2:
         return None, ["마지막 시야는 지울 수 없다"]
+    bad = _frozen_bad([vp])
+    if bad:
+        return None, bad
     return vp, []
 
 
@@ -482,7 +506,10 @@ def _rebuild(slide, plan, doomed, run):
             slide=slide, idx=i, tag=_tag(i, frames, taken),
             n_frames=len(frames),
             span_sec=((b - a).total_seconds() if a and b else None),
-            grouping_run=run)
+            grouping_run=run,
+            # **주 묶음 칸을 물려받는다**(P32). 한국·Smear 의 시야를 가른 조각이
+            # 칸을 잃으면 전역 검토 대상을 따라가 엉뚱한 엔진의 검출이 열린다
+            batch_id=old.batch_id)
         best = max(frames, key=lambda f: f.sharpness or 0.0)
         for f in frames:
             f.viewpoint = vp
