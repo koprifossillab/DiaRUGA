@@ -15,7 +15,7 @@
       "batch": "",
       "n_objects": 1,
       "objects": [
-        {"key": "ma3caa0fd", "removed": false, "accepted": false, "label": "round", "note": "", "bind": "manual", "grade": "C", "pose": "girdle", "source": "manual", "geom": {"bbox": [1740, 1343, 150, 141], "polygon": [1740.0, 1394.0, 1804.0, 1343.0, 1890.0, 1426.0, 1876.0, 1454.0, 1838.0, 1474.0, 1822.0, 1484.0]}}
+        {"key": "ma3caa0fd", "removed": false, "accepted": false, "label": "round", "note": "", "bind": "manual", "species": "Centrales indet.", "grade": "C", "pose": "girdle", "source": "manual", "geom": {"bbox": [1740, 1343, 150, 141], "polygon": [1740.0, 1394.0, 1804.0, 1343.0, 1890.0, 1426.0, 1876.0, 1454.0, 1838.0, 1474.0, 1822.0, 1484.0]}}
       ]
     },
     {
@@ -50,7 +50,7 @@
       "batch": "yolo-3차",
       "n_objects": 10,
       "objects": [
-        {"key": "1583_936_188_359", "removed": false, "accepted": false, "label": "", "note": "", "bind": "exact", "geom_edited": true, "bind_score": 1.0, "geom": {"bbox": [1583, 882, 236, 412], "polygon": [1783.0, 882.0, 1704.0, 1017.0, 1583.0, 1254.0, 1583.0, 1294.0, 1616.0, 1294.0, 1646.0, 1263.0, 1647.0, 1236.0, 1660.0, 1205.0, 1757.0, 1026.0, 1770.0, 1013.0, 1819.0, 908.0]}},
+        {"key": "1583_936_188_359", "removed": false, "accepted": false, "label": "rod_frag", "note": "", "bind": "exact", "geom_edited": true, "bind_score": 1.0, "geom": {"bbox": [1583, 882, 236, 412], "polygon": [1783, 882, 1704, 1017, 1583, 1254, 1583, 1294, 1616, 1294, 1646, 1263, 1647, 1236, 1660, 1205, 1757, 1026, 1770, 1013, 1819, 908]}},
         {"key": "1600_722_207_200", "removed": false, "accepted": false, "label": "rod_frag", "note": "", "bind": "exact", "bind_score": 1.0, "geom": {"bbox": [1600, 722, 207, 200], "polygon": [1767, 723, 1752, 725, 1728, 754, 1603, 868, 1600, 900, 1612, 919, 1631, 920, 1653, 909, 1754, 827, 1792, 781, 1806, 787, 1806, 771, 1790, 758]}},
         {"key": "1789_736_138_73", "removed": false, "accepted": false, "label": "rod_frag", "note": "", "bind": "exact", "bind_score": 1.0, "geom": {"bbox": [1789, 736, 138, 73], "polygon": [1926, 758, 1914, 736, 1874, 737, 1852, 747, 1828, 752, 1802, 761, 1794, 758, 1789, 752, 1789, 788, 1793, 789, 1793, 798, 1799, 804, 1810, 808, 1818, 808, 1913, 784, 1926, 772]}},
         {"key": "1944_1364_103_103", "removed": false, "accepted": true, "label": "round_frag", "note": "", "bind": "exact", "bind_score": 1.0, "geom": {"bbox": [1944, 1364, 103, 103], "polygon": [1994, 1364, 1977, 1376, 1964, 1411, 1954, 1413, 1944, 1410, 1944, 1437, 1999, 1466, 2037, 1466, 2046, 1435, 2041, 1423, 2039, 1392, 2036, 1384, 2028, 1376, 2021, 1364]}},

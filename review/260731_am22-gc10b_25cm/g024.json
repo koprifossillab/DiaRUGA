@@ -26,7 +26,7 @@
       "batch": "yolo-3차",
       "n_objects": 1,
       "objects": [
-        {"key": "1703_1123_297_361", "removed": false, "accepted": true, "label": "eucampia", "note": "", "bind": "exact", "species": "Eucampia antarctica", "grade": "C", "pose": "girdle", "auto_confirmed": true, "bind_score": 1.0, "geom": {"bbox": [1703, 1123, 297, 361], "polygon": [1704, 1123, 1703, 1150, 1783, 1255, 1795, 1283, 1795, 1348, 1773, 1409, 1759, 1427, 1760, 1438, 1778, 1453, 1854, 1467, 1889, 1483, 1907, 1453, 1920, 1398, 1974, 1288, 1997, 1220, 1955, 1194, 1784, 1123]}}
+        {"key": "1703_1123_297_361", "removed": false, "accepted": true, "label": "eucampia_frag", "note": "", "bind": "exact", "species": "Eucampia antarctica", "auto_confirmed": true, "bind_score": 1.0, "geom": {"bbox": [1703, 1123, 297, 361], "polygon": [1704, 1123, 1703, 1150, 1783, 1255, 1795, 1283, 1795, 1348, 1773, 1409, 1759, 1427, 1760, 1438, 1778, 1453, 1854, 1467, 1889, 1483, 1907, 1453, 1920, 1398, 1974, 1288, 1997, 1220, 1955, 1194, 1784, 1123]}}
       ]
     }
   ],

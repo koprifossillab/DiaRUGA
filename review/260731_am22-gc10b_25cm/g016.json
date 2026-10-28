@@ -15,7 +15,7 @@
       "batch": "",
       "n_objects": 1,
       "objects": [
-        {"key": "ma40cb312", "removed": false, "accepted": false, "label": "eucampia", "note": "", "bind": "manual", "species": "Eucampia antarctica", "grade": "C", "pose": "girdle", "source": "manual", "geom": {"bbox": [727, 834, 315, 213], "polygon": [967.0, 834.0, 995.0, 894.0, 1042.0, 929.0, 977.0, 1020.0, 928.0, 1040.0, 890.0, 996.0, 783.0, 1047.0, 727.0, 1016.0, 872.0, 874.0]}}
+        {"key": "ma40cb312", "removed": false, "accepted": false, "label": "eucampia_frag", "note": "", "bind": "manual", "species": "Eucampia antarctica", "source": "manual", "geom": {"bbox": [727, 834, 315, 213], "polygon": [967.0, 834.0, 995.0, 894.0, 1042.0, 929.0, 977.0, 1020.0, 928.0, 1040.0, 890.0, 996.0, 783.0, 1047.0, 727.0, 1016.0, 872.0, 874.0]}}
       ]
     },
     {

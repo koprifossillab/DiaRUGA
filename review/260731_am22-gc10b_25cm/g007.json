@@ -25,7 +25,7 @@
       "batch": "yolo-3차",
       "n_objects": 2,
       "objects": [
-        {"key": "2316_779_333_232", "removed": false, "accepted": true, "label": "eucampia", "note": "", "bind": "exact", "species": "Eucampia antarctica", "grade": "B", "pose": "valve", "auto_confirmed": true, "bind_score": 1.0, "geom": {"bbox": [2316, 779, 333, 232], "polygon": [2377, 781, 2373, 802, 2378, 840, 2356, 878, 2318, 912, 2321, 927, 2407, 957, 2613, 1010, 2647, 1004, 2648, 982, 2641, 966, 2647, 855, 2433, 784]}},
+        {"key": "2316_779_333_232", "removed": false, "accepted": true, "label": "eucampia_frag", "note": "", "bind": "exact", "species": "Eucampia antarctica", "auto_confirmed": true, "bind_score": 1.0, "geom": {"bbox": [2316, 779, 333, 232], "polygon": [2377, 781, 2373, 802, 2378, 840, 2356, 878, 2318, 912, 2321, 927, 2407, 957, 2613, 1010, 2647, 1004, 2648, 982, 2641, 966, 2647, 855, 2433, 784]}},
         {"key": "2615_555_88_93", "removed": true, "accepted": false, "label": "", "note": "", "bind": "exact", "bind_score": 1.0, "geom": {"bbox": [2615, 555, 88, 93], "polygon": [2641, 555, 2629, 577, 2623, 583, 2615, 586, 2615, 631, 2618, 630, 2631, 638, 2662, 647, 2682, 645, 2692, 637, 2699, 627, 2702, 619, 2701, 607, 2687, 581, 2683, 562, 2677, 555]}}
       ]
     },
@@ -35,7 +35,7 @@
       "batch": "yolo-3차",
       "n_objects": 1,
       "objects": [
-        {"key": "2314_775_335_240", "removed": false, "accepted": true, "label": "eucampia", "note": "", "bind": "exact", "species": "Eucampia antarctica", "grade": "B", "pose": "valve", "auto_confirmed": true, "bind_score": 1.0, "geom": {"bbox_xywh": [2314, 775, 335, 240], "polygon": [2376, 780, 2378, 836, 2353, 881, 2315, 916, 2318, 928, 2432, 970, 2552, 1003, 2612, 1014, 2635, 1012, 2648, 1003, 2642, 965, 2646, 850, 2590, 827, 2413, 775]}}
+        {"key": "2314_775_335_240", "removed": false, "accepted": true, "label": "eucampia_frag", "note": "", "bind": "exact", "species": "Eucampia antarctica", "auto_confirmed": true, "bind_score": 1.0, "geom": {"bbox_xywh": [2314, 775, 335, 240], "polygon": [2376, 780, 2378, 836, 2353, 881, 2315, 916, 2318, 928, 2432, 970, 2552, 1003, 2612, 1014, 2635, 1012, 2648, 1003, 2642, 965, 2646, 850, 2590, 827, 2413, 775]}}
       ]
     },
     {
@@ -44,7 +44,7 @@
       "batch": "yolo-3차",
       "n_objects": 1,
       "objects": [
-        {"key": "2316_779_333_232", "removed": false, "accepted": true, "label": "eucampia", "note": "", "bind": "exact", "species": "Eucampia antarctica", "grade": "B", "pose": "valve", "auto_confirmed": true, "bind_score": 1.0, "geom": {"bbox_xywh": [2316, 779, 333, 232], "polygon": [2376, 781, 2373, 803, 2380, 840, 2355, 881, 2316, 917, 2320, 926, 2574, 1003, 2619, 1010, 2646, 1005, 2648, 989, 2639, 961, 2648, 898, 2647, 855, 2514, 809, 2400, 779]}}
+        {"key": "2316_779_333_232", "removed": false, "accepted": true, "label": "eucampia_frag", "note": "", "bind": "exact", "species": "Eucampia antarctica", "auto_confirmed": true, "bind_score": 1.0, "geom": {"bbox_xywh": [2316, 779, 333, 232], "polygon": [2376, 781, 2373, 803, 2380, 840, 2355, 881, 2316, 917, 2320, 926, 2574, 1003, 2619, 1010, 2646, 1005, 2648, 989, 2639, 961, 2648, 898, 2647, 855, 2514, 809, 2400, 779]}}
       ]
     }
   ],
