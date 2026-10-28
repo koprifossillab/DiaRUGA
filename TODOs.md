@@ -533,6 +533,20 @@ DB 설계는 [devlog/20260730_P02_db-schema.md](devlog/20260730_P02_db-schema.md
 
 ## 계획
 
+- [ ] **검토 화면의 판정 함수를 Django 없이 돌게 한다** (사용자 2026-10-28 · 나중에).
+      `ops/export_yolo.py` 가 라벨을 화면과 같게 만들려고 `viewer.data` 의
+      `current_detections` → `_with_reviews`(`_apply_review`) → `fold_object_cls`
+      를 부르는데, 그 때문에 Django 를 띄워야 하고 Django 는 열면서
+      `journal_mode=WAL` 을 걸어 파일을 바꾼다 — 그래서 정답 사본을 **복사해서**
+      붙인다(P29 6절 2). 판정이 Django 밖에 있으면 `export_review.py` 처럼
+      `sqlite3` 로 `mode=ro&immutable=1` 로 원본을 그대로 읽을 수 있다.
+      **패키지 구성만으로는 안 된다** — 함수들이 ORM 관계(`det.candidates.all()` ·
+      `o.diatom_object.grade` · `vp.detections.all()`)와 `ClassDef` 조회
+      (`_class_rows()`)를 직접 탄다. 먼저 **규칙(dict 를 받아 dict 를 내는 순수
+      함수)과 가져오기(ORM 판 · sqlite3 판)를 가르고**, 규칙을 `naming.py` 처럼
+      Django 를 안 부르는 모듈로 뗀다. **값이 안 바뀐 것을 확인하는 편이 어렵다**
+      (CLAUDE.md "성능") — 갈라 놓은 뒤 지금 함수와 사본 하나 전수로 결과를 비교한다
+
 - [ ] **뷰어에서 도감을 부른다 (Diadiction)** — 2026-08-12, 사용자 계획 ·
       [P14](devlog/20260812_P14_diadiction-lookup.md). 검토·카탈로그에서 속을
       짚으면 **그 자리에서 도감의 등록 정보와 도판을 본다.**
