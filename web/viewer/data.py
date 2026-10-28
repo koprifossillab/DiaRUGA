@@ -14,6 +14,7 @@ import json
 import math
 import re
 import secrets
+import sys
 from collections import Counter, defaultdict
 from pathlib import Path
 
@@ -2057,9 +2058,11 @@ def review_state(vp, batch_id=None):
 
     **읽는 자리를 하나로 모은다** — 흩어져 있으면 뜻이 바뀔 때 전부 틀리는데
     예외가 안 난다(P10 1단계에서 `is_current` 로 같은 일을 했다).
+
+    `batch_id` 를 안 주면 **그 시야의 주 묶음**이다(P32).
     """
     if batch_id is None:
-        batch_id = review_batch_id()
+        batch_id = primary_batch_id(vp)
     done, note = False, ""
     for r in ViewpointReview.objects.filter(viewpoint=vp):
         if r.batch_id is None:
@@ -2070,17 +2073,24 @@ def review_state(vp, batch_id=None):
 
 
 def done_viewpoints(batch_id=None, *, slide=None, ids=None) -> set:
-    """검토 완료로 표시된 시야 pk 들. **고른 묶음 것만 센다** (073)."""
-    if batch_id is None:
-        batch_id = review_batch_id()
-    if batch_id is None:
-        return set()
-    qs = ViewpointReview.objects.filter(done=True, batch_id=batch_id)
+    """검토 완료로 표시된 시야 pk 들. **고른 묶음 것만 센다** (073).
+
+    `batch_id` 를 안 주면 **시야마다 그 주 묶음에서** 끝냈는가를 본다(P32). 검토
+    대상을 4차로 옮기면 3차 정답 시야는 여전히 완료로, 덮인 시야는 미완으로 센다.
+    """
+    qs = ViewpointReview.objects.filter(done=True, batch__isnull=False)
     if slide is not None:
         qs = qs.filter(viewpoint__slide=slide)
     if ids is not None:
         qs = qs.filter(viewpoint_id__in=ids)
-    return set(qs.values_list("viewpoint_id", flat=True))
+    if batch_id is not None:
+        return set(qs.filter(batch_id=batch_id)
+                   .values_list("viewpoint_id", flat=True))
+    pairs = list(qs.values_list("viewpoint_id", "batch_id"))
+    if not pairs:
+        return set()
+    prim = primary_batch_map(slide=slide, ids=ids)
+    return {v for v, b in pairs if prim.get(v) == b}
 
 
 def review_batch_label():
@@ -2098,18 +2108,21 @@ def batches_elsewhere(slide=None, vp=None) -> dict:
     "이 시야가 빈 이유" 를 화면이 말하려면 이것이 있어야 한다. 검출이 아예 없는
     것과 **다른 묶음에는 있는 것**은 다른 말이고, 뒤엣것을 "검출은 아직입니다"
     라고 적으면 거짓말이다 — 사람이 돌리러 간다.
+
+    **"검토 대상" 은 시야마다의 주 묶음이다**(P32).
     """
-    rb = review_batch_id()
     qs = Detection.objects.filter(is_current=True)
     if slide is not None:
         qs = qs.filter(viewpoint__slide=slide)
     if vp is not None:
         qs = qs.filter(viewpoint=vp)
-    if rb is not None:
-        qs = qs.exclude(run__batch_id=rb)
+    prim = ({vp.pk: primary_batch_id(vp)} if vp is not None
+            else primary_batch_map(slide=slide))
     out = defaultdict(list)
-    for vp_id, label in (qs.values_list("viewpoint_id", "run__batch__label")
-                         .distinct()):
+    for vp_id, bid, label in (qs.values_list("viewpoint_id", "run__batch_id",
+                                             "run__batch__label").distinct()):
+        if bid == prim.get(vp_id):
+            continue
         if label and label not in out[vp_id]:
             out[vp_id].append(label)
     return out
@@ -2123,6 +2136,133 @@ def review_batch_id():
     """
     return (RunBatch.objects.filter(for_review=True)
             .values_list("id", flat=True).first())
+
+
+# --- 시야의 주 묶음 (P31 2절 · P32) -------------------------------------------
+#
+# **시야 하나를 보고 고치는 자리는 전부 여기서 묶음을 얻는다.** 화면·저장·카탈로그·
+# 산출이 한 군데라도 전역 `review_batch_id()` 나 `Viewpoint.batch` 칸을 따로 보면
+# 화면에 보이는 판과 저장되는 판이 어긋난다(051). 전역 값을 그대로 써도 되는 것은
+# 관리 화면(무엇을 검토 대상으로 둘지 고르는 자리)과 문턱 조정뿐이다.
+
+def _batch_scope():
+    """`pipeline/batch_scope.py` — 묶음이 어느 권역을 보는가의 규칙은 거기 하나뿐이다."""
+    root = Path(__file__).resolve().parent.parent.parent / "pipeline"
+    if str(root) not in sys.path:
+        sys.path.insert(0, str(root))
+    import batch_scope                                  # noqa: PLC0415
+    return batch_scope
+
+
+def _batches() -> tuple:
+    """`(검토 대상 pk, 그 조리법, 묶음 pk → 최근 순위)`. 묶음은 몇 개뿐이라 통째로 읽는다."""
+    rows = list(RunBatch.objects.order_by("-started_at", "-id")
+                .values_list("id", "for_review", "recipe"))
+    rb = next((b for b, on, _ in rows if on), None)
+    recipe = next((r for b, on, r in rows if on), None)
+    return rb, recipe, {b: i for i, (b, _, _) in enumerate(rows)}
+
+
+def _follow(area, have, rb, recipe, order: dict):
+    """칸이 빈 시야의 주 묶음.
+
+    **전역 검토 대상이 이 시야의 권역을 다루면 그것을 따른다** — 검출이 아직 없어도
+    그렇다(화면은 "그 묶음의 검출이 없습니다" 를 적는다). 다루지 않을 때만 **현재
+    검출이 있는 가장 최근 묶음**으로 간다(`have` · `order` 가 작을수록 최근).
+
+    검토 대상을 4차로 옮긴 뒤 한국의 새 슬라이드가 그 갈래다 — 4차 조리법이
+    `areas: ["ant"]` 라 4차가 그 슬라이드를 안 다루고, 검출은 `sam2-전수` 에만 있다.
+    이름표를 코드에 박지 않고 묶음의 범위(`batch_scope`)를 따른다.
+
+    처음에는 "검토 대상에 검출이 없으면 검출이 있는 묶음" 이었는데 그러면 4차를
+    기다리는 남극 시야(RS14-GC04 · `sam2-전수` 검출만 있다)가 SAM 편집 화면으로
+    열렸다(10-28 시험이 잡았다).
+    """
+    if rb is None or _batch_scope().allows(recipe, area):
+        return rb
+    have = set(have) - {None}
+    if not have:
+        return rb
+    return min(have, key=lambda b: order.get(b, len(order)))
+
+
+def primary_batch_id(vp) -> int | None:
+    """그 시야의 주 묶음 pk — 화면이 보여 주고 저장이 고치는 묶음.
+
+    `Viewpoint.batch` 가 차 있으면 그것(정답 · 다른 엔진으로만 보는 시야), 비어
+    있으면 따라간다(`_follow`).
+
+    **`vp.detections` 를 안 읽는다** — 화면에 따라 검토 대상 묶음 것만 걸러서
+    prefetch 해 두기 때문에(`_viewpoints_of`), 그것을 읽으면 "다른 묶음에는 검출이
+    있다" 를 모른다. 한 시야에 질의 몇 개라 직접 묻는다.
+    """
+    if vp.batch_id is not None:
+        return vp.batch_id
+    # 시야 객체에 답을 붙여 두지 않는다 — 같은 객체를 쥔 채 검토 대상을 갈면
+    # 옛 답이 남는다(시험이 그렇게 잡았다)
+    rb, recipe, order = _batches()
+    if rb is None or _batch_scope().allows(recipe, None):
+        return rb                       # 권역을 안 가르는 조리법 — 물을 것이 없다
+    area = (Viewpoint.objects.filter(pk=vp.pk)
+            .values_list("slide__sample__locality__site__area", flat=True).first())
+    have = set(Detection.objects.filter(viewpoint=vp, is_current=True)
+               .values_list("run__batch_id", flat=True))
+    return _follow(area, have, rb, recipe, order)
+
+
+def primary_batch_map(*, slide=None, ids=None) -> dict:
+    """시야 pk → 주 묶음 pk. 여럿을 한 번에 푼다 — 규칙은 `primary_batch_id` 와 같다.
+
+    `ids` 를 큰 목록으로 주지 말 것 — SQLite 식 깊이 한도에 걸린다(228). 슬라이드
+    단위면 `slide` 로, 전부면 둘 다 비운다.
+    """
+    qs = Viewpoint.objects.all()
+    if slide is not None:
+        qs = qs.filter(slide=slide)
+    if ids is not None:
+        qs = qs.filter(id__in=list(ids))
+    rows = list(qs.values_list("id", "batch_id",
+                               "slide__sample__locality__site__area"))
+    rb, recipe, order = _batches()
+    loose = [v for v, b, _ in rows if b is None]
+    have = defaultdict(set)
+    if loose and rb is not None and not _batch_scope().allows(recipe, None):
+        # 검토 대상이 권역을 가르는 조리법일 때만 검출을 물을 일이 있다
+        dq = Detection.objects.filter(is_current=True)
+        if slide is not None:
+            dq = dq.filter(viewpoint__slide=slide)
+        elif ids is not None:
+            dq = dq.filter(viewpoint_id__in=loose)
+        for vid, bid in dq.values_list("viewpoint_id", "run__batch_id").distinct():
+            have[vid].add(bid)
+    return {v: (b if b is not None
+                else _follow(area, have.get(v, ()), rb, recipe, order))
+            for v, b, area in rows}
+
+
+def frozen_batch_ids() -> set:
+    """얼린 묶음들의 pk (`RunBatch.frozen`)."""
+    return set(RunBatch.objects.filter(frozen=True).values_list("id", flat=True))
+
+
+def viewpoint_frozen(vp, batch_id=None) -> bool:
+    """그 시야가 얼린 묶음을 보고 있는가 — 모양·지우기·그리기·완료가 잠긴다(P32 ②).
+
+    `batch_id` 를 주면 그 묶음으로 판단한다(이미 주 묶음을 얻어 둔 자리).
+    """
+    bid = primary_batch_id(vp) if batch_id is None else batch_id
+    return bid is not None and RunBatch.objects.filter(pk=bid, frozen=True).exists()
+
+
+FROZEN_MSG = ("이 시야는 얼린 묶음({label})의 정답이라 모양·지우기·그리기·완료를 "
+              "바꿀 수 없습니다. 카탈로그에서 유형·종명·등급·자세·코멘트만 고칠 수 "
+              "있습니다.")
+
+
+def frozen_message(batch_id) -> str:
+    label = (RunBatch.objects.filter(pk=batch_id)
+             .values_list("label", flat=True).first() or "?")
+    return FROZEN_MSG.format(label=label)
 
 
 def pipeline_status() -> dict:
@@ -2268,7 +2408,12 @@ def current_detections(vp: Viewpoint, batch_id=None) -> list:
     # 검토 대상이 없으면 **빈 목록**이다. 조용히 아무 묶음이나 보여주면 사람이
     # 무엇을 검토하고 있는지 모른 채 교정을 쌓는다 (P10 3.6). 그 상태는
     # `check_db.py` 가 센다.
-    rb = review_batch_id() if batch_id is None else batch_id
+    #
+    # **기본은 그 시야의 주 묶음이다**(P32 · 10-28). 위에서 "기본값을 바꾸면 안 된다"
+    # 고 한 것은 뜻이 자리마다 흩어진 채 바뀌는 것을 막으려던 것이고, 이번에는 열 곳
+    # 넘는 자리가 **한 번에 같은 뜻으로** 옮겨 가게 하려고 여기서 바꾼다 — 화면·저장·
+    # 카탈로그가 이 기본값으로 묶음을 얻는다.
+    rb = primary_batch_id(vp) if batch_id is None else batch_id
     if rb is None:
         return []
     bmap = batch_ids_of(dets)

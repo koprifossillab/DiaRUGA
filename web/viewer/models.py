@@ -80,6 +80,15 @@ class RunBatch(models.Model):
     # 비어 있으면 그 묶음의 개체는 **번호가 없다** — 화면이 그것을 적는다.
     # 조용히 `M`(손그림) 이나 라벨로 대신하면 엔진이 낸 것이 다른 것으로 기록된다.
     code = models.CharField(max_length=8, blank=True, default="", db_default="")
+    # **얼린 묶음** (P31 ④ · P32 · 0052). 회차의 최종 검수가 끝나 정답이 된 묶음이다.
+    # 주 묶음이 이것인 시야는 **모양·지우기·그리기·완료가 잠기고**, 카탈로그의
+    # 동정(유형·종명·등급·자세·코멘트)만 열린다 — 정답이 바뀌면 다음 회차의 재현율을
+    # 잴 기준이 사라지고, 동정은 계속 쌓여야 하는 자료라서다.
+    #
+    # **잠그는 것은 서버다.** 화면이 읽기 전용 갈래로 여는 것은 사람이 헛일을 안
+    # 하게 하려는 것이고, 막는 것은 저장 문이다(063 — 화면에서 막는 것은 막는 것이
+    # 아니다).
+    frozen = models.BooleanField(default=False, db_default=False)
     started_at = models.DateTimeField(auto_now_add=True)
     finished_at = models.DateTimeField(null=True, blank=True)
 
@@ -504,6 +513,24 @@ class Viewpoint(models.Model):
     grouping_run = models.ForeignKey(Run, null=True, blank=True,
                                      on_delete=models.SET_NULL,
                                      related_name="viewpoints")
+    # **이 시야의 주 묶음** (P31 2절 · P32 · 0052). 화면·저장·카탈로그가 이 시야에서
+    # 어느 묶음을 보고 고치는가. **사람이 고르지 않는다** — 정하는 것은 서버다.
+    #
+    # **비어 있으면 따라간다**(`data.primary_batch_id`): 전역 검토 대상
+    # (`RunBatch.for_review`)에 이 시야의 현재 검출이 있으면 그것, 없으면 현재 검출이
+    # 있는 가장 최근 묶음. 채워 두는 것은 **따라가면 안 되는 시야**뿐이다 — 회차의
+    # 정답(3차 완료 시야 → `yolo-3차`)과 다른 엔진으로만 보는 것(한국·Smear →
+    # `sam2-전수`). 새 시야는 옛 파이프라인 이미지가 만들어 이 칸을 모르므로, 비어
+    # 있는 것이 기본이어야 한다(NOT NULL 이면 그 INSERT 가 죽는다).
+    #
+    # **값을 읽을 때 이 칸을 곧바로 보지 않는다** — 반드시 `primary_batch_id` 를
+    # 거친다. 한 군데라도 이 칸이나 전역 값을 따로 보면 화면과 저장 대상이 어긋난다
+    # (051).
+    #
+    # `PROTECT` — 시야가 가리키는 묶음을 지우면 그 시야가 어느 판을 보는지 모른다.
+    batch = models.ForeignKey(RunBatch, null=True, blank=True,
+                              on_delete=models.PROTECT,
+                              related_name="primary_viewpoints")
 
     class Meta:
         ordering = ["slide", "idx"]
