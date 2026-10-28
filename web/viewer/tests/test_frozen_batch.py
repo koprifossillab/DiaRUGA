@@ -330,3 +330,36 @@ class CountReviewedOnlyTest(DiaRUGATestCase):
         _masks, n_kept = data._kept_masks(self.w.slide)
         self.assertEqual(n_kept.get(self.answer_vp.pk), 3)     # 3차 정답
         self.assertEqual(n_kept.get(self.covered_vp.pk), 2)    # 4차
+
+
+class CheckPrimaryTest(DiaRUGATestCase):
+    """`check_db.py` 14번 — 주 묶음 칸이 완료 기록·검출과 맞는가 (P32)."""
+
+    @classmethod
+    def setUpTestData(cls):
+        fx.make_classes()
+        cls.w = fx.make_world(slug="rs23", n_viewpoints=2, n_candidates=3)
+        cls.rb = RunBatch.objects.get(for_review=True)
+        fx.review_done(cls.w.vp, cls.rb)
+        Viewpoint.objects.filter(pk=cls.w.vp.pk).update(batch=cls.rb)
+        RunBatch.objects.filter(pk=cls.rb.pk).update(frozen=True)
+
+    def run_check(self):
+        from .test_check_db_grade_pose import _load
+        mod = _load()
+        mod.problems = []
+        mod.check_primary()
+        return [name for name, _n, _why in mod.problems]
+
+    def test_맞으면_조용하다(self):
+        self.assertEqual(self.run_check(), [])
+
+    def test_정답_시야의_칸이_비면_잡는다(self):
+        Viewpoint.objects.filter(pk=self.w.vp.pk).update(batch=None)
+        self.assertIn("얼린 묶음에서 끝낸 시야는 칸이 얼린 묶음이다", self.run_check())
+
+    def test_칸의_묶음에_검출이_없으면_잡는다(self):
+        other = fx.add_other_engine(self.w.viewpoints[1], label="빈-묶음").batch
+        Detection.objects.filter(run__batch=other).delete()
+        Viewpoint.objects.filter(pk=self.w.viewpoints[1].pk).update(batch=other)
+        self.assertIn("칸이 가리키는 묶음에 그 시야의 검출이 있다", self.run_check())
