@@ -26,6 +26,7 @@
     atlas/biodatum/datums.json       생층서 기준면 (P28 · `tools/parse_biodatums.py`)
     taxon_names.json                 학명 유효성 판정 (P24 · `tools/parse_taxon_names.py`)
     /data3/DiaRUGA/atlas/            쪽 PNG (`tools/render_atlas_pages.py` 산물)
+    /data3/DiaRUGA/atlas/<도감>/crops/  그림 크롭 PNG (색인의 `crop_image` · 239~241)
     …/names/worms/worms_master_*.tsv 학명 대조표 (WoRMS·AlgaeBase)
 
 **DB 를 안 본다.** 전부 파일이고, 운영 DB 를 여는 것은 그 자체가 함정이다
@@ -38,6 +39,14 @@ v1.2.0). v1.1.0 은 색인만 실어 **이명 판정(P24)과 출현 기록(P20)�
 꾸러미에서는 안 달려 있어 두 화면이 다른 말을 했다. 권역(196)도 같이 간다.
 v1.3.0 은 **생층서 기준면(P28)** 의 카드 줄과 속 목록의 `· 기준면 N` 을
 더한다. 범위 그림(`/atlas/datums/`)은 서버 SVG 를 JS 로 옮겨야 해서 안 싣는다.
+
+v1.4.0 은 **그림 크롭**과 그것을 쓰는 두 화면 — 검색 결과의 바둑판 보기와
+종 2~5개 비교(238) — 를 더한다. 09-03 에는 "쪽이 다 들어가 도판에서 보인다"
+며 크롭을 뺐는데, 그때는 논문 440장뿐이었다. 지금은 한국 도감(240)·Schmidt
+(241)까지 2,584장이고 바둑판·비교가 **크롭이 먼저**라는 규칙(`data._row_figure`)
+위에 서 있어, 빼면 같은 종이 서버에서는 그림 하나로, 여기서는 도판 한 쪽
+전체로 떠 두 화면이 다른 말을 한다(사용자 2026-10-29 · 현재 뷰어 체계대로).
+크롭은 쪽과 같은 까닭으로 JPEG 로 바꾸되 해상도는 그대로 둔다.
 
 사용:
 
@@ -72,7 +81,21 @@ KST = timezone(timedelta(hours=9))
 sys.path.insert(0, str(REPO / "web"))
 from viewer import atlas as atlas_mod  # noqa: E402
 
-PAGE_DIR, THUMB_DIR = "pages", "thumbs"
+PAGE_DIR, THUMB_DIR, CROP_DIR = "pages", "thumbs", "crops"
+
+
+def rel_crop(crop_image: str, have_crops=None) -> str:
+    """색인의 `crop_image`(`atlas/<도감>/crops/<이름>.png`) → 꾸러미 안 JPEG 경로.
+
+    **이름을 새로 짓지 않는다** — 앞머리 `atlas/` 를 `crops/` 로, 확장자만
+    바꾼다. 꾸러미에 안 실린 크롭(`have_crops` 밖)은 빈 문자열이다 — 쪽과 같이
+    안 열리는 그림을 내지 않는다(`rel_page`).
+    """
+    if not crop_image or not crop_image.startswith("atlas/"):
+        return ""
+    if have_crops is not None and crop_image not in have_crops:
+        return ""
+    return f"{CROP_DIR}/{crop_image[len('atlas/'):].rsplit('.', 1)[0]}.jpg"
 
 
 # ── 자잘한 것 ────────────────────────────────────────────────────
@@ -128,7 +151,20 @@ def rel_page(key: str, volume, page, have=None) -> tuple[str, str, str]:
 
 # ── 자료 읽기 ────────────────────────────────────────────────────
 
-def read_indexes(paths: list[Path], have=None) -> tuple[list[dict], list[dict], dict, int]:
+def read_crops(paths: list[Path]) -> list[str]:
+    """색인이 짚는 크롭 전부(`crop_image`) — 겹치는 것은 한 번만. 정렬해 낸다."""
+    out = set()
+    for p in paths:
+        doc = json.loads(p.read_text(encoding="utf-8"))
+        for e in doc["entries"]:
+            for pl in e.get("placements") or []:
+                if pl.get("crop_image"):
+                    out.add(pl["crop_image"])
+    return sorted(out)
+
+
+def read_indexes(paths: list[Path], have=None,
+                 have_crops=None) -> tuple[list[dict], list[dict], dict, int]:
     """색인 JSON 셋 → (도감 메타, 항목, 출처 해시, 안 실린 자리 수)."""
     books, entries, hashes, missing = [], [], {}, 0
     for p in sorted(paths):
@@ -165,6 +201,8 @@ def read_indexes(paths: list[Path], have=None) -> tuple[list[dict], list[dict], 
                     "vol_path": vol_path,
                     "text_rel": t_rel, "text_thumb": t_thumb,
                     "plate_rel": p_rel, "plate_thumb": p_thumb,
+                    # 그림 하나의 크롭 (뷰어 `crop_rel`) — 바둑판·비교가 먼저 쓴다
+                    "crop_rel": rel_crop(pl.get("crop_image") or "", have_crops),
                 })
             entries.append({
                 "atlas": a["key"], "name": e["name"], "binomial": e.get("binomial") or "",
@@ -324,6 +362,38 @@ def _one(job):
     return os.path.getsize(dst), os.path.getsize(thumb)
 
 
+def _crop(job):
+    """크롭 하나 — PNG → JPEG. 워커에서 돈다. **크기를 안 줄인다** — 세선을 볼
+    자리라 쪽과 같은 규칙이다. 투명이 있으면 흰 종이 위에 놓는다."""
+    src, dst, quality, force = job
+    from PIL import Image
+    if not force and os.path.exists(dst):
+        return 0
+    im = Image.open(src)
+    im.load()
+    if im.mode in ("RGBA", "LA", "P"):
+        im = im.convert("RGBA")
+        bg = Image.new("RGB", im.size, (255, 255, 255))
+        bg.paste(im, mask=im.split()[-1])
+        im = bg
+    elif im.mode not in ("L", "RGB"):
+        im = im.convert("RGB")
+    os.makedirs(os.path.dirname(dst), exist_ok=True)
+    im.save(dst, "JPEG", quality=quality, optimize=True, dpi=(300, 300))
+    return os.path.getsize(dst)
+
+
+def bake_crops(crops: list[str], src_root: Path, out: Path, args) -> int:
+    jobs = [(str(src_root / c), str(out / rel_crop(c)), args.crop_quality, args.force)
+            for c in crops]
+    print(f"  크롭 {len(jobs)}장을 굽는다…", flush=True)
+    t0 = time.time()
+    with mp.Pool(args.jobs) as pool:
+        size = sum(pool.imap_unordered(_crop, jobs, chunksize=16))
+    print(f"    {human(size)} · {time.time() - t0:.0f}초 (이미 구운 것은 0 으로 센다)", flush=True)
+    return size
+
+
 def bake_images(pages: dict, src_root: Path, out: Path, args) -> tuple[int, int]:
     jobs = []
     for akey, vols in pages.items():
@@ -379,6 +449,9 @@ def main() -> int:
     ap.add_argument("--quality", type=int, default=80, help="쪽 JPEG 품질")
     ap.add_argument("--thumb-width", type=int, default=220, help="축소본 가로 픽셀")
     ap.add_argument("--thumb-quality", type=int, default=72)
+    ap.add_argument("--crops-root", default="/data3/DiaRUGA",
+                    help="색인의 crop_image(atlas/…)가 붙는 뿌리")
+    ap.add_argument("--crop-quality", type=int, default=85, help="크롭 JPEG 품질")
     ap.add_argument("--jobs", type=int, default=max(1, (os.cpu_count() or 4) - 2))
     ap.add_argument("--no-images", action="store_true", help="글자만 담는다")
     ap.add_argument("--limit", type=int, default=0, help="쪽 몇 장만 (눌러 볼 때)")
@@ -407,8 +480,30 @@ def main() -> int:
     if not idx_paths:
         print(f"색인 JSON 이 없다: {args.index_dir}", file=sys.stderr)
         return 1
-    books, entries, idx_hashes, missing = read_indexes(idx_paths, have)
-    print(f"색인 {len(books)}권 · 항목 {len(entries)}개")
+    # 1-2) 크롭 — 쪽처럼 **디스크에 있는 것만** 싣는다. 색인이 짚는데 없는
+    #      크롭은 세어서 말한다(`sync_paper_plate_images.py` 를 안 돌린 자리다)
+    crops: list[str] = []
+    crops_missing = 0
+    if not args.no_images:
+        want_crops = read_crops([p for p in sorted(Path(args.index_dir).glob("*.json"))
+                                 if p.name != "atlases.json"])
+        croot = Path(args.crops_root)
+        crops = [c for c in want_crops if (croot / c).is_file()]
+        crops_missing = len(want_crops) - len(crops)
+        if args.limit:
+            per: dict[str, int] = {}
+            keep = []
+            for c in crops:
+                k = c.split("/")[1]
+                if per.get(k, 0) < args.limit:
+                    per[k] = per.get(k, 0) + 1
+                    keep.append(c)
+            crops = keep
+    have_crops = set(crops)
+
+    books, entries, idx_hashes, missing = read_indexes(idx_paths, have, have_crops)
+    print(f"색인 {len(books)}권 · 항목 {len(entries)}개 · 크롭 {len(crops)}장"
+          + (f" (색인이 짚는데 디스크에 없는 크롭 {crops_missing}장)" if crops_missing else ""))
     if missing and not args.no_images:
         print(f"  색인이 짚는데 꾸러미에 없는 쪽 {missing}자리 — 번호만 남기고"
               f" 링크를 안 낸다")
@@ -487,6 +582,7 @@ def main() -> int:
     meta = {
         "version": args.version, "built": built,
         "images": bool(dia_books), "page_count": page_count,
+        "crop_count": len(crops),
         "dpi": 300, "quality": args.quality,
         "names_source": names_src,
         # 권역 (196) — 뷰어와 같은 표(`atlas.AREAS`·`AREA_OF`). 모르는 도감은
@@ -506,6 +602,8 @@ def main() -> int:
                 for k, b in dia_books.items()}
         big, small = bake_images(want, Path(args.pages_root), pkg, args)
         print(f"  쪽 {human(big)} · 축소본 {human(small)}")
+    if crops:
+        bake_crops(crops, Path(args.crops_root), pkg, args)
 
     # 6) 화면
     css = (ASSETS / "app.css").read_text(encoding="utf-8")
@@ -530,10 +628,13 @@ def main() -> int:
     # 7) 글자만 담은 **진짜 단일 파일**
     single = out_root / f"diadiction-index-v{args.version}.html"
     if not args.no_text_only_file:
-        tmeta = dict(meta, images=False, page_count=0)
+        tmeta = dict(meta, images=False, page_count=0, crop_count=0)
+        # 글자만 담는 파일에는 크롭도 없다 — 경로를 지워 안 열리는 그림을 안 낸다
+        t_entries = [dict(e, places=[dict(pl, crop_rel="") for pl in e["places"]])
+                     for e in entries]
         inline = "<script>\n" + "".join(
             js_var(v, o) for v, o in (("DIA_META", tmeta), ("DIA_BOOKS", {}),
-                                      ("DIA_ENTRIES", entries), ("DIA_TAXA", taxa),
+                                      ("DIA_ENTRIES", t_entries), ("DIA_TAXA", taxa),
                                       ("DIA_OCC", occ),
                                       ("DIA_BD", {"card": bd, "genus": bd_genus}),
                                       ("DIA_NAMES", names))
@@ -551,8 +652,8 @@ def main() -> int:
     (pkg / "MANIFEST.json").write_text(json.dumps({
         "package": pkg.name, "version": args.version, "built": built,
         "entries": len(entries), "names": len(names["rows"]),
-        "pages": page_count, "files": len(files), "bytes": total_bytes,
-        "missing_placements": missing,
+        "pages": page_count, "crops": len(crops), "files": len(files), "bytes": total_bytes,
+        "missing_placements": missing, "missing_crops": crops_missing,
         "index_sha256": idx_hashes,
         "taxa_sha256": sha256(taxa_path) if taxa_path.exists() else "",
         "occurrence_sha256": {p.name: sha256(p) for p in occ_paths},
@@ -608,11 +709,15 @@ def readme(meta, books, dia_books, names_src) -> str:
         f"  · 학명 대조표 {names_src} (WoRMS·AlgaeBase 대조)",
         f"  · 도판 {meta['page_count']}쪽 · 300 dpi JPEG (품질 {meta['quality']})"
         if meta["images"] else "  · 도판 없음 (글자만)",
+        f"  · 그림 크롭 {meta.get('crop_count', 0)}장 (도판에서 그 종의 그림만 뗀 것)"
+        if meta.get("crop_count") else "",
         "",
         "화면",
         "  색인 검색  학명·속으로 찾는다 (치면 이름을 권한다). 권역(한국·남극·전역)·도감·속으로 거른다.",
-        "             결과의 '해설 p.N' · '도판 p.N' 을 누르면 그 쪽이 열린다.",
+        "             결과의 '해설 p.N' · '도판 p.N' 을 누르면 그 쪽이 열린다. '그림 보기' 는 크롭이다.",
         "             현재 통용 학명으로 찾아도 옛 이름(이명)으로 실린 항목이 걸린다.",
+        "             '목록 · 바둑판' 단추로 오간다. 바둑판은 칸마다 그림 하나(크롭이 먼저,",
+        "             없으면 도판 쪽)를 띄우고, '비교에 담기' 로 2~5종을 골라 '비교' 로 나란히 본다.",
         "  종 검색    학명 대조표. 유효명·저자·과·목 어느 칸으로도 찾는다",
         "  쪽 보기    ← → 넘기기 · g 격자 · s 한 장/두 쪽 · 휠 확대 · 끌어서 옮기기",
         "",
