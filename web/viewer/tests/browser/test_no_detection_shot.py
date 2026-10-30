@@ -72,7 +72,7 @@ class NoDetectionShotTest(BrowserTestCase):
 
         # 검출이 없는 판으로 간다
         self.click_shot(self.bare.name)
-        self.assertIn("검출이 없", page.query_selector("#tabs-stack .tabmeta")
+        self.assertIn("검출이 없", page.query_selector("#vpsum-stack")
                       .inner_text())
 
         # 거기서 마스크를 그린다 — 예전에는 이 저장이 합성본으로 갔다

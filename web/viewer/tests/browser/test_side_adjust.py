@@ -104,3 +104,16 @@ class SideAdjustTest(BrowserTestCase):
         self.assertTrue(all(b.is_visible() for b in
                             page.query_selector_all("#cbars-stack .cbar[data-frag]")),
                         "풀었는데 파편 막대가 안 돌아온다")
+
+    def test_이_시야_요약이_왼쪽_칸에_있다(self):
+        """탭 줄 끝의 한 줄 요약을 왼쪽 칸으로 옮기고, 슬라이드 전체의 교정 셋은 걷었다."""
+        page = self.review()
+        box = page.query_selector("#vpsum-stack")
+        self.assertIsNotNone(box, "「이 시야」 상자가 없다")
+        self.assertTrue(box.is_visible())
+        self.assertIn("후보", page.text_content("#vpn-stack"))
+        self.assertIn("원시", page.text_content("#vpraw-stack"))
+        self.assertIsNone(page.query_selector("#tabs-stack .tabmeta"),
+                          "탭 줄에 요약이 남아 있다")
+        self.assertIsNone(page.query_selector("#dvside-stack .vedits"),
+                          "슬라이드 교정 셋이 남아 있다")

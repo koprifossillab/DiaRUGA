@@ -189,7 +189,7 @@ class OfflineReviewFileTest(BrowserTestCase):
         # 시험만 겪는 자리다(사람은 사진을 눌러 고른 다음 누른다).
         page.evaluate("document.activeElement && document.activeElement.blur()")
         page.wait_for_timeout(150)
-        self.assertIn("후보", page.text_content("#tabs-vp0 .tabmeta"))
+        self.assertIn("후보", page.text_content("#vpsum-vp0"))
         self.click_image(70, 70, uid="vp0")
         page.keyboard.press("Space")
         page.wait_for_timeout(900)

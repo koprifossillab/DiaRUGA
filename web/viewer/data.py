@@ -272,6 +272,23 @@ def _count_parts(counts: dict) -> list[str]:
     return out
 
 
+def _shot_meta(d: dict) -> dict:
+    """판의 요약을 **토막으로** — 검토 화면 왼쪽 칸의 「이 시야」 상자가 줄마다
+    갈라 그린다 (2026-10-30 · 사용자). 한 줄 글(`summary`)은 그대로 둔다 —
+    탭 줄에 있던 자리를 옮겼을 뿐 같은 말이다.
+    """
+    # 분류 이름은 화면의 이름이다(탭 줄이 쓰던 `counts_list` 와 같은 것) — 키
+    # (`rod 12`)로 적으면 옆 칸 막대·카탈로그와 말이 갈린다
+    cl = d.get("counts_list")
+    parts = ([f"{c['label']} {c['n']}" + (f" ({c['parts']})" if c.get("parts") else "")
+              for c in cl] if cl is not None else _count_parts(d["counts"]))
+    return {"head": f"후보 {d['n_candidates']}개",
+            "cls": " · ".join(parts),
+            "raw": (f"원시 {d['n_raw_masks']}"
+                    + (f" → 크기통과 {d['n_sized']}" if d["n_sized"] else "")
+                    + f" · 탈락 {len(d['rejected'])}개")}
+
+
 def _class_rows_keys():
     return [r["key"] for r in _class_rows()]
 
@@ -4241,6 +4258,7 @@ def _review_shot(d: dict, image_id: int, rel: str = "") -> dict:
         "rejected": d["rejected"],
         "accepted": d["accepted_keys"],
         "labels": d["labels"],
+        "meta": _shot_meta(d),
         "summary": (f"후보 {d['n_candidates']}개"
                     + (f" ({', '.join(parts)})" if parts else "")
                     + f" · 원시 {d['n_raw_masks']}"
@@ -5749,6 +5767,7 @@ def engine_viewpoint(slug: str, gid: int, run_id: int,
         return {
             "candidates": d["candidates"],
             "rejected": d["rejected"],
+            "meta": _shot_meta(d),
             "summary": (f"후보 {d['n_candidates']}개"
                         + (f" ({', '.join(parts)})" if parts else "")
                         + f" · 원시 {d['n_raw_masks']}"

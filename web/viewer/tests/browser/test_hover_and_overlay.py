@@ -169,7 +169,7 @@ class StackMaskOverlayTest(BrowserTestCase):
     def counts(self):
         return self.page.evaluate("""() => ({
             box: document.querySelectorAll('.detview .box').length,
-            meta: ((document.querySelector('#tabs-stack .tabmeta')||{}).textContent||'').trim()
+            meta: ((document.querySelector('#vpsum-stack')||{}).textContent||'').trim()
         })""")
 
     def test_프레임으로_넘겨도_마스크가_남는다(self):

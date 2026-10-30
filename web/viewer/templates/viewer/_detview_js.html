@@ -1017,7 +1017,8 @@ window.initDetView = function (uid) {
       // 고친 기하도 판마다 따로다 — 안 가르면 프레임에서 고친 것이 합성본의
       // 저장에 실려 나간다 (P09 1단계와 같은 이야기)
       edits: {},
-      summary: d.summary || ''
+      summary: d.summary || '',
+      meta: d.meta || null
     };
     return shotState[key];
   }
@@ -1074,6 +1075,19 @@ window.initDetView = function (uid) {
 
   // `commit` 이 false 면 **그리기만** 바꾼다 (커서가 지나가는 미리보기).
   // 교정 상태와 저장 대상은 고른 판(`commit`)의 것으로 남는다.
+  // 왼쪽 칸 「이 시야」 상자를 판에 맞춰 다시 쓴다 (2026-10-30). `m` 이 없으면
+  // 검출이 없는 판이다 — 수와 분류를 비우고 `note` 만 적는다.
+  function paintMeta(m, note) {
+    var n = document.getElementById('vpn-' + uid),
+        c = document.getElementById('vpcls-' + uid),
+        r = document.getElementById('vpraw-' + uid),
+        t = document.getElementById('vpnote-' + uid);
+    if (n) n.textContent = m ? m.head : '';
+    if (c) c.textContent = m ? m.cls : '';
+    if (r) r.textContent = m ? m.raw : '';
+    if (t) { t.textContent = note || ''; t.hidden = !note; }
+  }
+
   function swapDet(s, commit) {
     if (!shotDets || !s) return;      // 판이 하나뿐이면 여기서 끝난다 (지금까지 그대로)
     var key = s.dataset.detkey || null;
@@ -1146,8 +1160,7 @@ window.initDetView = function (uid) {
       removed = new Set(); accepted = new Set();
       labels = {}; edits = {};
       curImage = '';
-      var meta0 = document.querySelector('#tabs-' + uid + ' .tabmeta');
-      if (meta0) meta0.textContent = '이 판에는 검출이 없습니다';
+      paintMeta(null, '이 판에는 검출이 없습니다');
       var cnt0 = document.getElementById('tabcount-' + uid);
       if (cnt0) cnt0.textContent = '0';
       sel.clear();
@@ -1163,11 +1176,9 @@ window.initDetView = function (uid) {
     labels = st.labels;
     edits = st.edits || (st.edits = {});
     curImage = st.image;
-    var meta = document.querySelector('#tabs-' + uid + ' .tabmeta');
     // **겹쳐 보는 중이면 그렇게 적는다.** 마스크가 보이는데 어느 이미지의 것인지
     // 말을 안 하면, 사람은 이 프레임에서 검출된 것으로 읽는다.
-    if (meta) meta.textContent = st.summary +
-      (overlay ? ' · 합성본의 검출을 겹쳐 봅니다' : '');
+    paintMeta(st.meta || null, overlay ? '합성본의 검출을 겹쳐 봅니다' : '');
     // 개체 수도 함께 간다. 아래 표(개체 목록)는 서버가 그린 판 그대로라 판을
     // 바꾸면 어긋나는데, 수까지 옛것으로 남으면 어긋난 줄도 모른다.
     var cnt = document.getElementById('tabcount-' + uid);
@@ -1260,8 +1271,11 @@ window.initDetView = function (uid) {
         shotState[curKey] = {
           cands: cands, rejects: rejects, removed: removed, accepted: accepted,
           labels: labels, edits: edits, image: curImage,
-          summary: (shotDets[curKey].summary || '')
+          summary: (shotDets[curKey].summary || ''),
+          meta: shotDets[curKey].meta || null
         };
+        // 오프라인 파일은 서버가 그린 요약이 비어 있다 — 여기서 채운다
+        if (shotDets[curKey].meta) paintMeta(shotDets[curKey].meta, '');
       }
     }
     // 초기 표시는 서버가 넣어 둔 src 그대로 두고 캡션만 맞춘다.

@@ -316,7 +316,9 @@
   main.wide .dvcenter .sgut:hover, main.wide .dvcenter .sgut.drag {
     background: var(--accent); opacity: .55;
   }
-  main.wide .layoutctl { display: flex; gap: 3px; margin-left: 10px; flex-shrink: 0; padding-bottom: 6px; }
+  /* 탭 줄 끝에 붙인다 — 예전에는 앞의 요약(`.tabmeta`)이 `margin-left:auto` 로 밀어
+     줬는데 그 요약이 왼쪽 칸으로 갔다(2026-10-30) */
+  main.wide .layoutctl { display: flex; gap: 3px; margin-left: auto; flex-shrink: 0; padding-bottom: 6px; }
   main.wide .layoutctl button {
     font: inherit; font-size: 13px; line-height: 1; padding: 3px 6px; cursor: pointer;
     background: transparent; color: inherit; border: 1px solid var(--line); border-radius: 5px;
@@ -1827,6 +1829,16 @@
                       font-variant-numeric: tabular-nums; }
   .dvside .vnums span, .dvside .vedits span { font-size: 10.5px; color: var(--dim); white-space: nowrap; }
   .dvside .vnums small { font-size: 10px; color: var(--dim); white-space: nowrap; }
+  /* 이 시야의 요약 (2026-10-30) — 머리줄에 후보 수를 굵게, 아래로 분류 · 원시 · 배율 */
+  .dvside .vpsum { flex: 0 0 auto; font-size: 11px; line-height: 1.45; color: var(--dim); }
+  .dvside .vphead { display: flex; align-items: baseline; gap: 6px; margin-bottom: 4px; }
+  .dvside .vphead .vpn { margin-left: auto; color: var(--accent); font-size: 13px;
+                         font-variant-numeric: tabular-nums; }
+  .dvside .vpcls { color: var(--fg); }
+  .dvside .vpcls:empty, .dvside .vpraw:empty { display: none; }
+  .dvside .vpnote { color: var(--warn); }
+  .dvside .vpnote[hidden] { display: none; }
+  .dvside .vpscale span { opacity: .8; }
   .dvside .cbars { display: flex; flex-direction: column; gap: 3px; }
   /* `.cbar` 의 `display: grid` 가 `[hidden]` 을 이긴다(063) — 같은 무게로 덮는다 */
   .dvside .cbar[hidden] { display: none; }
@@ -1858,6 +1870,17 @@
   .dvside .hintlist dd { margin: 0; min-width: 0; color: var(--fg); }
   .dvside .hintlist .cyc { margin: 0 3px; color: var(--dim); }
   .dvside .hintnote { margin: 4px 0 0 !important; font-size: 10.5px; color: var(--dim); }
+  /* 마우스 조작법은 **한 줄에 하나** (2026-10-30 · 사용자). 칸이 좁아 하는 일이
+     두 줄로 접히면 글쇠와 짝이 안 읽힌다 — 글자를 줄이고 접지 않는다. 칸보다
+     길면 끝을 줄인다(칸을 넓히면 다 나온다). 단축키 상자는 같은 클래스를
+     쓰지만 목록이 달라 뺀다 */
+  .dvside .mousehint:not(.keyhint) { font-size: 10px; line-height: 1.4; }
+  .dvside .mousehint:not(.keyhint) .hintlist { gap: 2px 6px; }
+  .dvside .mousehint:not(.keyhint) .hintlist dd {
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  .dvside .mousehint:not(.keyhint) kbd { font-size: 9.5px; padding: 0 3px; }
+  .dvside .mousehint:not(.keyhint) .hintnote { font-size: 9.5px; }
   .dvside kbd {
     display: inline-block; min-width: 1.5em; padding: 0 5px; margin: 0 1px;
     font: 600 10.5px/1.5 ui-monospace, "SF Mono", Menlo, monospace; text-align: center;

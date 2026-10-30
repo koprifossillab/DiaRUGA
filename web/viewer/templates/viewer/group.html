@@ -78,7 +78,7 @@
   .detview .donebar, .detview .layers { display: none; }
   /* 개체가 없으니 "개체 목록" 탭과 후보 수 표시도 의미가 없다.
      엔진 고르기(.engpick)는 남긴다 — 다른 엔진에는 검출이 있을 수 있다 */
-  .dettabs [data-pane="list"], .dettabs .tabmeta { display: none; }
+  .dettabs [data-pane="list"], .dvside .vpsum { display: none; }
 </style>
 {% endif %}
 {% if stack.detection.preview_only or base_det.preview_only %}
