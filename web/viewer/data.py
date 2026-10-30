@@ -4229,6 +4229,8 @@ def dataset_detail(slug: str) -> dict | None:
         "groups": groups,
         **summary,
         "class_bars": _class_bars(summary["class_counts"]),
+        # 분류 막대를 두 단으로 — 위에서 아래로 채우려면 줄 수를 알아야 한다
+        "class_bar_rows": (len(summary["class_counts"]) + 1) // 2,
         # 검토 완료 막대의 길이(%)
         "reviewed_pct": (round(100 * summary["reviewed_groups"] / summary["n_groups"])
                          if summary["n_groups"] else 0),
