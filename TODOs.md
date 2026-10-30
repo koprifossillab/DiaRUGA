@@ -149,6 +149,7 @@ DB 설계는 [devlog/20260730_P02_db-schema.md](devlog/20260730_P02_db-schema.md
       줄었는데 정답 밖 검출이 375~408 로 늘어 지금 val 로는 4차와 비교가 성립하지 않는다** — val 에 아직
       빠진 개체가 많다. 두 모델의 새 검출 502개를 표시하는 중이고(242 8.4 의 페이지 · db `marks_val41`),
       끝나면 val 에 더해 다섯 모델을 다시 잰다.
+      꾸러미는 이 장비 `~/projects/diatom/datasets/yolo-v4.1-seg` 와 NAS `/nfs/temp-share/DiaRUGA/datasets/yolo-v4.1-seg` 두 벌.
       **그 라벨은 DB 밖 파일에만 있다**(242 8.3 · 사용자 10-29) — 원본은 `devlog/assets/20261028_242_yolo4_val_fp_review.md`·
       `…_yolo41_train_fp_review.md`. **5차 꾸러미를 뽑기 전에 이 1,899개가 DB 에 들어왔는지 대조한다** —
       5차 검토에서 검출로 다시 나와 교정으로 들어오는 것이 정한 길이고, 빠진 것만 그때 반입한다.
