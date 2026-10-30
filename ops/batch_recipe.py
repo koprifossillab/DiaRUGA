@@ -6,6 +6,8 @@
     python batch_recipe.py --clear yolo-3차           # 자동으로 안 돈다
     python batch_recipe.py --areas ant yolo-3차       # 남극만 본다
     python batch_recipe.py --areas '' yolo-3차        # 권역 제한을 걷는다
+    python batch_recipe.py --exclude-obs Smear yolo-4차   # 관찰 이름표로 뺀다 (248)
+    python batch_recipe.py --exclude-obs '' yolo-4차      # 이름표 제한을 걷는다
     python batch_recipe.py --restore yolo-3차 '<json>'
 
 관리 화면(`/manage/`)의 `set_recipe` 와 같은 일을 하는 CLI 다. 화면이 있는데도
@@ -64,10 +66,12 @@ def main() -> int:
     ap.add_argument("--clear", metavar="묶음")
     ap.add_argument("--areas", nargs=2, metavar=("권역", "묶음"),
                     help="쉼표로 여럿. 빈 문자열이면 제한을 걷는다")
+    ap.add_argument("--exclude-obs", nargs=2, metavar=("이름표", "묶음"),
+                    help="이 관찰 이름표를 뺀다(Smear 등). 쉼표로 여럿. 빈 문자열이면 걷는다")
     ap.add_argument("--restore", nargs=2, metavar=("묶음", "JSON"))
     a = ap.parse_args()
 
-    if a.list or not any([a.show, a.clear, a.areas, a.restore]):
+    if a.list or not any([a.show, a.clear, a.areas, a.exclude_obs, a.restore]):
         for b in RunBatch.objects.filter(kind="detect").order_by("id"):
             show(b)
         return 0
@@ -101,6 +105,22 @@ def main() -> int:
             r[batch_scope.KEY] = areas
         else:
             r.pop(batch_scope.KEY, None)
+        b.recipe = r
+        b.save(update_fields=["recipe"])
+        show(b)
+        return 0
+
+    if a.exclude_obs:
+        raw, label = a.exclude_obs
+        b = find(label)
+        if not b.recipe:
+            raise SystemExit(f"{b.label} 은 조리법이 없다 — 이름표만 적을 수 없다")
+        r = dict(b.recipe)
+        names = [x for x in (s.strip() for s in raw.split(",")) if x]
+        if names:
+            r[batch_scope.EXCLUDE_OBS] = names
+        else:
+            r.pop(batch_scope.EXCLUDE_OBS, None)
         b.recipe = r
         b.save(update_fields=["recipe"])
         show(b)

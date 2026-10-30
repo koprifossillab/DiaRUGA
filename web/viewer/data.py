@@ -2207,7 +2207,7 @@ def _batches() -> tuple:
     return rb, recipe, {b: i for i, (b, _, _) in enumerate(rows)}
 
 
-def _follow(area, have, rb, recipe, order: dict):
+def _follow(area, have, rb, recipe, order: dict, obs_label=""):
     """칸이 빈 시야의 주 묶음.
 
     **전역 검토 대상이 이 시야의 권역을 다루면 그것을 따른다** — 검출이 아직 없어도
@@ -2222,7 +2222,9 @@ def _follow(area, have, rb, recipe, order: dict):
     기다리는 남극 시야(RS14-GC04 · `sam2-전수` 검출만 있다)가 SAM 편집 화면으로
     열렸다(10-28 시험이 잡았다).
     """
-    if rb is None or _batch_scope().allows(recipe, area):
+    # 관찰 이름표로도 본다(248) — 4차 조리법은 Smear 를 빼므로 Smear 의 새 관찰은 4차를 안
+    # 따라가고 검출이 있는 `sam2-전수` 로 간다
+    if rb is None or _batch_scope().allows(recipe, area, obs_label):
         return rb
     have = set(have) - {None}
     if not have:
@@ -2245,13 +2247,14 @@ def primary_batch_id(vp) -> int | None:
     # 시야 객체에 답을 붙여 두지 않는다 — 같은 객체를 쥔 채 검토 대상을 갈면
     # 옛 답이 남는다(시험이 그렇게 잡았다)
     rb, recipe, order = _batches()
-    if rb is None or _batch_scope().allows(recipe, None):
-        return rb                       # 권역을 안 가르는 조리법 — 물을 것이 없다
-    area = (Viewpoint.objects.filter(pk=vp.pk)
-            .values_list("slide__sample__locality__site__area", flat=True).first())
+    if rb is None or not _batch_scope().restricts(recipe):
+        return rb                       # 권역도 이름표도 안 가르는 조리법 — 물을 것이 없다
+    area, obs = (Viewpoint.objects.filter(pk=vp.pk)
+                 .values_list("slide__sample__locality__site__area",
+                              "slide__obs_label").first() or (None, None))
     have = set(Detection.objects.filter(viewpoint=vp, is_current=True)
                .values_list("run__batch_id", flat=True))
-    return _follow(area, have, rb, recipe, order)
+    return _follow(area, have, rb, recipe, order, obs or "")
 
 
 def primary_batch_map(*, slide=None, ids=None) -> dict:
@@ -2266,11 +2269,12 @@ def primary_batch_map(*, slide=None, ids=None) -> dict:
     if ids is not None:
         qs = qs.filter(id__in=list(ids))
     rows = list(qs.values_list("id", "batch_id",
-                               "slide__sample__locality__site__area"))
+                               "slide__sample__locality__site__area",
+                               "slide__obs_label"))
     rb, recipe, order = _batches()
-    loose = [v for v, b, _ in rows if b is None]
+    loose = [v for v, b, _, _ in rows if b is None]
     have = defaultdict(set)
-    if loose and rb is not None and not _batch_scope().allows(recipe, None):
+    if loose and rb is not None and _batch_scope().restricts(recipe):
         # 검토 대상이 권역을 가르는 조리법일 때만 검출을 물을 일이 있다
         dq = Detection.objects.filter(is_current=True)
         if slide is not None:
@@ -2280,8 +2284,8 @@ def primary_batch_map(*, slide=None, ids=None) -> dict:
         for vid, bid in dq.values_list("viewpoint_id", "run__batch_id").distinct():
             have[vid].add(bid)
     return {v: (b if b is not None
-                else _follow(area, have.get(v, ()), rb, recipe, order))
-            for v, b, area in rows}
+                else _follow(area, have.get(v, ()), rb, recipe, order, obs or ""))
+            for v, b, area, obs in rows}
 
 
 def frozen_batch_ids() -> set:

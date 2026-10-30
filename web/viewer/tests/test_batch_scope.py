@@ -58,6 +58,46 @@ class AllowedAreasTest(DiaRUGATestCase):
         self.assertEqual(batch_scope.why({"areas": ["ant"]}, "ant"), "")
 
 
+
+class ExcludeObsTest(DiaRUGATestCase):
+    """관찰 이름표로 뺀다 — `exclude_obs` (P29 6절 5 · 248). 권역만으로는 RS21 Smear 가 통과한다."""
+
+    R = {"backend": "yolo", "areas": ["ant"], "exclude_obs": ["Smear"]}
+
+    def test_적혀_있지_않으면_이름표를_안_본다(self):
+        """**옛 묶음은 아무것도 안 바뀌어야 한다** — 이름표를 안 넘겨도 돈다."""
+        self.assertTrue(batch_scope.allows({"areas": ["ant"]}, "ant"))
+        self.assertTrue(batch_scope.allows({"areas": ["ant"]}, "ant", "Smear"))
+        self.assertFalse(batch_scope.restricts({"backend": "yolo"}))
+
+    def test_적힌_이름표를_뺀다(self):
+        self.assertFalse(batch_scope.allows(self.R, "ant", "Smear"))
+        self.assertFalse(batch_scope.allows(self.R, "ant", " smear "))   # 대소문자·공백
+        self.assertTrue(batch_scope.allows(self.R, "ant", "Bulk"))
+
+    def test_이름표가_없는_관찰은_통과한다(self):
+        """빈 이름표는 "모름" 이 아니라 "이름표 없음" — 대부분의 관찰이 그렇다."""
+        self.assertTrue(batch_scope.allows(self.R, "ant", ""))
+
+    def test_이름표를_모르면_거른다(self):
+        """넘기는 것을 잊은 자리가 조용히 통과시키면 문이 아니다."""
+        self.assertFalse(batch_scope.allows(self.R, "ant"))
+        self.assertFalse(batch_scope.allows(self.R, "ant", None))
+        self.assertIn("이름표를 알 수 없다", batch_scope.why(self.R, "ant", "yolo-4차"))
+
+    def test_권역이_먼저_걸린다(self):
+        self.assertFalse(batch_scope.allows(self.R, "kr", ""))
+        self.assertIn("권역", batch_scope.why(self.R, "kr", "yolo-4차", ""))
+
+    def test_이유와_표에_이름표를_적는다(self):
+        why = batch_scope.why(self.R, "ant", "yolo-4차", "Smear")
+        self.assertIn("Smear", why)
+        self.assertIn("이름표", why)
+        self.assertEqual(batch_scope.why(self.R, "ant", "yolo-4차", ""), "")
+        self.assertIn("이름표 smear 빼고", batch_scope.label_for_plan(self.R))
+        self.assertTrue(batch_scope.restricts({"exclude_obs": ["Smear"]}))
+
+
 class SlideAreaTest(DiaRUGATestCase):
     """슬라이드에서 권역을 어떻게 읽는가 — **소속은 `Slide` 에 없다.**"""
 

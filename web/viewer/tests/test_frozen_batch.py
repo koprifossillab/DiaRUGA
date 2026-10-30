@@ -97,6 +97,28 @@ class FrozenBatchTest(DiaRUGATestCase):
         self.assertEqual(data.primary_batch_map(slide=self.w.slide)[self.loose_vp.pk],
                          sam.pk)
 
+    def test_검토_대상이_이름표로_빼면_검출이_있는_묶음으로(self):
+        """4차로 옮긴 뒤 Smear 의 새 관찰 — 4차 조리법이 이름표로 뺀다(248)."""
+        fx.add_other_engine(self.loose_vp, label="sam-smear", current=True)
+        sam = RunBatch.objects.get(label="sam-smear")
+        RunBatch.objects.filter(pk=self.rb.pk).update(
+            recipe={"areas": ["ant"], "exclude_obs": ["Smear"]})
+        self.assertEqual(data.primary_batch_id(self.loose_vp), self.rb.pk,
+                         "대조군 — 이름표가 없으면 검토 대상을 따른다")
+        type(self.w.slide).objects.filter(pk=self.w.slide.pk).update(obs_label="Smear")
+        self.assertEqual(data.primary_batch_id(self.loose_vp), sam.pk)
+        self.assertEqual(data.primary_batch_map(slide=self.w.slide)[self.loose_vp.pk], sam.pk)
+
+    def test_이름표만_가르는_조리법도_따진다(self):
+        """권역을 안 가르는 조리법은 "물을 것이 없다" 로 지름길을 탄다 — 이름표만 가르는 조리법이
+        그 지름길에 걸리면 Smear 가 4차로 간다."""
+        fx.add_other_engine(self.loose_vp, label="sam-smear2", current=True)
+        sam = RunBatch.objects.get(label="sam-smear2")
+        RunBatch.objects.filter(pk=self.rb.pk).update(recipe={"exclude_obs": ["Smear"]})
+        type(self.w.slide).objects.filter(pk=self.w.slide.pk).update(obs_label="Smear")
+        self.assertEqual(data.primary_batch_id(self.loose_vp), sam.pk)
+        self.assertEqual(data.primary_batch_map(slide=self.w.slide)[self.loose_vp.pk], sam.pk)
+
     def test_검토_대상이_권역을_다루면_검출이_없어도_따른다(self):
         """4차를 기다리는 남극 시야가 SAM 편집 화면으로 열리면 안 된다(RS14-GC04)."""
         # 다른 묶음을 먼저 쌓는다 — 쌓는 거들이 검토 대상의 검출에서 이미지를 얻는다
