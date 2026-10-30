@@ -180,6 +180,18 @@ class DedupeTest(SimpleTestCase):
         out = judge.dedupe([low, high])
         self.assertEqual(out, [high])
 
+    def test_YOLO_클래스가_붙은_큰_마스크는_집합체로_안_지운다(self):
+        """YOLO 는 한 개체를 통째로 낸 것과 그 조각을 함께 낸다 — 집합체 규칙을 걸면 온전한
+        개체가 지워질 수 있다(246). 대조군: 같은 모양이 SAM 이면 큰 쪽을 지운다."""
+        def make(**kw):
+            parent = dict(self.box(0, 0, 100, 100), **kw)
+            kids = [dict(self.box(5, 5, 40, 80), **kw), dict(self.box(55, 5, 40, 80), **kw)]
+            return parent, kids
+        parent, kids = make()
+        self.assertNotIn(parent, judge.dedupe([parent] + kids), "대조군 — SAM 이면 지운다")
+        parent, kids = make(engine_cls="rod", predicted_iou=0.8)
+        self.assertIn(parent, judge.dedupe([parent] + kids))
+
     def test_YOLO_클래스가_붙은_짝은_conf_가_높은_쪽을_남긴다(self):
         """같은 개체를 봉상·봉상 파편으로 둘 다 낸 짝 — 텍스처가 클래스를 정하면 안 된다(246).
         대조군: 같은 짝에 클래스가 없으면(SAM) 텍스처로 고른다."""
