@@ -15,6 +15,10 @@ AM22 는 이미 `아문젠해` 다.
 것을 덮으면 안 된다"). 남극(`area=ant`)의 그 코드만 본다. 지역이 없는 DB(시험 ·
 새로 만든 것)에서는 아무것도 안 한다.
 
+**번호는 0054 다** — 같은 날 어드민의 v0.39.0 이 `0053_candidate_engine_cls` 를
+먼저 냈다. 처음 0053 으로 짠 것을 그 뒤로 옮겼다(두 마이그레이션은 서로 다른
+테이블만 만진다).
+
 ## 되돌리기
 
 이 마이그레이션이 넣은 값 그대로인 행만 비운다. 그 사이 사람이 다른 값으로
@@ -43,7 +47,7 @@ def unfill(apps, schema_editor):
 class Migration(migrations.Migration):
 
     dependencies = [
-        ("viewer", "0052_runbatch_frozen_viewpoint_batch"),
+        ("viewer", "0053_candidate_engine_cls"),
     ]
 
     operations = [

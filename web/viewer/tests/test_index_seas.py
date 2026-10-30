@@ -203,10 +203,10 @@ class SiteLabelIsCodeTest(DiaRUGATestCase):
 
 
 class SeaMigrationTest(DiaRUGATestCase):
-    """0053 — 빈 칸만 채우고, 되돌릴 때는 자기가 넣은 값만 비운다."""
+    """0054 — 빈 칸만 채우고, 되돌릴 때는 자기가 넣은 값만 비운다."""
 
     def setUp(self):
-        self.mig = importlib.import_module("viewer.migrations.0053_site_region_seas")
+        self.mig = importlib.import_module("viewer.migrations.0054_site_region_seas")
         Site.objects.create(code="RS14", area="ant")
         Site.objects.create(code="RS21", area="ant", region="사람이 넣은 값")
         Site.objects.create(code="GC03", area="ant", name="Elephant Island")
