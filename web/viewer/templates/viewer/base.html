@@ -444,6 +444,10 @@
   /* 검토 완료 — 다른 배지(초록·주황)와 갈라져야 목록에서 한눈에 짚인다 */
   .badge.done { color: var(--danger); border-color: var(--danger); }
   .badge.warn { color: var(--warn); border-color: var(--warn); }
+  /* 시야 목록 표지의 주 묶음 — 088 의 머리줄 표시(`.batchtag`)와 같은 색이다.
+     같은 것(검출이 어느 묶음의 것인가)을 가리키는 표시가 화면마다 다르면 같은
+     것으로 안 읽힌다 */
+  .badge.vpbatch { color: var(--accent); border-color: var(--accent); }
   /* 분류 배지는 마스크 색을 그대로 쓴다 — 사진에서 파랗던 것이 목록에서도
      파래야 한다. 파편은 본체와 같은 색상, 연한 쪽이다.
      `on`(합성됨·N개 검출)은 분류가 아니라 일반 배지라 여기 섞지 않는다. */

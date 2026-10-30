@@ -4088,6 +4088,11 @@ def dataset_detail(slug: str) -> dict | None:
         if d["run__batch_id"] == prim.get(d["viewpoint_id"]):
             dets.setdefault(d["viewpoint_id"], d)
     reviewed = done_viewpoints(slide=slide)
+    # 표지마다 그 시야의 주 묶음 이름을 단다 — 시야마다 다르므로 머리줄에 전역 검토
+    # 대상 하나를 적으면 표지와 안 맞는다. 이름은 질의 하나로 한 번에 푼다(105).
+    names = dict(RunBatch.objects.filter(id__in=[b for b in set(prim.values())
+                                                 if b is not None])
+                 .values_list("id", "label"))
     # **이 묶음에 검출이 없는 시야** (P10 4단계). 목록에서도 세어 낸다 — 시야를
     # 하나씩 열어 보고서야 아는 것은 063 이 "소속을 잃은 행은 그냥 사라진다" 로
     # 배운 자리와 같다.
@@ -4122,6 +4127,10 @@ def dataset_detail(slug: str) -> dict | None:
             # 것이고, 차 있으면 **다른 묶음에는 있다** — 화면이 갈라 적는다.
             "missing": det is None,
             "elsewhere": elsewhere.get(vp.id, []),
+            # 시야의 주 묶음(`primary_batch_id`). 표지의 마스크·개수가 이 묶음의 것이고
+            # 누르면 열리는 검토 화면도 이 묶음이다. 없으면(칸이 비고 검토 대상도
+            # 그 권역을 안 다룬다) 빈 값 — 화면은 "검출 없음" 배지가 말한다
+            "batch": names.get(prim.get(vp.id), ""),
             "span_sec": round(vp.span_sec or 0, 1),
             "sharpest": vp.sharpest_frame.name if vp.sharpest_frame else None,
             "cover_rel": cover_rel,
@@ -4142,7 +4151,6 @@ def dataset_detail(slug: str) -> dict | None:
         "missing_groups": sum(1 for g in groups if g["missing"]),
         "missing_elsewhere": sum(1 for g in groups
                                  if g["missing"] and g["elsewhere"]),
-        "review_batch": review_batch_label(),
         # groups_*.json 은 파이프라인에서 빠졌다(P02 7단계). 파일 이름 대신
         # 시료가 무엇이고 어떤 배율로 찍혔는지를 보인다.
         "corr_thresh": slide.corr_thresh,
