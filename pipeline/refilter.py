@@ -82,6 +82,10 @@ def as_record(c: Candidate) -> dict:
         "elongation": c.elongation,
         "ellipse_iou": c.ellipse_iou,
         "solidity": c.solidity,
+        # 엔진 클래스 — 4차는 이것으로 유형을 정한다(judge). 칸을 모르는 옛 모델이면 빈 값
+        "engine_cls": getattr(c, "engine_cls", "") or "",
+        # 4차의 중첩 정리가 이것(YOLO conf)으로 고른다 (judge.dedupe)
+        "predicted_iou": c.predicted_iou,
     }
 
 

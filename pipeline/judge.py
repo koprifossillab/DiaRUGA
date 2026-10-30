@@ -8,7 +8,19 @@
 갈라 담을 때(P01 §5) 이 규칙은 가벼운 쪽에 있어야 한다.
 
 받는 레코드는 dict 다. 필요한 값: `shape_ok · major_um · texture · elongation ·
-ellipse_iou · solidity · bbox_xywh · area_px`.
+ellipse_iou · solidity · bbox_xywh · area_px` 와, 있으면 `engine_cls` · `predicted_iou`
+(4차의 중첩 정리가 conf 로 고른다 — `dedupe`).
+
+## 4차부터 유형은 YOLO 가 정한다 (P29 3절 · 6절 4 · 246)
+
+`engine_cls` 가 4차 클래스 일곱 중 하나면 **유형을 그것으로** 정하고, 여기서는 **크기·텍스처
+관문만** 건다. 형태 기준(신장비·타원 IoU·볼록성·원형 areolae)은 걸지 않는다 — 1~3차의 엔진 유형은
+YOLO 가 아니라 이 파일의 장단비 규칙이 붙였는데(P29 2절), 4차는 사람이 정한 유형으로 배웠으므로
+그 규칙을 덧대면 YOLO 가 원형 파편이라 한 것을 "원형기준미달" 로 떨어뜨린다. `other` 는 통과시키되
+유형을 비운다(미분류 — 화면의 회색).
+
+**빈 값이나 모르는 값(SAM · 1~3차의 `diatom`)은 지금까지의 규칙 그대로다.** 저장된 옛 판정이 다시
+계산해도 그대로여야 한다(`check_db` 1번).
 """
 
 # 판정 문턱의 기본값. segment_diatoms.py 의 argparse 와 DB 의 ThresholdSet 이
@@ -28,6 +40,17 @@ DEFAULTS = {
     "rod_min_solidity": 0.85,
 }
 FIELDS = tuple(DEFAULTS)
+
+# 4차 YOLO 가 내는 클래스 (`ops/export_yolo.py` 의 `SCHEMES["p29"]` 와 같은 이름 — `ClassDef.key`
+# 와 맞춰 두었다). `other` 는 통과하되 유형이 빈다.
+ENGINE_CLASSES = ("round", "round_frag", "rod", "rod_frag", "chaetoceros", "eucampia")
+ENGINE_OTHER = "other"
+
+
+def engine_class(r):
+    """레코드의 엔진 클래스가 4차 일곱 중 하나면 그 이름, 아니면 None(형태 규칙으로 간다)."""
+    ec = r.get("engine_cls") or ""
+    return ec if ec in ENGINE_CLASSES or ec == ENGINE_OTHER else None
 
 
 class Thresholds:
@@ -53,7 +76,8 @@ class Thresholds:
 
 def classify(r, args):
     """
-    (분류, 탈락사유). 분류가 None 이면 규조각 후보가 아니다.
+    (분류, 탈락사유). 분류가 None 이면 규조각 후보가 아니다. **빈 문자열은 통과한
+    미분류다** — 4차의 `other`(모듈 머리말). 부르는 쪽은 `is not None` 으로 가른다.
 
     텍스처가 1차 관문("규조각인가"), 형태가 2차("어떤 형태인가").
     둘 다 필요하다 — 텍스처만 쓰면 쇄설물 조각이, 형태만 쓰면 구조 없는
@@ -68,6 +92,11 @@ def classify(r, args):
         return None, "장축범위밖"
     if r.get("texture") is not None and r["texture"] < args.texture_min:
         return None, "텍스처부족"
+
+    # 4차 — 유형은 YOLO 가 정했다. 형태 기준을 덧대지 않는다(머리말)
+    ec = engine_class(r)
+    if ec is not None:
+        return ("" if ec == ENGINE_OTHER else ec), None
 
     e, iou, sol = r["elongation"], r["ellipse_iou"], r["solidity"]
     if e < args.round_max_elong:
@@ -147,6 +176,16 @@ def dedupe(selected):
     """
     keep = []
     for a in selected:
+        # **YOLO 클래스가 붙은 검출에는 집합체 규칙을 안 건다** (246 · 사용자 10-30). 이 규칙은
+        # SAM 의 "큰 마스크 = 여러 개체의 덩어리" 를 전제로 했는데, YOLO 는 한 개체를 통째로
+        # 낸 것과 그 조각을 함께 낸다 — 4.1차 11l · 25장에서 지워진 153개를 그림으로 보니 온전한
+        # 개체를 지우고 조각을 남긴 것과 진짜 덩어리를 지운 것이 그때그때 달랐다. 어느 규칙을
+        # 걸어도 일부는 틀리는데, **걸면 틀린 쪽이 탈락 펼침판으로 조용히 숨고, 끄면 둘 다
+        # 화면에 겹쳐 보여** 검토자가 그 자리에서 지운다. 산출은 검토를 마친 시야만 세므로
+        # (243) 겹친 채로 개체 수가 부풀지도 않는다
+        if engine_class(a) is not None:
+            keep.append(a)
+            continue
         kids = [b for b in selected
                 if b is not a and b["area_px"] < a["area_px"] and _cover(b, a) > 0.85]
         # 자식 2개 이상이 자기 면적의 절반 이상을 설명하면 개별 물체가 아니다.
@@ -155,7 +194,16 @@ def dedupe(selected):
         keep.append(a)
 
     # 거의 같은 마스크는 하나로 — 텍스처가 높은 쪽을 남긴다.
-    keep.sort(key=lambda r: -(r.get("texture") or 0))
+    #
+    # **YOLO 클래스가 붙은 검출이면 conf 가 높은 쪽이다** (246). YOLO 는 클래스마다 NMS 를 해서
+    # 같은 개체를 봉상과 봉상 파편으로 둘 다 낸다 — 텍스처로 고르면 남는 클래스를 엔진의 확신이
+    # 아니라 텍스처가 정한다. 4.1차 11l · 25장에서 클래스가 다른 짝 149개 중 78개가 그렇게 덜
+    # 확신한 쪽이 남았다(거의 다 완형 ↔ 파편). conf 는 `predicted_iou` 에 저장돼 있어 다시
+    # 계산해도 같은 답이 나온다(다시 거르는 자리들이 그 칸을 싣는다)
+    if any(engine_class(r) is not None for r in keep):
+        keep.sort(key=lambda r: -(r.get("predicted_iou") or 0))
+    else:
+        keep.sort(key=lambda r: -(r.get("texture") or 0))
     out = []
     for r in keep:
         if not any(_cover(r, k) > 0.8 and _cover(k, r) > 0.8 for k in out):
@@ -173,7 +221,7 @@ def apply(records, args):
     passed, rejected = [], []
     for r in records:
         cls, why = classify(r, args)
-        if cls:
+        if cls is not None:                 # "" 는 통과한 미분류다 (4차 `other`)
             r["cls"] = cls
             passed.append(r)
         else:

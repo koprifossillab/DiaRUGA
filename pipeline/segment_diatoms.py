@@ -257,6 +257,8 @@ class YoloGenerator:
         h, w = arr.shape[:2]
         out = []
         confs = r.boxes.conf.tolist()
+        clss = [int(v) for v in r.boxes.cls.tolist()]
+        names = getattr(r, "names", None) or {}
         # **상자만큼만 CPU 로 가져온다.** 마스크는 (N, 2208, 2752) 로 오는데
         # 개체는 그 안의 한 조각이다. 통째로 numpy 로 옮겨 `> 0.5`·`nonzero` 를
         # 하면 개체마다 6백만 화소를 세 번 훑는다 — 실측 15 ms/개체였다.
@@ -311,6 +313,9 @@ class YoloGenerator:
                 "area": area,
                 "predicted_iou": c,
                 "stability_score": c,
+                # **YOLO 가 낸 클래스** (246). 4차 가중치면 일곱 중 하나이고 판정이 그것으로
+                # 유형을 정한다(`judge.classify`). 1~3차는 `diatom` 하나라 형태 규칙으로 간다
+                "engine_cls": names[clss[i]] if names else "",
             })
         return out
 
@@ -555,6 +560,8 @@ def masks_to_records(masks, um_per_px=DEFAULT_UM_PER_PIXEL, gray=None,
                 "fill_ratio": round(fill, 3),
                 "predicted_iou": round(float(m["predicted_iou"]), 3),
                 "stability_score": round(float(m["stability_score"]), 3),
+                # 엔진이 낸 클래스 (YOLO 만 · 246). 판정이 이것으로 유형을 정한다(judge)
+                "engine_cls": m.get("engine_cls") or "",
                 "rle": None,  # 필요하면 별도 저장
             }
         )
@@ -774,6 +781,24 @@ def with_db_retry(fn, tries=6, base=0.7):
             time.sleep(wait)
 
 
+_HAS_ENGINE_CLS = None
+
+
+def engine_kw(c: dict) -> dict:
+    """후보 행에 엔진 클래스를 싣는 인자. **모델이 그 칸을 알 때만** (246 · 0053).
+
+    이 스크립트는 `/srv` 의 새 판이 돌지만 모델은 **파이프라인 이미지 안의 것**이다.
+    칸을 모르는 옛 이미지에 `engine_cls=` 를 넘기면 후보를 만드는 순간 `TypeError` 로
+    죽고, 폴러가 그 슬라이드에서 멈춘다(198 이 같은 모양이었다). 그래서 모델을 보고 고른다 —
+    옛 이미지에서는 칸이 `db_default` 로 비고, 판정은 형태 규칙으로 간다.
+    """
+    global _HAS_ENGINE_CLS
+    if _HAS_ENGINE_CLS is None:
+        _HAS_ENGINE_CLS = any(f.name == "engine_cls"
+                              for f in Candidate._meta.get_fields())
+    return {"engine_cls": c.get("engine_cls") or ""} if _HAS_ENGINE_CLS else {}
+
+
 def save_detection(payload: dict, img_path: Path, run: Run, iou_min: float,
                    keep_current: bool = False, slide=None):
     """검출 결과를 새 Detection 으로 쌓고 교정을 다시 맺는다.
@@ -853,6 +878,7 @@ def save_detection(payload: dict, img_path: Path, run: Run, iou_min: float,
                     polygon=c.get("polygon") or [],
                     passed=passed, cls=c.get("cls") or "",
                     reject=(c.get("reject") or "") if not passed else "",
+                    **engine_kw(c),
                     **{f: c.get(f) for f in NUM}))
         Candidate.objects.bulk_create(rows, batch_size=2000)
     # ── 첫 트랜잭션 끝. 여기서 쓰기 잠금을 놓는다 ──
@@ -950,7 +976,7 @@ def process(img_path: Path, gen, args, out_dir: Path, scale_log=None):
         passed, rejected = [], []
         for r in sized:
             cls, why = classify(r, args)
-            if cls:
+            if cls is not None:             # "" 는 통과한 미분류다 (4차 `other` · judge 머리말)
                 r["cls"] = cls
                 passed.append(r)
             else:

@@ -180,6 +180,29 @@ class DedupeTest(SimpleTestCase):
         out = judge.dedupe([low, high])
         self.assertEqual(out, [high])
 
+    def test_YOLO_클래스가_붙은_큰_마스크는_집합체로_안_지운다(self):
+        """YOLO 는 한 개체를 통째로 낸 것과 그 조각을 함께 낸다 — 집합체 규칙을 걸면 온전한
+        개체가 지워질 수 있다(246). 대조군: 같은 모양이 SAM 이면 큰 쪽을 지운다."""
+        def make(**kw):
+            parent = dict(self.box(0, 0, 100, 100), **kw)
+            kids = [dict(self.box(5, 5, 40, 80), **kw), dict(self.box(55, 5, 40, 80), **kw)]
+            return parent, kids
+        parent, kids = make()
+        self.assertNotIn(parent, judge.dedupe([parent] + kids), "대조군 — SAM 이면 지운다")
+        parent, kids = make(engine_cls="rod", predicted_iou=0.8)
+        self.assertIn(parent, judge.dedupe([parent] + kids))
+
+    def test_YOLO_클래스가_붙은_짝은_conf_가_높은_쪽을_남긴다(self):
+        """같은 개체를 봉상·봉상 파편으로 둘 다 낸 짝 — 텍스처가 클래스를 정하면 안 된다(246).
+        대조군: 같은 짝에 클래스가 없으면(SAM) 텍스처로 고른다."""
+        sure = dict(self.box(0, 0, 100, 100, texture=500.0),
+                    engine_cls="rod", predicted_iou=0.9)
+        unsure = dict(self.box(1, 1, 100, 100, texture=9000.0),
+                      engine_cls="rod_frag", predicted_iou=0.3)
+        self.assertEqual(judge.dedupe([sure, unsure]), [sure])
+        bare = [{k: v for k, v in r.items() if k != "engine_cls"} for r in (sure, unsure)]
+        self.assertEqual(judge.dedupe(bare)[0]["texture"], 9000.0)
+
 
 class ApplyTest(SimpleTestCase):
 
@@ -277,3 +300,70 @@ class CollapseBoxesTest(SimpleTestCase):
         kept2, rejected2 = judge.apply(out, judge.Thresholds())
         self.assertEqual(len(kept2) + len(rejected2), 1,
                          "접은 뒤에는 판정받은 수와 저장될 수가 같아야 한다")
+
+
+class EngineClassTest(SimpleTestCase):
+    """4차부터 유형은 YOLO 가 정한다 (P29 6절 4 · 246 · `judge.engine_class`).
+
+    **형태 기준을 덧대지 않는다** — 그러면 YOLO 가 파편이라 한 것이 "원형기준미달" 로
+    떨어진다. 크기·텍스처 관문은 그대로 건다. **빈 값·모르는 값(SAM · `diatom`)은 옛 규칙
+    그대로여야 한다** — 저장된 옛 판정이 다시 계산해도 같아야 한다(`check_db` 1번).
+    """
+
+    def setUp(self):
+        self.th = judge.Thresholds()
+
+    # 형태 규칙으로는 어디에도 안 드는 모양 — 신장비 1.7(원형과 봉상 사이의 빈 구간) · 낮은 IoU
+    BAD_SHAPE = dict(elongation=1.7, ellipse_iou=0.5, solidity=0.6)
+
+    def test_형태_규칙으로_떨어질_것도_YOLO_클래스면_그것으로_통과한다(self):
+        self.assertEqual(judge.classify(rec(**self.BAD_SHAPE), self.th),
+                         (None, "신장비범위밖"), "대조군 — 형태 규칙이면 떨어져야 한다")
+        for ec in judge.ENGINE_CLASSES:
+            with self.subTest(ec=ec):
+                r = rec(engine_cls=ec, **self.BAD_SHAPE)
+                self.assertEqual(judge.classify(r, self.th), (ec, None))
+
+    def test_원형_areolae_관문도_안_건다(self):
+        """원형의 areolae 문턱(1500)은 형태 규칙의 갈래다 — 4차 원형에는 안 건다."""
+        r = rec(texture=1200.0)
+        self.assertEqual(judge.classify(r, self.th), (None, "원형areolae부족"))
+        self.assertEqual(judge.classify(dict(r, engine_cls="round"), self.th),
+                         ("round", None))
+
+    def test_크기와_텍스처_관문은_건다(self):
+        self.assertEqual(judge.classify(rec(engine_cls="rod", major_um=5.0), self.th),
+                         (None, "장축범위밖"))
+        self.assertEqual(judge.classify(rec(engine_cls="rod", texture=10.0), self.th),
+                         (None, "텍스처부족"))
+        self.assertEqual(judge.classify(rec(engine_cls="rod", shape_ok=False), self.th),
+                         (None, "형태측정불가"))
+
+    def test_기타는_통과하되_유형이_빈다(self):
+        self.assertEqual(judge.classify(rec(engine_cls="other", **self.BAD_SHAPE), self.th),
+                         ("", None))
+
+    def test_기타도_통과분에_든다(self):
+        """빈 문자열을 "떨어졌다" 로 읽으면 기타가 통째로 사라진다 — `is not None` 으로 가른다."""
+        kept, rejected = judge.apply([rec(engine_cls="other", **self.BAD_SHAPE)], self.th)
+        self.assertEqual(len(kept), 1)
+        self.assertEqual(kept[0]["cls"], "")
+        self.assertEqual(rejected, [])
+
+    def test_빈_값이나_모르는_값은_옛_규칙_그대로다(self):
+        for ec in ("", None, "diatom", "Chaetoceros"):
+            with self.subTest(ec=ec):
+                self.assertEqual(judge.classify(rec(engine_cls=ec, **self.BAD_SHAPE), self.th),
+                                 (None, "신장비범위밖"))
+                self.assertEqual(judge.classify(rec(engine_cls=ec), self.th), ("round", None))
+
+    def test_클래스_이름이_내보내기와_같다(self):
+        """학습 자료의 클래스 이름(`export_yolo` p29)과 어긋나면 4차 가중치의 출력이 모르는 값이
+        되어 조용히 형태 규칙으로 간다."""
+        from pathlib import Path
+        path = Path(__file__).resolve().parents[3] / "ops" / "export_yolo.py"
+        src = path.read_text(encoding="utf-8")
+        start = src.index('    "p29": (')
+        names_src = src[start:src.index("]", start) + 1].split("(", 1)[1]
+        names = eval(names_src)                       # noqa: S307 — 저장소의 리터럴이다
+        self.assertEqual(list(judge.ENGINE_CLASSES) + [judge.ENGINE_OTHER], names)

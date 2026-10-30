@@ -963,6 +963,18 @@ class Candidate(models.Model):
     passed = models.BooleanField(default=False)
     cls = models.CharField(max_length=32, blank=True)
     reject = models.CharField(max_length=64, blank=True)
+    # **엔진이 낸 클래스** (P29 6절 4 · 0053). 4차부터 YOLO 가 일곱 클래스(`round` ·
+    # `round_frag` · `rod` · `rod_frag` · `chaetoceros` · `eucampia` · `other`)를 내고,
+    # `judge.classify` 가 그것으로 유형(`cls`)을 정한다. SAM 과 단일 클래스 가중치
+    # (`diatom`)는 비거나 모르는 값이라 지금까지처럼 형태 규칙으로 정한다.
+    #
+    # **`cls` 와 따로 둔다** — `cls` 는 판정의 캐시(문턱을 바꾸면 다시 계산된다)이고
+    # 이 칸은 지표처럼 **불변인 엔진 출력**이다. 다시 거를 때(`refilter`·문턱 화면·
+    # `check_db` 1번) 이것이 있어야 같은 판정이 나온다.
+    #
+    # `db_default` — 이 칸을 모르는 옛 파이프라인 이미지의 INSERT 가 그대로 돈다.
+    engine_cls = models.CharField(max_length=32, blank=True, default="",
+                                  db_default="")
 
     class Meta:
         constraints = [models.UniqueConstraint(fields=["detection", "mask_key"],
