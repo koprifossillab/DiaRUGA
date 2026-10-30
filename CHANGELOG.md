@@ -23,6 +23,17 @@
 
 ## 뷰어
 
+### `v0.39.0` — 10-30 (마이그레이션 `0053` · 더하기만 · **배포 대기**)
+
+**4차부터 판정이 YOLO 클래스로 유형을 정한다** ([246](devlog/20261030_246_judge-reads-yolo-class.md) · P29 6절 4)
+
+- **`Candidate.engine_cls`** — 엔진이 낸 클래스(`round` · `round_frag` · `rod` · `rod_frag` · `chaetoceros` · `eucampia` · `other`). 기존 후보는 빈 값이라 판정이 하나도 안 바뀐다
+- **`judge.classify`** — 4차 클래스면 유형을 그것으로 정하고 크기·텍스처 관문만 건다. `other` 는 미분류로 통과. SAM·1~3차는 옛 규칙 그대로
+- **중첩 정리** — YOLO 면 거의 같은 짝에서 conf 가 높은 쪽을 남기고, 집합체 규칙은 안 건다
+- 다시 거르는 자리(`refilter` · 문턱 화면 · `check_db` 1번)가 같은 판정을 낸다
+- **4차 클래스가 실제로 저장되려면 파이프라인 이미지를 새로 굽는다** — 이 판의 모델이 `/app` 에 있어야 한다. 그 전에는 `segment_diatoms` 가 칸을 비워 둔다(멈추지 않는다)
+- 운영 가중치 `11l-v41seg-1280`(4.1차 11l · [245](devlog/20261030_245_yolo41-weights-on-3060ti.md))을 `/data3/DiaRUGA/models/` 에 두었다
+
 ### `v0.38.0` — 10-30 (마이그레이션 `0052` · 더하기만 · 13:04 배포 · 뒤처리 없음)
 
 **시야마다 주 묶음 · 얼린 묶음 · 검토된 시야로 세는 산출** ([P31](devlog/20261028_P31_per-viewpoint-batch.md) · [P32](devlog/20261028_P32_per-viewpoint-batch-impl.md) · [243](devlog/20261028_243_per-viewpoint-batch.md))
