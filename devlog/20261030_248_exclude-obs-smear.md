@@ -3,14 +3,14 @@
 2026-10-30 · paleoadmin · [P29](20261021_P29_yolo-4th-round.md) 6절 5 · 앞의 것은 `batch_scope.py`(08-26 ·
 권역) · [243](20261028_243_per-viewpoint-batch.md)(주 묶음이 묶음의 범위를 따른다)
 
-`yolo-4차` 는 남극만 돌고(`areas: ["ant"]`) **RS21 Smear 는 뺀다** — Smear 는 SAM 으로만 센다(사용자 10-21).
+`yolo-4.1차` 는 남극만 돌고(`areas: ["ant"]`) **RS21 Smear 는 뺀다** — Smear 는 SAM 으로만 센다(사용자 10-21).
 권역만으로는 Smear 가 통과한다(남극 시료다). 그래서 조리법에 관찰 이름표를 뺄 칸을 두었다.
 
 ## 1. 한 것
 
 ```
 recipe = {"backend": "yolo", ..., "areas": ["ant"], "exclude_obs": ["Smear"]}
-python batch_recipe.py --exclude-obs Smear yolo-4차
+python batch_recipe.py --exclude-obs Smear yolo-4.1차
 ```
 
 - **`batch_scope.allows(recipe, area, obs_label)`** — 권역과 이름표(`Slide.obs_label`)를 함께 본다. 이름표는
@@ -44,4 +44,4 @@ python batch_recipe.py --exclude-obs Smear yolo-4차
 - **`segment_diatoms`·`batch_scope` 는 `/srv` 스크립트로 간다** — 뷰어 배포의 `sync_to_srv` 가 옮긴다. 파이프라인
   이미지는 안 굽는다(`/srv/DiaRUGA/scripts` 의 평평한 `batch_scope.py` 가 먼저 잡힌다)
 - **뷰어의 주 묶음은 뷰어 이미지에 들어 있다** — 뷰어 판이 나가야 한다. 마이그레이션은 없다
-- 그 뒤 `yolo-4차` 묶음을 만들 때 조리법에 `areas: ["ant"]` · `exclude_obs: ["Smear"]` 를 적는다(P29 6절 6)
+- 그 뒤 `yolo-4.1차` 묶음을 만들 때(가중치가 4.1차 11l 이라 이름도 4.1차 — 사용자 10-30) 조리법에 `areas: ["ant"]` · `exclude_obs: ["Smear"]` 를 적는다(P29 6절 6)

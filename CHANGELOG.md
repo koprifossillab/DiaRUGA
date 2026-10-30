@@ -27,7 +27,7 @@
 
 **묶음이 관찰 이름표로도 뺀다 — `exclude_obs`** ([248](devlog/20261030_248_exclude-obs-smear.md) · P29 6절 5)
 
-- 조리법에 `exclude_obs`(뺄 관찰 이름표) — `yolo-4차` 는 `areas: ["ant"]` · `exclude_obs: ["Smear"]` 로 남극을 돌되 RS21 Smear 는 뺀다. 이름표는 대소문자·공백을 안 가리고, **모르면 거르고 빈 이름표는 통과한다**
+- 조리법에 `exclude_obs`(뺄 관찰 이름표) — `yolo-4.1차` 는 `areas: ["ant"]` · `exclude_obs: ["Smear"]` 로 남극을 돌되 RS21 Smear 는 뺀다. 이름표는 대소문자·공백을 안 가리고, **모르면 거르고 빈 이름표는 통과한다**
 - `/srv` 스크립트 — `segment_diatoms` 가 이름표로 건너뛰고 이유에 적는다 · `batch_recipe.py --exclude-obs` · `batch_plan` 표에 "이름표 … 빼고"
 - **뷰어의 주 묶음도 같은 규칙** — 검토 대상을 4차로 옮긴 뒤 Smear 의 새 관찰은 `sam2-전수` 로 간다. 이름표만 가르는 조리법이 "물을 것이 없다" 지름길에 걸리던 구멍을 막았다
 - 아직 이 칸을 쓰는 묶음이 없다 — 화면·검출이 하나도 안 바뀐다
