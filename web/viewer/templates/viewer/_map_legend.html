@@ -53,13 +53,26 @@
       `outross` 는 로스해 틀 밖의 지점 — 확대 상태에서는 CSS 가 감춘다
       (`.mapstage.zoomRoss ~ .maplegend`). 마커와 같은 판정이다(`views._map_ctx`).
     {% endcomment %}
+    {% comment %}
+      **해역 → 지역 → 코어** (2026-10-30). 표·카드와 같은 겹이다(`data.by_sea` ·
+      `views._map_ctx` 의 `seas`). 해역이 하나도 없는 권역(한국)은 머리 없이
+      지역부터다. 해역 줄 안에서는 지역에 해역을 다시 적지 않고 이름만 쓴다.
+    {% endcomment %}
     <ul class="maptree">
-    {% for p in antmap.points %}
+    {% for z in antmap.seas %}
+    {% if not z.no_head %}
+      <li class="msea{% if z.ross_out %} outross{% endif %}" data-sea="{{ z.key }}">
+        <div class="mhead mzhead"><b>{% if z.no_sea %}<span class="dim">{{ z.sea }}</span>{% else %}{{ z.sea }}{% endif %}</b>
+          <span class="dim">지역 {{ z.sites|length }}</span></div>
+        <ul>
+    {% endif %}
+    {% for p in z.sites %}
       <li class="msite{% if p.ross_out %} outross{% endif %}" data-site="{{ p.code }}">
         <div class="mhead">
           <span class="mdot{% if not p.exact %} approx{% endif %}"></span>
           <b>{{ p.code }}</b>
-          <span class="dim">{{ p.label }}{% if not p.exact %} · {{ p.approx_note }}{% endif %}</span>
+          {% comment %} 이름표는 코드 하나다 — 해역은 위 머리에 있다 {% endcomment %}
+          {% if not p.exact %}<span class="dim">{{ p.approx_note }}</span>{% endif %}
         </div>
         <ul>
         {% for c in p.cores %}
@@ -75,6 +88,11 @@
         {% endfor %}
         </ul>
       </li>
+    {% endfor %}
+    {% if not z.no_head %}
+        </ul>
+      </li>
+    {% endif %}
     {% endfor %}
     </ul>
   </div>

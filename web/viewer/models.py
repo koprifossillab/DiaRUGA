@@ -182,7 +182,8 @@ class Site(models.Model):
         ordering = ["code"]
 
     def __str__(self):
-        return self.name or self.code
+        # 이름표는 어디서나 코드다 (사용자 2026-10-30 · `data.map_points`)
+        return self.code
 
 
 class Locality(models.Model):

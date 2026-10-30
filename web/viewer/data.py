@@ -861,7 +861,12 @@ def map_points(area: str | None = None,
 
         out.append({
             "code": site.code,
-            "label": site.region or site.name or site.code,
+            # **지역의 이름표는 어디서나 코드다** (사용자 2026-10-30 — "RS14-GC04
+            # 면 어디서나 그렇게 불려야 한다"). 예전에는 해역 → 이름 → 코드 순으로
+            # 골라 해역을 채우는 순간 "RS14" 가 "로스해" 로 바뀌었다. 해역은
+            # 해역 머리에서만 쓴다 (`by_sea`).
+            "label": site.code,
+            "sea": site.region,
             "x": round(x, 1), "y": round(y, 1),
             "exact": exact, "approx_note": note,
             "n_slides": len(slides),
@@ -3130,11 +3135,12 @@ def datasets(area: str | None = None) -> list[dict]:
             "label": slide.name,
             "image_dir": slide.image_dir,
             "corr_thresh": slide.corr_thresh,
-            "site": (site.region or site.name or site.code) if site else "",
-            # 화면에 내는 이름(`site`)과 주소·열쇠에 쓰는 코드는 다르다 —
-            # 지역 이름은 사람이 고칠 수 있고, 지점 페이지의 주소가 그때
-            # 따라 바뀌면 적어 둔 링크가 깨진다.
+            # 화면에 내는 이름표도 코드다(`map_points` 의 "label" 머리말).
+            # 칸이 둘로 남은 것은 옛 자리들이 `site` 를 읽기 때문이다.
+            "site": site.code if site else "",
             "site_code": site.code if site else "",
+            # 첫 화면이 해역 → 지역 → 지점으로 묶는 데 쓴다 (`by_sea`)
+            "sea": site.region if site else "",
             "core": loc.code if loc else "",
             "sample_code": sample.code if sample else "",
             "depth_cm": sample.depth_cm if sample else None,
@@ -3163,7 +3169,9 @@ def area_tabs(selected: str | None = None) -> dict:
     **고른 값을 여기서 정한다.** 화면이 `?area=` 를 그대로 믿으면 없는 값이
     들어왔을 때 빈 목록이 나오고, 왜 비었는지가 화면에 안 보인다.
 
-    **아무것도 주지 않으면 `전체` 다.** 한때는 "자료가 있는 첫 권역" 이었는데,
+    **아무것도 주지 않으면 `전체` 다.** (주소에 인자가 하나도 없는 첫 화면은
+    `views.index` 가 남극을 골라 넘긴다 — 사용자 2026-10-30. 이 함수의 기본은
+    그대로다.) 한때는 "자료가 있는 첫 권역" 이었는데,
     그러면 맨 처음 열리는 화면이 이미 한 번 걸러진 것이 된다 — 무엇이 빠졌는지
     모른 채 본다. 특히 지역이 안 붙은 슬라이드는 어느 권역에도 없어서, 새로
     반입된 것이 첫 화면에서 통째로 안 보였다.
@@ -3289,6 +3297,96 @@ def datasets_by_locality(rows: list[dict], with_hidden: bool = False) -> list[di
     return out
 
 
+def datasets_by_site(groups: list[dict]) -> list[dict]:
+    """지점 묶음(`datasets_by_locality`)을 지역 아래로 한 겹 더 묶는다.
+
+    층이 권역 → 지역 → 지점 → 시료다. 지점 묶음만 있을 때는 RS21 의 코어 넷이
+    지역 머리 없이 따로따로 놓여 같은 지역인지가 머리줄의 작은 글자에만
+    남았다. 지도 옆 나무는 이미 지역 → 지점이라 두 보기의 층이 갈렸다.
+
+    **지점 묶음을 다시 만들지 않고 감싸기만 한다.** 숨김 거르기·합계 규칙은
+    그쪽에 있고, 지도 오른쪽 칸이 같은 지점 묶음을 그대로 쓴다.
+
+    지역 머리의 숫자도 `datasets_total()` 로 낸다 — 숨긴 것까지 센 값이라
+    지점 머리줄을 더한 것과 맞는다. **지역이 한 지점뿐이어도 머리를 둔다** —
+    어느 지역은 머리가 있고 어느 지역은 없으면 층이 줄마다 달라 보인다.
+
+    줄 순서가 이미 지역 → 지점이라(`datasets()`) 이어 놓인 것을 묶기만 한다.
+    지역이 안 붙은 지점은 "지역 미지정" 하나로 모인다.
+    """
+    out, at = [], {}
+    for g in groups:
+        code = g["site_code"]
+        s = at.get(code)
+        if s is None:
+            s = at[code] = {
+                # 지점 열쇠(`<지역>/<지점>`)와 겹치지 않게 머리를 붙인다 —
+                # 여닫은 상태를 같은 목록에 적는다.
+                "key": f"site:{code}",
+                "site_code": code,
+                "site": g["site"],
+                # 지점 묶음에는 줄이 늘 하나 이상 있다(숨겨도 `all_rows` 에 남는다)
+                "sea": g["all_rows"][0].get("sea", ""),
+                "no_site": not code,
+                "localities": [],
+            }
+            out.append(s)
+        s["localities"].append(g)
+    for s in out:
+        s["totals"] = datasets_total(
+            [r for g in s["localities"] for r in g["all_rows"]])
+        s["n"] = sum(g["n"] for g in s["localities"])
+        s["n_hidden"] = sum(g["n_hidden"] for g in s["localities"])
+    return out
+
+
+SEA_NONE = "해역 미정"
+
+
+def by_sea(sites: list[dict], sea=lambda s: s["sea"]) -> list[dict]:
+    """지역을 해역(`Site.region`)으로 한 겹 더 묶는다. 표·카드·지도 나무가 같이 쓴다.
+
+    남극 지역은 수가 늘면서 로스해에만 넷이 됐다 — 지역 코드가 해역을 말하지
+    않으므로(RS·AM·WAP·GC) 코드순으로 늘어놓으면 같은 바다의 것이 흩어진다.
+    **해역은 새 칸이 아니라 `Site.region` 이다** — 원래 그 뜻의 칸이다(모델
+    머리말 "로스해 / 웨델해 …"). 비어 있던 것은 마이그레이션 0053 이 채웠다.
+
+    **해역 순서는 처음 나온 순서**(지역 코드순으로 훑어 처음 만난 순)이고 같은
+    해역의 지역은 이어 붙는다 — 코드가 떨어져 있어도(GC03 · WAP13) 한 머리에
+    모인다. **해역이 빈 지역은 맨 끝 "해역 미정" 하나로** 모은다 — 빠지면 목록에서
+    사라진다.
+
+    **모든 지역의 해역이 비면 이 겹을 두지 않는다**(`None`). 한국 탭이 그렇다 —
+    북평분지는 육상이라 해역이 없고, 머리 하나가 전부를 덮으면 접는 일만 는다.
+    """
+    if not any(sea(s) for s in sites):
+        return None
+    out, at = [], {}
+    for s in sites:
+        name = sea(s) or ""
+        g = at.get(name)
+        if g is None:
+            g = at[name] = {"key": f"sea:{name}", "sea": name or SEA_NONE,
+                            "no_sea": not name, "sites": []}
+            out.append(g)
+        g["sites"].append(s)
+    out.sort(key=lambda g: g["no_sea"])          # 안정 정렬 — 빈 것만 끝으로
+    return out
+
+
+def datasets_by_sea(sites: list[dict]) -> list[dict] | None:
+    """표·카드의 해역 머리. 숫자는 지역 머리와 같은 규칙(`datasets_total`)이다."""
+    seas = by_sea(sites)
+    for g in seas or []:
+        rows = [r for s in g["sites"] for lg in s["localities"]
+                for r in lg["all_rows"]]
+        g["totals"] = datasets_total(rows)
+        g["n"] = sum(s["n"] for s in g["sites"])
+        g["n_hidden"] = sum(s["n_hidden"] for s in g["sites"])
+        g["n_loc"] = sum(len(s["localities"]) for s in g["sites"])
+    return seas
+
+
 # --- 산출 비교 (202) ---------------------------------------------------------
 def _slide_head(slide: Slide) -> dict:
     """비교 표의 열 머리 하나. 목록의 행과 같은 열쇠를 쓴다(`datasets`)."""
@@ -3298,7 +3396,7 @@ def _slide_head(slide: Slide) -> dict:
     return {
         "slug": slide.slug,
         "label": slide.name,
-        "site": (site.region or site.name or site.code) if site else "",
+        "site": site.code if site else "",        # 이름표는 코드 (`map_points`)
         "site_code": site.code if site else "",
         "core": loc.code if loc else "",
         "sample_code": sample.code if sample else "",
@@ -3935,7 +4033,7 @@ def locality_detail(site_code: str, loc_code: str,
         }
     return {
         "site_code": site.code,
-        "site_label": site.region or site.name or site.code,
+        "site_label": site.code,                  # 이름표는 코드 (`map_points`)
         "site": site,
         # 템플릿이 `core` 라는 이름으로 받는다 — 지점 하나를 가리키는 말이라
         # 뜻은 같다. 화면 글자는 "지점" 이다.
@@ -4219,8 +4317,7 @@ def dataset_detail(slug: str) -> dict | None:
         # groups_*.json 은 파이프라인에서 빠졌다(P02 7단계). 파일 이름 대신
         # 시료가 무엇이고 어떤 배율로 찍혔는지를 보인다.
         "corr_thresh": slide.corr_thresh,
-        "site": (slide.site.region or slide.site.name
-                 or slide.site.code) if slide.site else "",
+        "site": slide.site.code if slide.site else "",   # 이름표는 코드 (`map_points`)
         "core": slide.locality.code if slide.locality else "",
         "sample_code": slide.sample.code if slide.sample_id else "",
         "depth_cm": slide.depth_cm,

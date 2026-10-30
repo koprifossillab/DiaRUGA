@@ -65,6 +65,9 @@
   }
   var saved = null;
   try { saved = localStorage.getItem(KEY); } catch (e) { saved = null; }
+  // 첫 화면(`#dsview[data-first]` · index.html)은 기억과 상관없이 남극 전체다
+  var dv = document.getElementById('dsview');
+  if (dv && dv.dataset.first) saved = null;
   apply(saved === 'ross' ? 'ross' : 'all');
   bar.addEventListener('click', function (e) {
     var b = e.target.closest('button[data-zoom]');
@@ -142,6 +145,10 @@
         a.classList.toggle('mhid', gone);
       });
     });
+    // 해역 머리는 그 안의 지역이 다 감춰지면 함께 감춘다
+    wrap.querySelectorAll('.maptree .msea[data-sea]').forEach(function (sea) {
+      sea.classList.toggle('mhid', !sea.querySelector('.msite:not(.mhid)'));
+    });
     var lbl = document.getElementById('mapfilter-n');
     if (lbl) lbl.textContent = n ? '감춤 ' + n + '장' : '';
     // 고른 코어가 통째로 감춰졌으면 보이는 첫 코어로 옮긴다
@@ -195,6 +202,10 @@
   }
   var saved = null;
   try { saved = localStorage.getItem(PICK); } catch (e) { saved = null; }
+  // 첫 화면은 정해 둔 코어(RS14-GC04)를 고른다 — 기억은 덮지 않는다. 그 코어가
+  // 없거나 감춰졌으면 `pick` 이 보이는 첫 코어로 물러난다.
+  var dv = document.getElementById('dsview');
+  if (dv && dv.dataset.first) saved = dv.dataset.firstCore;
   pick(saved);
   apply(load());
   box.addEventListener('change', function (e) {

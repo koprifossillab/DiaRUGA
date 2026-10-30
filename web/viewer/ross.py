@@ -451,7 +451,6 @@ def context(sites: list[dict]) -> dict:
             pts.append({
                 "label": code, "x": round(x, 1), "y": round(y, 1),
                 "exact": c["exact"], "approx_note": s["approx_note"],
-                "site": s["label"],
                 "n_slides": c["n_slides"], "n_viewpoints": c["n_viewpoints"],
                 "water_depth_m": c.get("water_depth_m"),
                 "slug": c["slides"][0]["slug"],

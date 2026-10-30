@@ -90,10 +90,29 @@ def _with_hidden(request) -> bool:
     return request.GET.get("hidden") == "1"
 
 
+# 인자 없이 여는 첫 화면 (사용자 2026-10-30): 남극 · 지도 · 남극 전체 ·
+# RS14-GC04. 코어 열쇠는 지도 나무의 `data-core`(`<지역>-<지점>`)다.
+FIRST_AREA = "ant"
+FIRST_CORE = "RS14-GC04"
+
+
+def _no_head(items: list, field: str) -> list:
+    """해역 겹이 없을 때(`data.by_sea` 가 None) 머리 없는 묶음 하나로 감싼다 —
+    템플릿이 겹이 있든 없든 같은 고리 하나로 돈다."""
+    return [{"key": None, "no_head": True, field: items}]
+
+
 def index(request):
     # 권역(한국·남극)은 `?area=` 로 고른다. 고르는 일을 data.area_tabs() 에 맡겨
     # 없는 값이 들어와도 빈 화면이 되지 않게 한다.
-    area = data.area_tabs(request.GET.get("area"))
+    #
+    # **주소에 아무것도 없으면 첫 화면이다** — 늘 남극 · 지도 · 남극 전체 ·
+    # RS14-GC04 로 연다. 기억해 둔 보기 방식·지도 범위·고른 코어보다 앞선다
+    # (사용자 결정 2026-10-30). 권역 탭·숨김 토글은 주소에 `area` 를 싣고
+    # 가므로 화면 안에서 고른 것은 그대로 돈다 — "전체" 는 `?area=all` 로 간다.
+    # 보기 방식·범위·코어는 화면이 정하므로 `first` 표시만 내려보낸다.
+    first = not request.GET
+    area = data.area_tabs(FIRST_AREA if first else request.GET.get("area"))
     with_hidden = _with_hidden(request)
     rows = data.datasets(area["selected"])
     shown = [r for r in rows if with_hidden or not r["hidden"]]
@@ -101,13 +120,21 @@ def index(request):
     # 한국 EPSG:5179) 섞인 것을 한 지도에 올릴 수가 없다. 억지로 하나를 고르면
     # 다른 권역의 시료가 조용히 빠지거나 엉뚱한 자리에 찍힌다.
     show_map = not area["is_all"]
+    groups = data.datasets_by_locality(rows, with_hidden)
+    sites = data.datasets_by_site(groups)
     return render(request, "viewer/index.html", {
         # **보이는 것만.** 합계 줄의 "N장" 이 이것으로 센다 — 화면에 없는 장을
         # 세면 줄을 세어 봐도 안 맞는다.
         "datasets": shown,
         # 표·카드 둘 다 코어로 묶어 낸다. 코어가 분석의 단위이고(깊이에 따른
         # 변화가 목적이다) 슬라이드가 늘수록 평평한 목록은 못 읽는다.
-        "groups": data.datasets_by_locality(rows, with_hidden),
+        # 지도 오른쪽 칸은 지점 묶음을 그대로 쓴다(코어를 골라 그 상자를 낸다).
+        "groups": groups,
+        # 표·카드는 그 위에 해역 → 지역 머리를 둔다 — 지도 옆 나무와 같은 겹이다.
+        # 해역이 하나도 없는 권역(한국)은 해역 머리 없이 지역부터다.
+        "seas": data.datasets_by_sea(sites) or _no_head(sites, "sites"),
+        "first": first,
+        "first_core": FIRST_CORE,
         "area": area,
         "show_map": show_map,
         # **합계만은 숨긴 것까지 센다** — 토글이 숫자를 흔들면 안 된다.
@@ -142,7 +169,9 @@ def _map_ctx(area: str, pts: list) -> dict:
     크기가 되도록 `mark` 배율로 키운다. 이 값을 잘못 주면 마커가 안 보이거나
     지도를 덮는다.
     """
-    common = {"points": pts, "any_approx": any(not q["exact"] for q in pts)}
+    common = {"points": pts, "any_approx": any(not q["exact"] for q in pts),
+              # 나무는 표와 같은 겹(해역 → 지역 → 지점)이다 — `data.by_sea`
+              "seas": data.by_sea(pts) or _no_head(pts, "sites")}
     if area == "kr":
         x, y, w, h = korea.VIEWBOX
         return {
@@ -172,6 +201,8 @@ def _map_ctx(area: str, pts: list) -> dict:
         for c in q["cores"]:
             c["ross_out"] = not ross.in_frame(c["x"], c["y"])
         q["ross_out"] = all(c["ross_out"] for c in q["cores"]) if q["cores"] else True
+    for g in common["seas"]:
+        g["ross_out"] = all(q["ross_out"] for q in g["sites"])
     return {
         **common, "kind": "ant",
         "land": antarctica.LAND,
@@ -950,7 +981,6 @@ def dataset_edit(request, slug):
                 "site_code": sm.locality.site.code,
                 "loc_code": sm.locality.code,
                 "code": sm.code,
-                "label": sm.locality.site.region or sm.locality.site.name or "",
                 "n_slides": sm.slides.live().count(),
             })
         # 같은 시료의 다른 관찰이 이미 어딘가 붙어 있으면 그것이 답이다.
