@@ -327,7 +327,7 @@ class CountReviewedOnlyTest(DiaRUGATestCase):
 
     def test_표지는_주_묶음의_판이다(self):
         """시야 목록의 표지 — 누르면 열리는 검토 화면과 같은 판이어야 한다."""
-        _masks, n_kept = data._kept_masks(self.w.slide)
+        _masks, n_kept, _counted = data._kept_masks(self.w.slide)
         self.assertEqual(n_kept.get(self.answer_vp.pk), 3)     # 3차 정답
         self.assertEqual(n_kept.get(self.covered_vp.pk), 2)    # 4차
 

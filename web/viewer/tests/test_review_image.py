@@ -251,7 +251,7 @@ class SummaryCountsOneImageTest(DiaRUGATestCase):
 
     def test_표지_마스크도_대표에서만_온다(self):
         fx.add_frame_detections(self.w.vp)
-        masks, n_kept = data._kept_masks(self.w.slide)
+        masks, n_kept, _counted = data._kept_masks(self.w.slide)
         self.assertEqual(n_kept[self.w.vp.pk], 3,
                          "표지의 개체 수가 프레임만큼 부풀었다")
 

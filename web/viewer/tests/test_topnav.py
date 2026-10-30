@@ -132,7 +132,8 @@ class DatasetPageLinksTest(DiaRUGATestCase):
             reverse("dataset", args=[self.w.slide.slug])).content.decode()
 
     def test_셋이_제목_줄에_함께_있다(self):
-        m = re.search(r'<span class="pagelinks">.*?</span>', self.html, re.S)
+        # 밑줄 링크(`.pagelinks`)를 버튼 묶음으로 바꿨다 (2026-10-30)
+        m = re.search(r'<nav class="pagebtns"[^>]*>.*?</nav>', self.html, re.S)
         self.assertIsNotNone(m, "제목 줄에 링크 묶음이 없다")
         block = m.group(0)
         # **시야 목록에서만 "슬라이드" 를 붙인다** (사용자 요청) — 옆의 둘과

@@ -2916,20 +2916,29 @@ ORDER BY rep.viewpoint_id, c.area_px DESC
 """
 
 
-def _kept_masks(slide: Slide) -> tuple[dict[int, list[dict]], dict[int, int]]:
-    """시야 번호(pk) → (표지에 그릴 마스크, 남는 개체 수). 질의 하나.
+def _kept_masks(slide: Slide) -> tuple[dict[int, list[dict]], dict[int, int],
+                                        dict[int, int]]:
+    """시야 번호(pk) → (표지에 그릴 마스크, 남는 것 전부의 수, 그중 세는 분류의 수).
+    질의 하나.
 
     **개수는 마스크 수가 아니다.** 폴리곤이 점 셋 미만이면 그릴 수 없어 마스크를
     안 만드는데(`mask_points` 와 같은 문턱), 그 개체도 화면에는 세어져야 한다.
+
+    셋째는 표지의 "개체 n" 이다 — 목록 표의 "검출" 칸처럼 파편·미분류를 뺀다
+    (`counted_classes`). 남는 것 전부("전체 n")와 나란히 놓는다(2026-10-30 · 사용자).
     """
     masks: dict[int, list[dict]] = {}
     n_kept: dict[int, int] = {}
+    n_counted: dict[int, int] = {}
+    counted = {c["key"] for c in counted_classes()}
     prim = {str(v): b for v, b in primary_batch_map(slide=slide).items()
             if b is not None}
     with connection.cursor() as cur:
         cur.execute(_COVER_SQL, [json.dumps(prim), slide.id])
         for vp_id, poly, cls in cur.fetchall():
             n_kept[vp_id] = n_kept.get(vp_id, 0) + 1
+            if cls in counted:
+                n_counted[vp_id] = n_counted.get(vp_id, 0) + 1
             p = json.loads(poly) if poly else []
             if len(p) < 6:
                 continue
@@ -2937,7 +2946,7 @@ def _kept_masks(slide: Slide) -> tuple[dict[int, list[dict]], dict[int, int]]:
                 {"points": " ".join(f"{p[i]},{p[i + 1]}"
                                     for i in range(0, len(p) - 1, 2)),
                  "cls": cls})
-    return masks, n_kept
+    return masks, n_kept, n_counted
 
 
 def _summary_rows(where: str, params: list) -> dict[int, dict]:
@@ -4046,17 +4055,45 @@ def slide_tiles(slide: Slide) -> dict:
     n = len(tiles)
     done = sum(1 for t in tiles if t["reviewed"])
     summary = _slide_summary(slide)
-    # **분류별 막대** (230 · 사용자: "간단한 통계니까 막대그래프 같은 걸"). 길이는
-    # 가장 많은 분류에 대한 비율이고, 색은 마스크 색 그대로다 — 사진에서
-    # 파랗던 것이 막대에서도 파래야 한다(`.badge.rod` 와 같은 이유).
-    colors = {r["key"]: r["color"] for r in _class_rows()}
-    top = max((c["n"] for c in summary["class_counts"]), default=0)
-    bars = [{**c, "color": colors.get(c["key"]) or "",
-             "pct": round(100 * c["n"] / top) if top else 0}
-            for c in summary["class_counts"]]
     return {"tiles": tiles, "n": n, "done": done,
             "pct": round(100 * done / n) if n else 0,
-            "class_bars": bars, **summary}
+            "class_bars": _class_bars(summary["class_counts"]), **summary}
+
+
+def _class_bars(class_counts: list[dict]) -> list[dict]:
+    """**분류별 막대** (230 · 사용자: "간단한 통계니까 막대그래프 같은 걸"). 길이는
+    가장 많은 분류에 대한 비율이고, 색은 마스크 색 그대로다 — 사진에서
+    파랗던 것이 막대에서도 파래야 한다(`.badge.rod` 와 같은 이유).
+
+    검토 화면 옆 칸(`slide_tiles`)과 시야 목록(`dataset_detail`)이 함께 쓴다 —
+    같은 슬라이드의 막대가 두 화면에서 달라지면 안 된다.
+    """
+    colors = {r["key"]: r["color"] for r in _class_rows()}
+    top = max((c["n"] for c in class_counts), default=0)
+    return [{**c, "color": colors.get(c["key"]) or "",
+             "pct": round(100 * c["n"] / top) if top else 0}
+            for c in class_counts]
+
+
+def _vp_facets(groups: list[dict]) -> dict:
+    """시야 목록 거르기 줄의 칩마다 걸리는 시야 수 (2026-10-30 · 사용자).
+
+    칩이 표지의 배지와 같은 말을 쓴다 — 검토 완료 · 검출 있음/없음 · 다른 묶음 ·
+    주 묶음. "합성됨" 은 뺐다 — 싱글턴이 아니면 전부 합성되어 가르는 것이 없다. **숫자를 서버가 센다** — 거르기는 화면에서 하지만 칩에
+    붙는 수는 처음부터 맞아야 하고, 시험이 JS 없이 읽을 수 있다.
+    """
+    n = len(groups)
+    rev = sum(1 for g in groups if g["reviewed"])
+    det = sum(1 for g in groups if not g["missing"])
+    away = sum(1 for g in groups if g["missing"] and g["elsewhere"])
+    return {
+        "all": n,
+        "rev": {"yes": rev, "no": n - rev},
+        "det": {"yes": det, "no": n - det, "away": away},
+        # 주 묶음이 둘 이상일 때만 화면이 칩을 낸다 — 하나면 고를 것이 없다
+        "batches": sorted(Counter(g["batch"] for g in groups if g["batch"]).items(),
+                          key=lambda kv: (-kv[1], kv[0])),
+    }
 
 
 def dataset_detail(slug: str) -> dict | None:
@@ -4067,7 +4104,7 @@ def dataset_detail(slug: str) -> dict | None:
     # **개체를 dict 로 만들지 않는다** (060). 이 화면이 개체에서 쓰는 것은
     # 표지에 얹을 마스크와 그 수뿐인데, 예전에는 시야마다 `detection_for_viewpoint`
     # 로 후보를 전부 만들어(이 슬라이드 11,048개) 그중 370개를 그렸다.
-    cover_masks, n_kept = _kept_masks(slide)
+    cover_masks, n_kept, n_counted = _kept_masks(slide)
     # **검토 대상 묶음의 것만**, 그리고 시야마다 하나 (P10 1단계). 프레임별
     # 검출이 올라오면 한 시야에 여럿이라 dict 가 아무거나 집는다 — 합성본을
     # 먼저 놓아 `representative_detection` 과 같은 것을 고르게 한다.
@@ -4138,9 +4175,11 @@ def dataset_detail(slug: str) -> dict | None:
             "masks": masks,
             "has_stack": st is not None,
             "n_detected": n_kept.get(vp.id, 0) if det else None,
+            "n_counted": n_counted.get(vp.id, 0) if det else None,
             "reviewed": vp.id in reviewed,
         })
 
+    summary = _slide_summary(slide)
     return {
         "slug": slug,
         "label": slide.name,
@@ -4151,6 +4190,7 @@ def dataset_detail(slug: str) -> dict | None:
         "missing_groups": sum(1 for g in groups if g["missing"]),
         "missing_elsewhere": sum(1 for g in groups
                                  if g["missing"] and g["elsewhere"]),
+        "facets": _vp_facets(groups),
         # groups_*.json 은 파이프라인에서 빠졌다(P02 7단계). 파일 이름 대신
         # 시료가 무엇이고 어떤 배율로 찍혔는지를 보인다.
         "corr_thresh": slide.corr_thresh,
@@ -4162,7 +4202,11 @@ def dataset_detail(slug: str) -> dict | None:
         "sample_kind": slide.sample_kind,
         "um_per_pixel": scales_by_slide().get(slide.slug),
         "groups": groups,
-        **_slide_summary(slide),
+        **summary,
+        "class_bars": _class_bars(summary["class_counts"]),
+        # 검토 완료 막대의 길이(%)
+        "reviewed_pct": (round(100 * summary["reviewed_groups"] / summary["n_groups"])
+                         if summary["n_groups"] else 0),
     }
 
 
