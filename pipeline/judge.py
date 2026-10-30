@@ -8,7 +8,8 @@
 갈라 담을 때(P01 §5) 이 규칙은 가벼운 쪽에 있어야 한다.
 
 받는 레코드는 dict 다. 필요한 값: `shape_ok · major_um · texture · elongation ·
-ellipse_iou · solidity · bbox_xywh · area_px` 와, 있으면 `engine_cls`.
+ellipse_iou · solidity · bbox_xywh · area_px` 와, 있으면 `engine_cls` · `predicted_iou`
+(4차의 중첩 정리가 conf 로 고른다 — `dedupe`).
 
 ## 4차부터 유형은 YOLO 가 정한다 (P29 3절 · 6절 4 · 246)
 
@@ -183,7 +184,16 @@ def dedupe(selected):
         keep.append(a)
 
     # 거의 같은 마스크는 하나로 — 텍스처가 높은 쪽을 남긴다.
-    keep.sort(key=lambda r: -(r.get("texture") or 0))
+    #
+    # **YOLO 클래스가 붙은 검출이면 conf 가 높은 쪽이다** (246). YOLO 는 클래스마다 NMS 를 해서
+    # 같은 개체를 봉상과 봉상 파편으로 둘 다 낸다 — 텍스처로 고르면 남는 클래스를 엔진의 확신이
+    # 아니라 텍스처가 정한다. 4.1차 11l · 25장에서 클래스가 다른 짝 149개 중 78개가 그렇게 덜
+    # 확신한 쪽이 남았다(거의 다 완형 ↔ 파편). conf 는 `predicted_iou` 에 저장돼 있어 다시
+    # 계산해도 같은 답이 나온다(다시 거르는 자리들이 그 칸을 싣는다)
+    if any(engine_class(r) is not None for r in keep):
+        keep.sort(key=lambda r: -(r.get("predicted_iou") or 0))
+    else:
+        keep.sort(key=lambda r: -(r.get("texture") or 0))
     out = []
     for r in keep:
         if not any(_cover(r, k) > 0.8 and _cover(k, r) > 0.8 for k in out):

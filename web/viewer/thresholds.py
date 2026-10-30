@@ -28,7 +28,7 @@ from .models import Candidate, Detection, ThresholdSet              # noqa: E402
 # 판정에 필요한 값만 뽑는다. 폴리곤은 여기서 쓰지 않는다 — 이미 화면에 있다.
 FETCH = ("id", "mask_key", "passed", "cls", "bbox_x", "bbox_y", "bbox_w",
          "bbox_h", "area_px", "shape_ok", "major_um", "texture", "elongation",
-         "ellipse_iou", "solidity", "engine_cls", "detection_id")
+         "ellipse_iou", "solidity", "engine_cls", "predicted_iou", "detection_id")
 
 
 def _records(rows):
@@ -42,6 +42,7 @@ def _records(rows):
         "solidity": r["solidity"],
         # 엔진 클래스 — 4차는 이것으로 유형을 정한다(judge · 246)
         "engine_cls": r["engine_cls"],
+        "predicted_iou": r["predicted_iou"],     # 4차의 중첩 정리가 conf 로 고른다
     } for r in rows]
 
 

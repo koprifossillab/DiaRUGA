@@ -128,6 +128,7 @@ def check_verdicts(slug=None):
             "solidity": c.solidity,
             # 엔진 클래스 (246). 칸을 모르는 옛 이미지로 돌면 빈 값 — 형태 규칙으로 본다
             "engine_cls": getattr(c, "engine_cls", "") or "",
+            "predicted_iou": c.predicted_iou,   # 4차의 중첩 정리가 conf 로 고른다
         } for c in cands]
         kept, rejected = judge.apply(recs, th)
         want = {r["_pk"]: (True, r["cls"] or "", "") for r in kept}

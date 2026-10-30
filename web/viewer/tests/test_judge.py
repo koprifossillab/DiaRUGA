@@ -180,6 +180,17 @@ class DedupeTest(SimpleTestCase):
         out = judge.dedupe([low, high])
         self.assertEqual(out, [high])
 
+    def test_YOLO_클래스가_붙은_짝은_conf_가_높은_쪽을_남긴다(self):
+        """같은 개체를 봉상·봉상 파편으로 둘 다 낸 짝 — 텍스처가 클래스를 정하면 안 된다(246).
+        대조군: 같은 짝에 클래스가 없으면(SAM) 텍스처로 고른다."""
+        sure = dict(self.box(0, 0, 100, 100, texture=500.0),
+                    engine_cls="rod", predicted_iou=0.9)
+        unsure = dict(self.box(1, 1, 100, 100, texture=9000.0),
+                      engine_cls="rod_frag", predicted_iou=0.3)
+        self.assertEqual(judge.dedupe([sure, unsure]), [sure])
+        bare = [{k: v for k, v in r.items() if k != "engine_cls"} for r in (sure, unsure)]
+        self.assertEqual(judge.dedupe(bare)[0]["texture"], 9000.0)
+
 
 class ApplyTest(SimpleTestCase):
 
