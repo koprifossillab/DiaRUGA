@@ -92,8 +92,7 @@ def main():
         # **권역은 인자로 안 나간다** — `segment_diatoms.py` 가 슬라이드마다
         # 보는 규칙이라(`batch_scope.py`) 조리법 인자에 실을 것이 없다. 그래도
         # 사람이 읽는 표에는 적는다: 안 보이면 "왜 이 슬라이드만 비었나" 가 된다.
-        scope = batch_scope.allowed_areas(r["recipe"])
-        if scope is not None:
+        if batch_scope.restricts(r["recipe"]):       # 권역이든 관찰 이름표든
             print(f"       └─ {batch_scope.label_for_plan(r['recipe'])} 만 돈다")
         if not r["ready"]:
             print(f"       └─ {r['why']}")

@@ -1179,8 +1179,10 @@ def main():
                                         label=args.batch).first()
             # 아직 없는 묶음은 조리법도 없다 — 막지 않는다(전부 본다).
             area = slide_area(slide)
-            if b is not None and not batch_scope.allows(b.recipe, area):
-                print(f"{slide.slug}: {batch_scope.why(b.recipe, area, b.label)}",
+            # 관찰 이름표로도 뺀다 — 권역만으로는 RS21 Smear 가 통과한다(248 · P29 6절 5)
+            obs = slide.obs_label or ""
+            if b is not None and not batch_scope.allows(b.recipe, area, obs):
+                print(f"{slide.slug}: {batch_scope.why(b.recipe, area, b.label, obs)}",
                       file=sys.stderr)
                 return 0
 
