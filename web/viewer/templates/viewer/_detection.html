@@ -82,7 +82,7 @@
 {% endcomment %}
 <aside class="dvside" id="dvside-{{ uid }}">
   {% comment %}
-    화면 조정 — 밝기·대비. **사진에만 건다**(`filter` 를 `<img>` 에만).
+    화면 조정 — 밝기·대비·채도. **사진에만 건다**(`filter` 를 `<img>` 에만).
     마스크는 형제 `<svg>` 라 안 물든다: 마스크 색이 분류를 나타내는 판정 근거라
     사진을 어둡게 했다고 함께 어두워지면 무엇으로 지정했는지가 안 읽힌다.
 
@@ -97,20 +97,36 @@
     `_detview_js.html` 이 **화면 폭을 보고** 정한다 — 짐작하면 태블릿에서
     틀린다(192 와 같은 줄).
 
-    **접혀 있어도 켜져 있으면 보인다** — 요약에 값을 적는다(`adjnow`).
+    **접혀 있어도 켜져 있으면 보인다** — 머리줄의 되돌리기에 색이 든다.
     조정이 걸린 채로 접히면 사진이 왜 어두운지 화면 어디에도 안 적히게 되고,
     그러면 사람은 사진을 의심한다.
   {% endcomment %}
+  {% comment %}
+    **한 줄에 하나씩 — 기호 · 이름 · 슬라이더 · 값** (2026-10-30 · 사용자). 머리줄에
+    값을 한 번 더 적던 것(`adjnow`)과 접기 표시(▾)를 걷고, 되돌리기를 머리줄
+    오른쪽으로 올렸다. **접혀 있어도 켜진 것은 안다** — 되돌리기가 머리줄에 남고
+    100% 가 아니면 색이 든다(`.adjreset.on` · 값은 `title`). 채도를 더했다.
+  {% endcomment %}
   <details class="adjbox" id="adjbox-{{ uid }}" open>
-    <summary class="nhead adjhead">화면 조정<span class="adjnow"
-             id="adjnow-{{ uid }}"></span></summary>
-    <div class="adj" id="adj-{{ uid }}">
-      <label>밝기 <span class="dim" id="brival-{{ uid }}">100%</span>
-        <input type="range" id="bri-{{ uid }}" min="20" max="250" step="5" value="100"></label>
-      <label>대비 <span class="dim" id="conval-{{ uid }}">100%</span>
-        <input type="range" id="con-{{ uid }}" min="20" max="250" step="5" value="100"></label>
+    <summary class="nhead adjhead">화면 조정
       <button type="button" class="adjreset" id="adjreset-{{ uid }}"
-              title="밝기·대비를 100% 로">되돌리기</button>
+              title="밝기·대비·채도를 100% 로">되돌리기</button></summary>
+    <div class="adj" id="adj-{{ uid }}">
+      <label class="adjrow" title="밝기">
+        <svg class="ai" viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="3"/><path d="M8 1v2M8 13v2M1 8h2M13 8h2M3 3l1.4 1.4M11.6 11.6 13 13M3 13l1.4-1.4M11.6 4.4 13 3"/></svg>
+        <span class="an">밝기</span>
+        <input type="range" id="bri-{{ uid }}" min="20" max="250" step="5" value="100">
+        <span class="av" id="brival-{{ uid }}">100%</span></label>
+      <label class="adjrow" title="대비">
+        <svg class="ai" viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="6"/><path class="fill" d="M8 2a6 6 0 0 1 0 12z"/></svg>
+        <span class="an">대비</span>
+        <input type="range" id="con-{{ uid }}" min="20" max="250" step="5" value="100">
+        <span class="av" id="conval-{{ uid }}">100%</span></label>
+      <label class="adjrow" title="채도">
+        <svg class="ai" viewBox="0 0 16 16" aria-hidden="true"><path d="M8 1.5C8 1.5 3.5 7 3.5 10a4.5 4.5 0 0 0 9 0C12.5 7 8 1.5 8 1.5z"/></svg>
+        <span class="an">채도</span>
+        <input type="range" id="sat-{{ uid }}" min="0" max="300" step="5" value="100">
+        <span class="av" id="satval-{{ uid }}">100%</span></label>
     </div>
   </details>
 
@@ -148,9 +164,17 @@
       <div><b>{{ vside.n_images }}</b><span>사진</span></div>
     </div>
     {% if vside.class_bars %}
-    <div class="cbars">
+    {% comment %}
+      **파편을 빼고 볼 수 있다** (2026-10-30 · 사용자). 파편이 완형보다 몇 배 많아
+      막대가 파편 길이에 맞춰지면 완형끼리의 차이가 안 읽힌다. 빼면 남은 막대끼리
+      길이를 다시 잰다(`_detview_js.html`). 고른 것은 브라우저에 남는다.
+    {% endcomment %}
+    {% if vside.has_frag %}
+    <label class="cbtoggle"><input type="checkbox" id="cbnofrag-{{ uid }}"> 파편 빼기</label>
+    {% endif %}
+    <div class="cbars" id="cbars-{{ uid }}">
       {% for d in vside.class_bars %}
-      <div class="cbar" title="{{ d.label }} {{ d.n }}">
+      <div class="cbar" title="{{ d.label }} {{ d.n }}" data-n="{{ d.n }}"{% if d.frag %} data-frag="1"{% endif %}>
         <span class="cl">{{ d.label }}</span>
         <span class="tr"><i style="width:{{ d.pct }}%{% if d.color %};background:rgb({{ d.color }}){% endif %}"></i></span>
         <span class="cn">{{ d.n }}</span>

@@ -327,7 +327,11 @@
   /* 줄 높이를 창에 못 박는다 — 안 그러면 왼쪽 바둑판(시야 62개)이 줄을 늘려
      사진 칸까지 창 밖으로 밀린다. 양옆 칸은 이 높이 안에서 저마다 구른다 */
   main.wide .detrow { align-items: stretch; height: calc(100vh - 116px); }
-  main.wide .detrow .dvside { min-height: 0; overflow: hidden; }
+  /* 왼쪽 칸은 **구른다** (2026-10-30 · 사용자: 화면 조정과 마우스 조작법을 둘 다
+     펴면 아래가 안 보였다). 바둑판이 먼저 줄어들고(`min-height`), 그래도 넘치면
+     칸이 구른다 */
+  main.wide .detrow .dvside { min-height: 0; overflow-x: hidden; overflow-y: auto;
+                              scrollbar-width: thin; }
   /* 탭 줄 오른쪽 요약이 두 줄로 접히면 그만큼 사진이 밀린다 — 한 줄로 자른다
      (폰에서는 접는다 — 아래 미디어 쿼리) */
   main.wide .dettabs { flex-wrap: nowrap; }
@@ -1418,8 +1422,9 @@
     padding-bottom: 6px; border-bottom: 1px solid var(--line);
   }
   .notes .ghead { margin-top: 9px; }
-  /* 화면 조정 — 밝기·대비. 코멘트 목록보다 위에 두되 자리를 조금만 쓴다 */
-  .dvside .adjhead { display: flex; align-items: baseline; gap: 7px; }
+  /* 화면 조정 — 밝기·대비·채도. 코멘트 목록보다 위에 두되 자리를 조금만 쓴다.
+     되돌리기는 머리줄 오른쪽이다(2026-10-30) — 판이 접혀도 남아 켜진 것을 알린다 */
+  .dvside .adjhead { display: flex; align-items: center; gap: 7px; }
   .dvside .adjreset {
     margin-left: auto; font: inherit; font-size: 11px; font-weight: 400;
     padding: 1px 7px; border-radius: 5px; cursor: pointer;
@@ -1429,25 +1434,25 @@
   /* 켜져 있으면 눈에 띄어야 한다 — 원본과 다르게 보고 있다는 표시다 */
   .dvside .adjreset.on { color: var(--accent); border-color: var(--accent); }
   /* 접었다 편다 (194). 폰에서는 접힌 채로 시작한다 — `_detview_js.html` 이
-     화면 폭을 보고 정한다. 요약에 지금 값이 적히므로 접혀 있어도 켜진 것을
-     안다(`.adjnow`). */
+     화면 폭을 보고 정한다. **접기 표시(▾)는 걷었다**(2026-10-30 · 사용자 —
+     머리줄을 누르면 접힌다는 것은 이미 안다) */
   .dvside .adjbox { flex: 0 0 auto; }
   .dvside .adjbox > summary { list-style: none; cursor: pointer; }
   .dvside .adjbox > summary::-webkit-details-marker { display: none; }
-  .dvside .adjbox > summary::after {
-    content: '▾'; margin-left: auto; font-size: 10px; opacity: .55;
-  }
-  .dvside .adjbox:not([open]) > summary::after { content: '▸'; }
-  .dvside .adjnow { font-weight: 400; font-size: 11px; color: var(--accent); }
   .dvside .adj { flex: 0 0 auto; margin-bottom: 11px; }
-  /* 되돌리기가 머리줄에서 판 안으로 내려왔다 (194) — `margin-left:auto` 는
-     그때 flex 머리줄의 것이라 여기서는 뜻이 없다 */
-  .dvside .adj .adjreset { margin-left: 0; margin-top: 3px; }
-  .dvside .adj label {
-    display: block; font-size: 11.5px; color: var(--dim); margin-bottom: 5px;
+  /* 한 줄 = 기호 · 이름 · 슬라이더 · 값 */
+  .dvside .adj .adjrow {
+    display: grid; grid-template-columns: 14px auto minmax(0, 1fr) 3.1em;
+    align-items: center; gap: 5px; font-size: 11.5px; color: var(--dim);
+    margin-bottom: 4px;
   }
+  .dvside .adj .ai { width: 14px; height: 14px; fill: none; stroke: currentColor;
+                     stroke-width: 1.4; stroke-linecap: round; }
+  .dvside .adj .ai .fill { fill: currentColor; stroke: none; }
+  .dvside .adj .an { white-space: nowrap; }
+  .dvside .adj .av { text-align: right; font-variant-numeric: tabular-nums; }
   .dvside .adj input[type=range] {
-    display: block; width: 100%; margin-top: 2px; accent-color: var(--accent);
+    display: block; width: 100%; min-width: 0; margin: 0; accent-color: var(--accent);
   }
   /* --- 개체 카탈로그 칸 (183) ---
      고른 개체 하나의 카드를 여기 그린다. 여기 있던 시야 메모 상자를 걷은
@@ -1823,6 +1828,11 @@
   .dvside .vnums span, .dvside .vedits span { font-size: 10.5px; color: var(--dim); white-space: nowrap; }
   .dvside .vnums small { font-size: 10px; color: var(--dim); white-space: nowrap; }
   .dvside .cbars { display: flex; flex-direction: column; gap: 3px; }
+  /* `.cbar` 의 `display: grid` 가 `[hidden]` 을 이긴다(063) — 같은 무게로 덮는다 */
+  .dvside .cbar[hidden] { display: none; }
+  .dvside .cbtoggle { display: flex; align-items: center; gap: 5px; align-self: flex-end;
+                      font-size: 11px; color: var(--dim); cursor: pointer; margin-bottom: 1px; }
+  .dvside .cbtoggle input { margin: 0; accent-color: var(--accent); }
   .dvside .cbar { display: grid; grid-template-columns: minmax(0, 7.5em) 1fr auto;
                   align-items: center; gap: 6px; font-size: 11px; }
   .dvside .cbar .cl { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--fg); }

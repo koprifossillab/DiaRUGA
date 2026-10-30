@@ -273,8 +273,12 @@ class MobileChromeTest(MobileTestCase):
             "#bri-stack",
             "el => { el.value = 60; el.dispatchEvent(new Event('input')); }")
         page.wait_for_timeout(150)
-        self.assertIn("60%", page.text_content("#adjnow-stack"),
-                      "접힌 요약에 켜진 값이 안 적힌다")
+        # 머리줄에 값을 다시 적던 자리(`adjnow`)는 걷었다(2026-10-30) — 접혀도
+        # 남는 되돌리기가 색으로 알리고 `title` 에 값을 적는다
+        rst = page.query_selector("#adjreset-stack")
+        self.assertTrue(rst.is_visible(), "접힌 머리줄에 되돌리기가 없다")
+        self.assertIn("on", rst.get_attribute("class"), "켜졌는데 되돌리기에 색이 안 든다")
+        self.assertIn("60%", rst.get_attribute("title"), "켜진 값이 어디에도 안 적힌다")
 
     def test_판_섬네일이_폰에서_작아진다(self):
         """사용자: *"시야 섬네일이 너무 커"*. 128px 은 데스크탑 값이다."""

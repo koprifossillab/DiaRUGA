@@ -4055,9 +4055,14 @@ def slide_tiles(slide: Slide) -> dict:
     n = len(tiles)
     done = sum(1 for t in tiles if t["reviewed"])
     summary = _slide_summary(slide)
+    bars = _class_bars(summary["class_counts"])
     return {"tiles": tiles, "n": n, "done": done,
             "pct": round(100 * done / n) if n else 0,
-            "class_bars": _class_bars(summary["class_counts"]), **summary}
+            "class_bars": bars,
+            # 파편 막대도 완형 막대도 있어야 "파편 빼기" 가 뜻이 있다
+            "has_frag": (any(b["frag"] for b in bars)
+                         and not all(b["frag"] for b in bars)),
+            **summary}
 
 
 def _class_bars(class_counts: list[dict]) -> list[dict]:
@@ -4070,7 +4075,10 @@ def _class_bars(class_counts: list[dict]) -> list[dict]:
     """
     colors = {r["key"]: r["color"] for r in _class_rows()}
     top = max((c["n"] for c in class_counts), default=0)
+    # `frag` — 파편(`ClassDef.counted=False`). 검토 화면 옆 칸이 "파편 빼기" 로
+    # 감출 때 쓴다 — 감추면 남은 막대끼리 길이를 다시 잰다(화면 쪽)
     return [{**c, "color": colors.get(c["key"]) or "",
+             "frag": is_fragment(c["key"]),
              "pct": round(100 * c["n"] / top) if top else 0}
             for c in class_counts]
 
