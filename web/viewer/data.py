@@ -5894,6 +5894,7 @@ def batches_for_viewpoint(slug: str, gid: int,
                       else f"실행 #{rep.run_id}"),
             "backend": (rep.run.params or {}).get("backend", "?"),
             "run_id": rep.run_id,
+            "batch_id": rep.run.batch_id,
             "on": any(d.run_id in here for d in picked),
             # **이 시야의 주 묶음인가** — 이 값이 읽기 전용을 가른다 (P10 1단계).
             # 예전에는 `any(d.is_current …)` 였는데, 정규화 뒤에는 모든 묶음의
@@ -5908,45 +5909,37 @@ def batches_for_viewpoint(slug: str, gid: int,
     return sorted(out, key=lambda g: g["label"])
 
 
-# 화면에 적을 엔진 이름. 백엔드 이름(`Run.params["backend"]`)은 모델 판까지
-# 들어 있어서(`sam2`) 고르는 칸에는 길다. **여기 없는 것은 대문자로 그대로
-# 낸다** — 새 백엔드(`sam3` 등)가 이름 없이 사라지지 않게.
-ENGINE_LABELS = {"sam2": "SAM", "sam3": "SAM3", "yolo": "YOLO"}
+def batch_boxes(slug: str, gid: int, batches: list[dict]) -> list[dict]:
+    """검토 화면 탭 줄의 **묶음 상자** — 이 시야에 검출이 있는 묶음마다 하나.
 
+    051 에서는 묶음을 **엔진 단위로 접었다**(라디오 "YOLO · SAM") — 고르는 사람이
+    재는 것은 엔진이라고 봤다. 그런데 YOLO 차수가 늘면서 접은 것이 일을 막았다:
+    `yolo-3차`·`yolo-4차` 가 한 칸에 들어가 차수가 화면에 안 보이고, 3차 정답
+    시야에서는 4차를 열려면 주소에 `?batch=` 를 손으로 쳐야 했다. 그리고 **이
+    시야의 주 묶음(P31·P32)이 무엇인지가 화면 어디에도 안 적혔다**(사용자
+    2026-10-30). 그래서 접지 않는다 — 묶음 이름이 곧 상자 이름이다.
 
-def engines_from_batches(batches: list[dict]) -> list[dict]:
-    """묶음 목록을 **엔진 단위로** 접는다 (051).
+    **주 묶음이 맨 앞이다.** 맨 주소가 여는 것이고 교정이 저장되는 것이다.
+    나머지는 이름순(차수가 정렬된다).
 
-    고르는 사람이 재는 것은 엔진이지 묶음이 아니다 — `yolo-1차`·`yolo-3차` 가
-    따로 서면 무엇을 눌러야 할지 알 수 없다. 한 엔진에 묶음이 여럿이면 하나를
-    대표로 세운다:
+    **주 묶음에 이 시야의 검출이 없어도 상자를 둔다**(개체 0). 그 시야가 4차를
+    기다리는 칸이면 맨 주소가 빈 화면을 여는데, 그때 무엇이 비었는지가 상자에
+    적혀야 한다 — 없는 상자는 "주 묶음이 없다" 로 읽힌다.
 
-        지금 보고 있는 것 → 현재 검출을 낸 것 → 실행 번호가 큰 것(나중 것)
-
-    **묶음 이름은 버리지 않는다** (`batch_label`). 화면이 말풍선에 적어 어느
-    묶음을 열었는지 되짚을 수 있어야 한다.
-
-    개수는 대표 묶음의 것이다. 합치지 않는다 — 눌러서 가는 곳이 대표 하나라,
-    합계를 보이면 눌러 보고 "아까 그 수가 아닌데" 가 된다.
+    개수는 그 묶음이 낸 그대로다(`batches_for_viewpoint` 의 `n` — 문턱 통과,
+    교정은 빼고).
     """
-    per = defaultdict(list)
-    for b in batches:
-        per[b["backend"]].append(b)
-
-    out = []
-    for backend, group in per.items():
-        rep = sorted(group, key=lambda b: (b["on"], b["current"], b["run_id"]))[-1]
-        out.append({
-            **rep,
-            "key": backend,
-            "label": ENGINE_LABELS.get(backend, (backend or "?").upper()),
-            "batch_label": rep["label"],
-            # 이 엔진이 이 시야에 낸 묶음이 여럿인가 — 말풍선이 적는다
-            "n_batches": len(group),
-        })
-    # **교정이 되는 것을 맨 앞에 둔다.** 검토 화면의 기본 자리이고, 라디오는
-    # 왼쪽부터 읽힌다.
-    return sorted(out, key=lambda e: (not e["current"], e["label"]))
+    vp = Viewpoint.objects.filter(slide__slug=slug, idx=gid).first()
+    prim = primary_batch_id(vp) if vp is not None else None
+    fz = frozen_batch_ids()
+    out = [{**b, "frozen": b.get("batch_id") in fz} for b in batches]
+    if prim is not None and not any(b["current"] for b in out):
+        rb = RunBatch.objects.filter(pk=prim).first()
+        if rb is not None:
+            out.append({"label": rb.label, "backend": "", "run_id": None,
+                        "batch_id": rb.pk, "on": False, "current": True,
+                        "n": 0, "frozen": rb.frozen, "empty": True})
+    return sorted(out, key=lambda b: (not b["current"], b["label"]))
 
 
 # --- 도감 검색 (P15 §6 · 129) ------------------------------------------------

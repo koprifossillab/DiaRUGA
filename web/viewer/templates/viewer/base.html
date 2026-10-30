@@ -1376,31 +1376,35 @@
   .dettabs button:hover { color: var(--fg); }
   .dettabs button.on { color: var(--fg); font-weight: 600; border-bottom-color: var(--accent); }
   .dettabs .tabmeta { margin-left: auto; font-size: 12px; color: var(--dim); padding-bottom: 6px; }
-  /* 검출 엔진 고르기. 탭 이름 바로 옆이다 — "무엇을 보고 있는가" 와 "무엇으로
-     검출한 것인가" 는 함께 읽혀야 한다.
+  /* 묶음 상자 (051 → 2026-10-30). 탭 이름 바로 옆이다 — "무엇을 보고 있는가" 와
+     "무엇으로 검출한 것인가" 는 함께 읽혀야 한다.
 
-     **라디오다.** 닫힌 드롭다운은 고른 것만 보여준다 — 다른 엔진이 몇 개를
-     잡았는지와 그쪽이 읽기 전용이라는 것은 열어 봐야 안다. 그런데 **그 수를
-     비교하는 것이 엔진을 바꾸는 이유**다. 고르지 않은 쪽도 함께 보여야 한다 (051). */
-  .dettabs .engpick {
-    display: flex; align-items: center; gap: 4px;
-    margin: 0 4px 6px 10px; padding-bottom: 0;
+     **상자를 다 늘어놓는다.** 닫힌 드롭다운은 고른 것만 보여준다 — 다른 묶음이
+     몇 개를 잡았는지와 그쪽이 읽기 전용이라는 것은 열어 봐야 안다. 그런데
+     **그 수를 비교하는 것이 묶음을 바꾸는 이유**다 (051). */
+  .dettabs .bpick {
+    display: flex; align-items: stretch; gap: 4px; flex-wrap: wrap;
+    margin: 0 4px 6px 10px;
   }
-  .dettabs .engpick label {
-    display: flex; align-items: center; gap: 5px; cursor: pointer;
-    font-size: 12px; line-height: 1.2; padding: 4px 10px; border-radius: 999px;
+  .dettabs .bpick .bbox {
+    display: flex; align-items: center; gap: 6px; text-decoration: none;
+    font-size: 12px; line-height: 1.2; padding: 4px 9px; border-radius: 6px;
     border: 1px solid var(--line); background: var(--panel); color: var(--dim);
   }
-  .dettabs .engpick label:hover { border-color: var(--accent); }
-  /* 고른 것은 확실히 켜져 보여야 한다 — 라디오 점 하나로는 약하다 */
-  .dettabs .engpick label:has(input:checked) {
+  .dettabs .bpick .bbox:hover { border-color: var(--accent); color: var(--fg); }
+  /* 지금 보는 것은 확실히 켜져 보여야 한다 */
+  .dettabs .bpick .bbox.now {
     border-color: var(--accent); color: var(--fg); font-weight: 600;
+    box-shadow: inset 0 0 0 1px var(--accent); cursor: default;
   }
-  .dettabs .engpick input { margin: 0; cursor: pointer; accent-color: var(--accent); }
-  .dettabs .engpick .n { font-weight: 400; color: var(--dim); font-size: 11px; }
-  /* 읽기 전용인 엔진임을 칸에서도 알린다. 사진 가운데 위의 큰 표시와 같은 빨강 */
-  .dettabs .engpick .ro {
-    font-weight: 400; font-size: 10.5px; color: #ff8a8a;
+  .dettabs .bpick .n { font-weight: 400; color: var(--dim); font-size: 11px; }
+  .dettabs .bpick .tag {
+    font-weight: 600; font-size: 10.5px; color: var(--accent);
+    border: 1px solid var(--accent); border-radius: 4px; padding: 0 4px;
+  }
+  /* 읽기 전용·얼림을 상자에서도 알린다. 테마마다 갈린 토큰을 빌린다(107) */
+  .dettabs .bpick .ro {
+    font-weight: 400; font-size: 10.5px; color: var(--danger);
     border-left: 1px solid var(--line); padding-left: 6px;
   }
 
@@ -2142,12 +2146,6 @@
   .sbdlg .sbfoot button:disabled { opacity: .5; cursor: default; }
   .sbdlg .sbsay { font-size: 12px; color: var(--dim); }
   .sbdlg .sbsay.bad { color: var(--danger); }
-  /* `.dettabs button` 보다 특이도가 높아(0,2,0) 탭 밑줄 규칙을 덮는다 */
-  .dettabs .exportbtn {
-    margin: 0 0 0 6px; border: 1px solid var(--line); border-radius: 7px;
-    padding: 3px 9px; font-size: 12px; align-self: center;
-  }
-  .dettabs .exportbtn:hover { border-color: var(--accent); color: var(--accent); }
 
   /* --- 사진 캐러셀 --- */
   .shotcap {

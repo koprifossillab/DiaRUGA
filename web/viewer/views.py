@@ -518,8 +518,8 @@ def group(request, slug, gid):
     검토 화면 안에서 고른다 — 시야는 그대로 두고 그림 위의 개체만 바뀐다.
     **그 화면은 075 에서 지웠다. 비교는 이 길 하나로만 한다.**
 
-    **현재 검출(SAM2)일 때만 교정이 저장된다.** 다른 묶음을 고르면 읽기 전용이고
-    화면 가운데 위에 그렇게 적힌다. 근거는 `data.group_detail` 머리말.
+    **이 시야의 주 묶음일 때만 교정이 저장된다**(P32). 다른 묶음을 고르면 읽기
+    전용이고 화면 가운데 위에 그렇게 적힌다. 근거는 `data.group_detail` 머리말.
     """
     to = _merged_away(slug)
     if to:
@@ -543,18 +543,16 @@ def group(request, slug, gid):
     if ctx is None:
         raise Http404(f"unknown group: {slug}/{gid}")
 
-    # **묶음이 아니라 엔진으로 고른다.** `yolo-1차`·`yolo-3차` 가 따로 서면
-    # 무엇을 눌러야 할지 알 수 없다 — 재는 것은 엔진이다 (`engines_from_batches`).
+    # **엔진이 아니라 묶음으로 고른다** (2026-10-30 · 사용자). 엔진으로 접으면
+    # YOLO 차수가 화면에 안 보이고 주 묶음이 무엇인지도 안 적힌다 (`batch_boxes`).
     here = reverse("group", args=[slug, gid])
-    engines = data.engines_from_batches(bs)
-    for e in engines:
-        # 현재 검출을 낸 엔진이 곧 검토 가능한 화면이다 — 맨 주소로 간다.
-        e["url"] = here if e["current"] else f"{here}?batch={e['run_id']}"
-        e["editable"] = e["current"]
-    ctx["engines"] = engines
-    # 아무 것도 안 켜져 있으면(=?batch= 가 없으면) 현재 검출을 보고 있는 것이다
-    ctx["engine_now"] = (next((e for e in engines if e["on"]), None) if run_id
-                         else next((e for e in engines if e["current"]), None))
+    boxes = data.batch_boxes(slug, gid, bs)
+    for b in boxes:
+        # 주 묶음이 곧 검토 가능한 화면이다 — 맨 주소로 간다.
+        b["url"] = here if b["current"] else f"{here}?batch={b['run_id']}"
+        # 아무 것도 안 켜져 있으면(=?batch= 가 없으면) 주 묶음을 보고 있는 것이다
+        b["now"] = b["on"] if run_id else b["current"]
+    ctx["batch_boxes"] = boxes
     # 링크가 짚어 온 개체 (118). 읽기 전용 갈래(`?batch=`)에도 그대로 얹는다 —
     # 표시는 보는 일이지 고치는 일이 아니다.
     ctx["hl"] = _highlight_arg(request)

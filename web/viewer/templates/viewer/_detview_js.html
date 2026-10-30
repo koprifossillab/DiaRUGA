@@ -1321,7 +1321,7 @@ window.initDetView = function (uid) {
     // `savePending` 으로 남기므로 그것을 본다.
     //
     // **떠났는가를 돌려준다** (116 덧) — 안 떠났으면 부르는 쪽이 자기 화면을
-    // 되돌려야 한다(엔진 라디오가 그렇다).
+    // 되돌려야 한다(예전 엔진 라디오가 그랬다).
     function go() {
       // **카탈로그도 못 나갔으면 안 떠난다** (183) — 판 교정과 같은 이유다.
       // 종명·코멘트는 사람이 현미경을 보며 적은 것이라 재생성 불가다.
@@ -5007,32 +5007,24 @@ window.initDetView = function (uid) {
     if (name === 'view') applyTransform();
   });
 
-  // --- 검출 엔진 고르기 -----------------------------------------------------
+  // --- 묶음 상자 (051 → 2026-10-30) -----------------------------------------
   // 주소만 바꿔 같은 시야를 다시 연다. 개체 자료는 검출마다 폴리곤까지 딸려
-  // 있어(시야당 29 KB) 판마다 미리 실어 두면 무거워지고, 무엇보다 **교정을
-  // 얹을지 말지가 검출마다 다르다** — 서버가 그리게 두는 편이 안전하다.
-  var engPick = document.getElementById('engpick-' + uid);
-  if (engPick) {
-    // 떠나지 못했을 때 되돌릴 자리 (아래 `leave` 주석).
-    var engPrev = engPick.querySelector('input[type=radio]:checked');
-    // 라디오 하나하나가 아니라 감싼 칸에서 받는다 — 엔진이 늘어도 배선을
-    // 손대지 않는다.
-    engPick.addEventListener('change', function (e) {
-      var t = e.target;
-      if (!t || t.type !== 'radio' || !t.value) return;
-      // **`leave()` 로 간다** (116 덧). 여기도 지연 저장을 밀어내고 떠나는
-      // 자리인데 약속을 안 기다리고 있었다 — 116 이 `leave()` 에서 고친 것과
-      // 같은 갈래다. 규칙이 둘이 되지 않게 같은 문으로 보낸다.
-      //
-      // **안 떠났으면 고른 표시도 되돌린다.** 저장이 실패해 화면은 남았는데
-      // 라디오만 옮겨 가 있으면, 지금 보고 있는 것이 어느 엔진인지가 화면에서
-      // 갈린다 — 그 상태로 검토하면 남의 엔진 것을 이 엔진으로 읽는다.
-      leave(t.value).then(function (gone) {
-        if (!gone && engPrev) engPrev.checked = true;
-        else engPrev = t;
-      });
-    });
-  }
+  // 있어(시야당 29 KB) 묶음마다 미리 실어 두면 무거워지고, 무엇보다 **교정을
+  // 얹을지 말지가 묶음마다 다르다** — 서버가 그리게 두는 편이 안전하다.
+  //
+  // **`leave()` 로 간다** (116 덧) — 지연 저장을 밀어내고 떠나는 자리라 그
+  // 약속을 기다린다. 라디오일 때는 안 떠났으면 고른 표시를 되돌려야 했다
+  // (표시만 옮겨 가면 지금 보는 것이 어느 묶음인지가 화면에서 갈린다). 상자는
+  // 링크라 누르는 것만으로는 표시가 안 옮겨 간다 — 떠나야 바뀐다.
+  // 지금 보는 상자는 누를 일이 없다. 새 탭(수정키·가운데 단추)은 브라우저에 맡긴다
+  var bPick = document.getElementById('bpick-' + uid);
+  if (bPick) bPick.addEventListener('click', function (ev) {
+    var a = ev.target.closest && ev.target.closest('a[href]');
+    if (!a || ev.metaKey || ev.ctrlKey || ev.shiftKey || ev.altKey || ev.button !== 0) return;
+    ev.preventDefault();
+    if (a.classList.contains('now')) return;
+    leave(a.getAttribute('href'));
+  });
 
   // --- 링크가 짚어 온 개체를 찾아 표시한다 (118) ----------------------------
   var hlFlag = document.getElementById('hlflag-' + uid);

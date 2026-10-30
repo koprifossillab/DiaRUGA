@@ -17,33 +17,35 @@
   <button type="button" class="on" data-pane="view" id="tabtitle-{{ uid }}"
           data-prefix="{{ title }}">{{ title }}{% if shot %} - {{ shot|cut:"Snap-" }}{% endif %}</button>
   {% comment %}
-    검출 엔진 고르기 (051). 예전에는 `/engine/` 이라는 다른 화면으로 나가야
-    했다 — 나갔다 돌아오면 어느 시야를 보고 있었는지 잃었고, 비교는 같은
-    자리를 번갈아 보는 일이다. 시야는 그대로 두고 개체만 바뀐다.
+    **묶음 상자** (051 → 2026-10-30 · 사용자). 이 시야에 검출이 있는 묶음마다
+    상자 하나 — 묶음 이름과 개체 수. 예전에는 엔진 단위로 접은 라디오("YOLO ·
+    SAM")라 YOLO 차수가 안 보였고, 이 시야의 주 묶음이 무엇인지 어디에도 안
+    적혔다(`data.batch_boxes`).
 
-    **고르는 것과 저장되는 것은 다르다.** 현재 검출(SAM2)만 교정이 저장되고
-    나머지는 읽기 전용이다 — 칸마다 그렇게 적고, 사진 가운데 위에 한 번 더
-    크게 알린다(`.roflag`).
+    **주 묶음이 맨 앞이고 맨 주소가 연다.** 교정이 저장되는 것은 그것 하나다 —
+    나머지는 누르면 `?batch=` 읽기 전용으로 간다. 고르는 것과 저장되는 것이
+    다르므로 상자마다 적고, 사진 가운데 위에 한 번 더 크게 알린다(`.roflag`).
+    얼린 묶음(`RunBatch.frozen`)이면 그렇게 적는다 — 주 묶음이어도 교정이
+    잠긴다.
+
+    **링크지만 `leave()` 로 떠난다** (116 · `_detview_js.html`). 밀어낸 저장을
+    기다린 뒤에 옮긴다.
   {% endcomment %}
-  {% if engines %}
-  <div class="engpick" id="engpick-{{ uid }}">
-    {% for e in engines %}
-      <label title="{{ e.batch_label }}{% if e.n_batches > 1 %} (이 엔진의 묶음 {{ e.n_batches }}개 중 최근 것){% endif %} · 개체 {{ e.n }}개 — 엔진이 낸 그대로 셉니다(사람의 교정은 빼고).{% if e.editable %} 교정이 저장되는 화면입니다{% else %} 읽기 전용입니다{% endif %}">
-        <input type="radio" name="eng-{{ uid }}" value="{{ e.url }}"
-               {% if e.key == engine_now.key %}checked{% endif %}>
-        {{ e.label }}<span class="n">{{ e.n }}</span>{% if not e.editable %}<span class="ro">읽기 전용</span>{% endif %}
-      </label>
+  {% if batch_boxes %}
+  <div class="bpick" id="bpick-{{ uid }}" role="group" aria-label="검출 묶음">
+    {% for b in batch_boxes %}
+      <a class="bbox{% if b.now %} now{% endif %}{% if b.current %} prim{% endif %}"
+         href="{{ b.url }}"{% if b.now %} aria-current="page"{% endif %}
+         data-batch="{{ b.label }}"
+         title="{{ b.label }} · 개체 {{ b.n }}개 — 묶음이 낸 그대로 셉니다(사람의 교정은 빼고).{% if b.current %} 이 시야의 주 묶음입니다.{% endif %}{% if b.frozen %} 얼린 묶음이라 교정이 잠겨 있습니다.{% elif b.current %} 교정이 저장되는 화면입니다.{% else %} 읽기 전용입니다.{% endif %}">
+        {% if b.current %}<span class="tag">주 묶음</span>{% endif %}
+        <span class="mono">{{ b.label }}</span><span class="n">{{ b.n }}</span>
+        {% if b.frozen %}<span class="ro">얼림</span>{% elif not b.current %}<span class="ro">읽기 전용</span>{% endif %}
+      </a>
     {% endfor %}
   </div>
   {% endif %}
   <button type="button" data-pane="list">개체 목록 <span class="dim" id="tabcount-{{ uid }}">{{ det.n_candidates }}</span></button>
-  {% comment %}
-    사진 내보내기 (214). **사진 위가 아니라 여기 둔다** — 내보낼 것 위에 단추를
-    얹으면 그 자리가 가려지고, 읽기 전용 화면은 사진 위 도구를 통째로 감춘다
-    (`group.html`). 보는 일이라 읽기 전용에서도 된다.
-  {% endcomment %}
-  {% if base %}<button type="button" class="exportbtn" id="export-{{ uid }}"
-          title="지금 보는 사진을 PNG 로 내려받습니다 — 도구·체크박스는 빼고, 스케일바는 넣거나 뺄 수 있습니다">⤓ 이미지</button>{% endif %}
   {% comment %}
     판의 요약(후보 수 · 분류 · 원시 · µm/px)은 **왼쪽 칸 「이 시야」 상자로 옮겼다**
     (2026-10-30 · 사용자). 탭 줄 끝에 한 줄로 잘려 있어 다 읽히지 않았다.
@@ -446,6 +448,18 @@
     <button type="button" class="tool" data-act="measure" title="길이 재기 — 눌러 가며 잇고, 두 번 누르면(또는 Enter) 끝난다 · Backspace 한 점 무르기 · Esc 끄기. 저장하지 않는다">
       <svg viewBox="0 0 24 24" aria-hidden="true"><path class="stroke" d="M3.8 15.6 15.6 3.8l4.6 4.6L8.4 20.2Z"/><path class="stroke" d="m7.2 12.2 1.8 1.8M9.9 9.5l2.6 2.6M12.6 6.8l1.8 1.8"/></svg>
       <span>길이</span></button>
+    {% comment %}
+      **사진 내보내기** (214 → 2026-10-30 · 사용자). 탭 줄에 있던 것을 「보기」
+      묶음으로 들였다 — 화면만 다루는 일이라 이 묶음 자리이고, 이 묶음은 읽기
+      전용·얼린 화면에서도 남는다(`group.html` 은 `.tools`·`.drawtool`·`.layers`
+      만 감춘다). **`.layers` 밖에 둔다** — 검출이 없는 판은 그것을 감추는데
+      사진은 그래도 내보낼 수 있어야 한다. `data-act` 가 없어 `onTool` 은 그냥
+      지나가고, 배선은 `#export-` 에 따로 걸린다.
+    {% endcomment %}
+    <button type="button" class="tool" id="export-{{ uid }}"
+            title="지금 보는 사진을 PNG 로 내려받습니다 — 도구·체크박스는 빼고, 스케일바는 넣거나 뺄 수 있습니다">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path class="stroke" d="M12 4.5v10M7.5 10.5 12 15l4.5-4.5M5 19.5h14"/></svg>
+      <span>내보내기</span></button>
     <span class="tool-sep" aria-hidden="true"></span>
     <div class="layers" id="layers-{{ uid }}">
       <label class="tool" title="bbox — 개체를 두른 네모">
