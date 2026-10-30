@@ -173,6 +173,49 @@ def weights_stamp(path: Path) -> dict:
             "mtime": int(path.stat().st_mtime), "sha256": h.hexdigest()[:16]}
 
 
+# --- 원본 크기 마스크를 나눠 만든다 (245) ---------------------------------------
+#
+# **`retina_masks=True` 는 마스크를 전부 원본 크기로 한꺼번에 만든다** — ultralytics 의
+# `process_mask_native` 가 검출 N 개를 (N, 2208, 2752) float32 로 한 번에 보간하고, 상자
+# 밖을 지우는 곱셈이 같은 크기를 몇 벌 더 만든다. `conf=0.01` 이면 검출이 상한(300)까지
+# 차서 그것만으로 8 GB 카드가 모자란다. 운영 3060 Ti 에서 4.1차 가중치로 빽빽한 합성본
+# 25장 중 15~17장이 OOM 으로 **검출 없이 건너뛰어졌고**, 3차 때도 운영에서 25장이 그렇게
+# 빠졌다(245). 4차가 가장 나아진 자리(빽빽한 시야의 재현율)가 통째로 빠지는 고장이다.
+#
+# **검출마다 독립으로 계산하므로 나눠 불러 이어 붙여도 값이 같다** — 계수 × 프로토타입 →
+# bilinear 보간 → 상자 밖 지우기 → 0/1 이 전부 검출 하나 안에서 끝난다. 원래 함수와
+# `torch.equal` 로 비교해 같았다(245 4절). 나눠도 결과 마스크(검출마다 uint8 6 MB)는 남는다 —
+# 줄이는 것은 계산 중의 float32 사본이다.
+#
+# **설정으로는 안 풀렸다** — fp16·`expandable_segments` 는 효과가 없고, `conf` 를 올리는 것은
+# "낮게 뽑아 DB 에서 다시 고른다" 는 방침과 맞지 않는데 0.25 에서도 한 장이 빠졌다.
+# `retina_masks=False` 는 경계 값을 바꾼다(CLAUDE.md).
+#
+# ultralytics 의 함수를 바꿔 끼운다 — **ultralytics 를 올릴 때 함께 본다**(`requirements-yolo.txt`
+# 와 같은 줄). 예측기가 `ops.process_mask_native` 를 모듈 속성으로 부르는 것이 전제다(8.4.7).
+MASK_CHUNK = 16
+
+
+def chunked_mask_fn(orig, n: int = MASK_CHUNK):
+    """`process_mask_native(protos, masks_in, bboxes, shape)` 를 검출 n 개씩 나눠 부르는 판."""
+    def fn(protos, masks_in, bboxes, shape):
+        if len(masks_in) <= n:
+            return orig(protos, masks_in, bboxes, shape)
+        return torch.cat([orig(protos, masks_in[i:i + n], bboxes[i:i + n], shape)
+                          for i in range(0, len(masks_in), n)])
+    fn.chunked = n
+    fn.orig = orig
+    return fn
+
+
+def install_chunked_masks(n: int = MASK_CHUNK) -> None:
+    """ultralytics 의 원본 크기 마스크 만들기를 나눠 만드는 판으로 바꿔 끼운다. 두 번 불러도 한 번이다."""
+    import ultralytics.utils.ops as ops                     # noqa: PLC0415
+    if getattr(ops.process_mask_native, "chunked", None):
+        return
+    ops.process_mask_native = chunked_mask_fn(ops.process_mask_native, n)
+
+
 class YoloGenerator:
     """학습한 YOLO-seg 를 SAM2AutomaticMaskGenerator 와 같은 모양으로 감싼다.
 
@@ -195,6 +238,7 @@ class YoloGenerator:
 
         if not Path(weights).exists():
             raise SystemExit(f"가중치가 없다: {weights}")
+        install_chunked_masks()             # 원본 크기 마스크를 나눠 만든다 (245)
         self.model = YOLO(weights)
         self.device = 0 if device == "cuda" else "cpu"
         self.conf, self.imgsz, self.iou = conf, imgsz, iou
