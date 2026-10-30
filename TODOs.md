@@ -152,7 +152,8 @@ DB 설계는 [devlog/20260730_P02_db-schema.md](devlog/20260730_P02_db-schema.md
       꾸러미는 이 장비 `~/projects/diatom/datasets/yolo-v4.1-seg` 와 NAS `/nfs/temp-share/DiaRUGA/datasets/yolo-v4.1-seg` 두 벌.
       **5차 꾸러미 `yolo-v5-seg`**(합성본 정답을 프레임으로 옮긴 것 · [P33](devlog/20261030_P33_frames-from-stack-labels.md) ·
       [250](devlog/20261030_250_v5-warps-and-sharpness.md) · 10-30 · train 1,111장 · val 1,723 · val_frames 8,137)은 이 장비
-      `/data3/DiaRUGA/datasets/yolo-v5-seg` 와 NAS `/nfs/temp-share/DiaRUGA/datasets/yolo-v5-seg` 두 벌. 다음은 11m 학습(P33 ④)
+      `/data3/DiaRUGA/datasets/yolo-v5-seg` 와 NAS `/nfs/temp-share/DiaRUGA/datasets/yolo-v5-seg` 두 벌. **5차 학습이 jikhanserver 에서 돌고 있다**([251](devlog/20261030_251_yolo5-training.md) · 10-30) —
+      11m·11l 100 에폭, 끝나면 둘 다 200 에폭으로 한 번 더.
       **그 라벨은 DB 밖 파일에만 있다**(242 8.3 · 사용자 10-29) — 원본은 `devlog/assets/20261028_242_yolo4_val_fp_review.md`·`…_yolo41_val_new_review.md`·
       `…_yolo41_train_fp_review.md`. **5차 꾸러미를 뽑기 전에 이 2,274개가 DB 에 들어왔는지 대조한다** —
       5차 검토에서 검출로 다시 나와 교정으로 들어오는 것이 정한 길이고, 빠진 것만 그때 반입한다.
