@@ -8,7 +8,18 @@
 갈라 담을 때(P01 §5) 이 규칙은 가벼운 쪽에 있어야 한다.
 
 받는 레코드는 dict 다. 필요한 값: `shape_ok · major_um · texture · elongation ·
-ellipse_iou · solidity · bbox_xywh · area_px`.
+ellipse_iou · solidity · bbox_xywh · area_px` 와, 있으면 `engine_cls`.
+
+## 4차부터 유형은 YOLO 가 정한다 (P29 3절 · 6절 4 · 246)
+
+`engine_cls` 가 4차 클래스 일곱 중 하나면 **유형을 그것으로** 정하고, 여기서는 **크기·텍스처
+관문만** 건다. 형태 기준(신장비·타원 IoU·볼록성·원형 areolae)은 걸지 않는다 — 1~3차의 엔진 유형은
+YOLO 가 아니라 이 파일의 장단비 규칙이 붙였는데(P29 2절), 4차는 사람이 정한 유형으로 배웠으므로
+그 규칙을 덧대면 YOLO 가 원형 파편이라 한 것을 "원형기준미달" 로 떨어뜨린다. `other` 는 통과시키되
+유형을 비운다(미분류 — 화면의 회색).
+
+**빈 값이나 모르는 값(SAM · 1~3차의 `diatom`)은 지금까지의 규칙 그대로다.** 저장된 옛 판정이 다시
+계산해도 그대로여야 한다(`check_db` 1번).
 """
 
 # 판정 문턱의 기본값. segment_diatoms.py 의 argparse 와 DB 의 ThresholdSet 이
@@ -28,6 +39,17 @@ DEFAULTS = {
     "rod_min_solidity": 0.85,
 }
 FIELDS = tuple(DEFAULTS)
+
+# 4차 YOLO 가 내는 클래스 (`ops/export_yolo.py` 의 `SCHEMES["p29"]` 와 같은 이름 — `ClassDef.key`
+# 와 맞춰 두었다). `other` 는 통과하되 유형이 빈다.
+ENGINE_CLASSES = ("round", "round_frag", "rod", "rod_frag", "chaetoceros", "eucampia")
+ENGINE_OTHER = "other"
+
+
+def engine_class(r):
+    """레코드의 엔진 클래스가 4차 일곱 중 하나면 그 이름, 아니면 None(형태 규칙으로 간다)."""
+    ec = r.get("engine_cls") or ""
+    return ec if ec in ENGINE_CLASSES or ec == ENGINE_OTHER else None
 
 
 class Thresholds:
@@ -53,7 +75,8 @@ class Thresholds:
 
 def classify(r, args):
     """
-    (분류, 탈락사유). 분류가 None 이면 규조각 후보가 아니다.
+    (분류, 탈락사유). 분류가 None 이면 규조각 후보가 아니다. **빈 문자열은 통과한
+    미분류다** — 4차의 `other`(모듈 머리말). 부르는 쪽은 `is not None` 으로 가른다.
 
     텍스처가 1차 관문("규조각인가"), 형태가 2차("어떤 형태인가").
     둘 다 필요하다 — 텍스처만 쓰면 쇄설물 조각이, 형태만 쓰면 구조 없는
@@ -68,6 +91,11 @@ def classify(r, args):
         return None, "장축범위밖"
     if r.get("texture") is not None and r["texture"] < args.texture_min:
         return None, "텍스처부족"
+
+    # 4차 — 유형은 YOLO 가 정했다. 형태 기준을 덧대지 않는다(머리말)
+    ec = engine_class(r)
+    if ec is not None:
+        return ("" if ec == ENGINE_OTHER else ec), None
 
     e, iou, sol = r["elongation"], r["ellipse_iou"], r["solidity"]
     if e < args.round_max_elong:
@@ -173,7 +201,7 @@ def apply(records, args):
     passed, rejected = [], []
     for r in records:
         cls, why = classify(r, args)
-        if cls:
+        if cls is not None:                 # "" 는 통과한 미분류다 (4차 `other`)
             r["cls"] = cls
             passed.append(r)
         else:

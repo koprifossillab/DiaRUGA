@@ -126,6 +126,8 @@ def check_verdicts(slug=None):
             "shape_ok": c.shape_ok, "major_um": c.major_um, "texture": c.texture,
             "elongation": c.elongation, "ellipse_iou": c.ellipse_iou,
             "solidity": c.solidity,
+            # 엔진 클래스 (246). 칸을 모르는 옛 이미지로 돌면 빈 값 — 형태 규칙으로 본다
+            "engine_cls": getattr(c, "engine_cls", "") or "",
         } for c in cands]
         kept, rejected = judge.apply(recs, th)
         want = {r["_pk"]: (True, r["cls"] or "", "") for r in kept}
