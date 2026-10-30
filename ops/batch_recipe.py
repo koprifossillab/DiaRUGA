@@ -6,8 +6,9 @@
     python batch_recipe.py --clear yolo-3차           # 자동으로 안 돈다
     python batch_recipe.py --areas ant yolo-3차       # 남극만 본다
     python batch_recipe.py --areas '' yolo-3차        # 권역 제한을 걷는다
-    python batch_recipe.py --exclude-obs Smear yolo-4차   # 관찰 이름표로 뺀다 (248)
-    python batch_recipe.py --exclude-obs '' yolo-4차      # 이름표 제한을 걷는다
+    python batch_recipe.py --exclude-obs Smear yolo-4.1차   # 관찰 이름표로 뺀다 (248)
+    python batch_recipe.py --exclude-obs '' yolo-4.1차      # 이름표 제한을 걷는다
+    python batch_recipe.py --code Y41 yolo-4.1차            # 카탈로그 번호의 꼬리 (249)
     python batch_recipe.py --restore yolo-3차 '<json>'
 
 관리 화면(`/manage/`)의 `set_recipe` 와 같은 일을 하는 CLI 다. 화면이 있는데도
@@ -20,6 +21,10 @@
 
 권역 규칙 자체는 `pipeline/batch_scope.py` 하나에 있다. 여기서는 그 열쇠를
 조리법에 적기만 한다.
+
+**묶음 코드(`RunBatch.code`)도 여기서 정한다** (249). 카탈로그 번호의 꼬리라
+라벨에서 뽑지 않고 사람이 정한다(모델 주석). **이미 정한 코드는 안 바꾼다** —
+그 번호가 논문·표에 적힌 뒤일 수 있다. 바꿔야 하면 `--force` 를 준다.
 """
 import argparse
 import json
@@ -53,10 +58,40 @@ def find(label: str) -> RunBatch:
     return b
 
 
+def set_code(b: RunBatch, raw: str, *, force: bool = False) -> int:
+    """묶음 코드를 정한다. 막는 것은 DB 제약(유일 · `M` 금지)이 하지만 먼저 말로 거른다."""
+    from django.db import IntegrityError                            # noqa: PLC0415
+    from viewer import catalog                                      # noqa: PLC0415
+    code = raw.strip().upper()
+    if not code or len(code) > 8 or not code.isalnum():
+        raise SystemExit(f"코드는 영숫자 1~8자다: {raw!r}")
+    if code == catalog.MANUAL_CODE:
+        raise SystemExit(f"{code} 는 손그림 자리다 — 묶음에 못 쓴다")
+    if b.code == code:
+        print(f"{b.label} 은 이미 {code} 다")
+        return 0
+    if b.code and not force:
+        raise SystemExit(f"{b.label} 은 이미 코드 {b.code} 가 있다 — 번호가 적힌 뒤일 수 "
+                         f"있어 안 바꾼다. 바꿔야 하면 --force")
+    other = RunBatch.objects.filter(code=code).exclude(pk=b.pk).first()
+    if other is not None:
+        raise SystemExit(f"{code} 는 {other.label} 이 쓰고 있다 — 두 회차의 번호가 겹친다")
+    old = b.code
+    b.code = code
+    try:
+        b.save(update_fields=["code"])
+    except IntegrityError as e:
+        raise SystemExit(f"DB 가 막았다: {e}")
+    print(f"{b.label} 의 코드: {old or '(없음)'} → {code}")
+    show(b)
+    return 0
+
+
 def show(b: RunBatch) -> None:
     mark = "◉" if b.for_review else " "
     body = json.dumps(b.recipe or {}, ensure_ascii=False, sort_keys=True)
-    print(f"{mark} {b.label:<14} {batch_scope.label_for_plan(b.recipe):<12} {body}")
+    code = b.code or "(코드 없음)"
+    print(f"{mark} {b.label:<14} {code:<8} {batch_scope.label_for_plan(b.recipe):<12} {body}")
 
 
 def main() -> int:
@@ -69,9 +104,12 @@ def main() -> int:
     ap.add_argument("--exclude-obs", nargs=2, metavar=("이름표", "묶음"),
                     help="이 관찰 이름표를 뺀다(Smear 등). 쉼표로 여럿. 빈 문자열이면 걷는다")
     ap.add_argument("--restore", nargs=2, metavar=("묶음", "JSON"))
+    ap.add_argument("--code", nargs=2, metavar=("코드", "묶음"),
+                    help="카탈로그 번호의 꼬리(Y3 등). 이미 정한 것은 --force 로만 바꾼다")
+    ap.add_argument("--force", action="store_true")
     a = ap.parse_args()
 
-    if a.list or not any([a.show, a.clear, a.areas, a.exclude_obs, a.restore]):
+    if a.list or not any([a.show, a.clear, a.areas, a.exclude_obs, a.restore, a.code]):
         for b in RunBatch.objects.filter(kind="detect").order_by("id"):
             show(b)
         return 0
@@ -109,6 +147,10 @@ def main() -> int:
         b.save(update_fields=["recipe"])
         show(b)
         return 0
+
+    if a.code:
+        raw, label = a.code
+        return set_code(find(label), raw, force=a.force)
 
     if a.exclude_obs:
         raw, label = a.exclude_obs
