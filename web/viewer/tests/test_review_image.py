@@ -223,6 +223,9 @@ class SummaryCountsOneImageTest(DiaRUGATestCase):
     def setUpTestData(cls):
         fx.make_classes()
         cls.w = fx.make_world(slug="rs23", n_frames=3, n_candidates=3)
+        # **검토를 마친 시야만 센다** (P32 ③). 완료가 없으면 앞뒤가 모두 0 이라
+        # "개수가 안 는다" 가 헛통과한다 — 실제로 그렇게 됐다(10-28)
+        fx.review_done(cls.w.vp)
 
     def summary(self):
         """목록 화면이 쓰는 값 그대로 (`_summary_by_sql`)."""
@@ -230,6 +233,7 @@ class SummaryCountsOneImageTest(DiaRUGATestCase):
 
     def test_프레임_검출이_붙어도_개체_수가_안_는다(self):
         before = self.summary()
+        self.assertEqual(before["n_detected"], 3, "완료가 안 걸려 아무것도 안 센다")
         fx.add_frame_detections(self.w.vp)          # 현재 검출 1 → 4
         after = self.summary()
 

@@ -944,6 +944,56 @@ def check_biodatum(slide):
     print(f"   이명법이 없는 비공식 이름 {len(informal)}: {', '.join(informal)}")
 
 
+# --- 14. 시야의 주 묶음 (P32) ------------------------------------------------
+def check_primary(slug=None):
+    """시야마다의 주 묶음(`Viewpoint.batch`)이 완료 기록·검출과 맞는가 (P31 · P32).
+
+    칸이 비면 따라가고(`data.primary_batch_id`), 채워 둔 것은 따라가면 안 되는
+    시야다 — 회차의 정답과 다른 엔진으로만 보는 시야. 둘 다 **어긋나도 예외가 안
+    나고** 엉뚱한 판이 열리거나 빈 화면이 된다.
+
+    **이 칸을 모르는 옛 이미지로 돌면 건너뛴다** — 크게 적고. 9번이 `catalog` 를
+    못 읽을 때와 같은 자리다(이 도구가 배포 순서에 매달리면 정작 필요한 날 못 돈다).
+    """
+    if not any(f.name == "batch" for f in Viewpoint._meta.get_fields()) or \
+            not any(f.name == "frozen" for f in RunBatch._meta.get_fields()):
+        print("!! 이 이미지의 모델이 주 묶음 칸(0052)을 모른다 — 14번을 건너뛴다")
+        return
+    vps = Viewpoint.objects.all()
+    if slug:
+        vps = vps.filter(slide__slug=slug)
+
+    # 칸이 가리키는 묶음에 그 시야의 현재 검출이 있는가 — 없으면 빈 화면이다
+    fixed = list(vps.filter(batch__isnull=False)
+                 .values_list("id", "batch_id", "slide__slug", "idx"))
+    have = set(Detection.objects.filter(is_current=True,
+                                        viewpoint_id__in=[v for v, *_ in fixed])
+               .values_list("viewpoint_id", "run__batch_id"))
+    empty = [(v, b, sl, i) for v, b, sl, i in fixed if (v, b) not in have]
+    report("칸이 가리키는 묶음에 그 시야의 검출이 있다", len(empty), len(fixed) or 1,
+           "주 묶음에 검출이 없다 — 그 시야가 빈 화면으로 열린다",
+           [f"{sl} g{i}: 묶음 #{b}" for _v, b, sl, i in empty])
+
+    # 얼린 묶음에서 끝낸 시야는 칸이 얼린 묶음이어야 한다 — 아니면 정답 시야가
+    # 검토 대상을 따라가 다른 판으로 열리고, 3차 답지가 4차 편집 화면이 된다(P31 6절)
+    frozen = set(RunBatch.objects.filter(frozen=True).values_list("id", flat=True))
+    answered = (ViewpointReview.objects
+                .filter(done=True, batch_id__in=frozen, viewpoint__in=vps)
+                .values_list("viewpoint_id", "viewpoint__batch_id",
+                             "viewpoint__slide__slug", "viewpoint__idx"))
+    loose = [(sl, i, fb) for _v, fb, sl, i in answered if fb not in frozen]
+    report("얼린 묶음에서 끝낸 시야는 칸이 얼린 묶음이다", len(loose),
+           len(answered) or 1,
+           "정답 시야가 따라가는 칸이다 — 검토 대상을 옮기면 다른 판으로 열린다",
+           [f"{sl} g{i}: 칸 {fb}" for sl, i, fb in loose])
+
+    rb = RunBatch.objects.filter(for_review=True, frozen=True).first()
+    if rb is not None:
+        n = vps.filter(batch__isnull=True).count()
+        print(f"     (검토 대상 {rb.label} 이 얼어 있다 — 칸이 빈 시야 {n}개가 "
+              f"다음 회차를 기다리며 잠겨 있다. 검토 대상을 옮기면 풀린다)")
+
+
 def main():
     global VERBOSE
     ap = argparse.ArgumentParser()
@@ -982,6 +1032,8 @@ def main():
     check_occurrence(args.slide)
     print("\n=== 13. 생층서 기준면 (P28) ===")
     check_biodatum(args.slide)
+    print("\n=== 14. 시야의 주 묶음 (P32) ===")
+    check_primary(args.slide)
 
     print()
     if problems:

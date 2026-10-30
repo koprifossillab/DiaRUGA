@@ -24,7 +24,7 @@ from . import observations as obs
 from .models import (Candidate, Detection, DiatomObject,  # noqa: E501
                      Frame, Image as ImageModel,
                      Locality,
-                     ObjectReview, Run,
+                     ObjectReview, Run, RunBatch,
                      Sample, Site,
                      Slide, ThresholdSet, Viewpoint, ViewpointReview)
 
@@ -287,6 +287,7 @@ def dataset(request, slug):
     # POST 뒤에 redirect 하므로(뒤로 가기가 다시 쓰지 않게) 이 길밖에 없다.
     ctx["marked"] = request.GET.get("marked") or ""
     ctx["marked_n"] = request.GET.get("n") or ""
+    ctx["marked_frozen"] = request.GET.get("frozen") or ""
     ctx["obs_done"] = request.GET.get("obs") or ""
     ctx["came_from"] = request.GET.get("from") or ""
     return render(request, "viewer/dataset.html", ctx)
@@ -335,8 +336,11 @@ def mark_all(request, slug):
     out = data.mark_all_reviewed(slug, done=(want == "done"))
     if out is None:
         raise Http404(f"unknown dataset: {slug}")
+    # 얼린 시야는 건너뛴다(P32 ②) — 건너뛴 수를 화면이 적게 한다. "30개를
+    # 표시했습니다" 만 내면 나머지가 왜 그대로인지 알 수 없다
     return redirect(f"{reverse('dataset', args=[slug])}"
-                    f"?marked={want}&n={out['changed']}")
+                    f"?marked={want}&n={out['changed']}"
+                    f"&frozen={out.get('frozen', 0)}")
 
 
 def core_redirect(request, site_code, core_code):
@@ -567,8 +571,12 @@ def group(request, slug, gid):
     ctx["off"] = (None if (slide is None or ctx.get("review_blocked")
                            or ctx.get("readonly"))
                   else offline_pick_ctx(slide, "review", str(gid)))
-    # 가르기·합치기 칸이 그리는 프레임 줄 — 썸네일과 촬영 간격 (2026-09-29)
-    if slide is not None and not ctx.get("readonly"):
+    # 가르기·합치기 칸이 그리는 프레임 줄 — 썸네일과 촬영 간격 (2026-09-29).
+    # **얼린 정답 시야에는 안 낸다**(P32 ②) — 서버가 거절하는 일을 화면이 되는
+    # 것처럼 보이면 안 된다(051). 칸이 빈 시야(4차를 기다리는 것)는 가를 수 있다
+    answer = ctx.get("frozen") and Viewpoint.objects.filter(
+        slide=slide, idx=gid, batch__frozen=True).exists()
+    if slide is not None and not ctx.get("readonly") and not answer:
         ctx["regroup_rows"] = regroup.frame_rows(
             Frame.objects.filter(slide=slide, viewpoint__idx=gid)
             .order_by("seq"))
@@ -1423,9 +1431,10 @@ def catalog(request, slug):
     # **조용히 줄면 자료가 사라진 것으로 읽힌다.** 파편을 감출 때 몇 개를
     # 감췄는지 적는 것과 같은 줄이다.
     n_vp = Viewpoint.objects.filter(slide__slug=slug).count()
-    n_done = ViewpointReview.objects.filter(
-        viewpoint__slide__slug=slug, done=True,
-        batch_id=(batch or {}).get("id")).count() if batch else 0
+    # 시야마다 **그 주 묶음에서** 끝냈는가로 센다(P32) — 카드가 시야마다의 주
+    # 묶음으로 나오므로 세는 것도 같아야 한다
+    sl = Slide.objects.filter(slug=slug).first()
+    n_done = len(data.done_viewpoints(slide=sl)) if sl else 0
 
     if batch is None:
         blocked = ("검토할 묶음이 정해져 있지 않아 개체가 하나도 안 보입니다 — "
@@ -2238,7 +2247,16 @@ def threshold_preview(request):
 
 @require_POST
 def threshold_apply(request):
-    """미리보기와 같은 판정을 실제로 저장한다."""
+    """미리보기와 같은 판정을 실제로 저장한다.
+
+    **검토 대상 묶음이 얼었으면 거절한다**(P32 ②). 문턱은 그 묶음의 통과·탈락을
+    다시 매겨 정답 시야에 보이는 개체를 바꾼다 — 미리보기는 그대로 둔다.
+    """
+    frozen = RunBatch.objects.filter(for_review=True, frozen=True).first()
+    if frozen is not None:
+        return JsonResponse({"ok": False, "error": (
+            f"검토 대상 묶음({frozen.label})이 얼어 있어 문턱을 적용할 수 없습니다 "
+            f"— 정답 시야의 통과·탈락이 바뀝니다.")}, status=409)
     try:
         payload = json.loads(request.body.decode("utf-8"))
     except (ValueError, UnicodeDecodeError):
@@ -2483,6 +2501,13 @@ def save_object_link(request, slug, gid):
     act = payload.get("act") or "save"
     link_id = payload.get("link_id")
 
+    # **묶기·풀기는 개체의 구성을 바꾼다** — 얼린 시야에서는 둘 다 막는다(P32 ②).
+    # 분류·종명을 맞추는 것은 카탈로그 문으로 간다.
+    try:
+        data.guard_frozen(vp)
+    except data.FrozenError as e:
+        return bad(str(e), 409)
+
     if act == "unlink":
         link = DiatomObject.objects.filter(pk=link_id, viewpoint=vp).first()
         if link is None:
@@ -2504,7 +2529,8 @@ def save_object_link(request, slug, gid):
     if act != "save":
         return bad(f"모르는 act: {act}")
 
-    rb = data.review_batch_id()
+    # **그 시야의 주 묶음**(P32) — 화면이 보여 준 판과 같은 묶음이어야 한다(051)
+    rb = data.primary_batch_id(vp)
     if rb is None:
         return bad("검토 대상 묶음이 정해져 있지 않다")
 
@@ -2733,7 +2759,7 @@ def spread_detection(request, slug, gid):
     시야의 것인가 · 그 마스크가 **검토 대상 묶음의 살아 있는 통과 후보**인가 ·
     오검출로 지운 것이 아닌가. 겹침은 **안 본다**(P19 4.3 · 사용자 방침).
 
-    **읽기 전용 묶음은 여기 못 온다** — `review_batch_id()` 의 묶음에만 앉히기
+    **읽기 전용 묶음은 여기 못 온다** — 시야의 주 묶음(`primary_batch_id`)에만 앉히기
     때문이다. 그 라디오로 다른 회차를 보고 있으면 화면이 항목을 안 낸다(051).
     """
     vp = (Viewpoint.objects.filter(slide__slug=slug, idx=gid)
@@ -2749,7 +2775,13 @@ def spread_detection(request, slug, gid):
     except (ValueError, UnicodeDecodeError):
         return bad("JSON 이 아니다")
 
-    rb = data.review_batch_id()
+    # 번지기는 개체의 구성을 바꾼다 — 얼린 시야는 막는다(P32 ②). 묶음은 그 시야의
+    # 주 묶음이다(화면이 보여 준 판과 같아야 한다 · 051)
+    rb = data.primary_batch_id(vp)
+    try:
+        data.guard_frozen(vp, rb)
+    except data.FrozenError as e:
+        return bad(str(e), 409)
     if rb is None:
         return bad("검토 대상 묶음이 정해져 있지 않다")
 
@@ -3123,10 +3155,8 @@ def offline_pick_ctx(slide: Slide, kind: str, gids: str = "") -> dict | None:
     ids = list(slide.viewpoints.order_by("idx").values_list("idx", "n_frames"))
     if not ids:
         return None
-    cards = (ObjectReview.objects
-             .filter(viewpoint__slide=slide, batch_id=data.review_batch_id(),
-                     removed=False, diatom_object__isnull=False)
-             .values("diatom_object").distinct().count())
+    # 시야마다 그 주 묶음의 판정으로 센다 (P32 · `data.primary_cards`)
+    cards = data.primary_cards(slide=slide).get(slide.pk, 0)
     return {
         "slug": slide.slug,
         "kind": kind,
@@ -3157,11 +3187,10 @@ def _offline_slides() -> list[dict]:
     """
     # 개체 수는 따로 센다 — 같은 질의에 조인을 더 걸면 위의 합계가 부풀어
     # 오른다(다대일 조인이 행을 늘린다).
-    cards = dict(ObjectReview.objects
-                 .filter(batch_id=data.review_batch_id(), removed=False,
-                         diatom_object__isnull=False)
-                 .values_list("viewpoint__slide_id")
-                 .annotate(n=Count("diatom_object", distinct=True)))
+    #
+    # 시야마다 그 주 묶음의 판정으로 센다 (P32 · `data.primary_cards`) — 슬라이드
+    # 전부를 한 번에 푼다
+    cards = data.primary_cards()
     rows = []
     for sl in Slide.objects.order_by("name"):
         ids = list(sl.viewpoints.order_by("idx")

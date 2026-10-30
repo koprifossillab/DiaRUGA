@@ -209,10 +209,14 @@ class DrawnMaskTest(DiaRUGATestCase):
         후보 기반 SQL 이 `Candidate` 가 없는 개체를 못 보므로, 사람이 찾아낸
         규조각이 밀도에서 통째로 빠진다 — 그리고 그 숫자가 보고서에 실린다.
         """
+        # **검토를 마친 시야만 센다** (P32 ③) — 완료 없이 세면 앞뒤가 0 이라
+        # 이 시험이 헛돈다. 저장도 완료를 실어 보낸다(화면이 그렇게 한다)
+        fx.review_done(self.w.vp)
         before = data._summary_by_sql(self.w.slide)
-        self.post(drawn=[self.draw(cls="rod")])
+        self.post(drawn=[self.draw(cls="rod")], done=True)
         after = data._summary_by_sql(self.w.slide)
 
+        self.assertGreater(before["n_detected"], 0, "완료가 안 걸려 아무것도 안 센다")
         self.assertEqual(after["n_detected"], before["n_detected"] + 1,
                          "그린 개체가 개수에 안 잡혔다")
         self.assertEqual(after["per_cls"]["rod"], before["per_cls"]["rod"] + 1,
@@ -221,15 +225,19 @@ class DrawnMaskTest(DiaRUGATestCase):
 
     def test_그린_개체는_자동_검출_수에_안_섞인다(self):
         """**엔진 성적을 잘못 읽게 된다.** 사람이 만든 것은 엔진이 낸 것이 아니다."""
+        fx.review_done(self.w.vp)                   # 검토를 마친 시야만 센다 (P32 ③)
         before = data._summary_by_sql(self.w.slide)
-        self.post(drawn=[self.draw()])
+        self.post(drawn=[self.draw()], done=True)
         after = data._summary_by_sql(self.w.slide)
+        self.assertGreater(before["n_auto"], 0, "완료가 안 걸려 아무것도 안 센다")
         self.assertEqual(after["n_auto"], before["n_auto"])
 
     def test_지우면_숫자도_돌아온다(self):
+        fx.review_done(self.w.vp)                   # 검토를 마친 시야만 센다 (P32 ③)
         before = data._summary_by_sql(self.w.slide)["n_detected"]
-        self.post(drawn=[self.draw()])
-        self.post(drawn=[])
+        self.post(drawn=[self.draw()], done=True)
+        self.assertEqual(data._summary_by_sql(self.w.slide)["n_detected"], before + 1)
+        self.post(drawn=[], done=True)
         self.assertEqual(data._summary_by_sql(self.w.slide)["n_detected"], before)
 
     def test_그린_개체의_분류가_labels_지도에_안_실린다(self):

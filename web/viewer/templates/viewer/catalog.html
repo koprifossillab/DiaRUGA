@@ -582,7 +582,7 @@
         <span>{{ r.major_um }} µm</span>
         {% if r.frame_seq is not None %}<span>프레임 {{ r.frame_seq }}</span>{% endif %}
         {% if r.linked_n %}
-          {% if readonly or show_gone %}
+          {% if readonly or show_gone or r.frozen %}
             <span title="같은 개체로 묶인 판 {{ r.linked_n }}장 중 가장 크게 보이는 것을 그린다">묶음 {{ r.linked_n }}</span>
           {% else %}
             {# **푸는 것만 한다** (P16 3.2) — 묶을 상대는 이 화면에 없다. #}
@@ -594,7 +594,13 @@
         {% endif %}
         {% if r.manual %}<span class="warn">수동 복구</span>{% endif %}
         <span class="say"></span>
-        {% if not readonly %}
+        {% if r.frozen %}
+          {% comment %}
+            **얼린 묶음의 정답 개체** (P32 ②). 지우기·되살리기·묶음 풀기는 판정을
+            바꾸므로 단추를 안 낸다 — 서버도 거절한다(063). 동정 칸은 그대로 산다.
+          {% endcomment %}
+          <span class="dim" title="얼린 묶음의 정답이라 지우거나 되살릴 수 없습니다 — 유형·종명·등급·자세·코멘트는 고칠 수 있습니다">정답 · 얼림</span>
+        {% elif not readonly %}
           <span class="act">
             {% if show_gone %}
               <button type="button" class="restore">되살린다</button>

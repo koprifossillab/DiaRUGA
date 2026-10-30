@@ -21,6 +21,18 @@ def _row(ctx, key):
     return next(r for r in ctx["rows"] + ctx["extra_rows"] if r["key"] == key)
 
 
+def _reviewed(*worlds):
+    """시야를 전부 검토 완료로 — **산출은 검토를 마친 시야만 센다** (P32 ③).
+
+    이 화면은 검토가 끝난 슬라이드를 놓고 비교하는 화면이라(`compare_slides`
+    머리말) 그 모양으로 세운다. 교정을 단 뒤에 부른다 — 운영의 완료와 같은 함수
+    (`confirm_kept`)가 남은 마스크를 개체로 세운다.
+    """
+    for w in worlds:
+        for vp in w.viewpoints:
+            fx.review_done(vp)
+
+
 class CompareRowsTest(DiaRUGATestCase):
 
     @classmethod
@@ -34,6 +46,7 @@ class CompareRowsTest(DiaRUGATestCase):
         keys = cls.a.keys()
         fx.add_review(cls.a.vp, keys[0], removed=True)
         fx.add_review(cls.a.vp, keys[2], species="Fragilariopsis kerguelensis")
+        _reviewed(cls.a, cls.b)
 
     def test_분류_수가_목록과_같다(self):
         ctx = data.compare_slides(["a", "b"])
@@ -76,6 +89,7 @@ class CompareRowsTest(DiaRUGATestCase):
         c = fx.make_world(slug="c", depth_cm=300.0, sample_code="300cm",
                           n_candidates=len(fx.CLASSES) + 1)
         fx.add_review(c.vp, c.keys()[0], species="Eucampia antarctica")
+        _reviewed(c)
         ctx = data.compare_slides(["c"])
         rnd = _row(ctx, "round")
         self.assertEqual(rnd["cells"][0]["n"], 2)
@@ -125,6 +139,7 @@ class ComparePageTest(DiaRUGATestCase):
                               n_candidates=2)
         fx.add_review(cls.a.vp, cls.a.keys()[0],
                       species="Fragilariopsis kerguelensis")
+        _reviewed(cls.a, cls.b)
 
     def test_화면이_열리고_고른_것이_표에_선다(self):
         r = self.client.get(reverse("compare"), {"s": ["a", "b"]})
@@ -200,6 +215,7 @@ class CompareCoreRefTest(DiaRUGATestCase):
         CorePoint.objects.bulk_create(
             [CorePoint(series=cs, depth_mm=mm, value=v)
              for mm, v in ((600, 40.0), (710, 44.0), (800, 50.0), (2000, 30.0))])
+        _reviewed(cls.a, cls.b, cls.c, cls.o)
 
     def test_잰_값_내삽_범위_밖_없음이_열마다_갈린다(self):
         ctx = data.compare_slides(["a", "b", "c", "o"])

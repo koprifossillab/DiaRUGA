@@ -14,6 +14,7 @@ import json
 import math
 import re
 import secrets
+import sys
 from collections import Counter, defaultdict
 from pathlib import Path
 
@@ -940,8 +941,9 @@ def candidate_rows(slug: str, batch_id=None, gone: bool = False,
     절대경로인 경우에도 어긋나지 않아야 한다.
 
     `batch_id` 를 주면 그 묶음의 검출을 훑는다 (`current_detections` 와 같은
-    규칙). 안 주면 검토 대상 묶음이고, 그것이 크롭 화면·계측 표·개체 카탈로그가
-    보는 것이다.
+    규칙). 안 주면 **시야마다 그 주 묶음**이고(P32), 그것이 크롭 화면·계측 표·개체
+    카탈로그가 보는 것이다 — 한 슬라이드에 3차 정답 시야와 4차로 덮인 시야가
+    섞여도 검토 화면과 같은 판을 낸다.
 
     `gone=True` 면 **사람이 오검출로 지운 것**을 대신 훑는다 (P16 5.1). 섞어서
     내지 않는다 — 지운 것을 되살리는 화면과 동정하는 화면은 하는 일이 다르고,
@@ -956,19 +958,29 @@ def candidate_rows(slug: str, batch_id=None, gone: bool = False,
     if slide is None:
         return []
 
-    if batch_id is None:
-        batch_id = review_batch_id()
-    # 검토 대상이 없으면 **빈 목록**이다 — `current_detections` 와 같은 규칙이고,
-    # 조용히 아무 묶음이나 보여주지 않는다 (P10 3.6).
-    if batch_id is None:
-        return []
+    # **어느 묶음인지는 여기서 한 번만 묻는다** — 시야마다 다르면 슬라이드 단위로
+    # 한 번에 푼다(`primary_batch_map`).
+    if batch_id is not None:
+        prim, vps = None, _viewpoints_of(slide, only_current=True,
+                                         batch_id=batch_id)
+    else:
+        prim = primary_batch_map(slide=slide)
+        used = {b for b in prim.values() if b is not None}
+        # 검토 대상이 없으면 **빈 목록**이다 — `current_detections` 와 같은 규칙이고,
+        # 조용히 아무 묶음이나 보여주지 않는다 (P10 3.6).
+        if not used:
+            return []
+        vps = _viewpoints_of(slide, only_current=True, batch_ids=used)
 
     rows = []
-    for vp in _viewpoints_of(slide, only_current=True, batch_id=batch_id):
+    for vp in vps:
+        vb = batch_id if prim is None else prim.get(vp.pk)
+        if vb is None:
+            continue
         # **이미지마다 자기 검출을 만든다** (P09 1단계). 시야 하나에 현재 검출이
         # 여럿일 수 있고(합성본 하나 + 프레임마다 하나), `_frames` 는 그것을
         # 경로로 맞춘다 — 검토 화면(`viewpoint_detail`)과 같은 자료다.
-        dets = current_detections(vp, batch_id)
+        dets = current_detections(vp, vb)
         if not dets:
             continue
         bmap = batch_ids_of(dets)
@@ -1512,6 +1524,12 @@ def catalog_rows(slug: str, gone: bool = False) -> list[dict]:
                              "here": big[0] == (r.get("view") or r).get("image_id"),
                              "seq": big[2]}
 
+    # **얼린 묶음의 정답 개체** (P32 ②) — 카드가 지우기·되살리기·묶음 풀기를 안
+    # 낸다. 서버도 거절한다(`guard_frozen`). 동정 칸은 그대로 산다.
+    fz = frozen_batch_ids()
+    for r in rows:
+        r["frozen"] = r.get("batch_id") in fz
+
     rows.sort(key=lambda r: (r["group_id"],
                              (r.get("bbox_xywh") or [0, 0])[1],
                              (r.get("bbox_xywh") or [0, 0])[0]))
@@ -1801,7 +1819,12 @@ def set_catalog_removed(vp: Viewpoint, image, key: str, removed: bool) -> dict:
     단추를 다시 누른다 (063).
 
     되돌려서 표시가 하나도 안 남으면 그 줄을 지운다 (`_catalog_prune`).
+
+    **얼린 시야에서는 지우기도 되돌리기도 막는다**(P31 5절 1 · P32 ②). 지우기는
+    동정이 아니라 판정을 바꾼다 — 정답에서 개체가 빠지거나 생긴다. 유형·종명 등은
+    `save_catalog_entry` 가 그대로 받는다.
     """
+    guard_frozen(vp)
     obj, _image_id = _catalog_target(vp, image, key)
 
     if removed:
@@ -2057,9 +2080,11 @@ def review_state(vp, batch_id=None):
 
     **읽는 자리를 하나로 모은다** — 흩어져 있으면 뜻이 바뀔 때 전부 틀리는데
     예외가 안 난다(P10 1단계에서 `is_current` 로 같은 일을 했다).
+
+    `batch_id` 를 안 주면 **그 시야의 주 묶음**이다(P32).
     """
     if batch_id is None:
-        batch_id = review_batch_id()
+        batch_id = primary_batch_id(vp)
     done, note = False, ""
     for r in ViewpointReview.objects.filter(viewpoint=vp):
         if r.batch_id is None:
@@ -2070,17 +2095,24 @@ def review_state(vp, batch_id=None):
 
 
 def done_viewpoints(batch_id=None, *, slide=None, ids=None) -> set:
-    """검토 완료로 표시된 시야 pk 들. **고른 묶음 것만 센다** (073)."""
-    if batch_id is None:
-        batch_id = review_batch_id()
-    if batch_id is None:
-        return set()
-    qs = ViewpointReview.objects.filter(done=True, batch_id=batch_id)
+    """검토 완료로 표시된 시야 pk 들. **고른 묶음 것만 센다** (073).
+
+    `batch_id` 를 안 주면 **시야마다 그 주 묶음에서** 끝냈는가를 본다(P32). 검토
+    대상을 4차로 옮기면 3차 정답 시야는 여전히 완료로, 덮인 시야는 미완으로 센다.
+    """
+    qs = ViewpointReview.objects.filter(done=True, batch__isnull=False)
     if slide is not None:
         qs = qs.filter(viewpoint__slide=slide)
     if ids is not None:
         qs = qs.filter(viewpoint_id__in=ids)
-    return set(qs.values_list("viewpoint_id", flat=True))
+    if batch_id is not None:
+        return set(qs.filter(batch_id=batch_id)
+                   .values_list("viewpoint_id", flat=True))
+    pairs = list(qs.values_list("viewpoint_id", "batch_id"))
+    if not pairs:
+        return set()
+    prim = primary_batch_map(slide=slide, ids=ids)
+    return {v for v, b in pairs if prim.get(v) == b}
 
 
 def review_batch_label():
@@ -2098,18 +2130,21 @@ def batches_elsewhere(slide=None, vp=None) -> dict:
     "이 시야가 빈 이유" 를 화면이 말하려면 이것이 있어야 한다. 검출이 아예 없는
     것과 **다른 묶음에는 있는 것**은 다른 말이고, 뒤엣것을 "검출은 아직입니다"
     라고 적으면 거짓말이다 — 사람이 돌리러 간다.
+
+    **"검토 대상" 은 시야마다의 주 묶음이다**(P32).
     """
-    rb = review_batch_id()
     qs = Detection.objects.filter(is_current=True)
     if slide is not None:
         qs = qs.filter(viewpoint__slide=slide)
     if vp is not None:
         qs = qs.filter(viewpoint=vp)
-    if rb is not None:
-        qs = qs.exclude(run__batch_id=rb)
+    prim = ({vp.pk: primary_batch_id(vp)} if vp is not None
+            else primary_batch_map(slide=slide))
     out = defaultdict(list)
-    for vp_id, label in (qs.values_list("viewpoint_id", "run__batch__label")
-                         .distinct()):
+    for vp_id, bid, label in (qs.values_list("viewpoint_id", "run__batch_id",
+                                             "run__batch__label").distinct()):
+        if bid == prim.get(vp_id):
+            continue
         if label and label not in out[vp_id]:
             out[vp_id].append(label)
     return out
@@ -2123,6 +2158,180 @@ def review_batch_id():
     """
     return (RunBatch.objects.filter(for_review=True)
             .values_list("id", flat=True).first())
+
+
+# --- 시야의 주 묶음 (P31 2절 · P32) -------------------------------------------
+#
+# **시야 하나를 보고 고치는 자리는 전부 여기서 묶음을 얻는다.** 화면·저장·카탈로그·
+# 산출이 한 군데라도 전역 `review_batch_id()` 나 `Viewpoint.batch` 칸을 따로 보면
+# 화면에 보이는 판과 저장되는 판이 어긋난다(051). 전역 값을 그대로 써도 되는 것은
+# 관리 화면(무엇을 검토 대상으로 둘지 고르는 자리)과 문턱 조정뿐이다.
+
+def _batch_scope():
+    """`pipeline/batch_scope.py` — 묶음이 어느 권역을 보는가의 규칙은 거기 하나뿐이다."""
+    root = Path(__file__).resolve().parent.parent.parent / "pipeline"
+    if str(root) not in sys.path:
+        sys.path.insert(0, str(root))
+    import batch_scope                                  # noqa: PLC0415
+    return batch_scope
+
+
+def _batches() -> tuple:
+    """`(검토 대상 pk, 그 조리법, 묶음 pk → 최근 순위)`. 묶음은 몇 개뿐이라 통째로 읽는다."""
+    rows = list(RunBatch.objects.order_by("-started_at", "-id")
+                .values_list("id", "for_review", "recipe"))
+    rb = next((b for b, on, _ in rows if on), None)
+    recipe = next((r for b, on, r in rows if on), None)
+    return rb, recipe, {b: i for i, (b, _, _) in enumerate(rows)}
+
+
+def _follow(area, have, rb, recipe, order: dict):
+    """칸이 빈 시야의 주 묶음.
+
+    **전역 검토 대상이 이 시야의 권역을 다루면 그것을 따른다** — 검출이 아직 없어도
+    그렇다(화면은 "그 묶음의 검출이 없습니다" 를 적는다). 다루지 않을 때만 **현재
+    검출이 있는 가장 최근 묶음**으로 간다(`have` · `order` 가 작을수록 최근).
+
+    검토 대상을 4차로 옮긴 뒤 한국의 새 슬라이드가 그 갈래다 — 4차 조리법이
+    `areas: ["ant"]` 라 4차가 그 슬라이드를 안 다루고, 검출은 `sam2-전수` 에만 있다.
+    이름표를 코드에 박지 않고 묶음의 범위(`batch_scope`)를 따른다.
+
+    처음에는 "검토 대상에 검출이 없으면 검출이 있는 묶음" 이었는데 그러면 4차를
+    기다리는 남극 시야(RS14-GC04 · `sam2-전수` 검출만 있다)가 SAM 편집 화면으로
+    열렸다(10-28 시험이 잡았다).
+    """
+    if rb is None or _batch_scope().allows(recipe, area):
+        return rb
+    have = set(have) - {None}
+    if not have:
+        return rb
+    return min(have, key=lambda b: order.get(b, len(order)))
+
+
+def primary_batch_id(vp) -> int | None:
+    """그 시야의 주 묶음 pk — 화면이 보여 주고 저장이 고치는 묶음.
+
+    `Viewpoint.batch` 가 차 있으면 그것(정답 · 다른 엔진으로만 보는 시야), 비어
+    있으면 따라간다(`_follow`).
+
+    **`vp.detections` 를 안 읽는다** — 화면에 따라 검토 대상 묶음 것만 걸러서
+    prefetch 해 두기 때문에(`_viewpoints_of`), 그것을 읽으면 "다른 묶음에는 검출이
+    있다" 를 모른다. 한 시야에 질의 몇 개라 직접 묻는다.
+    """
+    if vp.batch_id is not None:
+        return vp.batch_id
+    # 시야 객체에 답을 붙여 두지 않는다 — 같은 객체를 쥔 채 검토 대상을 갈면
+    # 옛 답이 남는다(시험이 그렇게 잡았다)
+    rb, recipe, order = _batches()
+    if rb is None or _batch_scope().allows(recipe, None):
+        return rb                       # 권역을 안 가르는 조리법 — 물을 것이 없다
+    area = (Viewpoint.objects.filter(pk=vp.pk)
+            .values_list("slide__sample__locality__site__area", flat=True).first())
+    have = set(Detection.objects.filter(viewpoint=vp, is_current=True)
+               .values_list("run__batch_id", flat=True))
+    return _follow(area, have, rb, recipe, order)
+
+
+def primary_batch_map(*, slide=None, ids=None) -> dict:
+    """시야 pk → 주 묶음 pk. 여럿을 한 번에 푼다 — 규칙은 `primary_batch_id` 와 같다.
+
+    `ids` 를 큰 목록으로 주지 말 것 — SQLite 식 깊이 한도에 걸린다(228). 슬라이드
+    단위면 `slide` 로, 전부면 둘 다 비운다.
+    """
+    qs = Viewpoint.objects.all()
+    if slide is not None:
+        qs = qs.filter(slide=slide)
+    if ids is not None:
+        qs = qs.filter(id__in=list(ids))
+    rows = list(qs.values_list("id", "batch_id",
+                               "slide__sample__locality__site__area"))
+    rb, recipe, order = _batches()
+    loose = [v for v, b, _ in rows if b is None]
+    have = defaultdict(set)
+    if loose and rb is not None and not _batch_scope().allows(recipe, None):
+        # 검토 대상이 권역을 가르는 조리법일 때만 검출을 물을 일이 있다
+        dq = Detection.objects.filter(is_current=True)
+        if slide is not None:
+            dq = dq.filter(viewpoint__slide=slide)
+        elif ids is not None:
+            dq = dq.filter(viewpoint_id__in=loose)
+        for vid, bid in dq.values_list("viewpoint_id", "run__batch_id").distinct():
+            have[vid].add(bid)
+    return {v: (b if b is not None
+                else _follow(area, have.get(v, ()), rb, recipe, order))
+            for v, b, area in rows}
+
+
+def frozen_batch_ids() -> set:
+    """얼린 묶음들의 pk (`RunBatch.frozen`)."""
+    return set(RunBatch.objects.filter(frozen=True).values_list("id", flat=True))
+
+
+def viewpoint_frozen(vp, batch_id=None) -> bool:
+    """그 시야가 얼린 묶음을 보고 있는가 — 모양·지우기·그리기·완료가 잠긴다(P32 ②).
+
+    `batch_id` 를 주면 그 묶음으로 판단한다(이미 주 묶음을 얻어 둔 자리).
+    """
+    bid = primary_batch_id(vp) if batch_id is None else batch_id
+    return bid is not None and RunBatch.objects.filter(pk=bid, frozen=True).exists()
+
+
+FROZEN_MSG = ("이 시야는 얼린 묶음({label})의 정답이라 모양·지우기·그리기·완료를 "
+              "바꿀 수 없습니다. 카탈로그에서 유형·종명·등급·자세·코멘트만 고칠 수 "
+              "있습니다.")
+# 칸이 비어 얼린 검토 대상을 따라가는 시야 — 정답이 아니라 다음 회차를 기다린다
+# (P31 ② · 369cm 미검토 · RS14-GC04). "정답" 이라고 적으면 실제와 어긋난다
+FROZEN_WAIT_MSG = ("검토 대상 묶음({label})이 얼어 있어 이 시야는 다음 회차의 검출을 "
+                   "기다립니다 — 모양·지우기·그리기·완료는 그때 합니다. 동정은 지금도 "
+                   "적을 수 있습니다.")
+
+
+def frozen_message(batch_id, answer: bool = True) -> str:
+    label = (RunBatch.objects.filter(pk=batch_id)
+             .values_list("label", flat=True).first() or "?")
+    return (FROZEN_MSG if answer else FROZEN_WAIT_MSG).format(label=label)
+
+
+def primary_cards(*, slide=None, ids=None) -> dict:
+    """슬라이드 pk → 카드(개체) 수. **시야마다 그 주 묶음의 판정으로** 센다(P32).
+
+    카드는 개체 단위이고(P18) 판정은 `(이미지, 묶음)` 에 붙는다. 전역 검토 대상
+    하나로 세면 주 묶음이 다른 시야(한국·Smear · 4차로 옮긴 뒤의 3차 정답)의
+    개체가 통째로 빠진다 — 오프라인 꺼내기 패널이 "카드 0" 을 말하게 된다.
+    """
+    prim = primary_batch_map(slide=slide, ids=ids)
+    by = defaultdict(list)
+    for v, b in prim.items():
+        if b is not None:
+            by[b].append(v)
+    if not by:
+        return {}
+    q = Q()
+    for b, vids in by.items():
+        q |= Q(batch_id=b, viewpoint_id__in=vids)
+    return dict(ObjectReview.objects
+                .filter(q, removed=False, diatom_object__isnull=False)
+                .values_list("viewpoint__slide_id")
+                .annotate(n=Count("diatom_object", distinct=True)))
+
+
+class FrozenError(ValueError):
+    """얼린 시야에 모양·지우기·그리기·완료를 쓰려 했다.
+
+    `ValueError` 의 갈래라서 저장 문들이 이미 하던 대로 409 로 돌려준다 — 뷰마다
+    새 갈래를 더하지 않아도 거절이 화면의 실패 띠까지 간다.
+    """
+
+
+def guard_frozen(vp, batch_id=None) -> None:
+    """얼린 시야면 `FrozenError`. **저장 문마다 맨 앞에서 부른다**(P32 ②).
+
+    화면이 읽기 전용으로 여는 것과 별개다 — 화면에서 막는 것은 막는 것이 아니다
+    (063). 오프라인 반입도 같은 함수(`save_review` 등)를 지나므로 여기서 걸린다.
+    """
+    bid = primary_batch_id(vp) if batch_id is None else batch_id
+    if bid is not None and RunBatch.objects.filter(pk=bid, frozen=True).exists():
+        raise FrozenError(frozen_message(bid, answer=vp.batch_id is not None))
 
 
 def pipeline_status() -> dict:
@@ -2268,7 +2477,12 @@ def current_detections(vp: Viewpoint, batch_id=None) -> list:
     # 검토 대상이 없으면 **빈 목록**이다. 조용히 아무 묶음이나 보여주면 사람이
     # 무엇을 검토하고 있는지 모른 채 교정을 쌓는다 (P10 3.6). 그 상태는
     # `check_db.py` 가 센다.
-    rb = review_batch_id() if batch_id is None else batch_id
+    #
+    # **기본은 그 시야의 주 묶음이다**(P32 · 10-28). 위에서 "기본값을 바꾸면 안 된다"
+    # 고 한 것은 뜻이 자리마다 흩어진 채 바뀌는 것을 막으려던 것이고, 이번에는 열 곳
+    # 넘는 자리가 **한 번에 같은 뜻으로** 옮겨 가게 하려고 여기서 바꾼다 — 화면·저장·
+    # 카탈로그가 이 기본값으로 묶음을 얻는다.
+    rb = primary_batch_id(vp) if batch_id is None else batch_id
     if rb is None:
         return []
     bmap = batch_ids_of(dets)
@@ -2522,12 +2736,11 @@ def _summary_by_sql(slide: Slide) -> dict:
                                  "n_auto": 0, "n_labeled": 0}
     per_cls.update({k: v for k, v in row["per_cls"].items() if k in per_cls})
 
-    # 검출이 돈 **시야 수** — 평균의 분모다. **검출 수가 아니다**: 시야 하나에
+    # 세는 **시야 수** — 평균의 분모다. **검출 수가 아니다**: 시야 하나에
     # 현재 검출이 여럿이면(합성본 + 프레임마다) 분모가 4.6배가 되어 시야당 평균이
     # 그만큼 작아진다. 분자는 대표 이미지 하나만 세므로 둘이 어긋난다 (P09 5.3).
-    detected_groups = (Detection.objects
-                       .filter(viewpoint__slide=slide).reviewing()
-                       .values("viewpoint_id").distinct().count())
+    # 분자와 같은 `rep` 에서 센다 — 검토를 마친 시야만이다(P32 ③).
+    detected_groups = row.get("counted_groups", 0)
     return {"per_cls": per_cls, "n_detected": row["n_detected"],
             "n_auto": row["n_auto"], "n_labeled": row["n_labeled"],
             "detected_groups": detected_groups}
@@ -2559,18 +2772,33 @@ def _summary_by_sql(slide: Slide) -> dict:
 # 낮지만(엔진이 다르면 `exact` 가 0%다) 겹치면 `LEFT JOIN` 이 행을 불려 개수가
 # 조용히 는다. `IS` 로 비교하는 것은 사람이 그린 개체가 `batch IS NULL` 이라서다.
 _SUMMARY_SQL = """
-WITH rep AS (
+WITH cnt AS (
+    -- **검토를 마친 시야만, 시야마다 마지막으로 완료한 묶음의 기록으로 센다**
+    -- (P31 ⑥ · P32 ③). 미검토 시야의 엔진 출력은 파편을 개체로 세고 빽빽한
+    -- 시야에서 놓친다 — 369cm 가 검토분 8.2 · 미검토분 25.4 /시야였다(10-27).
+    -- 검토 대상을 4차로 옮겨도 3차에서 끝낸 시야는 3차 기록으로 센다.
+    -- "마지막" 은 묶음이 생긴 때(`started_at`)다 — 완료를 누른 때가 아니다.
+    SELECT viewpoint_id, batch_id FROM (
+        SELECT w.viewpoint_id, w.batch_id,
+               ROW_NUMBER() OVER (PARTITION BY w.viewpoint_id
+                                  ORDER BY b.started_at DESC, b.id DESC) AS k
+          FROM viewer_viewpointreview w
+          JOIN viewer_runbatch b ON b.id = w.batch_id
+         WHERE w.done) AS t
+     WHERE k = 1
+),
+rep AS (
     SELECT d.id AS det_id, d.viewpoint_id, d.image_id, run.batch_id,
            ROW_NUMBER() OVER (
                PARTITION BY d.viewpoint_id
                ORDER BY CASE i.kind WHEN 'stack' THEN 0 ELSE 1 END, d.id) AS rn
       FROM viewer_detection d
       JOIN viewer_image i ON i.id = d.image_id
-      LEFT JOIN viewer_run run ON run.id = d.run_id
-      LEFT JOIN viewer_runbatch rb ON rb.id = run.batch_id
-     -- **검토 대상 묶음의 것만** (P10 1단계). `is_current` 만 보면 나란히 쌓아
-     -- 둔 다른 엔진의 검출까지 세어 개수가 몇 배가 된다.
-     WHERE d.is_current AND rb.for_review
+      JOIN viewer_run run ON run.id = d.run_id
+      -- 그 묶음의 것만. `is_current` 만 보면 나란히 쌓아 둔 다른 엔진의 검출까지
+      -- 세어 개수가 몇 배가 된다(P10 1단계)
+      JOIN cnt ON cnt.viewpoint_id = d.viewpoint_id AND cnt.batch_id = run.batch_id
+     WHERE d.is_current
 )
 SELECT v.slide_id AS slide_id,
        CASE WHEN o.label IS NOT NULL AND o.label <> '' THEN o.label
@@ -2625,6 +2853,16 @@ WHERE r.batch_id IS NULL AND r.source = 'manual' AND {where}
 GROUP BY v.slide_id, eff_cls, species
 """
 
+# 세는 시야 수 — 시야당 평균의 분모 (P32 ③). 위와 **같은 `rep`** 에서 센다:
+# 분자(개체)와 분모(시야)가 다른 기준이면 "시야당" 이 아무 뜻도 없다.
+_COUNTED_GROUPS_SQL = _SUMMARY_SQL.split("SELECT v.slide_id AS slide_id,")[0] + """
+SELECT v.slide_id, COUNT(*)
+  FROM rep
+  JOIN viewer_viewpoint v ON v.id = rep.viewpoint_id
+ WHERE rep.rn = 1 AND {where}
+ GROUP BY v.slide_id
+"""
+
 
 # 시야 목록의 표지에 얹을 마스크. **화면에 남는 개체만** 가져온다.
 #
@@ -2639,18 +2877,24 @@ GROUP BY v.slide_id, eff_cls, species
 # 마스크라 여럿을 그리면 같은 규조각이 겹쳐 그려지고, `n_kept` 도 함께 부푼다 —
 # 그 수가 시야 목록의 "검토" 칸이다.
 _COVER_SQL = """
-WITH rep AS (
+WITH prim AS (
+    -- **시야마다 그 주 묶음** (P32). 표지는 검토 화면과 같은 판이어야 한다 —
+    -- 시야를 누르면 열리는 그림이다. 주 묶음은 파이썬이 풀어 넘긴다
+    -- (`primary_batch_map` — 규칙을 SQL 로 두 벌 적지 않는다)
+    SELECT CAST(j.key AS INTEGER) AS viewpoint_id, j.value AS batch_id
+      FROM json_each(%s) AS j
+),
+rep AS (
     SELECT d.id AS det_id, d.viewpoint_id, d.image_id, run.batch_id,
            ROW_NUMBER() OVER (
                PARTITION BY d.viewpoint_id
                ORDER BY CASE i.kind WHEN 'stack' THEN 0 ELSE 1 END, d.id) AS rn
       FROM viewer_detection d
       JOIN viewer_image i ON i.id = d.image_id
-      LEFT JOIN viewer_run run ON run.id = d.run_id
-      LEFT JOIN viewer_runbatch rb ON rb.id = run.batch_id
-     -- **검토 대상 묶음의 것만** (P10 1단계). `is_current` 만 보면 나란히 쌓아
-     -- 둔 다른 엔진의 검출까지 세어 개수가 몇 배가 된다.
-     WHERE d.is_current AND rb.for_review
+      JOIN viewer_run run ON run.id = d.run_id
+      JOIN prim ON prim.viewpoint_id = d.viewpoint_id
+               AND prim.batch_id = run.batch_id
+     WHERE d.is_current
 )
 SELECT rep.viewpoint_id, c.polygon,
        CASE WHEN o.label IS NOT NULL AND o.label <> '' THEN o.label
@@ -2680,8 +2924,10 @@ def _kept_masks(slide: Slide) -> tuple[dict[int, list[dict]], dict[int, int]]:
     """
     masks: dict[int, list[dict]] = {}
     n_kept: dict[int, int] = {}
+    prim = {str(v): b for v, b in primary_batch_map(slide=slide).items()
+            if b is not None}
     with connection.cursor() as cur:
-        cur.execute(_COVER_SQL, [slide.id])
+        cur.execute(_COVER_SQL, [json.dumps(prim), slide.id])
         for vp_id, poly, cls in cur.fetchall():
             n_kept[vp_id] = n_kept.get(vp_id, 0) + 1
             p = json.loads(poly) if poly else []
@@ -2722,6 +2968,11 @@ def _summary_rows(where: str, params: list) -> dict[int, dict]:
             r["n_detected"] += n_kept
             r["n_auto"] += n_auto
             r["n_labeled"] += n_labeled
+        cur.execute(_COUNTED_GROUPS_SQL.format(where=where), list(params))
+        for slide_id, n in cur.fetchall():
+            out.setdefault(slide_id, {"per_cls": {}, "per_sp": {},
+                                      "n_detected": 0, "n_auto": 0,
+                                      "n_labeled": 0})["counted_groups"] = n
     return out
 
 
@@ -3176,12 +3427,10 @@ def compare_slides(slugs: list[str]) -> dict:
     summary = _summary_rows(f"v.slide_id IN ({marks})", ids)
     n_groups = dict(Viewpoint.objects.filter(slide_id__in=ids)
                     .values_list("slide_id").annotate(n=Count("id")))
-    # 검출이 돈 시야 수 — `_summary_by_sql` 과 같은 셈이다. 시야 전부에 검출이
-    # 안 돌았으면 열의 수가 다른 열과 같은 밀도가 아니다.
-    det_groups = dict(
-        Detection.objects.reviewing().filter(viewpoint__slide_id__in=ids)
-        .values_list("viewpoint__slide_id")
-        .annotate(n=Count("viewpoint_id", distinct=True)))
+    # 세는 시야 수 — `_summary_by_sql` 과 같은 셈이다(분자와 같은 `rep` ·
+    # 검토를 마친 시야만 · P32 ③). 시야 전부를 안 셌으면 열의 수가 다른 열과
+    # 같은 밀도가 아니다.
+    det_groups = {sid: r.get("counted_groups", 0) for sid, r in summary.items()}
     refs = _core_refs(slides)
 
     counted_keys = [c["key"] for c in counted_classes()]
@@ -3721,7 +3970,7 @@ def _profiles_for(loc: Locality, series: list[dict],
 
 
 def _viewpoints_of(slide: Slide, only_current: bool = False, light: bool = False,
-                   batch_id=None):
+                   batch_id=None, batch_ids=None):
     """시야와 그 아래를 한 번에 당겨 온다.
 
     **`light` 는 검출을 아예 안 당긴다.** 시야 목록은 개체를 SQL 로 세고 마스크만
@@ -3742,6 +3991,10 @@ def _viewpoints_of(slide: Slide, only_current: bool = False, light: bool = False
     다른 묶음을 짚어 열어도 **후보가 한 개도 안 올라오고 화면이 빈다** — 예외도
     404 도 없이 "검출이 없다" 로 보인다. 여기와 `current_detections` 가 같은
     묶음을 봐야 하고, 어긋나면 조용히 빈 화면이 된다.
+
+    **`batch_ids` 는 묶음 여럿이다**(P32) — 시야마다 주 묶음이 다른 슬라이드를 한
+    번에 훑을 때 쓴다. 그 묶음들의 현재 검출을 다 당겨 오고, 시야마다 자기 묶음으로
+    고르는 것은 부르는 쪽이 `current_detections(vp, 그 시야의 묶음)` 으로 한다.
     """
     qs = (Viewpoint.objects.filter(slide=slide)
           .select_related("sharpest_frame", "stack"))
@@ -3751,8 +4004,12 @@ def _viewpoints_of(slide: Slide, only_current: bool = False, light: bool = False
     if only_current:
         # **검토 대상 묶음의 것만** (P10 1단계). `is_current` 만 걸면 나란히
         # 쌓아 둔 다른 엔진의 검출까지 딸려 와 화면이 섞인다.
-        dets = (dets.filter(is_current=True, run__batch_id=batch_id)
-                if batch_id is not None else dets.reviewing())
+        if batch_ids is not None:
+            dets = dets.filter(is_current=True, run__batch_id__in=list(batch_ids))
+        elif batch_id is not None:
+            dets = dets.filter(is_current=True, run__batch_id=batch_id)
+        else:
+            dets = dets.reviewing()
     # **`image` 를 함께 당긴다.** 부르는 쪽이 `d.image.path` 로 검출을 이미지에
     # 맞춘다(`by_path`) — 안 붙이면 검출마다 질의가 하나씩 붙고, 크롭 화면처럼
     # 시야를 전부 훑는 자리에서 그대로 백 번이 된다.
@@ -3814,14 +4071,22 @@ def dataset_detail(slug: str) -> dict | None:
     # **검토 대상 묶음의 것만**, 그리고 시야마다 하나 (P10 1단계). 프레임별
     # 검출이 올라오면 한 시야에 여럿이라 dict 가 아무거나 집는다 — 합성본을
     # 먼저 놓아 `representative_detection` 과 같은 것을 고르게 한다.
+    #
+    # **시야마다 그 주 묶음의 것이다** (P32) — 표지를 누르면 열리는 검토 화면과
+    # 같은 판이어야 한다.
+    prim = primary_batch_map(slide=slide)
     dets = {}
-    for d in (Detection.objects.filter(viewpoint__slide=slide).reviewing()
+    for d in (Detection.objects.filter(viewpoint__slide=slide, is_current=True,
+                                       run__batch_id__in=[b for b in set(prim.values())
+                                                          if b is not None])
               .select_related("image")
               .order_by("viewpoint_id",
                         Case(When(image__kind="stack", then=0), default=1),
                         "id")
-              .values("viewpoint_id", "image_path", "width", "height")):
-        dets.setdefault(d["viewpoint_id"], d)
+              .values("viewpoint_id", "image_path", "width", "height",
+                      "run__batch_id")):
+        if d["run__batch_id"] == prim.get(d["viewpoint_id"]):
+            dets.setdefault(d["viewpoint_id"], d)
     reviewed = done_viewpoints(slide=slide)
     # **이 묶음에 검출이 없는 시야** (P10 4단계). 목록에서도 세어 낸다 — 시야를
     # 하나씩 열어 보고서야 아는 것은 063 이 "소속을 잃은 행은 그냥 사라진다" 로
@@ -4001,8 +4266,19 @@ def group_detail(slug: str, gid: int, run_id: int | None = None) -> dict | None:
     slide = Slide.objects.filter(slug=slug).first()
     if slide is None:
         return None
-    # 묶음 갈래는 위에서 이미 돌아갔다 — 여기는 현재 검출만 본다
-    vp = _viewpoints_of(slide, only_current=True).filter(idx=gid).first()
+    # 묶음 갈래는 위에서 이미 돌아갔다 — 여기는 현재 검출만 본다.
+    #
+    # **그 시야의 주 묶음으로 당겨 온다** (P32). 전역 검토 대상으로 거른 채 당겨
+    # 오면 `current_detections` 가 주 묶음을 골라도 남는 검출이 없다 — 한국·Smear
+    # 시야(주 묶음 `sam2-전수`)가 그렇게 **검출 없는 빈 화면**으로 열렸다(10-28
+    # 사본에서 봤다). 4차로 옮긴 뒤의 3차 정답 시야도 같은 자리다.
+    head = Viewpoint.objects.filter(slide=slide, idx=gid).first()
+    if head is None:
+        return None
+    pb = primary_batch_id(head)
+    vp = (_viewpoints_of(slide, only_current=True, batch_id=pb)
+          .filter(idx=gid).first() if pb is not None
+          else _viewpoints_of(slide, only_current=True).filter(idx=gid).first())
     if vp is None:
         return None
 
@@ -4018,11 +4294,14 @@ def group_detail(slug: str, gid: int, run_id: int | None = None) -> dict | None:
     # 버튼이 죽는데 앞쪽에 남은 것이 있다. 돌아갔다는 것은 화면이 말한다 —
     # 말없이 뒤로 보내면 같은 자리를 도는 것으로 읽힌다.
     # **고른 묶음에서 완료한 것만 건너뛴다** (073). 묶음을 갈면 그 묶음의
-    # 검출은 아직 아무도 안 본 것이라 다시 돌아야 한다.
-    done = set(ViewpointReview.objects
-               .filter(viewpoint__slide=slide, done=True,
-                       batch_id=review_batch_id())
-               .values_list("viewpoint__idx", flat=True))
+    # 검출은 아직 아무도 안 본 것이라 다시 돌아야 한다. 시야마다 그 주 묶음으로
+    # 본다(P32). **얼린 시야도 건너뛴다** — 고칠 수 없는 시야로 보내면 헛걸음이다.
+    done_pk = done_viewpoints(slide=slide)
+    prim = primary_batch_map(slide=slide)
+    fz = frozen_batch_ids()
+    skip = {pk for pk, b in prim.items() if b in fz} | done_pk
+    done = set(Viewpoint.objects.filter(pk__in=list(skip))
+               .values_list("idx", flat=True)) if skip else set()
     todo = [i for i in ids if i not in done and i != gid]
     ahead = [i for i in todo if i > gid]
     todo_id = ahead[0] if ahead else (todo[0] if todo else None)
@@ -4137,8 +4416,16 @@ def group_detail(slug: str, gid: int, run_id: int | None = None) -> dict | None:
         # **왜 비었는가** (P10 4단계). 검출이 아예 없는 것과 **다른 묶음에는
         # 있는 것**은 다른 말이다 — 뒤엣것을 "검출은 아직입니다" 라고 적으면
         # 사람이 돌리러 간다. 조용히 다른 묶음으로 물러나지도 않는다(P10 3.6).
-        "review_batch": review_batch_label(),
+        # 이 시야의 주 묶음 이름(P32) — 전역 검토 대상이 아니다
+        "review_batch": (RunBatch.objects.filter(pk=prim.get(vp.pk))
+                         .values_list("label", flat=True).first() or ""),
         "elsewhere": batches_elsewhere(vp=vp).get(vp.id, []),
+        # **얼린 묶음의 정답 시야** (P32 ②). 화면은 마스크를 읽기 전용으로 열고
+        # 카탈로그 칸의 동정만 살린다(`fz-<uid>` 표식). 저장 문은 서버가 막는다.
+        "frozen": prim.get(vp.pk) in fz,
+        "frozen_msg": (frozen_message(prim.get(vp.pk),
+                                      answer=vp.batch_id is not None)
+                       if prim.get(vp.pk) in fz else ""),
         # 오른쪽 칸의 카탈로그 칸이 쓰는 것들 (183). 카탈로그 화면과 **같은
         # 목록을 같은 자리에서** 받는다 — 두 화면이 다른 값을 내밀면 같은 개체를
         # 두 번 다르게 적게 된다.
@@ -4163,33 +4450,47 @@ def mark_all_reviewed(slug: str, done: bool) -> dict | None:
     slide = Slide.objects.filter(slug=slug).first()
     if slide is None:
         return None
-    # **고른 묶음에만 찍는다** (073). 묶음을 안 정하면 어느 검출을 다 봤다는
-    # 말인지가 없다 — 조용히 아무 데나 찍는 대신 안 한다.
-    batch_id = review_batch_id()
-    if batch_id is None:
+    # **시야마다 그 주 묶음에 찍는다** (073 · P32). 묶음을 못 정하면 어느 검출을
+    # 다 봤다는 말인지가 없다 — 조용히 아무 데나 찍는 대신 안 한다.
+    #
+    # **얼린 시야는 건너뛰고 센다**(P32 ②) — 정답의 완료를 한꺼번에 끄면 답지에서
+    # 통째로 빠진다. 거절하지 않고 건너뛰는 것은 한 슬라이드에 얼린 시야와 아닌
+    # 시야가 섞이기 때문이다(369cm: 정답 62 · 4차를 기다리는 12).
+    prim = primary_batch_map(slide=slide)
+    frozen = frozen_batch_ids()
+    by_batch = defaultdict(list)
+    skipped = 0
+    for vid, bid in prim.items():
+        if bid is None:
+            continue
+        if bid in frozen:
+            skipped += 1
+            continue
+        by_batch[bid].append(vid)
+    if not by_batch and not skipped:
         return {"changed": 0, "total": 0, "no_batch": True}
-    ids = list(Viewpoint.objects.filter(slide=slide)
-               .values_list("id", flat=True))
+    total = changed = made = 0
     with transaction.atomic():
-        # 검토로 표시할 때만 없는 행을 만든다. 미검토로 돌릴 때는 만들 것이
-        # 없다 — 행이 없는 것이 곧 미검토다.
-        made = 0
-        if done:
-            have = set(ViewpointReview.objects
-                       .filter(viewpoint_id__in=ids, batch_id=batch_id)
-                       .values_list("viewpoint_id", flat=True))
-            missing = [i for i in ids if i not in have]
-            ViewpointReview.objects.bulk_create(
-                [ViewpointReview(viewpoint_id=i, batch_id=batch_id, done=True)
-                 for i in missing])
-            made = len(missing)
-        # `.update()` 는 `auto_now` 를 안 태운다 — 손으로 찍는다. 언제 뒤집혔는지
-        # 모르면 나중에 되짚을 수가 없다.
-        changed = (ViewpointReview.objects
-                   .filter(viewpoint_id__in=ids, batch_id=batch_id,
-                           done=not done)
-                   .update(done=done, updated_at=timezone.now()))
-    return {"changed": changed + made, "total": len(ids)}
+        for batch_id, ids in by_batch.items():
+            total += len(ids)
+            # 검토로 표시할 때만 없는 행을 만든다. 미검토로 돌릴 때는 만들 것이
+            # 없다 — 행이 없는 것이 곧 미검토다.
+            if done:
+                have = set(ViewpointReview.objects
+                           .filter(viewpoint_id__in=ids, batch_id=batch_id)
+                           .values_list("viewpoint_id", flat=True))
+                missing = [i for i in ids if i not in have]
+                ViewpointReview.objects.bulk_create(
+                    [ViewpointReview(viewpoint_id=i, batch_id=batch_id, done=True)
+                     for i in missing])
+                made += len(missing)
+            # `.update()` 는 `auto_now` 를 안 태운다 — 손으로 찍는다. 언제
+            # 뒤집혔는지 모르면 나중에 되짚을 수가 없다.
+            changed += (ViewpointReview.objects
+                        .filter(viewpoint_id__in=ids, batch_id=batch_id,
+                                done=not done)
+                        .update(done=done, updated_at=timezone.now()))
+    return {"changed": changed + made, "total": total, "frozen": skipped}
 
 
 # --- 교정 저장 --------------------------------------------------------------
@@ -4220,7 +4521,11 @@ def save_done(vp: Viewpoint, done: bool) -> dict:
     화면이 짚게 하면 완료가 다시 "어느 판을 보고 있나" 에 매달린다. 대신
     **현재 검출이 없으면 오류로 말한다**: 조용히 아무 묶음에나 찍으면 무엇을 다
     봤다는 말인지가 없다 (`mark_all_reviewed` 와 같은 규칙).
+
+    **얼린 시야는 거절한다**(P32 ②) — 정답의 완료를 끄면 그 시야가 산출과 답지에서
+    빠진다.
     """
+    guard_frozen(vp)
     cur = representative_detection(vp)
     if cur is None:
         raise ValueError("이 시야에는 현재 검출이 없다 — 저장하지 않았다")
@@ -4293,6 +4598,11 @@ def save_review(vp: Viewpoint, done, note, removed, accepted,
     """
     if vp is None:
         return None
+
+    # **얼린 시야는 통째로 거절한다**(P32 ②). 이 문은 판의 교정을 갈아치우므로
+    # 일부만 받는 갈래를 두지 않는다 — 동정은 카탈로그 문(`save_catalog_entry`)으로
+    # 간다.
+    guard_frozen(vp)
 
     # **어느 이미지·어느 묶음에 대한 교정인가** (P06 5a · P09 5.1). 열쇠가
     # `(image, batch, mask_key)` 라 이것이 없으면 행을 만들 수도, 지울 범위를
@@ -5482,6 +5792,8 @@ def batches_for_viewpoint(slug: str, gid: int,
     # 검토 화면에서 부를 때는 "지금 보고 있는 묶음" 이 없다 — 그때는 아무것도
     # 켜지지 않는다.
     here = set(engine_run_ids(run_id)) if run_id else set()
+    # **이 시야의 주 묶음**(P32) — 편집할 수 있는 것은 이것 하나다
+    prim = primary_batch_id(vp)
 
     per = defaultdict(list)
     for d in vp.detections.all():
@@ -5504,12 +5816,13 @@ def batches_for_viewpoint(slug: str, gid: int,
             "backend": (rep.run.params or {}).get("backend", "?"),
             "run_id": rep.run_id,
             "on": any(d.run_id in here for d in picked),
-            # **검토 대상 묶음인가** — 이 값이 읽기 전용을 가른다 (P10 1단계).
+            # **이 시야의 주 묶음인가** — 이 값이 읽기 전용을 가른다 (P10 1단계).
             # 예전에는 `any(d.is_current …)` 였는데, 정규화 뒤에는 모든 묶음의
-            # 검출이 `is_current` 라 **전부 편집 가능해 보인다.** 어느 묶음을
-            # 검토하는지는 `RunBatch.for_review` 하나가 정한다.
+            # 검출이 `is_current` 라 **전부 편집 가능해 보인다.** 그 뒤 전역
+            # `RunBatch.for_review` 로 정했고, 지금은 시야마다의 주 묶음이다(P32) —
+            # 3차 정답 시야에서는 4차로 옮긴 뒤에도 3차가 그 시야의 판이다.
             "current": bool(rep.run and rep.run.batch_id
-                            and rep.run.batch.for_review),
+                            and rep.run.batch_id == prim),
             "n": Candidate.objects.filter(
                 detection__in=picked, passed=True).count(),
         })

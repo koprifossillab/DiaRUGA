@@ -268,7 +268,7 @@
           검출이 시야 전부에 돌지 않았으면 평균의 분모가 다르다. 숫자만 놓으면
           같은 뜻으로 읽히므로 그 자리에서 표시한다.
         {% endcomment %}
-        <td{% if d.detected_groups < d.n_groups %} class="partial" title="{{ d.n_groups }}개 시야 중 {{ d.detected_groups }}개만 검출됨 — 평균은 그 시야들 기준"{% endif %}>
+        <td{% if d.detected_groups < d.n_groups %} class="partial" title="{{ d.n_groups }}개 시야 중 검토를 마친 {{ d.detected_groups }}개로 셈 — 평균은 그 시야들 기준"{% endif %}>
           {{ d.mean_counted }}{% if d.detected_groups < d.n_groups %}<span class="dim">*</span>{% endif %}
         </td>
         {% for c in d.counted_cols %}<td{% if c.is_group %} class="grpcol"{% elif c.in_group %} class="ingrp"{% endif %}>{{ c.n }}</td>{% endfor %}
@@ -391,7 +391,7 @@
     </div>
     {% endif %}
     {% if d.mean_counted is not None and d.detected_groups < d.n_groups %}
-      <div class="dsnote">{{ d.n_groups }}개 시야 중 {{ d.detected_groups }}개만 검출됨 — 시야당은 그 시야들 기준</div>
+      <div class="dsnote">{{ d.n_groups }}개 시야 중 검토를 마친 {{ d.detected_groups }}개로 셈 — 시야당은 그 시야들 기준</div>
     {% endif %}
   </div>
 {% endfor %}
