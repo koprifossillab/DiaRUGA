@@ -143,7 +143,13 @@
     정해집니다.</div>
 {% else %}
 
-<div class="dsview" id="dsview">
+{% comment %}
+  `data-first` — 주소에 아무것도 없이 연 첫 화면(`views.index`). 이때는 기억해 둔
+  보기 방식·지도 범위·고른 코어를 안 읽고 지도 · 남극 전체 · `data-first-core` 로
+  연다(사용자 결정 2026-10-30). **기억을 지우지도 덮지도 않는다** — 탭을 눌러
+  주소에 `area` 가 실리면 다시 기억대로 열린다.
+{% endcomment %}
+<div class="dsview" id="dsview"{% if first %} data-first="1" data-first-core="{{ first_core }}"{% endif %}>
 <div class="scroll asTable">
 <table class="dslist">
   <thead>
@@ -186,8 +192,66 @@
     — 분모가 슬라이드마다 달라 다시 더할 수 없다(`datasets_total()` 머리말).
     그 자리(평균 장수·시야당)는 비운다.
   {% endcomment %}
-  {% for g in groups %}
-  <tbody class="csgroup" data-gkey="{{ g.key }}">
+  {% comment %}
+    **해역 → 지역 머리가 지점 묶음 위에 있다** (2026-10-30) — 지도 옆 나무와 같은
+    겹이다(`data.by_sea`). 해역은 `Site.region` 이고, 해역이 하나도 없는 권역
+    (한국)은 해역 머리 없이 지역부터다(`z.no_head`).
+
+    머리도 저마다 `<tbody>` 하나다: 표 안에서는 묶음을 감쌀 요소를 낄 수 없으므로
+    **감싸지 않고 열쇠로 잇는다** — 아래 묶음의 `data-sea`·`data-site` 가 위 머리의
+    `data-gkey` 다. 접으면 스크립트가 그 열쇠를 단 묶음을 감춘다.
+
+    숫자는 지점 머리줄과 같은 규칙이다(숨긴 것까지 센다 · 평균은 비운다).
+  {% endcomment %}
+  {% for z in seas %}
+  {% if not z.no_head %}
+  <tbody class="seagroup" data-gkey="{{ z.key }}">
+    <tr class="chead zhead" tabindex="0" role="button" aria-expanded="true"
+        title="눌러서 이 해역의 지역들을 접거나 폅니다">
+      <td class="dsname" colspan="4">
+        <span class="tw" aria-hidden="true"></span>
+        {% if z.no_sea %}<span class="dim">{{ z.sea }}</span>{% else %}{{ z.sea }}{% endif %}
+        <span class="ghead-sub dim">지역 {{ z.sites|length }} · 지점 {{ z.n_loc }} · {{ z.n }}장{% if z.n_hidden %} <span class="hidemark" title="숨긴 슬라이드 {{ z.n_hidden }}장이 더 있습니다 — 아래 숫자에는 들어 있습니다">※{{ z.n_hidden }}</span>{% endif %}</span>
+      </td>
+      <td>{{ z.totals.n_images }}</td>
+      <td>{{ z.totals.n_groups }}</td>
+      <td></td>
+      <td>{{ z.totals.n_counted }}</td>
+      <td></td>
+      {% for c in z.totals.counted_cols %}<td{% if c.is_group %} class="grpcol"{% elif c.in_group %} class="ingrp"{% endif %}>{{ c.n }}</td>{% endfor %}
+      <td class="revcol">
+        <div class="revnum">{{ z.totals.reviewed_groups }}<span class="dim">/{{ z.totals.n_groups }}</span></div>
+        <div class="bar"><i style="width:{% widthratio z.totals.reviewed_groups z.totals.n_groups 100 %}%"></i></div>
+      </td>
+      <td></td>
+    </tr>
+  </tbody>
+  {% endif %}
+  {% for s in z.sites %}
+  <tbody class="ssgroup" data-gkey="{{ s.key }}"{% if z.key %} data-sea="{{ z.key }}"{% endif %}>
+    <tr class="chead shead" tabindex="0" role="button" aria-expanded="true"
+        title="눌러서 이 지역의 지점들을 접거나 폅니다">
+      <td class="dsname" colspan="4">
+        <span class="tw" aria-hidden="true"></span>
+        {% if s.no_site %}<span class="dim">지역 미지정</span>
+        {% else %}{{ s.site_code }}{% endif %}
+        <span class="ghead-sub dim">지점 {{ s.localities|length }} · {{ s.n }}장{% if s.n_hidden %} <span class="hidemark" title="숨긴 슬라이드 {{ s.n_hidden }}장이 더 있습니다 — 아래 숫자에는 들어 있습니다">※{{ s.n_hidden }}</span>{% endif %}</span>
+      </td>
+      <td>{{ s.totals.n_images }}</td>
+      <td>{{ s.totals.n_groups }}</td>
+      <td></td>
+      <td>{{ s.totals.n_counted }}</td>
+      <td></td>
+      {% for c in s.totals.counted_cols %}<td{% if c.is_group %} class="grpcol"{% elif c.in_group %} class="ingrp"{% endif %}>{{ c.n }}</td>{% endfor %}
+      <td class="revcol">
+        <div class="revnum">{{ s.totals.reviewed_groups }}<span class="dim">/{{ s.totals.n_groups }}</span></div>
+        <div class="bar"><i style="width:{% widthratio s.totals.reviewed_groups s.totals.n_groups 100 %}%"></i></div>
+      </td>
+      <td></td>
+    </tr>
+  </tbody>
+  {% for g in s.localities %}
+  <tbody class="csgroup" data-gkey="{{ g.key }}" data-site="{{ s.key }}"{% if z.key %} data-sea="{{ z.key }}"{% endif %}>
     <tr class="chead" tabindex="0" role="button" aria-expanded="true"
         title="눌러서 접거나 폅니다">
       <td class="dsname" colspan="4">
@@ -203,7 +267,7 @@
           사라지면 그 코어가 이 권역에 없는 것이 되고, 묶음 숫자를 다 더해도 아래
           합계와 안 맞는다 — 여기 숫자는 숨긴 것까지 센 값이기 때문이다.
         {% endcomment %}
-        <span class="ghead-sub dim">{% if g.site %}{{ g.site }} · {% endif %}{{ g.n }}장{% if g.n_hidden %} <span class="hidemark" title="숨긴 슬라이드 {{ g.n_hidden }}장이 더 있습니다 — 아래 숫자에는 들어 있습니다">※{{ g.n_hidden }}</span>{% endif %}</span>
+        <span class="ghead-sub dim">{{ g.n }}장{% if g.n_hidden %} <span class="hidemark" title="숨긴 슬라이드 {{ g.n_hidden }}장이 더 있습니다 — 아래 숫자에는 들어 있습니다">※{{ g.n_hidden }}</span>{% endif %}</span>
       </td>
       <td>{{ g.totals.n_images }}</td>
       <td>{{ g.totals.n_groups }}</td>
@@ -289,6 +353,8 @@
   {% endif %}
   </tbody>
   {% endfor %}
+  {% endfor %}
+  {% endfor %}
   <tfoot>
     <tr>
       <td class="dsname">합계 <span class="dim">{{ datasets|length }}장</span></td>
@@ -320,7 +386,33 @@
   두 화면이 남남이 된다.
 {% endcomment %}
 <div class="asCards cgroups">
-{% for g in groups %}
+{% comment %}
+  카드는 지역 `<details>` 안에 지점 `<details>` 를 그대로 넣는다 — 표와 달리
+  감쌀 자리가 있다. 열쇠는 표와 같다(`site:<코드>` · `<지역>/<지점>`).
+{% endcomment %}
+{% for z in seas %}
+{% if not z.no_head %}
+<details class="cgroup zgroup" data-gkey="{{ z.key }}" open>
+  <summary>
+    <span class="tw" aria-hidden="true"></span>
+    <b>{% if z.no_sea %}<span class="dim">{{ z.sea }}</span>{% else %}{{ z.sea }}{% endif %}</b>
+    <span class="dim">지역 {{ z.sites|length }} · 지점 {{ z.n_loc }} · {{ z.n }}장{% if z.n_hidden %} <span class="hidemark" title="숨긴 슬라이드 {{ z.n_hidden }}장이 더 있습니다 — 아래 숫자에는 들어 있습니다">※{{ z.n_hidden }}</span>{% endif %}</span>
+    <span class="gsum dim">사진 {{ z.totals.n_images }} · 시야 {{ z.totals.n_groups }} ·
+      검출 {{ z.totals.n_counted }} · 검토 {{ z.totals.reviewed_groups }}/{{ z.totals.n_groups }}</span>
+  </summary>
+  <div class="sbody">
+{% endif %}
+{% for s in z.sites %}
+<details class="cgroup sgroup" data-gkey="{{ s.key }}" open>
+  <summary>
+    <span class="tw" aria-hidden="true"></span>
+    <b>{% if s.no_site %}<span class="dim">지역 미지정</span>{% else %}{{ s.site_code }}{% endif %}</b>
+    <span class="dim">지점 {{ s.localities|length }} · {{ s.n }}장{% if s.n_hidden %} <span class="hidemark" title="숨긴 슬라이드 {{ s.n_hidden }}장이 더 있습니다 — 아래 숫자에는 들어 있습니다">※{{ s.n_hidden }}</span>{% endif %}</span>
+    <span class="gsum dim">사진 {{ s.totals.n_images }} · 시야 {{ s.totals.n_groups }} ·
+      검출 {{ s.totals.n_counted }} · 검토 {{ s.totals.reviewed_groups }}/{{ s.totals.n_groups }}</span>
+  </summary>
+  <div class="sbody">
+{% for g in s.localities %}
 <details class="cgroup" data-gkey="{{ g.key }}" open>
   <summary>
     {% comment %}
@@ -329,7 +421,7 @@
     {% endcomment %}
     <span class="tw" aria-hidden="true"></span>
     <b>{% if g.no_core %}<span class="dim">코어 미지정</span>{% else %}{{ g.core }}{% endif %}</b>
-    <span class="dim">{% if g.site %}{{ g.site }} · {% endif %}{{ g.n }}장{% if g.n_hidden %} <span class="hidemark" title="숨긴 슬라이드 {{ g.n_hidden }}장이 더 있습니다 — 아래 숫자에는 들어 있습니다">※{{ g.n_hidden }}</span>{% endif %}</span>
+    <span class="dim">{{ g.n }}장{% if g.n_hidden %} <span class="hidemark" title="숨긴 슬라이드 {{ g.n_hidden }}장이 더 있습니다 — 아래 숫자에는 들어 있습니다">※{{ g.n_hidden }}</span>{% endif %}</span>
     <span class="gsum dim">사진 {{ g.totals.n_images }} · 시야 {{ g.totals.n_groups }} ·
       검출 {{ g.totals.n_counted }} · 검토 {{ g.totals.reviewed_groups }}/{{ g.totals.n_groups }}</span>
     {% comment %}
@@ -398,6 +490,14 @@
   </div>
 </details>
 {% endfor %}
+  </div>
+</details>
+{% endfor %}
+{% if not z.no_head %}
+  </div>
+</details>
+{% endif %}
+{% endfor %}
 </div>
 </div>
 
@@ -443,11 +543,13 @@
   // 옛 키도 읽는다 (048 에서 이름이 바뀌었다). 쓰기는 새 키로만 한다.
   try { saved = localStorage.getItem(KEY) || localStorage.getItem('diatom.dsview'); } catch (e) { saved = null; }
   // **지도가 없는 화면에서는 지도로 열지 않는다.** "전체" 에는 지도가 없는데
-  // 지난번에 지도를 골라 둔 사람이 들어오면 표도 카드도 감춘 빈 화면이 된다 —
-  // 인자 없이 들어오면 "전체" 가 열리므로 그것이 곧 첫 화면이 된다.
+  // 지난번에 지도를 골라 둔 사람이 들어오면 표도 카드도 감춘 빈 화면이 된다.
+  // (예전에는 인자 없는 첫 화면이 "전체" 였다. 지금은 남극이다 — `views.index`)
   // **기억은 지우지 않는다** — 남극으로 가면 다시 지도로 열려야 한다.
   var hasMap = !!box.querySelector('.asMap');
   var want = (saved === 'cards' || saved === 'map') ? saved : 'table';
+  // 첫 화면은 기억과 상관없이 지도다 (`data-first` · 위 머리말)
+  if (box.dataset.first) want = 'map';
   apply(want === 'map' && !hasMap ? 'table' : want);
   bar.addEventListener('click', function (e) {
     var b = e.target.closest('button[data-view]');
@@ -478,15 +580,29 @@
     catch (e) { /* 사생활 모드 */ }
   }
 
-  // 한 열쇠의 상태를 표와 카드 양쪽에 함께 그린다.
-  function paint(key) {
+  // 표 쪽만 그린다. 해역 머리(`.seagroup`)·지역 머리(`.ssgroup`)를 접으면 그
+  // 열쇠를 단 아래 묶음(`data-sea`·`data-site`)이 통째로 감춰진다 — 표는 묶음을
+  // 감쌀 수 없어 열쇠로 잇는다.
+  function paintTable(key) {
     var on = !shut[key];
-    box.querySelectorAll('.csgroup[data-gkey]').forEach(function (tb) {
+    box.querySelectorAll('tbody[data-gkey]').forEach(function (tb) {
       if (tb.dataset.gkey !== key) return;
       tb.classList.toggle('closed', !on);
       var h = tb.querySelector('.chead');
       if (h) h.setAttribute('aria-expanded', on ? 'true' : 'false');
     });
+    box.querySelectorAll('tbody[data-site]').forEach(function (tb) {
+      if (tb.dataset.site === key) tb.classList.toggle('siteclosed', !on);
+    });
+    box.querySelectorAll('tbody[data-sea]').forEach(function (tb) {
+      if (tb.dataset.sea === key) tb.classList.toggle('seaclosed', !on);
+    });
+  }
+
+  // 한 열쇠의 상태를 표와 카드 양쪽에 함께 그린다.
+  function paint(key) {
+    var on = !shut[key];
+    paintTable(key);
     box.querySelectorAll('.cgroup[data-gkey]').forEach(function (dt) {
       // `<details>` 는 여닫힘을 스스로 알린다 — aria-expanded 를 따로 얹지
       // 않는다. 표의 머리줄은 행이라 그 뜻이 없어서 직접 붙인다.
@@ -517,7 +633,7 @@
     if (e.target.closest('a')) return;
     var head = e.target.closest('.chead');
     if (head) {
-      var tb2 = head.closest('.csgroup');
+      var tb2 = head.closest('tbody[data-gkey]');
       if (tb2) toggle(tb2.dataset.gkey);
       return;
     }
@@ -529,13 +645,9 @@
       // click 시점의 dt.open 은 아직 바뀌기 전이다 — 뒤집힌 값을 적는다.
       if (dt.open) shut[k] = 1; else delete shut[k];
       save();
-      // 표 쪽도 같이 맞춘다 (카드에서 접고 표로 갈아탔을 때)
-      box.querySelectorAll('.csgroup[data-gkey]').forEach(function (tb3) {
-        if (tb3.dataset.gkey !== k) return;
-        tb3.classList.toggle('closed', !!shut[k]);
-        var h = tb3.querySelector('.chead');
-        if (h) h.setAttribute('aria-expanded', shut[k] ? 'false' : 'true');
-      });
+      // 표 쪽도 같이 맞춘다 (카드에서 접고 표로 갈아탔을 때). 카드 쪽을
+      // 여기서 그리면 브라우저의 여닫기와 싸운다 — 표만 그린다.
+      paintTable(k);
     }
   });
 
@@ -546,7 +658,7 @@
     var head = e.target.closest && e.target.closest('.chead');
     if (!head) return;
     e.preventDefault();
-    var tb = head.closest('.csgroup');
+    var tb = head.closest('tbody[data-gkey]');
     if (tb) toggle(tb.dataset.gkey);
   });
 })();

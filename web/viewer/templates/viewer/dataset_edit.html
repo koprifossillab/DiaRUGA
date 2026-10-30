@@ -127,7 +127,7 @@
           <option value="">(고르지 않음 — 아래에 코드를 적어 새로 만듭니다)</option>
           {% for c in sample_choices %}
             <option value="{{ c.pk }}" {% if c.pk == sibling_sample_pk %}selected{% endif %}>
-              {{ c.site_code }} · {{ c.loc_code }} · {{ c.code }}{% if c.label %} ({{ c.label }}){% endif %} — 관찰 {{ c.n_slides }}개</option>
+              {{ c.site_code }} · {{ c.loc_code }} · {{ c.code }} — 관찰 {{ c.n_slides }}개</option>
           {% endfor %}
         </select>
         <span class="hint">고르면 그 시료에 그대로 매답니다. <b>시료·지점·지역의
