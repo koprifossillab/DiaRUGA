@@ -125,6 +125,8 @@ CLASSES = [
     # 끝에 붙인다 (237) — 앞에 끼우면 `CLASSES[i % len]` 로 만든 후보의 분류가
     # 시험마다 밀린다. 순환은 같은 키 안의 차례라 운영(sort_order 4)과 같다
     ("eucampia_frag", "Eucampia 파편", "Euc파편", "eucf", "255,168,216", "e", False,  True),
+    # 끝에 붙인다 (252) — 위와 같은 이유. 단축키는 Corethron 을 따라 비운다
+    ("corethron_frag", "Corethron 파편", "Cor파편", "corf", "237,156,246", "", False, True),
 ]
 
 # 분류 묶음 (224) — 열쇠 → (이름, 약칭, 안의 분류). 운영은 `0049` 가 넣는다

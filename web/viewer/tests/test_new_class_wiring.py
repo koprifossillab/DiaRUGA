@@ -240,3 +240,50 @@ class EucampiaFragRowTest(DiaRUGATestCase):
     def test_세는_분류에_안_든다(self):
         self.assertNotIn("eucampia_frag",
                          [c["key"] for c in data.counted_classes()])
+
+
+class CorethronFragRowTest(DiaRUGATestCase):
+    """마이그레이션 `0055` 가 넣은 Corethron 파편 (252) — **단축키가 없다.**
+
+    Corethron 이 일부러 비운 키(227)를 따른다. 파편이라 세지 않고, 속이라
+    메뉴에서 Corethron 바로 뒤에 놓인다.
+    """
+
+    @classmethod
+    def setUpTestData(cls):
+        fx.make_classes()
+
+    def test_마이그레이션의_행(self):
+        row = ClassDef.objects.get(key="corethron_frag")
+        self.assertEqual((row.label, row.short, row.badge, row.color, row.hotkey),
+                         ("Corethron 파편", "Cor파편", "corf", "237,156,246", ""))
+        self.assertFalse(row.counted)
+        self.assertTrue(row.is_taxon)
+        self.assertIsNone(row.group)
+
+    def test_픽스처_표와_같은_값이다(self):
+        row = ClassDef.objects.get(key="corethron_frag")
+        mirror = next(c for c in fx.CLASSES if c[0] == "corethron_frag")
+        _, label, short, badge, color, hot, counted, taxon = mirror
+        self.assertEqual(
+            (row.label, row.short, row.badge, row.color, row.hotkey,
+             row.counted, row.is_taxon),
+            (label, short, badge, color, hot, counted, taxon))
+
+    def test_운영_차례가_Corethron_과_같다(self):
+        """픽스처는 차례를 줄 번호로 매겨서, 운영 차례는 마이그레이션의 값으로 본다."""
+        import importlib
+        cor = importlib.import_module("viewer.migrations.0050_classdef_corethron").ROW
+        frag = importlib.import_module("viewer.migrations.0055_classdef_corethron_frag").ROW
+        self.assertEqual(frag["sort_order"], cor["sort_order"])
+        self.assertLess(cor["key"], frag["key"])
+
+    def test_메뉴에는_실리고_키_안내에는_없다(self):
+        self.assertIn("corethron_frag", [c["key"] for c in data.class_list()])
+        groups = data.hotkey_groups()["groups"]
+        self.assertNotIn("corethron_frag",
+                         [c["key"] for g in groups for c in g["classes"]])
+
+    def test_세는_분류에_안_든다(self):
+        self.assertNotIn("corethron_frag",
+                         [c["key"] for c in data.counted_classes()])
