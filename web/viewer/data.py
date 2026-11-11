@@ -21,7 +21,7 @@ from pathlib import Path
 from django.conf import settings
 from django.urls import reverse
 from django.db import connection, transaction
-from django.db.models import Case, Count, Max, Min, Prefetch, Q, When
+from django.db.models import Case, Count, F, Max, Min, Prefetch, Q, When
 from django.utils import timezone
 
 from . import antarctica, catalog, korea, outcrop
@@ -438,8 +438,10 @@ def _orphan_dict(key: str, o, um_per_px=None) -> dict | None:
     }
     # **지표는 저장하지 않고 그때그때 잰다** (P09 3단계). 폴리곤이 원본이고
     # 지표는 거기서 나오는 값이라, 따로 넣어 두면 **기하를 고쳤을 때 낡는다**
-    # (4단계에서 사람이 경계를 고친다). 개체 하나에 점 13~19개라 재는 값이
-    # 싸고, 뷰어에 numpy·cv2 를 안 들이는 경계도 지킨다(`shape.py` 머리말).
+    # (4단계에서 사람이 경계를 고친다). 뷰어에 numpy·cv2 를 안 들이는 경계도
+    # 지킨다(`shape.py` 머리말). **싸지는 않다** — 개체 하나에 0.3 ms 이고
+    # 후보 없는 교정이 한 슬라이드에 1.1만 개라, `shape.measure` 가 같은
+    # 폴리곤을 기억해 둔다(253).
     m = shape.measure(d["polygon"], um_per_px) if d["polygon"] else {}
     for f in NUM_FIELDS:
         d[f] = m.get(f)
@@ -2108,7 +2110,8 @@ def review_state(vp, batch_id=None):
     if batch_id is None:
         batch_id = primary_batch_id(vp)
     done, note = False, ""
-    for r in ViewpointReview.objects.filter(viewpoint=vp):
+    # `vp.reviews` 로 읽는다 — 미리 물어 왔으면(`_viewpoints_of`) 질의가 안 난다
+    for r in vp.reviews.all():
         if r.batch_id is None:
             note = r.note
         elif r.batch_id == batch_id:
@@ -2537,6 +2540,9 @@ def batch_ids_of(dets) -> dict:
     하나에 조인이 열 번씩 걸린다 — 개수를 세려고 자료를 물질화하지 말라는 것과
     같은 이야기다(CLAUDE.md).
     """
+    # 미리 얹어 온 것이 있으면 안 묻는다 (`_viewpoints_of` · 253)
+    if dets and all(hasattr(d, "fetched_batch_id") for d in dets):
+        return {d.pk: d.fetched_batch_id for d in dets}
     run_ids = {d.run_id for d in dets if d.run_id}
     if not run_ids:
         return {d.pk: None for d in dets}
@@ -2734,7 +2740,7 @@ def stack_for(tag: str) -> dict | None:
 
 
 # --- 집계 -------------------------------------------------------------------
-def _summary_by_sql(slide: Slide) -> dict:
+def _summary_by_sql(slide: Slide, rows: dict | None = None) -> dict:
     """집계를 SQL 로 낸다. 개체 dict 를 만들지 않는다.
 
     **왜 따로 두는가.** 목록 화면은 개수 열 몇 개만 쓰는데, 예전에는 슬라이드마다
@@ -2755,9 +2761,13 @@ def _summary_by_sql(slide: Slide) -> dict:
     되는 순간 다른 이미지의 교정까지 끌어온다.
 
     세는 일은 `_summary_rows` 가 한다(원시 SQL 인 이유는 그쪽 머리말에).
+
+    `rows` 는 **이미 물어 온 집계**다(`_summary_for`). 슬라이드를 여럿 훑는
+    자리가 넘긴다 — 안 넘기면 여기서 이 슬라이드 것만 묻는다.
     """
     per_cls = {r["key"]: 0 for r in _class_rows()}
-    rows = _summary_rows("v.slide_id = %s", [slide.id])
+    if rows is None:
+        rows = _summary_rows("v.slide_id = %s", [slide.id])
     row = rows.get(slide.id) or {"per_cls": {}, "n_detected": 0,
                                  "n_auto": 0, "n_labeled": 0}
     per_cls.update({k: v for k, v in row["per_cls"].items() if k in per_cls})
@@ -3011,7 +3021,23 @@ def _summary_rows(where: str, params: list) -> dict[int, dict]:
     return out
 
 
-def _slide_summary(slide: Slide) -> dict:
+def _summary_for(slides) -> dict[int, dict]:
+    """슬라이드 여럿의 집계를 **질의 한 번으로** (253). `_slide_summary` 에 넘긴다.
+
+    `_SUMMARY_SQL` 의 `cnt`·`rep` 은 `{where}` 바깥이라 **부를 때마다 DB 전체의
+    시야를 훑는다** — 슬라이드마다 부르면 같은 것을 슬라이드 수만큼 다시 만든다.
+    첫 화면이 그렇게 17번을 불러 0.65초 중 0.4초를 썼다. 값은 같다: `{where}` 는
+    바깥 질의의 행을 거를 뿐이고 묶는 열쇠가 `slide_id` 다(비교 화면
+    `compare_slides` 가 이미 이 모양으로 부른다).
+    """
+    ids = [sl.id for sl in slides]
+    if not ids:
+        return {}
+    marks = ",".join(["%s"] * len(ids))
+    return _summary_rows(f"v.slide_id IN ({marks})", ids)
+
+
+def _slide_summary(slide: Slide, rows: dict | None = None) -> dict:
     """목록 화면의 집계.
 
     **세는 일은 `_summary_by_sql` 하나로 모았다.** 예전에는 `dataset_detail` 이
@@ -3025,7 +3051,7 @@ def _slide_summary(slide: Slide) -> dict:
     sizes = list(vps.values_list("n_frames", flat=True))
     n_img = sum(sizes)
 
-    r = _summary_by_sql(slide)
+    r = _summary_by_sql(slide, rows)
     per_cls = r["per_cls"]
     n_detected, n_auto = r["n_detected"], r["n_auto"]
     n_labeled, n_counts = r["n_labeled"], r["detected_groups"]
@@ -3130,6 +3156,8 @@ def datasets(area: str | None = None) -> list[dict]:
     # "전체" 는 거르지 않는다 — 지역이 안 붙은 관찰도 여기서는 보여야 한다.
     if area and area != AREA_ALL:
         slides = slides.filter(sample__locality__site__area=area)
+    slides = list(slides)
+    summary = _summary_for(slides)
     for slide in slides:
         sample = slide.sample
         loc = sample.locality if sample else None
@@ -3157,7 +3185,7 @@ def datasets(area: str | None = None) -> list[dict]:
             "missing_dir": not (Path(settings.DATA_ROOT)
                                 / slide.image_dir).is_dir(),
             **_obs(slide),
-            **_slide_summary(slide),
+            **_slide_summary(slide, summary),
         })
     return out
 
@@ -3980,6 +4008,7 @@ def locality_detail(site_code: str, loc_code: str,
     slides = sorted(
         (sl for sm in loc.samples.select_related("locality").all()
          for sl in sm.slides.live()), key=_slide_order)
+    summary = _summary_for(slides)
     all_rows = [{
         "slug": sl.slug,
         "label": sl.name,
@@ -3992,7 +4021,7 @@ def locality_detail(site_code: str, loc_code: str,
         "description": sl.description,
         "um_per_pixel": scales.get(sl.slug),
         **_obs(sl),
-        **_slide_summary(sl),
+        **_slide_summary(sl, summary),
     } for sl in slides]
     rows = [r for r in all_rows if with_hidden or not r["hidden"]]
 
@@ -4141,10 +4170,19 @@ def _viewpoints_of(slide: Slide, only_current: bool = False, light: bool = False
     # **`image` 를 함께 당긴다.** 부르는 쪽이 `d.image.path` 로 검출을 이미지에
     # 맞춘다(`by_path`) — 안 붙이면 검출마다 질의가 하나씩 붙고, 크롭 화면처럼
     # 시야를 전부 훑는 자리에서 그대로 백 번이 된다.
+    #
+    # **문턱과 묶음도 함께 당긴다** (253). `_apply_review` 가 검출마다
+    # `det.thresholds` 를 읽고 `batch_ids_of` 가 시야마다 `Run` 을 묻는다 —
+    # 369cm 의 계측 표 한 판에 그 둘이 490번이었다. 묶음은 `Run` 을 통째로
+    # 당기지 않고 pk 만 얹는다(`Run.params`·`counts` 가 JSON 이라 검출 수만큼
+    # 파싱된다). 시야의 완료 표시(`reviews`)도 같은 이유로 여기서 문다 —
+    # `review_state` 가 검출마다 읽는다.
     return qs.prefetch_related(
         "frames",
+        "reviews",
         Prefetch("detections",
-                 queryset=dets.select_related("image")
+                 queryset=dets.select_related("image", "thresholds")
+                              .annotate(fetched_batch_id=F("run__batch_id"))
                               .prefetch_related("candidates")),
         _reviews_prefetch())
 

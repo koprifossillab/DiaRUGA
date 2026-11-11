@@ -141,3 +141,75 @@ class ShapeMeasureTest(SimpleTestCase):
         for f in data.NUM_FIELDS:
             with self.subTest(f=f):
                 self.assertIn(f, m)
+
+
+class ClipConvexTest(SimpleTestCase):
+    """타원과의 IoU 가 딛는 자르기 (253 에서 루프를 다시 짰다).
+
+    **답이 손으로 나오는 도형으로 잰다** — 자르는 쪽을 정사각형으로 두면 겹친
+    넓이가 암산으로 나온다. 실제 폴리곤 8.4만 개로 옛 값과 비트까지 같은 것은
+    고칠 때 따로 대조했고, 여기는 다음에 손댈 사람이 틀렸는지를 말해 준다.
+    """
+
+    def test_어긋난_두_정사각형(self):
+        clip = shape.points(square(10))               # 반시계
+        got = shape._clip_convex(shape.points(square(10, 5, 5)), clip)
+        self.assertAlmostEqual(shape.area(got), 25.0)
+
+    def test_전부_안쪽이면_그대로다(self):
+        """빨리 지나가는 갈래 — 변이 아무것도 안 자르면 목록을 다시 안 만든다.
+        그 갈래가 점을 잃거나 순서를 바꾸면 여기서 걸린다."""
+        inner = shape.points(square(2, 4, 4))
+        self.assertEqual(shape._clip_convex(inner, shape.points(square(10))),
+                         inner)
+
+    def test_전부_바깥이면_빈_목록이다(self):
+        got = shape._clip_convex(shape.points(square(2, 20, 20)),
+                                 shape.points(square(10)))
+        self.assertEqual(shape.area(got), 0.0)
+
+    def test_오목한_도형도_자른다(self):
+        """ㄷ 자를 오른쪽 절반으로 자른다. 규조각 윤곽은 자주 오목하다."""
+        c = shape.points([0, 0, 10, 0, 10, 2, 2, 2, 2, 8, 10, 8, 10, 10, 0, 10])
+        half = shape.points([5, 0, 10, 0, 10, 10, 5, 10])
+        self.assertAlmostEqual(shape.area(shape._clip_convex(c, half)), 20.0)
+
+
+class MeasureCacheTest(SimpleTestCase):
+    """같은 폴리곤을 한 번만 잰다 (253). **기억해 둔 값이 새면 안 된다.**"""
+
+    def test_돌려준_dict_를_고쳐도_다음_값이_안_변한다(self):
+        """부르는 쪽(`_orphan_dict`·`_apply_review`)은 값을 개체 dict 로 옮겨
+        적는다. 같은 dict 를 돌려주면 누가 한 번 고친 값이 그 폴리곤을 가진
+        개체 전부에 따라붙는다 — 캐시된 dict 를 고치지 말라는 그 줄이다."""
+        poly = square(10, 3, 3)
+        a = shape.measure(poly, 0.5)
+        a["area_px"] = -1
+        a["extra"] = True
+        b = shape.measure(poly, 0.5)
+        self.assertEqual(b["area_px"], 100)
+        self.assertNotIn("extra", b)
+
+    def test_배율이_다르면_다른_값이다(self):
+        poly = square(10, 7, 7)
+        self.assertEqual(shape.measure(poly, 0.5)["area_um2"], 25.0)
+        self.assertEqual(shape.measure(poly, 1.0)["area_um2"], 100.0)
+        self.assertIsNone(shape.measure(poly)["area_um2"])
+
+    def test_기억한_값이_그냥_잰_값과_같다(self):
+        for poly in (square(10), ellipse(60, 10, n=40), [0, 0, 5, 0, 5, 5],
+                     [1, 2, 3, 4], []):
+            with self.subTest(n=len(poly)):
+                want = dict(zip(shape._FIELDS, shape._measure(poly, 0.3)))
+                self.assertEqual(shape.measure(poly, 0.3), want)
+                self.assertEqual(shape.measure(poly, 0.3), want)   # 두 번째는 기억에서
+
+    def test_정수와_실수로_적은_같은_폴리곤은_같은_값이다(self):
+        """`geom` 은 JSON 이라 같은 좌표가 `10` 으로도 `10.0` 으로도 온다."""
+        self.assertEqual(shape.measure([0, 0, 10, 0, 10, 10, 0, 10], 1.0),
+                         shape.measure(square(10.0), 1.0))
+
+    def test_숫자가_아닌_것이_섞이면_예전처럼_간다(self):
+        """문자열 좌표는 `float()` 이 읽는다 — 기억하는 길이 그것을 예외로
+        바꾸면 화면이 죽는다."""
+        self.assertEqual(shape.measure(["0", "0", "10", "0", "10", "10"])["area_px"], 50)

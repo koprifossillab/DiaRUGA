@@ -1,4 +1,4 @@
-"""폴리곤 하나에서 계측값을 낸다. **순수 파이썬이다 — 임포트가 `math` 뿐이다.**
+"""폴리곤 하나에서 계측값을 낸다. **순수 파이썬이다 — 임포트가 표준 라이브러리뿐이다.**
 
 사람이 그린 마스크(P09 3단계)의 지표를 여기서 잰다. 엔진이 낸 개체는
 `segment_diatoms.py` 가 cv2 로 재서 `Candidate` 에 넣어 두지만, **사람이 그린
@@ -28,6 +28,8 @@
 부호만 뒤집힐 뿐이라 절댓값으로 받는다.
 """
 import math
+from array import array
+from functools import lru_cache
 
 # 점이 셋 미만이면 도형이 아니다. `mask_points`·`hasPoly` 와 같은 문턱이다.
 MIN_POINTS = 3
@@ -95,6 +97,15 @@ def _clip_convex(subject, clip):
     """Sutherland–Hodgman. **`clip` 은 볼록이어야 한다**(여기서는 늘 타원이다).
 
     `subject` 는 오목해도 된다 — 규조각 윤곽은 자주 오목하다.
+
+    **변마다 점의 부호 거리를 한 번만 잰다** (253). 예전에는 `inside(p)`·
+    `inside(q)`·`cut(p, q)` 가 같은 식을 점마다 두세 번 다시 셌고, 369cm 의 계측
+    표 한 판에 그 호출이 3,900만 번이었다(화면 8초 중 7초). 식과 연산 순서는
+    그대로라 **값은 비트까지 같다** — 달라지면 계측 표가 지난 값과 어긋난다.
+
+    변의 안쪽에 점이 전부 들어 있으면 그 변은 아무것도 안 자른다. 타원의 72변
+    가운데 대부분이 그렇다(윤곽이 타원 근처에 있으니까) — 그때는 목록을 다시
+    안 만든다.
     """
     out = list(subject)
     n = len(clip)
@@ -103,26 +114,27 @@ def _clip_convex(subject, clip):
             return []
         ax, ay = clip[i]
         bx, by = clip[(i + 1) % n]
-
-        def inside(p):
-            return (bx - ax) * (p[1] - ay) - (by - ay) * (p[0] - ax) >= 0
-
-        def cut(p, q):
-            d1 = (bx - ax) * (p[1] - ay) - (by - ay) * (p[0] - ax)
-            d2 = (bx - ax) * (q[1] - ay) - (by - ay) * (q[0] - ax)
-            t = d1 / (d1 - d2) if d1 != d2 else 0.0
-            return (p[0] + t * (q[0] - p[0]), p[1] + t * (q[1] - p[1]))
-
+        ex, ey = bx - ax, by - ay
+        ds = [ex * (y - ay) - ey * (x - ax) for x, y in out]
+        if min(ds) >= 0:
+            continue
         cur, out = out, []
-        for j, q in enumerate(cur):
-            p = cur[j - 1]
-            if inside(q):
-                if not inside(p):
-                    out.append(cut(p, q))
+        p, d1 = cur[-1], ds[-1]
+        for q, d2 in zip(cur, ds):
+            if d2 >= 0:
+                if d1 < 0:
+                    out.append(_cut(p, q, d1, d2))
                 out.append(q)
-            elif inside(p):
-                out.append(cut(p, q))
+            elif d1 >= 0:
+                out.append(_cut(p, q, d1, d2))
+            p, d1 = q, d2
     return out
+
+
+def _cut(p, q, d1, d2):
+    """선분 `p→q` 가 변을 건너는 점. `d1`·`d2` 는 두 끝의 부호 거리다."""
+    t = d1 / (d1 - d2) if d1 != d2 else 0.0
+    return (p[0] + t * (q[0] - p[0]), p[1] + t * (q[1] - p[1]))
 
 
 def _centroid_moments(pts):
@@ -189,25 +201,57 @@ def _ellipse_points(cx, cy, a, b, deg, n=72):
     return out
 
 
+# `measure` 가 돌려주는 열쇠. 순서가 곧 dict 의 순서다.
+_FIELDS = ("area_px", "area_um2", "major_um", "minor_um", "long_side_um",
+           "short_side_um", "aspect_ratio", "fill_ratio", "circularity",
+           "convexity", "solidity", "elongation", "ellipse_iou",
+           # 픽셀이 있어야 나오는 것과 SAM 고유의 것 — 여기서는 늘 None 이다
+           "texture", "predicted_iou", "stability_score")
+
+# 기억해 둘 폴리곤 수. 교정 행 전체의 서로 다른 폴리곤이 3.4만 개(2026-11)이고
+# 한 칸이 1 KB 안쪽이라, 다 차도 워커 하나에 수십 MB 다.
+_CACHE_SIZE = 50_000
+
+
 def measure(poly, um_per_px=None) -> dict:
     """폴리곤 하나의 계측값. **못 재는 것은 `None` 이다.**
 
     돌려주는 열쇠는 `Candidate` 의 칸 이름과 같다 — 화면·계측 표가 엔진이 낸
     개체와 사람이 그린 개체를 **같은 코드로** 읽어야 하기 때문이다.
+
+    **같은 폴리곤은 한 번만 잰다** (253). 지표를 DB 에 안 넣고 그때그때 재는
+    방침은 그대로다(폴리곤이 원본이다 — `data._orphan_dict`). 다만 그 방침이
+    "개체 하나에 점 13~19개라 싸다" 에 기대고 있었는데, 후보 없는 교정이 한
+    슬라이드에 1.1만 개가 되자 계측 표·크롭·카탈로그가 열 때마다 8~10초를
+    여기서 썼다. 값은 폴리곤과 배율만으로 정해지므로 그 둘을 열쇠로 기억한다 —
+    **기하가 바뀌면 열쇠가 바뀌어 낡을 수가 없다.**
+
+    돌려주는 dict 는 **부를 때마다 새것이다** — 부르는 쪽이 고쳐도 기억해 둔
+    값이 안 변한다(캐시된 dict 를 고치지 말라는 그 줄이다).
     """
-    out = {k: None for k in
-           ("area_px", "area_um2", "major_um", "minor_um", "long_side_um",
-            "short_side_um", "aspect_ratio", "fill_ratio", "circularity",
-            "convexity", "solidity", "elongation", "ellipse_iou",
-            # 픽셀이 있어야 나오는 것과 SAM 고유의 것 — 여기서는 늘 None 이다
-            "texture", "predicted_iou", "stability_score")}
+    try:
+        key = array("d", poly).tobytes() if poly else b""
+    except (TypeError, OverflowError):
+        # 숫자가 아닌 것이 섞였다 — 기억하지 않고 예전 길로 간다
+        return dict(zip(_FIELDS, _measure(poly, um_per_px)))
+    return dict(zip(_FIELDS, _measure_cached(key, um_per_px)))
+
+
+@lru_cache(maxsize=_CACHE_SIZE)
+def _measure_cached(key: bytes, um_per_px):
+    return _measure(array("d", key).tolist(), um_per_px)
+
+
+def _measure(poly, um_per_px) -> tuple:
+    """`_FIELDS` 순서의 값들."""
+    out = dict.fromkeys(_FIELDS)
     pts = points(poly)
     if len(pts) < MIN_POINTS:
-        return out
+        return tuple(out.values())
 
     a = area(pts)
     if a <= 0:
-        return out
+        return tuple(out.values())
     p = perimeter(pts)
     out["area_px"] = int(round(a))
 
@@ -247,7 +291,7 @@ def measure(poly, um_per_px=None) -> dict:
             out["short_side_um"] = round(lo * um_per_px, 3)
     if um_per_px:
         out["area_um2"] = round(a * um_per_px * um_per_px, 3)
-    return out
+    return tuple(out.values())
 
 
 def _rotated_wh(pts, deg):
