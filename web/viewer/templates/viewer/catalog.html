@@ -421,7 +421,7 @@
 {% endcomment %}
 <div class="bulkbar" hidden>
   <b class="n">고른 것 0개</b>
-  <label>종명</label>
+  <label class="sppick" title="이미 쓴 종명을 속마다 펼쳐 봅니다">종명</label>
   <input type="text" class="species" list="species-seen" maxlength="120"
          placeholder="비우면 안 고친다">
   <label>유형</label>
@@ -448,6 +448,8 @@
 {% endif %}
 
 {{ counted_keys|json_script:"counted-keys" }}
+{# 종명 글자를 누르면 뜨는 속별 목록 (254) — 검토 화면과 같은 것이다. #}
+{% include "viewer/_species_picker.html" %}
 <datalist id="species-seen">
   {% for s in species_seen %}<option value="{{ s }}">{% endfor %}
 </datalist>
@@ -521,7 +523,7 @@
         만들면 카드마다 `stat` 이 나가 한 판에 120번이 된다(`atlas.page_url`
         머리말과 같은 줄) — 경로만 내려보내고 띄울 때 주소를 만든다.
       {% endcomment %}
-      <div class="row"><label>종명</label>
+      <div class="row"><label{% if not readonly %} class="sppick" title="이미 쓴 종명을 속마다 펼쳐 봅니다"{% endif %}>종명</label>
         <input type="text" class="species" list="species-seen" value="{{ r.species }}"
                maxlength="120"
                {% if readonly %}disabled{% endif %}>

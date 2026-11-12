@@ -578,7 +578,8 @@
     <div class="catsay" id="catsay-{{ uid }}">개체를 하나 고르면 카드가 뜹니다</div>
     <div class="catbox" id="catbox-{{ uid }}" hidden>
       <div class="catno" id="catno-{{ uid }}"></div>
-      <div class="crow"><label for="catsp-{{ uid }}">종명</label>
+      <div class="crow"><label for="catsp-{{ uid }}" class="sppick"
+                               title="이미 쓴 종명을 속마다 펼쳐 봅니다">종명</label>
         <input type="text" id="catsp-{{ uid }}" list="catspecies-{{ uid }}"
                maxlength="120" placeholder="Eucampia antarctica"></div>
       <div class="crow"><label for="catcls-{{ uid }}">유형</label>
@@ -620,6 +621,8 @@
   <datalist id="catspecies-{{ uid }}">
     {% for s in species_seen %}<option value="{{ s }}">{% endfor %}
   </datalist>
+  {# 종명 글자를 누르면 뜨는 속별 목록 (254) — 카탈로그와 같은 것이다. #}
+  {% include "viewer/_species_picker.html" %}
   {% comment %}
     **도감 칸** (229 · 사용자 2026-10-21). 개체 카탈로그와 바닥 사이. 학명을
     치면 도감 색인에서 찾고(`api/atlas/suggest` — 카탈로그의 종명 자동완성과

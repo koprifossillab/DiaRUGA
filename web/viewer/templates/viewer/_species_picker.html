@@ -1,0 +1,293 @@
+{% comment %}
+  **쓴 종명 목록** (254 · 사용자 2026-11-12). `종명` 글자를 누르면 이미 쓴
+  종명을 **속마다 접어서** 작은 창으로 보여 주고, 하나를 누르면 그 칸에 적는다.
+
+  **칸의 자동완성(`datalist`)은 그대로 둔다.** 그쪽은 치는 글자로 좁혀 가는
+  길이고, 이쪽은 **무엇이 있는지 훑어보는** 길이다 — 이름이 수백 개가 되면
+  브라우저의 목록은 한 줄로 길게 늘어져 속을 건너뛸 수 없다.
+
+  **목록의 원천은 그 칸이 가리키는 `datalist` 다.** 서버가 그려 준 이미 쓴
+  이름(`data.species_seen`)만 읽고, 치는 동안 도감에서 온 것(`data-atlas`)은
+  뺀다 — 그것은 방금 친 글자에 딸린 것이라 훑어볼 목록이 아니다. 같은
+  `datalist` 를 쓰는 다른 칸에 지금 적혀 있는 값도 더한다(이 화면에서 방금
+  적은 이름은 서버가 그려 준 목록에 아직 없다).
+
+  **적는 것은 칸의 문으로 간다.** 값을 넣고 `input`·`change` 를 낸다 — 저장은
+  두 화면이 이미 그 사건에 걸어 둔 길로 흐른다. 저장 문을 따로 두지 않는다.
+
+  **잠긴 칸에서는 안 열린다.** 읽기 전용에서 목록이 열리고 눌리면 "되는 것처럼
+  보이는" 자리가 된다(CLAUDE.md · 051).
+
+  쓰는 법 — 누를 것(`label`)에 `class="sppick"` 를 준다. 칸은 `for` 가 가리키는
+  것, 없으면 같은 부모 안의 `input[list]` 다. 한 쪽에 여러 번 들어와도 한 번만
+  돈다(검토 화면은 `_detection.html` 이 시야마다 든다).
+{% endcomment %}
+<style>
+  .sppick { cursor: pointer; white-space: nowrap; text-decoration: underline dotted;
+            text-underline-offset: 3px; }
+  .sppick:hover { color: var(--accent); }
+  /* 잠긴 칸 옆에서는 누르는 자리로 안 보이게 한다 */
+  .sppick.locked, :has(> input:disabled) > .sppick {
+    cursor: default; text-decoration: none; color: var(--dim);
+  }
+  .sppop {
+    position: fixed; z-index: 75; width: 280px; max-height: min(60vh, 520px);
+    display: flex; flex-direction: column;
+    background: var(--panel); color: var(--fg); border: 1px solid var(--line);
+    border-radius: 8px; box-shadow: 0 8px 26px rgba(0,0,0,.45);
+    font-size: 12.5px;
+  }
+  /* `display: flex` 가 `[hidden]` 을 이긴다 — 명시한다 (CLAUDE.md 템플릿 절) */
+  .sppop[hidden] { display: none; }
+  .sppop .sphead {
+    flex: none; display: flex; gap: 6px; align-items: center;
+    padding: 6px 8px; border-bottom: 1px solid var(--line);
+  }
+  .sppop .sphead .t { color: var(--dim); font-size: 11.5px; white-space: nowrap; }
+  .sppop .sphead input {
+    flex: 1 1 auto; min-width: 0; font: inherit; font-size: 12px;
+    padding: 2px 6px; border-radius: 6px;
+    background: var(--bg); color: var(--fg); border: 1px solid var(--line);
+  }
+  .sppop .sphead button {
+    flex: none; font: inherit; font-size: 11.5px; padding: 2px 7px;
+    border-radius: 6px; cursor: pointer;
+    background: transparent; color: var(--dim); border: 1px solid var(--line);
+  }
+  .sppop .sphead button:hover { color: var(--fg); }
+  .sppop .splist { flex: 1 1 auto; overflow-y: auto; padding: 4px; }
+  .sppop details > summary {
+    cursor: pointer; padding: 4px 6px; border-radius: 5px; user-select: none;
+    font-style: italic;
+  }
+  .sppop details > summary:hover { background: var(--line); }
+  .sppop details > summary .n { font-style: normal; color: var(--dim); font-size: 11px; }
+  .sppop details[hidden] { display: none; }
+  .sppop .spitem {
+    display: block; width: 100%; text-align: left; font: inherit; font-style: italic;
+    padding: 4px 8px 4px 22px; background: transparent; color: inherit;
+    border: 0; border-radius: 5px; cursor: pointer;
+  }
+  .sppop .spitem[hidden] { display: none; }
+  .sppop .spitem:hover { background: var(--line); }
+  .sppop .spitem.cur { color: var(--accent); }
+  .sppop .spnone { padding: 10px; color: var(--dim); }
+</style>
+<script>
+(function () {
+  if (window.__sppick) return;          // 한 쪽에 한 번만
+  window.__sppick = true;
+
+  var pop = null, listEl = null, filtEl = null, countEl = null, foldEl = null;
+  var curInput = null, curLabel = null;
+
+  function inputOf(label) {
+    var id = label.getAttribute("for");
+    if (id) return document.getElementById(id);
+    return label.parentNode ? label.parentNode.querySelector("input[list]") : null;
+  }
+
+  // 그 칸이 가리키는 목록에서 이미 쓴 이름을 모은다 (머리말).
+  function namesFor(inp) {
+    var seen = {}, out = [];
+    function add(v) {
+      v = String(v || "").trim();
+      var k = v.toLowerCase();
+      if (!v || seen[k]) return;
+      seen[k] = true;
+      out.push(v);
+    }
+    var id = inp.getAttribute("list");
+    var dl = id ? document.getElementById(id) : null;
+    if (dl) {
+      dl.querySelectorAll("option").forEach(function (o) {
+        if (!o.hasAttribute("data-atlas")) add(o.value);
+      });
+      document.querySelectorAll('input[list="' + id + '"]').forEach(function (el) {
+        add(el.value);
+      });
+    }
+    out.sort(function (a, b) { return a.localeCompare(b, "en", {sensitivity: "base"}); });
+    return out;
+  }
+
+  // 속 = 첫 낱말. `cf.`·`aff.` 로 시작하면 그 다음 낱말이 속이다 — 안 그러면
+  // "cf." 라는 속이 하나 생긴다.
+  function genusOf(name) {
+    var w = name.split(/\s+/);
+    var i = 0;
+    while (i < w.length - 1 && /^(cf|aff)\.?$/i.test(w[i])) i++;
+    return w[i];
+  }
+
+  function build() {
+    pop = document.createElement("div");
+    pop.className = "sppop";
+    pop.hidden = true;
+    pop.innerHTML =
+      '<div class="sphead"><span class="t"></span>' +
+      '<input type="text" placeholder="거르기" aria-label="목록 거르기">' +
+      '<button type="button" class="fold"></button>' +
+      '<button type="button" class="x" title="닫기 (Esc)">✕</button></div>' +
+      '<div class="splist"></div>';
+    countEl = pop.querySelector(".t");
+    filtEl = pop.querySelector("input");
+    foldEl = pop.querySelector(".fold");
+    listEl = pop.querySelector(".splist");
+    document.body.appendChild(pop);
+
+    // 검토 화면은 `document` 에 단축키가 걸려 있다(Space = 지우기 등). 이 창
+    // 안에서 누른 키·클릭·휠이 거기까지 가면 안 된다.
+    ["keydown", "keyup", "keypress", "mousedown", "wheel", "contextmenu"].forEach(function (ev) {
+      pop.addEventListener(ev, function (e) {
+        if (ev === "keydown" && e.key === "Escape") { e.preventDefault(); close(true); }
+        e.stopPropagation();
+      });
+    });
+    pop.querySelector(".x").addEventListener("click", function () { close(true); });
+    foldEl.addEventListener("click", function () {
+      var open = !anyOpen();
+      groups().forEach(function (d) { d.open = open; });
+      paintFold();
+    });
+    filtEl.addEventListener("input", applyFilter);
+    listEl.addEventListener("toggle", paintFold, true);
+    listEl.addEventListener("click", function (e) {
+      var b = e.target.closest(".spitem");
+      if (!b || !curInput || curInput.disabled) return;
+      var inp = curInput;
+      inp.value = b.getAttribute("data-v");
+      // 저장은 칸이 이미 걸어 둔 길로 간다 (머리말)
+      inp.dispatchEvent(new Event("input", {bubbles: true}));
+      inp.dispatchEvent(new Event("change", {bubbles: true}));
+      close(false);
+    });
+  }
+
+  function groups() {
+    return Array.prototype.slice.call(listEl.querySelectorAll("details"));
+  }
+  function anyOpen() {
+    return groups().some(function (d) { return !d.hidden && d.open; });
+  }
+  function paintFold() { foldEl.textContent = anyOpen() ? "모두 접기" : "모두 펴기"; }
+
+  function applyFilter() {
+    var q = filtEl.value.trim().toLowerCase();
+    groups().forEach(function (d) {
+      var hit = 0;
+      d.querySelectorAll(".spitem").forEach(function (b) {
+        var ok = !q || b.getAttribute("data-v").toLowerCase().indexOf(q) >= 0;
+        b.hidden = !ok;
+        if (ok) hit++;
+      });
+      d.hidden = !hit;
+      // 거르는 동안에는 걸린 것이 바로 보여야 한다 — 접힌 채면 한 번 더 눌러야 한다
+      if (q && hit) d.open = true;
+    });
+    paintFold();
+  }
+
+  function fill(inp) {
+    var names = namesFor(inp);
+    var cur = inp.value.trim().toLowerCase();
+    listEl.textContent = "";
+    filtEl.value = "";
+    if (!names.length) {
+      var none = document.createElement("div");
+      none.className = "spnone";
+      none.textContent = "아직 적은 종명이 없습니다";
+      listEl.appendChild(none);
+      countEl.textContent = "쓴 종명 0";
+      foldEl.hidden = filtEl.hidden = true;
+      return;
+    }
+    foldEl.hidden = filtEl.hidden = false;
+    var by = {}, order = [];
+    names.forEach(function (n) {
+      var g = genusOf(n), k = g.toLowerCase();
+      if (!by[k]) { by[k] = {genus: g, rows: []}; order.push(k); }
+      by[k].rows.push(n);
+    });
+    order.sort(function (a, b) { return a.localeCompare(b, "en"); });
+    order.forEach(function (k) {
+      var d = document.createElement("details");
+      var s = document.createElement("summary");
+      s.appendChild(document.createTextNode(by[k].genus + " "));
+      var n = document.createElement("span");
+      n.className = "n";
+      n.textContent = by[k].rows.length;
+      s.appendChild(n);
+      d.appendChild(s);
+      by[k].rows.forEach(function (name) {
+        var b = document.createElement("button");
+        b.type = "button";
+        b.className = "spitem";
+        b.setAttribute("data-v", name);
+        b.textContent = name;
+        if (name.toLowerCase() === cur) {
+          b.classList.add("cur");
+          d.open = true;            // 지금 적힌 이름의 속은 펴 둔다
+        }
+        d.appendChild(b);
+      });
+      listEl.appendChild(d);
+    });
+    countEl.textContent = "쓴 종명 " + names.length + " · 속 " + order.length;
+    paintFold();
+  }
+
+  function place(label) {
+    var r = label.getBoundingClientRect();
+    var w = pop.offsetWidth, h = pop.offsetHeight;
+    var x = Math.min(Math.max(8, r.left), window.innerWidth - w - 8);
+    var y = r.bottom + 4;
+    // 아래에 자리가 없으면 위로 올린다
+    if (y + h > window.innerHeight - 8) y = Math.max(8, r.top - h - 4);
+    pop.style.left = x + "px";
+    pop.style.top = y + "px";
+  }
+
+  function open(label, inp) {
+    if (!pop) build();
+    curInput = inp;
+    curLabel = label;
+    fill(inp);
+    pop.hidden = false;
+    place(label);
+    var cur = listEl.querySelector(".spitem.cur");
+    if (cur) cur.scrollIntoView({block: "nearest"});
+  }
+
+  function close(refocus) {
+    if (!pop || pop.hidden) return;
+    pop.hidden = true;
+    var inp = curInput;
+    curInput = curLabel = null;
+    if (refocus && inp && !inp.disabled) inp.focus();
+  }
+
+  document.addEventListener("click", function (e) {
+    var label = e.target.closest ? e.target.closest(".sppick") : null;
+    if (!label) return;
+    var inp = inputOf(label);
+    // `for` 가 달린 label 은 누르면 칸으로 초점이 간다 — 목록을 열 때는 막는다
+    e.preventDefault();
+    if (!inp || inp.disabled || label.classList.contains("locked")) return;
+    if (pop && !pop.hidden && curLabel === label) { close(true); return; }
+    open(label, inp);
+  });
+  // 바깥을 누르면 닫는다. 잡는 단계에서 본다 — 검토 화면의 칸들이 `mousedown`
+  // 을 위로 안 올려 보낸다(`catBox` 의 stopPropagation).
+  document.addEventListener("mousedown", function (e) {
+    if (!pop || pop.hidden) return;
+    if (pop.contains(e.target)) return;
+    if (e.target.closest && e.target.closest(".sppick") === curLabel) return;
+    close(false);
+  }, true);
+  document.addEventListener("keydown", function (e) {
+    if (e.key === "Escape" && pop && !pop.hidden) close(true);
+  }, true);
+  window.addEventListener("resize", function () { close(false); });
+})();
+</script>
