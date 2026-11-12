@@ -53,7 +53,7 @@ class OffStackFilterTest(DiaRUGATestCase):
     def test_칩의_수는_파편을_센다(self):
         html = self.client.get(
             reverse("catalog", args=["rs23"])).content.decode()
-        self.assertIn('합성본에 없음 <span class="dim">1</span>', html)
+        self.assertIn('합성본에 없음 <span class="n">1</span>', html)
 
     def test_합성본이_없는_시야는_안_걸린다(self):
         self.assertEqual(self.rows("single", "?cls=off_stack"), [])
@@ -63,4 +63,4 @@ class OffStackFilterTest(DiaRUGATestCase):
         """골랐을 때 파편을 다 내므로 켜고 끌 수 있는 것처럼 보이면 안 된다."""
         html = self.client.get(reverse("catalog", args=["rs23"])
                                + "?cls=off_stack").content.decode()
-        self.assertNotIn('class="fragtoggle"', html)
+        self.assertNotIn('fragtoggle', html.split('<div class="catfilters">')[1])

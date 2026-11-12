@@ -153,9 +153,13 @@ class ClassMenuTest(DiaRUGATestCase):
         cls.w = fx.make_world(slug="rs23", n_viewpoints=1, n_candidates=3)
 
     def test_카탈로그_유형_셀렉트에_뜬다(self):
+        # **카드가 있어야 셀렉트가 있다** — 예전에는 거르개 칩의 글자가 이
+        # 단언을 대신 통과시켰다(255 에서 0 인 유형의 칩을 걷으며 드러났다).
+        fx.review_done(self.w.vp)
         html = self.client.get(
             reverse("catalog", args=["rs23"])).content.decode()
-        self.assertIn("Rhizosolenia", html)
+        self.assertIn("catcard", html, "카드가 없어 시험이 헛돈다")
+        self.assertIn('<option value="rhizosolenia"', html)
 
     def test_검토_화면에_단축키가_실린다(self):
         """`HOTKEYS` 를 화면이 표에서 만든다 — 목록을 템플릿에 적지 않는다."""

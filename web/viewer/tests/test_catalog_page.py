@@ -142,15 +142,14 @@ class CatalogPageTest(DiaRUGATestCase):
                 if data.is_fragment(r.get("cls")))
         self.assertGreater(n, 0)
         html = self.get()
-        self.assertIn("파편 보기", html)
-        self.assertIn(f"({n})", html)
+        self.assertIn(f'함께 보기 <span class="n">{n}</span>', html)
 
     def test_켠_것이_검색과_거르개를_따라간다(self):
         """켠 것이 조용히 꺼지면 사람은 개체가 사라졌다고 읽는다 — 검색 폼은
         숨은 칸으로, 칩은 주소로 그것을 들고 간다."""
         html = self.get(frag="1")
         self.assertIn('name="frag" value="1"', html)      # 검색 폼이 들고 간다
-        self.assertIn("&frag=1", html)                    # 칩이 들고 간다
+        self.assertIn('href="?frag=1"', html)             # 칩이 들고 간다 (「전체」)
 
     def test_파편_분류를_집으면_감추지_않는다(self):
         """그 칩을 누르고 빈 화면을 보면 사람은 자료가 없다고 읽는다 — 눌러서

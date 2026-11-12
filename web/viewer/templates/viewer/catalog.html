@@ -142,12 +142,31 @@
   }
   /* 칩 줄에 섞여 서므로 칩과 같은 높이로 둔다 — 혼자 튀면 거르개가 아니라
      설정처럼 읽힌다. */
-  .fragtoggle { display: flex; align-items: center; }
-  .fragtoggle label {
-    display: flex; gap: 5px; align-items: center; cursor: pointer;
-    font-size: 12px; color: var(--dim);
+  /* 거르개 줄 (255). 줄마다 이름표가 같은 너비라 칩의 첫 자리가 맞는다 */
+  .catfilters { margin: 0 0 10px; font-size: 12.5px; }
+  .catfilters .frow {
+    display: flex; gap: 6px; align-items: center; flex-wrap: wrap;
+    padding: 3px 0;
   }
-  .fragtoggle input { margin: 0; cursor: pointer; }
+  .catfilters .fl { flex: none; width: 2.6em; color: var(--dim); font-size: 12px; }
+  .catfilters .chip .n, .catfilters .n { color: var(--dim); font-weight: 400; font-size: 11px; }
+  .catfilters .chip.on .n { color: inherit; }
+  /* 묶음에 든 분류는 묶음 칩 뒤에 붙여 놓는다 — 작게, 테두리 없이 */
+  .catfilters .chip.grp { border-style: dashed; }
+  .catfilters .chip.sub { padding: 3px 8px; border-color: transparent; margin-left: -4px; }
+  .catfilters .chip.sub.on { border-color: var(--accent); }
+  .catfilters .chip.zero { opacity: .55; }
+  .catfilters .chip.view { border-style: dashed; }
+  .catfilters .fright { margin-left: auto; display: flex; gap: 6px; align-items: center; }
+  .catfilters .fclear { font-size: 11.5px; margin-left: 4px; }
+  .catfilters button.chip { font: inherit; font-size: 12px; background: transparent; cursor: pointer; }
+  .catfilters .fmore { margin-top: 2px; }
+  .catfilters .fmore > summary {
+    cursor: pointer; color: var(--dim); font-size: 11.5px; width: fit-content;
+    user-select: none;
+  }
+  .catfilters .fmore > summary:hover { color: var(--accent); }
+  .catfilters .fmore .frow { padding-left: calc(2.6em + 6px); }
   .catsearch { margin-left: auto; display: flex; gap: 6px; align-items: center; }
   .catsearch input {
     font: inherit; font-size: 12px; padding: 3px 9px; border-radius: 999px;
@@ -291,10 +310,11 @@
   {% endif %}
   <form class="catsearch" method="get">
     {% if cls %}<input type="hidden" name="cls" value="{{ cls }}">{% endif %}
-    {% if show_frag %}<input type="hidden" name="frag" value="1">{% endif %}
+    {% if st %}<input type="hidden" name="st" value="{{ st }}">{% endif %}
+    {% if frag_on %}<input type="hidden" name="frag" value="1">{% endif %}
     {% if show_gone %}<input type="hidden" name="gone" value="1">{% endif %}
     <input type="search" name="q" value="{{ q }}" placeholder="번호 · 종명 · 코멘트">
-    {% if q %}<a class="chip" href="?{% if cls %}cls={{ cls }}{% endif %}{% if show_gone %}&amp;gone=1{% endif %}">지우기</a>{% endif %}
+    {% if q %}<a class="chip" href="{{ q_clear }}">지우기</a>{% endif %}
   </form>
 </div>
 
@@ -314,81 +334,97 @@
   <div class="note warn">{{ blocked }}</div>
 {% endif %}
 
-<div class="croptools">
-  <span class="dim">형태</span>
-  <a class="chip{% if not cls %} on{% endif %}"
-     href="?{% if q %}q={{ q }}{% endif %}{% if show_frag %}&frag=1{% endif %}{% if show_gone %}&gone=1{% endif %}">전체</a>
-  {% class_list as classes %}
-  {% for d in classes %}
-    {% if d.group_first %}{% with g=d.group_first %}
-    <a class="chip grp{% if cls == g.key %} on{% endif %}"
-       title="{{ g.label }} — 묶음 안의 분류를 함께 봅니다"
-       href="?cls={{ g.key }}{% if q %}&q={{ q }}{% endif %}{% if show_frag %}&frag=1{% endif %}{% if show_gone %}&gone=1{% endif %}">{{ g.label }}</a>
-    {% endwith %}{% endif %}
-    <a class="chip{% if cls == d.key %} on{% endif %}"
-       href="?cls={{ d.key }}{% if q %}&q={{ q }}{% endif %}{% if show_frag %}&frag=1{% endif %}{% if show_gone %}&gone=1{% endif %}">{{ d.label }}</a>
-  {% endfor %}
-  {% for f in filters %}
-    <a class="chip{% if cls == f.key %} on{% endif %}"
-       href="?cls={{ f.key }}{% if q %}&q={{ q }}{% endif %}{% if show_frag %}&frag=1{% endif %}{% if show_gone %}&gone=1{% endif %}">{{ f.label }}{% if f.n is not None %} <span class="dim">{{ f.n }}</span>{% endif %}</a>
-  {% endfor %}
-  {% comment %}
-    **파편은 기본으로 감춘다** (사용자 2026-08-11). 처음부터 다 내면 카드가
-    파편으로 덮여 동정할 것이 안 보인다 — 실측으로 살아 있는 교정의 65%가 파편이다.
+{% comment %}
+  **거르개 줄** (255 · 사용자 2026-11-12). 한 줄에 칩 스물일곱이 나란히 있던
+  것을 뜻대로 갈랐다 —
 
-    **몇 개를 감췄는지 적는다** — "없다" 와 "감췄다" 를 사람이 구별해야 한다.
-    체크박스는 거르개(`cls`)·검색(`q`)을 숨은 칸으로 들고 가므로, 켜고 끄는
-    사이에 보고 있던 자리를 안 잃는다.
-  {% endcomment %}
-  {% comment %}
-    **지운 것을 보는 화면에는 이 체크박스를 안 둔다** (P16). 거기서는 파편도
-    전부 내므로, 켜고 끌 수 있는 것처럼 보이면 눌러서 아무 일도 안 일어나는
-    자리가 된다 — 이 화면이 파편 칩에서 이미 피한 그 자리다.
-    「합성본에 없음」(226) 도 같다 — 파편까지 다 낸다.
-  {% endcomment %}
-  {% if not show_gone and cls != "off_stack" %}
-  <form method="get" class="fragtoggle">
-    {% if cls %}<input type="hidden" name="cls" value="{{ cls }}">{% endif %}
-    {% if q %}<input type="hidden" name="q" value="{{ q }}">{% endif %}
-    <label title="파편(원형조각·봉상조각)에는 등급·자세를 매기지 않습니다 — 동정 진행도에서도 빠집니다">
-      <input type="checkbox" name="frag" value="1"
-             {% if show_frag %}checked{% endif %}>
-      파편 보기{% if n_frag %} <span class="dim">({{ n_frag }})</span>{% endif %}
-    </label>
-  </form>
+  - **유형** — 완형. 이 슬라이드에 없는 유형은 칩을 안 놓는다
+  - **파편** — 기본으로 감추는 것이라 줄을 따로 둔다. 「함께 보기」 가 예전의
+    체크박스다. 파편 유형을 콕 집으면 그것만 나온다
+  - **동정** — 덜 된 것·완료·코멘트. **유형과 함께 걸린다**(`st`) — "봉상 중
+    덜 된 것". 예전에는 유형과 한 칸(`cls`)을 나눠 써서 하나를 누르면 다른
+    것이 풀렸다
+  - **정제용** — 4차 검출 전에 자료를 다듬으려고 둔 것들(225·226). 접어 둔다
+
+  **칩의 수는 눌렀을 때 놓일 카드의 수다** — 다른 줄에 건 것과 검색을 건 채로
+  센다. **켜진 칩을 다시 누르면 풀린다.** 주소는 뷰가 만든다.
+
+  보기를 바꾸는 것(지운 것)과 일(이 쪽 전부 고르기)은 거르개가 아니라서
+  오른쪽에 따로 둔다.
+{% endcomment %}
+{# 카드와 일괄 띠의 유형 셀렉트가 쓴다 — 예전에는 칩 줄 안에서 받아 두었다. #}
+{% class_list as classes %}
+<div class="catfilters">
+  <div class="frow">
+    <span class="fl">유형</span>
+    <a class="chip{% if not cls %} on{% endif %}" href="{{ f_all.href }}">전체 <span class="n">{{ f_all.n }}</span></a>
+    {% for c in f_whole %}
+      <a class="chip{% if c.grp %} grp{% endif %}{% if c.sub %} sub{% endif %}{% if c.on %} on{% endif %}"
+         {% if c.grp %}title="{{ c.label }} — 묶음 안의 분류를 함께 봅니다"{% endif %}
+         href="{{ c.href }}">{{ c.label }} <span class="n">{{ c.n }}</span></a>
+    {% endfor %}
+    <span class="fright">
+      {% comment %}
+        **쪽 안에서만 고른다** (185). "전부" 가 쪽 밖을 뜻하지 않는다 — 거르개가
+        걸린 채로 쪽을 넘어 고르면 사람이 안 본 카드에 종명이 앉는다. 그래서
+        몇 개를 고르는지 단추에 적는다. 지운 것을 보는 화면에는 일괄 띠가 없어
+        안 둔다.
+      {% endcomment %}
+      {% if not readonly and not show_gone and rows %}
+        <button type="button" class="chip pickall" aria-pressed="false"
+                title="지금 이 쪽에 놓인 카드만 고릅니다 — 거르개에 걸린 다른 쪽까지 가지 않습니다">
+          <span class="t">이 쪽 전부 고르기</span> <span class="n">({{ rows|length }})</span>
+        </button>
+      {% endif %}
+      {% comment %}
+        **지운 것은 따로 본다** (P16 5.1). 카탈로그에서 지울 수 있으니 되살릴
+        자리가 같은 화면에 있어야 한다. 섞어서 내지 않는다(2026-08-10).
+      {% endcomment %}
+      <a class="chip view{% if show_gone %} on{% endif %}"
+         title="사람이 오검출로 지운 개체입니다 — 여기서 되살립니다"
+         href="{{ gone_href }}">{% if show_gone %}← 동정하는 쪽으로{% else %}지운 것 보기{% endif %}</a>
+    </span>
+  </div>
+  {% if f_frags or f_frag_n %}
+  <div class="frow">
+    <span class="fl" title="파편에는 등급·자세를 매기지 않습니다 — 동정 진행도에서도 빠집니다">파편</span>
+    {% comment %}
+      **파편은 기본으로 감춘다** (사용자 2026-08-11) — 살아 있는 교정의 65%가
+      파편이라 다 내면 동정할 것이 안 보인다. **몇 개를 감췄는지 적는다.**
+      지운 것·「합성본에 없음」 은 파편까지 다 내므로(P16·226) 그때는 켜고 끌 수
+      있는 것처럼 안 보이게 글자로만 적는다.
+    {% endcomment %}
+    {% if frag_locked %}
+      <span class="dim">함께 보는 중 <span class="n">{{ f_frag_n }}</span></span>
+    {% else %}
+      <a class="chip fragtoggle{% if frag_on %} on{% endif %}" href="{{ frag_href }}"
+         title="완형 카드 사이에 파편도 함께 놓습니다"
+         >{% if frag_on %}함께 보는 중{% else %}함께 보기{% endif %} <span class="n">{{ f_frag_n }}</span></a>
+    {% endif %}
+    {% for c in f_frags %}
+      <a class="chip{% if c.on %} on{% endif %}" href="{{ c.href }}">{{ c.label }} <span class="n">{{ c.n }}</span></a>
+    {% endfor %}
+  </div>
   {% endif %}
-  {% comment %}
-    **지운 것은 따로 본다** (P16 5.1). 카탈로그에서 지울 수 있게 되었으니
-    되살릴 자리가 같은 화면에 있어야 한다 — 되돌릴 수 없는 단추를 두지 않는다.
-
-    섞어서 내지 않는 것은 2026-08-10 방침 그대로다: 지운 것까지 한 목록에 내면
-    카드가 몇 배가 되고 동정할 것이 안 보인다.
-  {% endcomment %}
-  <a class="chip{% if show_gone %} on{% endif %}"
-     title="사람이 오검출로 지운 개체입니다 — 여기서 되살립니다"
-     href="?{% if show_gone %}{% if cls %}cls={{ cls }}&amp;{% endif %}{% if q %}q={{ q }}&amp;{% endif %}{% else %}gone=1{% if cls %}&amp;cls={{ cls }}{% endif %}{% if q %}&amp;q={{ q }}{% endif %}{% endif %}{% if show_frag %}&amp;frag=1{% endif %}">지운 것</a>
-  {% comment %}
-    **쪽 안에서만 고른다** (185). 일괄 편집은 카드마다 체크박스를 눌러 고르는
-    것뿐이라, 한 유형에 종명을 앉히려면 한 쪽 120번을 누르게 된다 — 유형
-    `chaetoceros` 개체 203개가 그 자리였다(사용자 2026-09-06).
-
-    **"전부" 가 쪽 밖을 뜻하지 않는다.** 거르개·검색이 걸린 채로 쪽을 넘어
-    고르면 **사람이 안 본 카드에 종명이 앉는다.** 서버의 `bulk` 가 한 쪽을
-    상한으로 둔 것과 같은 줄이다 (P16 5.2 — "화면에 없는 것을 고를 수는 없다").
-    그래서 몇 개를 고르는지 단추에 적는다.
-
-    **지운 것을 보는 화면에는 안 둔다** — 거기엔 일괄 띠 자체가 없다.
-  {% endcomment %}
-  {% if not readonly and not show_gone and rows %}
-    <button type="button" class="chip pickall" aria-pressed="false"
-            title="지금 이 쪽에 놓인 카드만 고릅니다 — 거르개에 걸린 다른 쪽까지 가지 않습니다">
-      <span class="t">이 쪽 전부 고르기</span> <span class="dim">({{ rows|length }})</span>
-    </button>
-  {% endif %}
-  <span class="dim" style="margin-left:auto">
-    {% if show_gone %}지운 개체다 — 되살리면 동정하는 쪽으로 돌아간다
-    {% else %}번호 차례 · 그림이나 g번호를 누르면 그 시야로 간다{% endif %}
-  </span>
+  <div class="frow">
+    <span class="fl">동정</span>
+    {% for c in f_status %}
+      <a class="chip{% if c.on %} on{% endif %}" href="{{ c.href }}">{{ c.label }} <span class="n">{{ c.n }}</span></a>
+    {% endfor %}
+    {% if f_any %}<a class="fclear" href="{{ f_clear }}">거르개 모두 풀기</a>{% endif %}
+    <span class="fright dim">
+      {% if show_gone %}지운 개체다 — 되살리면 동정하는 쪽으로 돌아간다
+      {% else %}번호 차례 · 그림이나 g번호를 누르면 그 시야로 간다{% endif %}
+    </span>
+  </div>
+  <details class="fmore"{% if f_cleanup_open %} open{% endif %}>
+    <summary title="검출 자료를 다듬을 때 쓰는 거르개입니다 — 동정에는 쓸 일이 드뭅니다">정제용 거르개</summary>
+    <div class="frow">
+      {% for c in f_cleanup %}
+        <a class="chip{% if c.on %} on{% endif %}{% if not c.n %} zero{% endif %}" href="{{ c.href }}">{{ c.label }} <span class="n">{{ c.n }}</span></a>
+      {% endfor %}
+    </div>
+  </details>
 </div>
 
 {% comment %}
@@ -656,14 +692,6 @@
   // 화면에서 막는 것은 막는 것이 아니다 (063).
   var COUNTED = JSON.parse(document.getElementById("counted-keys").textContent);
   function isFrag(v) { return !!v && COUNTED.indexOf(v) < 0; }
-
-  // **체크박스는 누르는 즉시 간다.** 옆에 "적용" 단추를 두면 누르는 것을 잊고
-  // 안 바뀐 화면을 보게 된다 — 거르개 칩은 누르면 바로 가는데 이것만 다르면
-  // 사람은 고장으로 읽는다. JS 가 없으면 폼이라 엔터로도 간다.
-  var frag = document.querySelector(".fragtoggle input");
-  if (frag) {
-    frag.addEventListener("change", function () { frag.form.submit(); });
-  }
 
   document.querySelectorAll(".catcard .copy").forEach(function (b) {
     b.addEventListener("click", function () {

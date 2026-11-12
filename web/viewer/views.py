@@ -1231,13 +1231,25 @@ def _untyped(r, kind):
     return cls == kind if kind else not cls
 
 
+# **거르개는 두 축이다** (255 · 사용자 2026-11-12). 유형(`cls`)과 동정 상태(`st`)를
+# 따로 걸어 "봉상 중 덜 된 것" 을 볼 수 있다. 예전에는 한 줄에 스물일곱 칩이
+# 나란히 있었고 전부 `cls` 하나를 나눠 썼다 — 하나를 누르면 다른 것이 풀렸다.
+#
+# **`named`·`unnamed` 는 진행도와 같은 기준이다** (2026-08-11) — 종명·등급·자세가
+# 다 차야 완료다.
+CATALOG_STATUS = {
+    "unnamed": ("덜 된 것", lambda r: not data.catalog_done(r)),
+    "named": ("동정 완료", data.catalog_done),
+    "noted": ("코멘트 있음", lambda r: bool(r.get("note"))),
+}
+
+# **정제용** — 4차 검출 전에 자료를 다듬으려고 둔 것들이다(225·226). 지금
+# 동정하는 사람에게는 쓸 일이 드물어 화면에서는 접어 둔다. 주소(`?cls=`)는
+# 그대로라 적어 둔 링크가 안 깨진다.
 CATALOG_FILTERS = {
     "manual": ("수동 복구", lambda r: r.get("manual")),
-    "labeled": ("사람 지정", lambda r: r.get("cls_user")),
-    "noted": ("코멘트 있음", lambda r: r.get("note")),
-    "named": ("동정 완료", data.catalog_done),
-    "unnamed": ("덜 된 것", lambda r: not data.catalog_done(r)),
-    # 유형 미지정 넷 (225) — 칩에 수를 함께 적는다(`catalog` 뷰)
+    "labeled": ("유형을 사람이 지정", lambda r: r.get("cls_user")),
+    # 유형 미지정 넷 (225)
     "untyped_rod": ("유형 미지정 · 엔진 봉상", lambda r: _untyped(r, "rod")),
     "untyped_round": ("유형 미지정 · 엔진 원형", lambda r: _untyped(r, "round")),
     "untyped_none": ("유형 미지정 · 엔진값 없음", lambda r: _untyped(r, "")),
@@ -1246,10 +1258,9 @@ CATALOG_FILTERS = {
 UNTYPED_FILTERS = ("untyped_rod", "untyped_round", "untyped_none",
                    "untyped_drawn")
 # 합성본에 없음 (226) — 4차는 합성본으로 배운다(P29). 프레임에만 있는 개체는
-# 합성본 라벨에서 빠져 그 자리가 배경으로 학습된다. 수를 칩에 함께 적는다.
+# 합성본 라벨에서 빠져 그 자리가 배경으로 학습된다.
 CATALOG_FILTERS["off_stack"] = ("합성본에 없음",
                                 lambda r: r.get("on_stack") is False)
-COUNTED_FILTERS = UNTYPED_FILTERS + ("off_stack",)
 
 
 def _catalog_hl(rows, hl):
@@ -1292,7 +1303,6 @@ def catalog(request, slug):
     scope = [r for r in rows if not data.is_fragment(r.get("cls"))]
     n_all = len(scope)
     n_named = sum(1 for r in scope if data.catalog_done(r))
-    # 감춘 것이 몇 개인지 화면이 적는다 — **"없다" 와 "감췄다" 는 다르다.**
     # `catalog_rows` 를 다시 부르지 않는다: 한 판을 통째로 다시 만드는 함수다.
     n_frag = len(rows) - n_all
 
@@ -1333,60 +1343,115 @@ def catalog(request, slug):
                   "시야마다 판 하나만 봅니다(프레임에만 있는 개체는 안 나옵니다).")
 
     cls = request.GET.get("cls") or ""
+    st = request.GET.get("st") or ""
+    # **옛 주소를 받아 준다** (255). 동정 상태 셋은 `cls` 에 있다가 `st` 로
+    # 옮겼다 — 적어 둔 링크가 "전체" 를 내면 안 된다.
+    if cls in CATALOG_STATUS:
+        if not st:
+            st = cls
+        cls = ""
+    if st not in CATALOG_STATUS:
+        st = ""
     # **파편은 기본으로 감춘다** (사용자 2026-08-11). 처음부터 다 내면 카드가
     # 파편으로 덮여 동정할 것이 안 보인다. 감추는 것은 화면일 뿐이라 진행도·
     # 개수는 그대로다.
     #
     # **파편 분류를 콕 집었으면 감추지 않는다** — 그 칩을 누르고 빈 화면을 보면
-    # 사람은 자료가 없다고 읽는다. 눌러서 아무 일도 안 일어나는 화면을 만들지
-    # 않는다.
-    #
-    # **지운 것을 보는 화면에서는 감추지 않는다** (P16). 파편 분류를 콕 집었을
-    # 때와 같은 이유다 — 지운 것을 되살리러 온 사람에게 지운 것의 절반을 감추면
-    # "지웠는데 없다" 가 된다. 실측으로 살아 있는 교정의 65%가 파편이다.
-    show_frag = request.GET.get("frag") == "1" or show_gone
-    # **짚어 온 개체가 파편이면 펴 준다.** 파편은 기본으로 감춰져 있어, 안 펴면
-    # 눌러서 온 사람에게 빈 자리가 보인다 — 감춘 것과 없는 것을 화면이 갈라
-    # 말하기로 한 그 규칙이 여기서도 걸린다.
+    # 사람은 자료가 없다고 읽는다. 「합성본에 없음」 도 같다(절반이 파편이다 ·
+    # 226). **지운 것을 보는 화면에서도 안 감춘다** (P16) — 되살리러 온 사람에게
+    # 지운 것의 절반을 감추면 "지웠는데 없다" 가 된다.
+    frag_req = request.GET.get("frag") == "1"
+    # **짚어 온 개체가 파편이면 펴 준다.** 안 펴면 눌러서 온 사람에게 빈 자리가
+    # 보인다.
     if hl_row is not None and data.is_fragment(hl_row.get("cls")):
-        show_frag = True
-    # **칩의 수는 파편 감추기 앞에서 센다** (225·226). 「합성본에 없음」 은 절반이
-    # 파편이라(10-21 · 280 중 143) 감춘 뒤에 세면 수가 반으로 줄어 보인다.
-    # 유형 미지정은 엔진이 파편을 안 붙여 어느 쪽에서 세도 같다.
-    untyped_n = {k: sum(1 for r in rows if CATALOG_FILTERS[k][1](r))
-                 for k in COUNTED_FILTERS}
-    # 「합성본에 없음」 을 골랐으면 파편도 낸다 — 파편 분류를 콕 집었을 때와
-    # 같은 이유다(칩을 누르고 수보다 적은 카드를 보면 자료가 없다고 읽는다)
-    if cls == "off_stack":
-        show_frag = True
-    if not show_frag and not data.is_fragment(cls):
-        rows = [r for r in rows if not data.is_fragment(r.get("cls"))]
+        frag_req = True
+    show_frag = frag_req or show_gone or cls == "off_stack"
 
-    members = data.group_members(cls)
-    if cls in data.CLASSES:
-        rows = [r for r in rows if r.get("cls") == cls]
-    elif members is not None:
-        # 묶음(원통상) — 안의 분류를 함께 낸다 (224). 파편은 위의 규칙대로
-        # 감춰져 있다가 「파편」 을 켜면 함께 나온다
-        rows = [r for r in rows if r.get("cls") in members]
-    elif cls in CATALOG_FILTERS:
-        rows = [r for r in rows if CATALOG_FILTERS[cls][1](r)]
-
-    # **찾는 것은 번호·종명·코멘트 셋이다.** 번호를 통째로 붙여 넣는 쓰임이
+    # 찾는 것은 번호·종명·코멘트 셋이다. 번호를 통째로 붙여 넣는 쓰임이
     # 첫째이므로 부분 일치이고 대소문자를 안 가린다 (`catalog.parse` 와 같다).
+    #
+    # **멤버 아무 번호나 맞춘다** (P18 "공개·인용"). 번호는 판정 하나의 이름이라
+    # 한 개체에 번호가 여럿이고, 묶기 전에 적어 둔 번호가 묶은 뒤에도 찾아져야
+    # 한다 — 카드가 내보이는 앵커의 번호만 맞추면 나머지 번호로 찾아온 사람에게
+    # "없다" 고 답하게 된다.
     q = (request.GET.get("q") or "").strip()
-    if q:
-        low = q.lower()
-        # **멤버 아무 번호나 맞춘다** (P18 "공개·인용"). 번호는 판정 하나의
-        # 이름이라 한 개체에 번호가 여럿이고, **묶기 전에 적어 둔 번호가 묶은
-        # 뒤에도 찾아져야 한다** — 논문에 적힌 것이 그 번호일 수 있다.
-        # 카드가 내보이는 것은 앵커의 번호 하나뿐이라, 그것만 맞추면 나머지
-        # 번호로 찾아온 사람에게 "없다" 고 답하게 된다.
-        rows = [r for r in rows
-                if low in r["catalog_no"].lower()
+    low = q.lower()
+
+    def q_ok(r):
+        return (not q
+                or low in r["catalog_no"].lower()
                 or any(low in n.lower() for n in (r.get("member_nos") or []))
                 or low in (r.get("species") or "").lower()
-                or low in (r.get("note") or "").lower()]
+                or low in (r.get("note") or "").lower())
+
+    def st_ok(r, key=None):
+        key = st if key is None else key
+        return not key or bool(CATALOG_STATUS[key][1](r))
+
+    def cls_ok(r, key=None, show=None):
+        """유형 축. 파편을 감추는 것까지 여기서 본다 — 칩의 수와 카드의 수가
+        같은 식에서 나와야 "12" 를 눌렀는데 9장이 놓이는 일이 없다."""
+        key = cls if key is None else key
+        show = show_frag if show is None else show
+        frag = data.is_fragment(r.get("cls"))
+        if key in data.CLASSES:
+            return r.get("cls") == key
+        hide = frag and not (show or key == "off_stack")
+        members = data.group_members(key)
+        if members is not None:
+            # 묶음(원통상) — 안의 분류를 함께 낸다 (224)
+            return r.get("cls") in members and not hide
+        if key in CATALOG_FILTERS:
+            return bool(CATALOG_FILTERS[key][1](r)) and not hide
+        return not hide
+
+    # **칩의 수는 다른 축과 검색을 건 채로 센다** — 눌렀을 때 놓일 카드의 수다.
+    # 수가 0 인 유형은 칩을 안 놓는다(이 슬라이드에 없는 속까지 늘어놓던 것이
+    # 줄을 길게 만들었다). 지금 골라 둔 것은 0 이어도 놓는다 — 안 놓으면 풀
+    # 자리가 없다.
+    pool_t = [r for r in rows if q_ok(r) and st_ok(r)]
+    pool_s = [r for r in rows if q_ok(r) and cls_ok(r)]
+
+    def n_cls(key):
+        return sum(1 for r in pool_t if cls_ok(r, key))
+
+    # 감춘 파편의 수 — **"없다" 와 "감췄다" 는 다르다.** 지금 건 거르개 안에서 센다
+    # 유형 하나를 콕 집었을 때는 「전체」 로 돌아갔을 때의 수를 적는다 — 그
+    # 유형 안에는 파편이 없어(또는 전부 파편이라) 늘 0 이 된다.
+    _fk = "" if cls in data.CLASSES else cls
+    f_frag_n = sum(1 for r in pool_t if data.is_fragment(r.get("cls"))
+                   and cls_ok(r, _fk, show=True))
+
+    def href(**over):
+        """지금 건 것에서 하나만 바꾼 주소. 쪽은 처음으로 돌아간다."""
+        cur = {"cls": cls, "st": st, "q": q,
+               "frag": "1" if frag_req else "", "gone": "1" if show_gone else ""}
+        cur.update(over)
+        qd = {k: v for k, v in cur.items() if v}
+        return "?" + urlencode(qd, safe=":")
+
+    def chip(key, label, n, **extra):
+        return dict({"key": key, "label": label, "n": n, "on": cls == key,
+                     "href": href(cls="" if cls == key else key)}, **extra)
+
+    whole, frags = [], []
+    for d in data.class_list():
+        if d.get("group_first"):
+            g = d["group_first"]
+            n = n_cls(g["key"])
+            if n or cls == g["key"]:
+                whole.append(chip(g["key"], g["label"], n, grp=True))
+        n = n_cls(d["key"])
+        if n or cls == d["key"]:
+            (whole if d["counted"] else frags).append(
+                chip(d["key"], d["label"], n, sub=bool(d["group"])))
+    cleanup = [chip(k, v[0], n_cls(k)) for k, v in CATALOG_FILTERS.items()]
+    status = [{"key": k, "label": v[0], "on": st == k,
+               "n": sum(1 for r in pool_s if st_ok(r, k)),
+               "href": href(st="" if st == k else k)}
+              for k, v in CATALOG_STATUS.items()]
+
+    rows = [r for r in rows if q_ok(r) and st_ok(r) and cls_ok(r)]
 
     for r in rows:
         # 묶었으면 가장 큰 프레임을 그린다 — 번호는 그대로다 (`link_mains`).
@@ -1427,6 +1492,8 @@ def catalog(request, slug):
         qd = {"offset": off}
         if cls:
             qd["cls"] = cls
+        if st:
+            qd["st"] = st
         if q:
             qd["q"] = q
         # 다음 쪽으로 넘어가면서 파편이 도로 감춰지면 안 된다 — 사람은 켠 것이
@@ -1492,8 +1559,23 @@ def catalog(request, slug):
         "blocked": blocked,
         "readonly": bool(blocked),
         "cls": cls,
-        "filters": [{"key": k, "label": v[0], "n": untyped_n.get(k)}
-                    for k, v in CATALOG_FILTERS.items()],
+        "st": st,
+        # 거르개 줄 (255) — 주소는 여기서 만들어 내려보낸다. 템플릿이 칩마다
+        # 질의 문자열을 손으로 이어 붙이던 자리가 일곱이었다
+        "f_whole": whole,
+        "f_frags": frags,
+        "f_status": status,
+        "f_cleanup": cleanup,
+        "f_cleanup_open": cls in CATALOG_FILTERS,
+        "f_all": {"n": n_cls(""), "href": href(cls="")},
+        "f_any": bool(cls or st or q),
+        "f_clear": href(cls="", st="", q=""),
+        "frag_href": href(frag="" if frag_req else "1"),
+        "frag_locked": show_gone or cls == "off_stack",
+        "frag_on": frag_req,
+        "f_frag_n": f_frag_n,
+        "gone_href": href(gone="" if show_gone else "1"),
+        "q_clear": href(q=""),
         "q": q,
         "show_frag": show_frag,
         "n_frag": n_frag,

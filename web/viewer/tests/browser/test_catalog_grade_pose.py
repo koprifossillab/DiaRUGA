@@ -185,11 +185,10 @@ class CatalogGradePoseTest(BrowserTestCase):
 
 
 class CatalogFragToggleTest(BrowserTestCase):
-    """**파편 보기 체크박스** — 누르는 즉시 가는가 (2026-08-11).
+    """**파편 「함께 보기」** — 누르면 파편이 나오는가 (2026-08-11 · 255).
 
-    거르개 칩은 누르면 바로 가는데 이것만 "적용" 을 눌러야 하면 사람은 안 바뀐
-    화면을 보고 고장으로 읽는다. **배선이 빠져도 화면은 멀쩡해 보인다** — 3겹은
-    `?frag=1` 을 직접 붙여 열기 때문에 이 갈래를 한 번도 안 밟는다.
+    예전에는 체크박스였고 지금은 파편 줄의 칩이다. 3겹은 `?frag=1` 을 직접
+    붙여 열기 때문에 **눌러서 가는 갈래**를 한 번도 안 밟는다.
     """
 
     def make_data(self):
@@ -208,8 +207,9 @@ class CatalogFragToggleTest(BrowserTestCase):
         """**그 파편 카드가 나오는지**를 본다 — 카드 수를 세면 픽스처가 만드는
         다른 파편에 묻혀 무슨 일이 났는지 알 수 없다."""
         page = self.open(reverse("catalog", args=[self.w.slide.slug]))
-        box = page.locator(".fragtoggle input")
-        self.assertFalse(box.is_checked(), "파편이 기본으로 켜져 있다")
+        box = page.locator("a.fragtoggle")
+        self.assertNotIn("on", box.get_attribute("class").split(),
+                         "파편이 기본으로 켜져 있다")
         card = f'.catcard[data-key="{self.frag_key}"]'
         self.assertEqual(page.locator(card).count(), 0, "파편이 그냥 보인다")
 
@@ -217,9 +217,10 @@ class CatalogFragToggleTest(BrowserTestCase):
         # 이미 `load` 라 그 자리에서 참이고, 그러면 아직 안 바뀐 화면을 세게
         # 된다(처음에 그렇게 짰다가 "켰는데 안 나온다" 로 헛다리를 짚었다).
         with page.expect_navigation():
-            box.check()
-        self.assertTrue(page.locator(".fragtoggle input").is_checked(),
-                        "눌렀는데 안 갔다 — 배선이 빠졌다")
+            box.click()
+        self.assertIn("on", page.locator("a.fragtoggle")
+                      .get_attribute("class").split(),
+                      "눌렀는데 안 켜졌다")
         self.assertEqual(page.locator(card).count(), 1, "켰는데 파편이 안 나온다")
 
 

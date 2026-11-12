@@ -67,5 +67,5 @@ class UntypedFilterTest(DiaRUGATestCase):
             reverse("catalog", args=["rs23"])).content.decode()
         for label in ("엔진 봉상", "엔진 원형", "엔진값 없음", "손그림"):
             with self.subTest(label=label):
-                self.assertIn(f"유형 미지정 · {label} <span class=\"dim\">1</span>",
+                self.assertIn(f"유형 미지정 · {label} <span class=\"n\">1</span>",
                               html)
