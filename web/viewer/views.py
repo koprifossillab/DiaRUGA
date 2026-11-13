@@ -443,6 +443,8 @@ def tally_page(request, site_code, core_code):
     t = tally.locality_table(site_code, core_code, split_obs=split)
     if t is None:
         raise Http404(f"unknown locality: {site_code}/{core_code}")
+    if request.GET.get("view") == "plot":
+        return _tally_plot(request, t)
     if request.GET.get("format") == "csv":
         # 엑셀이 UTF-8 로 읽게 BOM 을 붙인다 — 없으면 머리의 µ·한글이 깨진다
         resp = HttpResponse("\ufeff" + tally.table_csv(t, unit),
@@ -451,6 +453,74 @@ def tally_page(request, site_code, core_code):
         resp["Content-Disposition"] = f'attachment; filename="{name}"'
         return resp
     return render(request, "viewer/tally.html", {**t, "unit": unit})
+
+
+def _tally_plot(request, t):
+    """산출 그래프 (P34 5단계). 그림은 `tally.plot` 이 SVG 로 만든다.
+
+    **무엇을 그릴지** — `?pick=1&sp=…&sp=…&series=…`. `pick` 이 없으면 그 코어에
+    저장한 목록(없으면 전역 기본)이다. **`pick=1` 에 `sp` 가 없는 것은 "다 끈 것"**
+    이다 — 없는 것과 비운 것이 같으면 다 끌 수가 없다(P17 `?series=` 와 같은 규칙).
+    """
+    from . import tally
+    loc = t["loc"]
+    picked_req = request.GET.get("pick") == "1"
+    if picked_req:
+        want = [x for x in request.GET.getlist("sp") if x]
+        series = [x for x in request.GET.getlist("series") if x]
+    else:
+        want = tally.taxa_for(loc)
+        series = []
+    options = tally.taxa_options(t, loc)
+    known = {o["item"] for o in options}
+    # **차례는 목록의 차례다** — 주소에 적힌 차례가 그림의 차례가 되면 같은
+    # 조합이 다른 그림이 된다(P17 `core_profiles` 와 같은 규칙).
+    wanted = set(want)
+    taxa = [o["item"] for o in options if o["item"] in wanted]
+    for o in options:
+        o["on"] = o["item"] in wanted
+    # 시추코어만 코어 자료를 얹는다 — 노두는 깊이 축이 없다
+    core_opts = [] if t["is_outcrop"] else [
+        cs for cs in data.core_series(loc) if not cs["key"].startswith("xrf_")]
+    have = {cs["key"] for cs in core_opts}
+    series = [k for k in series if k in have]
+    for cs in core_opts:
+        cs["on"] = cs["key"] in series
+    pl = tally.plot(t, taxa, series)
+    if request.GET.get("format") == "svg":
+        resp = HttpResponse(pl["svg"], content_type="image/svg+xml; charset=utf-8")
+        resp["Content-Disposition"] = (f'attachment; filename="{loc.code}_tally_plot.svg"')
+        return resp
+    return render(request, "viewer/tally.html", {
+        **t, "view": "plot", "unit": "n", "plot": pl,
+        "taxa_options": options, "core_opts": core_opts,
+        "unknown_taxa": [x for x in want if x not in known],
+        "saved_taxa": list(loc.tally_taxa or []),
+        "is_saved": list(loc.tally_taxa or []) == taxa,
+        "qs": request.GET.urlencode(),
+        "msg": request.GET.get("msg", ""),
+    })
+
+
+@require_POST
+def tally_taxa_save(request, site_code, core_code):
+    """그 코어의 기본 종 목록을 저장한다 (P34 5단계 · 0056). `reset` 이면 비운다 —
+    비우면 전역 기본으로 돌아간다. **POST 전용** — 주소를 누르는 것만으로 사람이
+    정한 목록이 바뀌면 안 된다."""
+    from urllib.parse import urlencode
+    loc = (Locality.objects.filter(site__code=site_code, code=core_code).first())
+    if loc is None:
+        raise Http404(f"unknown locality: {site_code}/{core_code}")
+    if request.POST.get("reset") == "1":
+        loc.tally_taxa = []
+        msg = "이 지점의 목록을 비웠습니다 — 전역 기본 목록을 씁니다."
+    else:
+        items = [x.strip()[:120] for x in request.POST.getlist("sp") if x.strip()]
+        loc.tally_taxa = list(dict.fromkeys(items))[:40]
+        msg = f"이 지점의 기본 목록으로 {len(loc.tally_taxa)}개를 저장했습니다."
+    loc.save(update_fields=["tally_taxa"])
+    url = reverse("tally", args=[site_code, core_code])
+    return redirect(f"{url}?{urlencode({'view': 'plot', 'msg': msg})}")
 
 
 @require_POST

@@ -236,6 +236,16 @@ class Locality(models.Model):
     # 이 칼럼이 없어도 되게 `db_default` 를 준다.
     kpdc_id = models.CharField(max_length=32, blank=True, db_default="")
     kpdc_meta = models.JSONField(null=True, blank=True)
+    # **산출 그래프에 기본으로 그릴 종** (P34 5단계 · 0056). 사람이 그 코어의 그래프
+    # 화면에서 고르고 저장한다. 비어 있으면 전역 기본(`Setting` 의
+    # `tally_default_taxa`, 없으면 `tally.DEFAULT_TAXA`)을 쓴다. 항목은 종명이거나
+    # `cls:<분류>` — CRS 가 `cls:chaetoceros` 다. 종명을 칼럼·테이블로 두지 않는 것은
+    # `DiatomObject.species` 가 자유 입력이라서다(목록으로 가두면 그쪽과 갈린다).
+    #
+    # **`db_default` 를 준다** — 파이프라인 이미지(옛 판)가 지점을 만들 때 이 칼럼을
+    # 모른다(CLAUDE.md "NOT NULL 칸을 더할 때"). 더하기만 하는 마이그레이션이라
+    # 파이프라인 이미지는 안 굽는다.
+    tally_taxa = models.JSONField(default=list, blank=True, db_default=[])
 
     class Meta:
         verbose_name = "지점"

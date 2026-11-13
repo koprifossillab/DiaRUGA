@@ -239,3 +239,121 @@ class LocalityTableTest(DiaRUGATestCase):
     def test_없는_지점은_404(self):
         r = self.client.get(reverse("tally", args=["RS23", "NOPE"]))
         self.assertEqual(r.status_code, 404)
+
+
+class TallyPlotTest(DiaRUGATestCase):
+    """산출 그래프 (P34 5단계)."""
+
+    @classmethod
+    def setUpTestData(cls):
+        fx.make_classes()
+        # 71 cm: round(T. gracilis) · rod(F. curta) · 파편 둘
+        a = fx.make_world(slug="a", depth_cm=71.0, n_candidates=4)
+        fx.add_review(a.vp, a.keys()[0], species="Thalassiosira gracilis")
+        fx.add_review(a.vp, a.keys()[2], species="Fragilariopsis curta")
+        # 231 cm: 종명 없음 — 종 패널에 점이 없어야 한다(0 이 아니다)
+        b = fx.make_world(slug="b", depth_cm=231.0, sample_code="231cm",
+                          n_candidates=4)
+        # 369 cm: F. curta 하나
+        c = fx.make_world(slug="c", depth_cm=369.0, sample_code="369cm",
+                          n_candidates=4)
+        fx.add_review(c.vp, c.keys()[2], species="Fragilariopsis curta")
+        for w in (a, b, c):
+            _done(w)
+        cls.loc = a.locality
+
+    def url(self, qs=""):
+        return reverse("tally", args=["RS23", "GC03"]) + "?view=plot" + qs
+
+    def panels(self, html):
+        import xml.etree.ElementTree as ET
+        m = re.search(r"<svg [^>]*font-family=.*?</svg>", html, re.S)   # 머리줄 아이콘 svg 를 피한다
+        self.assertIsNotNone(m)
+        root = ET.fromstring(m.group(0))        # **파싱해서 본다** — 문자열이 있다 ≠ 그려진다
+        ns = "{http://www.w3.org/2000/svg}"
+        return [(g.get("data-kind"), len(g.findall(f"{ns}path[@class='pt']")),
+                 "".join(t.text or "" for t in g.findall(f"{ns}text")[:2]))
+                for g in root.findall(f"{ns}g")]
+
+    def test_분모가_종은_종명_분류는_세는_개체다(self):
+        t = tally.locality_table("RS23", "GC03")
+        sp = tally.taxon_values(t["cols"], "Fragilariopsis curta")
+        self.assertEqual(sp, [50.0, None, 100.0])          # 231 은 분모 없음
+        crs = tally.taxon_values(t["cols"], "cls:rod")
+        self.assertEqual(crs, [50.0, 50.0, 50.0])          # 세는 개체 둘 중 rod 하나
+
+    def test_고른_것이_없으면_전역_기본(self):
+        ps = self.panels(self.client.get(self.url()).content.decode())
+        self.assertEqual(len(ps), len(tally.DEFAULT_TAXA) + 2)
+        self.assertEqual(ps[-3][2][:3], "CRS")          # 기본 여섯의 끝이 CRS
+
+    def test_점은_분모가_있는_시료에만(self):
+        ps = self.panels(self.client.get(
+            self.url("&pick=1&sp=Fragilariopsis+curta")).content.decode())
+        self.assertEqual(len(ps), 3)                       # 종 하나 + 동정률 + 시야당
+        self.assertEqual(ps[0][1], 2)                      # 71 · 369 — 231 은 없다
+        self.assertEqual(ps[1][1], 3)                      # 동정률은 세 시료 다
+
+    def test_pick_만_있고_종이_없으면_다_끈_것이다(self):
+        ps = self.panels(self.client.get(self.url("&pick=1")).content.decode())
+        self.assertEqual(len(ps), 2)
+
+    def test_차례는_주소가_아니라_목록의_차례다(self):
+        a = self.client.get(self.url("&pick=1&sp=Thalassiosira+gracilis&sp=Fragilariopsis+curta")).content
+        b = self.client.get(self.url("&pick=1&sp=Fragilariopsis+curta&sp=Thalassiosira+gracilis")).content
+        self.assertEqual(self.panels(a.decode()), self.panels(b.decode()))
+
+    def test_설정과_지점_목록이_기본을_바꾼다(self):
+        from ..models import Setting
+        Setting.objects.create(key=tally.SETTING_KEY, value=["Fragilariopsis curta"])
+        self.assertEqual(len(self.panels(self.client.get(self.url()).content.decode())), 3)
+        self.loc.tally_taxa = ["Thalassiosira gracilis", "cls:rod"]
+        self.loc.save()
+        self.assertEqual(len(self.panels(self.client.get(self.url()).content.decode())), 4)
+
+    def test_저장은_POST_로만_하고_비우면_전역으로(self):
+        save = reverse("tally_taxa_save", args=["RS23", "GC03"])
+        self.assertEqual(self.client.get(save).status_code, 405)
+        r = self.client.post(save, {"sp": ["Fragilariopsis curta", "cls:rod", "cls:rod"]})
+        self.assertEqual(r.status_code, 302)
+        self.loc.refresh_from_db()
+        self.assertEqual(self.loc.tally_taxa, ["Fragilariopsis curta", "cls:rod"])
+        self.client.post(save, {"reset": "1"})
+        self.loc.refresh_from_db()
+        self.assertEqual(self.loc.tally_taxa, [])
+
+    def test_SVG_내려받기(self):
+        r = self.client.get(self.url("&pick=1&sp=Fragilariopsis+curta&format=svg"))
+        self.assertEqual(r.status_code, 200)
+        self.assertTrue(r["Content-Type"].startswith("image/svg+xml"))
+        self.assertIn("attachment", r["Content-Disposition"])
+        self.assertTrue(r.content.startswith(b"<svg "))
+
+    def test_코어_자료를_같은_축에_얹는다(self):
+        from ..models import CorePoint, CoreSeries
+        cs = CoreSeries.objects.create(locality=self.loc, key="opal", label="Opal", unit="%")
+        for mm, v in ((0, 10.0), (2000, 20.0), (4000, 15.0)):
+            CorePoint.objects.create(series=cs, depth_mm=mm, value=v)
+        ps = self.panels(self.client.get(
+            self.url("&pick=1&series=opal&series=nope")).content.decode())
+        self.assertEqual([k for k, _, _ in ps], ["core", "pct", "pct"])
+
+
+class TallyOutcropPlotTest(DiaRUGATestCase):
+    """노두는 cm 축을 안 그린다 — 시료 차례를 같은 간격으로."""
+
+    @classmethod
+    def setUpTestData(cls):
+        fx.make_classes()
+        for no, slug in ((1, "o1"), (2, "o2")):
+            w = fx.make_world(slug=slug, kind="outcrop", area="kr", site_code="BP",
+                              loc_code="BP09", sample_code=f"090{no}", n_candidates=3)
+            fx.add_review(w.vp, w.keys()[2], species="Paralia sulcata")
+            _done(w)
+
+    def test_축이_시료_차례다(self):
+        html = self.client.get(reverse("tally", args=["BP", "BP09"])
+                               + "?view=plot&pick=1&sp=Paralia+sulcata").content.decode()
+        self.assertIn("시료 차례", html)
+        self.assertNotIn("깊이 (cm)", html)
+        self.assertNotIn("코어 자료 (같은 깊이 축)", html)

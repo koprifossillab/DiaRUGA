@@ -48,8 +48,19 @@
 
 <div class="crumb"><a href="{% url 'index' %}">데이터셋</a> /
   <a href="{% url 'core' site.code loc.code %}">{{ loc.code }}</a> / 산출표</div>
-<div class="pagehead"><h2>{{ loc.code }} 산출표</h2></div>
+<div class="pagehead"><h2>{{ loc.code }} 산출표</h2>
+  <span class="tlyopts" style="margin:0">
+    <span class="seg" aria-label="보기">
+      <a href="?" class="{% if view != 'plot' %}on{% endif %}">표</a><a
+         href="?view=plot" class="{% if view == 'plot' %}on{% endif %}">그래프</a>
+    </span>
+  </span>
+</div>
+{% if msg %}<div class="okbar">{{ msg }}</div>{% endif %}
 
+{% if view == 'plot' %}
+{% include "viewer/_tally_plot.html" %}
+{% else %}
 <div class="tlyopts">
   <span class="seg" aria-label="칸에 적을 값">
     <a href="?{% if split_obs %}obs=1{% endif %}" class="{% if unit == 'n' %}on{% endif %}">개수</a><a
@@ -99,4 +110,5 @@
 </table>
 </div>
 {% endif %}
+{% endif %}{# view #}
 {% endblock %}

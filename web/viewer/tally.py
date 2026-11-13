@@ -24,6 +24,7 @@
   하나로 더한다 — 분류는 형태로 고른 것이고 종명이 더 아래 층이다.
 """
 
+import math
 from collections import Counter
 
 from . import data
@@ -55,6 +56,9 @@ def column(summary: dict) -> dict:
                    if cc["n_counted"] else None),
         "per_species": dict(per_species),
         "species_cls": {k: dict(v) for k, v in species_cls.items()},
+        # 그래프의 CRS(분류 하나 전체)와 시야당 개체가 쓴다 (P34 5단계)
+        "per_cls": per_cls,
+        "detected_groups": summary.get("detected_groups", 0),
     }
 
 
@@ -92,17 +96,21 @@ def merge(cols: list[dict]) -> dict:
     낸다 — 비율을 평균하면 개체가 적은 관찰이 같은 무게를 받는다.
     """
     per: Counter = Counter()
+    pcls: Counter = Counter()
     for c in cols:
         per.update(c["per_species"])
-    n = {k: sum(c[k] for c in cols)
-         for k in ("n_detected", "n_counted", "n_frag", "n_identified")}
+        pcls.update(c.get("per_cls") or {})
+    n = {k: sum(c.get(k) or 0 for c in cols)
+         for k in ("n_detected", "n_counted", "n_frag", "n_identified",
+                   "detected_groups")}
     return {**n,
             "n_unnamed": n["n_counted"] - n["n_identified"],
             "frag_pct": (round(100.0 * n["n_frag"] / n["n_detected"], 1)
                          if n["n_detected"] else None),
             "id_pct": (round(100.0 * n["n_identified"] / n["n_counted"], 1)
                        if n["n_counted"] else None),
-            "per_species": dict(per)}
+            "per_species": dict(per),
+            "per_cls": dict(pcls)}
 
 
 def _name_key(name: str) -> tuple:
@@ -221,3 +229,259 @@ def table_csv(t: dict, unit: str = "n") -> str:
                 *[c["frag_pct"] if c["frag_pct"] is not None else "" for c in t["cols"]],
                 tot.get("frag_pct") or ""])
     return buf.getvalue()
+
+
+# ─────────────────────────────────────────── 산출 그래프 (P34 5단계)
+
+# **기본 종** (사용자 11-13) — 견본 Fig. 2(박영숙 외 2011)의 다섯 + CRS.
+# 코드에 박은 것은 **설정이 없을 때의 값**이다. 고치는 자리는 `Setting`
+# (`tally_default_taxa`, 판을 안 내고 고친다)과 코어마다의 목록이다.
+#
+# 항목은 종명이거나 `cls:<분류>` 다 — CRS 는 종 하나가 아니라 **`chaetoceros`
+# 분류 전체**다(사용자 11-13: "일단 c 클래스 전체로").
+CLS_PREFIX = "cls:"
+DEFAULT_TAXA = ["Actinocyclus actinochilus", "Eucampia antarctica",
+                "Fragilariopsis kerguelensis", "Rhizosolenia styliformis",
+                "Thalassionema nitzschioides", "cls:chaetoceros"]
+SETTING_KEY = "tally_default_taxa"
+
+
+def default_taxa() -> list[str]:
+    from .models import Setting
+    row = Setting.objects.filter(key=SETTING_KEY).first()
+    v = row.value if row else None
+    if isinstance(v, list) and all(isinstance(x, str) for x in v):
+        return list(v)
+    return list(DEFAULT_TAXA)
+
+
+def taxa_for(loc) -> list[str]:
+    """그 코어에 사람이 정해 둔 목록, 없으면 전역 기본."""
+    own = getattr(loc, "tally_taxa", None)
+    return list(own) if own else default_taxa()
+
+
+def taxon_label(item: str) -> dict:
+    """항목의 이름표. 분류 항목은 약칭(`ClassDef.short`)을 이름으로 쓴다 — CRS."""
+    if item.startswith(CLS_PREFIX):
+        key = item[len(CLS_PREFIX):]
+        row = next((r for r in data._class_rows() if r["key"] == key), None)
+        name = (row["short"] or row["label"]) if row else key
+        full = row["label"] if row else key
+        return {"item": item, "name": name, "note": f"{full} 분류 전체",
+                "italic": False, "is_cls": True}
+    return {"item": item, "name": item, "note": "", "italic": True,
+            "is_cls": False}
+
+
+def taxon_values(cols: list[dict], item: str) -> list[float | None]:
+    """열마다의 % — **분모가 없는 열은 `None`**(0 이 아니다 — 안 본 것이다).
+
+    종은 그 열의 **종명이 붙은 개체**가 분모, 분류 항목(CRS)은 **세는 개체 전체**가
+    분모다. 분류는 종명 없이도 세어지므로 종명 수로 나누면 100 을 넘는다.
+    """
+    out = []
+    if item.startswith(CLS_PREFIX):
+        key = item[len(CLS_PREFIX):]
+        for c in cols:
+            d = c["n_counted"]
+            out.append(round(100.0 * c["per_cls"].get(key, 0) / d, 2) if d else None)
+    else:
+        for c in cols:
+            d = c["n_identified"]
+            out.append(round(100.0 * c["per_species"].get(item, 0) / d, 2) if d else None)
+    return out
+
+
+def _nice_max(v: float) -> float:
+    for m in (1, 2, 5, 10, 20, 30, 40, 50, 60, 80, 100):
+        if v <= m:
+            return m
+    return math.ceil(v / 50) * 50
+
+
+def plot(t: dict, taxa: list[str], series_keys: list[str] | None = None) -> dict:
+    """현대식 산출 그래프 (견본 Fig. 2). **SVG 문자열을 서버가 만든다.**
+
+    화면에 얹는 것과 내려받는 것이 같은 그림이어야 해서다 — 논문 그림으로 가져가
+    다듬을 것이라 흰 바탕·검은 선이고 테마를 안 따른다.
+
+    - 세로축: 시추코어는 깊이(cm, 위가 얕다). **노두는 시료 차례**를 같은 간격으로
+      — cm 축에 얹으면 없는 간격을 지어낸다(지점 화면과 같은 규칙).
+    - 패널마다 가로축이 따로다 — 한 종이 60% 면 나머지가 다 눌린다.
+    - 맨 앞에 고른 **코어 자료**(P17), 맨 뒤에 **동정률**과 **시야당 세는 개체**.
+    """
+    from html import escape
+    cols = t["cols"]
+    loc = t["loc"]
+    outcrop = t["is_outcrop"]
+
+    # ── 세로축
+    prof: list = []
+    if outcrop:
+        ys = list(range(len(cols)))
+        lo, hi = -0.5, max(len(cols) - 0.5, 0.5)
+        ticks = [(i, c["head"]) for i, c in enumerate(cols)]
+        axis_name = "시료 차례"
+    else:
+        ys = [c["depth_cm"] for c in cols]
+        prof = data.core_profiles(loc, series_keys or [])
+        depths = [y for y in ys if y is not None]
+        for p in prof:
+            for seg in p["segments"]:
+                depths += [pt["cm"] for pt in seg]
+        if depths:
+            dmin, dmax = min(depths), max(depths)
+        else:
+            dmin, dmax = 0, 10
+        step = data._nice_step(max(dmax - dmin, 1))
+        lo = math.floor(dmin / step) * step
+        hi = math.ceil(dmax / step) * step
+        if hi <= lo:
+            hi = lo + step
+        ticks = [(v, f"{v:g}") for v in range(int(lo), int(hi) + 1, step)]
+        axis_name = "깊이 (cm)"
+
+    panels = []
+    for p in prof:
+        panels.append({"title": p["label"], "sub": p["unit"], "italic": False,
+                       "kind": "core", "segs": p["segments"],
+                       "lo": p["lo"], "hi": p["hi"]})
+    for item in taxa:
+        lab = taxon_label(item)
+        vals = taxon_values(cols, item)
+        top = max([v for v in vals if v is not None] + [0])
+        panels.append({"title": lab["name"], "italic": lab["italic"],
+                       "sub": "% (세는 개체)" if lab["is_cls"] else "%",
+                       "kind": "pct", "vals": vals, "xmax": _nice_max(top)})
+    idv = [c["id_pct"] for c in cols]
+    panels.append({"title": "동정률", "italic": False, "sub": "%", "kind": "pct",
+                   "vals": idv, "xmax": 100})
+    pv = [(round(c["n_counted"] / c["detected_groups"], 2)
+           if c.get("detected_groups") else None) for c in cols]
+    panels.append({"title": "시야당 개체", "italic": False, "sub": "개/시야",
+                   "kind": "pct", "vals": pv,
+                   "xmax": _nice_max(max([v for v in pv if v is not None] + [0]))})
+
+    # ── 그리기
+    PW, GAP, LEFT, TOP, H, BOT = 96, 12, 64, 58, 440, 26
+    W = LEFT + len(panels) * (PW + GAP) + 8
+    HH = TOP + H + BOT
+
+    def Y(v):
+        return TOP + (v - lo) / (hi - lo) * H
+
+    o = [f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 {W} {HH}" '
+         f'width="{W}" height="{HH}" font-family="Helvetica, Arial, sans-serif" '
+         f'font-size="10">',
+         f'<rect width="{W}" height="{HH}" fill="#fff"/>']
+    # 세로축 눈금
+    o.append(f'<text x="12" y="{TOP + H / 2}" transform="rotate(-90 12 {TOP + H / 2})" '
+             f'text-anchor="middle" fill="#000">{escape(axis_name)}</text>')
+    for v, txt in ticks:
+        y = Y(v)
+        o.append(f'<text x="{LEFT - 6}" y="{y + 3:.1f}" text-anchor="end" fill="#000">'
+                 f'{escape(str(txt))}</text>')
+    for i, pn in enumerate(panels):
+        x0 = LEFT + i * (PW + GAP)
+        o.append(f'<g class="panel" data-kind="{pn["kind"]}">')
+        # 제목 — 두 줄로 나눠 좁은 칸에 넣는다
+        words = pn["title"].split(" ", 1)
+        style = ' font-style="italic"' if pn["italic"] else ""
+        for j, w in enumerate(words):
+            o.append(f'<text x="{x0 + PW / 2}" y="{12 + j * 12}" text-anchor="middle" '
+                     f'font-weight="bold"{style} fill="#000">{escape(w)}</text>')
+        o.append(f'<text x="{x0 + PW / 2}" y="{38}" text-anchor="middle" fill="#555">'
+                 f'{escape(pn["sub"])}</text>')
+        o.append(f'<rect x="{x0}" y="{TOP}" width="{PW}" height="{H}" fill="none" '
+                 f'stroke="#000" stroke-width="0.8"/>')
+        for v, _ in ticks:
+            y = Y(v)
+            o.append(f'<line x1="{x0}" x2="{x0 + 4}" y1="{y:.1f}" y2="{y:.1f}" stroke="#000" stroke-width="0.6"/>')
+        if pn["kind"] == "core":
+            # 범위는 유효숫자 셋 — 반입값 그대로 찍으면 `2.89738` 이 칸을 넘는다
+            if pn["lo"] is not None:
+                o.append(f'<text x="{x0 + 1}" y="{TOP - 6}" fill="#000">{pn["lo"]:.3g}</text>')
+                o.append(f'<text x="{x0 + PW - 1}" y="{TOP - 6}" text-anchor="end" '
+                         f'fill="#000">{pn["hi"]:.3g}</text>')
+            for seg in pn["segs"]:
+                pts = [(x0 + pt["x"] / 100 * PW, Y(pt["cm"])) for pt in seg
+                       if lo <= pt["cm"] <= hi]
+                if len(pts) > 1:
+                    o.append('<polyline fill="none" stroke="#000" stroke-width="0.8" points="'
+                             + " ".join(f"{x:.1f},{y:.1f}" for x, y in pts) + '"/>')
+                elif pts:
+                    o.append(f'<circle cx="{pts[0][0]:.1f}" cy="{pts[0][1]:.1f}" r="1.5"/>')
+        else:
+            xm = pn["xmax"]
+            # 양 끝 눈금 글자는 칸 안쪽으로 붙인다 — 가운데 맞춤이면 옆 칸의 0 과 겹친다
+            for tv, anchor, dx in ((0, "start", 1), (xm / 2, "middle", 0),
+                                   (xm, "end", -1)):
+                tx = x0 + tv / xm * PW
+                o.append(f'<line x1="{tx:.1f}" x2="{tx:.1f}" y1="{TOP}" y2="{TOP - 3}" stroke="#000" stroke-width="0.6"/>')
+                o.append(f'<text x="{tx + dx:.1f}" y="{TOP - 6}" text-anchor="{anchor}" '
+                         f'fill="#000">{tv:g}</text>')
+            # 분모가 없는 열(None)에서 선을 끊는다 — 이으면 안 본 자리를 본 것처럼 그린다
+            run: list = []
+            runs = []
+            pts = []
+            for y, v in zip(ys, pn["vals"]):
+                if y is None or v is None:
+                    if run:
+                        runs.append(run)
+                    run = []
+                    continue
+                pt = (x0 + min(v, xm) / xm * PW, Y(y), v)
+                run.append(pt)
+                pts.append(pt)
+            if run:
+                runs.append(run)
+            for r in runs:
+                if len(r) > 1:
+                    o.append('<polyline fill="none" stroke="#000" stroke-width="0.9" points="'
+                             + " ".join(f"{x:.1f},{y:.1f}" for x, y, _ in r) + '"/>')
+            for x, y, v in pts:
+                o.append(f'<path class="pt" d="M{x:.1f} {y - 3:.1f}L{x + 3:.1f} {y:.1f}'
+                         f'L{x:.1f} {y + 3:.1f}L{x - 3:.1f} {y:.1f}Z" fill="#fff" '
+                         f'stroke="#000" stroke-width="0.8"><title>{v:g}</title></path>')
+        o.append("</g>")
+    o.append(f'<text x="{LEFT}" y="{HH - 8}" fill="#555">{escape(loc.code)} · '
+             f'% 의 분모: 종 = 종명이 붙은 개체 · 분류 항목 = 세는 개체 · 파편은 세지 않는다 · '
+             f'검토를 마친 시야만</text>')
+    o.append("</svg>")
+    return {"svg": "".join(o), "panels": len(panels),
+            "n_points": sum(1 for pn in panels if pn["kind"] == "pct"
+                            for v, y in zip(pn["vals"], ys)
+                            if v is not None and y is not None)}
+
+
+def taxa_options(t: dict, loc) -> list[dict]:
+    """고를 수 있는 항목 — **전역 기본 · 이 코어에 저장한 것 · 표에 나온 종 · 분류 항목**.
+
+    차례: 전역 기본 목록의 차례 → 저장한 것 → 나머지 종(속 알파벳순) → 분류 항목.
+    분류 항목은 **세는 분류 중 분류학으로 알아본 것**(`is_taxon`)만 — 원형·봉상은
+    형태라 산출 그래프의 줄이 아니다.
+    """
+    seen: dict[str, dict] = {}
+
+    def add(item, src):
+        if item and item not in seen:
+            seen[item] = {**taxon_label(item), "src": src,
+                          "total": None}
+
+    for x in default_taxa():
+        add(x, "default")
+    for x in (getattr(loc, "tally_taxa", None) or []):
+        add(x, "saved")
+    for r in t["rows"]:
+        add(r["name"], "table")
+    for r in data._class_rows():
+        if r["counted"] and r.get("is_taxon"):
+            add(CLS_PREFIX + r["key"], "class")
+    tot = t.get("total") or {}
+    for item, o in seen.items():
+        if item.startswith(CLS_PREFIX):
+            o["total"] = (tot.get("per_cls") or {}).get(item[len(CLS_PREFIX):], 0)
+        else:
+            o["total"] = (tot.get("per_species") or {}).get(item, 0)
+    return list(seen.values())

@@ -1,0 +1,68 @@
+{% comment %}
+  **산출 그래프** (P34 5단계) — 견본 Fig. 2(박영숙 외 2011)의 꼴. 그림은 서버가 SVG 로
+  만든다(`tally.plot`) — 화면에 얹는 것과 내려받는 것이 같은 그림이다. 흰 바탕·검은
+  선이고 테마를 안 따른다: 논문 그림으로 가져가 다듬을 것이다.
+
+  **고르기는 GET 폼이다** — 주소에 남아 같은 그림을 다시 연다. `pick=1` 이 "고른 결과"
+  라는 표시다: 그것이 없으면 이 코어에 저장한 목록(없으면 전역 기본)이 켜진다.
+  **저장은 POST 다** — 사람이 정한 목록을 주소 하나로 바꾸면 안 된다.
+{% endcomment %}
+<style>
+  .tplot { display: grid; grid-template-columns: minmax(0, 1fr) 260px; gap: 14px; align-items: start; }
+  @media (max-width: 900px) { .tplot { grid-template-columns: 1fr; } }
+  .tplot .fig { overflow-x: auto; border: 1px solid var(--line); border-radius: 8px; background: #fff; padding: 6px; }
+  .tplot .fig svg { display: block; }
+  .tplot .pick { border: 1px solid var(--line); border-radius: 8px; background: var(--panel); padding: 10px 12px; font-size: 12.5px; }
+  .tplot .pick h4 { margin: 8px 0 4px; font-size: 11px; color: var(--dim); letter-spacing: .04em; }
+  .tplot .pick h4:first-child { margin-top: 0; }
+  .tplot .pick label { display: flex; gap: 6px; align-items: baseline; padding: 1px 0; }
+  .tplot .pick label .n { margin-left: auto; color: var(--dim); font-variant-numeric: tabular-nums; }
+  .tplot .pick .acts { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 10px; }
+  .tplot .pick button { font: inherit; font-size: 12px; padding: 3px 10px; border-radius: 6px; cursor: pointer;
+                        border: 1px solid var(--line); background: transparent; color: var(--fg); }
+  .tplot .pick button.pri { border-color: var(--accent); color: var(--accent); }
+  .tplot .pick .hint { color: var(--dim); font-size: 11.5px; margin: 6px 0 0; }
+</style>
+<p class="tlynote">
+  % 의 분모 — <b>종은 그 시료에서 종명이 붙은 개체</b>, 분류 항목(CRS 등)은 <b>세는 개체 전체</b> ·
+  <b>파편은 세지 않습니다</b> · 검토를 마친 시야만 · 같은 시료의 관찰은 더합니다 ·
+  종명이 하나도 없는 시료는 점을 찍지 않습니다(0 이 아니라 아직 안 본 것)
+</p>
+<div class="tplot">
+  <div class="fig" aria-label="산출 그래프">{{ plot.svg|safe }}</div>
+  <div>
+  <form class="pick" method="get">
+    <input type="hidden" name="view" value="plot">
+    <input type="hidden" name="pick" value="1">
+    <h4>종 · 분류 항목</h4>
+    {% for o in taxa_options %}
+    <label title="{{ o.note|default:o.name }}"><input type="checkbox" name="sp" value="{{ o.item }}"{% if o.on %} checked{% endif %}>
+      {% if o.italic %}<i>{{ o.name }}</i>{% else %}{{ o.name }}{% endif %}{% if o.note %} <span class="dim">({{ o.note }})</span>{% endif %}
+      <span class="n">{{ o.total }}</span></label>
+    {% endfor %}
+    {% if core_opts %}
+    <h4>코어 자료 (같은 깊이 축)</h4>
+    {% for cs in core_opts %}
+    <label><input type="checkbox" name="series" value="{{ cs.key }}"{% if cs.on %} checked{% endif %}>
+      {{ cs.label }}{% if cs.unit %} <span class="dim">{{ cs.unit }}</span>{% endif %}</label>
+    {% endfor %}
+    {% endif %}
+    <div class="acts">
+      <button type="submit" class="pri">다시 그리기</button>
+      <a href="?{{ qs }}{% if qs %}&{% endif %}format=svg">SVG 내려받기</a>
+    </div>
+    <p class="hint">오른쪽 수는 이 지점 전체의 개체 수입니다(분류 항목은 그 분류의 세는 개체).
+    {% if unknown_taxa %}목록에 있지만 이 지점에서 쓰이지 않은 이름: {{ unknown_taxa|join:", " }}{% endif %}</p>
+  </form>
+  <form class="pick" method="post" action="{% url 'tally_taxa_save' site.code loc.code %}" style="margin-top:10px">
+    {% csrf_token %}
+    <h4>이 지점의 기본 목록</h4>
+    {% for o in taxa_options %}{% if o.on %}<input type="hidden" name="sp" value="{{ o.item }}">{% endif %}{% endfor %}
+    <p class="hint" style="margin-top:0">{% if saved_taxa %}이 지점에 저장한 목록이 있습니다({{ saved_taxa|length }}개){% if is_saved %} — 지금 그림과 같습니다{% endif %}.{% else %}저장한 목록이 없어 전역 기본 목록을 씁니다.{% endif %}</p>
+    <div class="acts">
+      <button type="submit">지금 고른 종을 기본으로 저장</button>
+      {% if saved_taxa %}<button type="submit" name="reset" value="1">비우기 (전역 기본으로)</button>{% endif %}
+    </div>
+  </form>
+  </div>
+</div>

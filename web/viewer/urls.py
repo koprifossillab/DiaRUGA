@@ -18,6 +18,8 @@ urlpatterns = [
     # 산출표 (P34) — 문헌 출현 기록(`Occurrence`)과 섞지 않으려고 `tally` 다
     path("loc/<str:site_code>/<str:core_code>/tally/", views.tally_page,
          name="tally"),
+    path("loc/<str:site_code>/<str:core_code>/tally/taxa", views.tally_taxa_save,
+         name="tally_taxa_save"),
     # **시스템 설정** — 층을 만들고 고치고 지운다. 쓰기는 전부 POST 다.
     # 화면 셋 (083). 묻는 것이 달라 갈랐다 — `_managenav.html` 머리말.
     #
