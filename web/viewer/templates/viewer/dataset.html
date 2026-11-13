@@ -96,8 +96,42 @@
     </div>
   </div>
   {% if class_bars %}
-  <div class="sbox wide">
-    <div class="sh">분류</div>
+  {% comment %}
+    **`분류 | 종` 단추** (P34 3단계 · 사용자: "class 별 막대를 종별로도"). 서버가
+    두 벌을 다 그리고 단추는 감추기만 한다 — 시험이 JS 없이 읽는다(255 의 거르개와
+    같다). 고른 쪽은 브라우저에만 남는다(`diaruga.dsaxis`).
+
+    **종 쪽은 파편을 안 센다**(사용자 11-13). 파편은 아래 한 줄의 비율로만 보인다 —
+    식은 산출 비교 화면과 같다(`data.count_column`). **`종명 없음` 을 늘 적는다** —
+    없으면 막대 몇 개가 슬라이드 전부처럼 보인다.
+  {% endcomment %}
+  <div class="sbox wide" id="clsbox">
+    <div class="sh">
+      <span class="axtog" role="group" aria-label="막대를 무엇으로 나눌까">
+        <button type="button" data-ax="cls" class="on" aria-pressed="true">분류</button><button type="button" data-ax="sp" aria-pressed="false">종</button>
+      </span>
+    </div>
+    <div class="axpane" data-ax="sp" hidden>
+      {% if species_bars %}
+      <div class="cbars" style="--rows: {{ species_bar_rows }}">
+        {% for d in species_bars %}
+        <div class="cbar spbar" title="{{ d.label }} {{ d.n }} ({{ d.share }}%)">
+          <span class="cl"><i>{{ d.label }}</i></span>
+          <span class="tr"><i style="width:{{ d.pct }}%{% if d.color %};background:rgb({{ d.color }}){% endif %}"></i></span>
+          <span class="cn">{{ d.n }}</span>
+        </div>
+        {% endfor %}
+      </div>
+      {% else %}
+      <p class="spnone">종명이 붙은 개체가 아직 없습니다 — 개체 카탈로그에서 적습니다.</p>
+      {% endif %}
+      <div class="ss sptally">
+        종명 <b>{{ tally_col.n_identified }}</b> / 세는 개체 <b>{{ tally_col.n_counted }}</b>{% if tally_col.id_pct is not None %} (동정률 <b>{{ tally_col.id_pct }}%</b>){% endif %}
+        · 종명 없음 <b>{{ tally_col.n_unnamed }}</b>
+        · 파편 <b>{{ tally_col.n_frag }}</b>{% if tally_col.frag_pct is not None %} (검출의 <b>{{ tally_col.frag_pct }}%</b>){% endif %} — 종 막대에 안 넣는다
+      </div>
+    </div>
+    <div class="axpane" data-ax="cls">
     <div class="cbars" style="--rows: {{ class_bar_rows }}">
       {% for d in class_bars %}
       <div class="cbar" title="{{ d.label }} {{ d.n }}">
@@ -107,9 +141,40 @@
       </div>
       {% endfor %}
     </div>
+    </div>
   </div>
   {% endif %}
 </div>
+{% if class_bars %}
+<script>
+/* 분류 상자 `분류 | 종` (P34). 고른 쪽은 이 브라우저에만 남는다 */
+(function () {
+  var box = document.getElementById('clsbox');
+  if (!box) return;
+  var KEY = 'diaruga.dsaxis';
+  function show(ax) {
+    [].forEach.call(box.querySelectorAll('.axpane'), function (p) {
+      p.hidden = p.getAttribute('data-ax') !== ax;
+    });
+    [].forEach.call(box.querySelectorAll('.axtog button'), function (b) {
+      var on = b.getAttribute('data-ax') === ax;
+      b.classList.toggle('on', on);
+      b.setAttribute('aria-pressed', on ? 'true' : 'false');
+    });
+  }
+  var saved = '';
+  try { saved = localStorage.getItem(KEY) || ''; } catch (e) { /* 사생활 모드 */ }
+  if (saved === 'sp') show('sp');
+  box.querySelector('.axtog').addEventListener('click', function (e) {
+    var b = e.target.closest('button[data-ax]');
+    if (!b) return;
+    var ax = b.getAttribute('data-ax');
+    show(ax);
+    try { localStorage.setItem(KEY, ax); } catch (e2) { /* 이 화면에서만 */ }
+  });
+})();
+</script>
+{% endif %}
 {% comment %}
   **이 묶음에 검출이 없는 시야를 여기서 센다** (P10 4단계). 카드를 하나씩 열어
   보고서야 아는 것은 늦다. 다른 묶음에는 있는 것을 따로 적어 **아직 안 돌린
@@ -448,6 +513,22 @@
                    align-items: center; gap: 8px; font-size: 11.5px; }
   .dsstats .cbar .cl { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--fg); }
   .dsstats .cbar .tr { height: 8px; border-radius: 2px; background: var(--line); overflow: hidden; }
+  /* `분류 | 종` (P34). **`[hidden]` 을 클래스 규칙이 이긴다** — `.dsstats .cbars`
+     가 `display: grid` 라 브라우저 기본 `[hidden]`(특이도 0,0,1)이 진다(063 · 051).
+     칸을 감싼 `.axpane` 에 걸고 여기서 다시 못 박는다. */
+  .dsstats .axpane[hidden] { display: none; }
+  .dsstats .axtog { display: inline-flex; border: 1px solid var(--line); border-radius: 5px;
+                    overflow: hidden; vertical-align: middle; }
+  .dsstats .axtog button { font: inherit; font-size: 11px; font-weight: 700; letter-spacing: .04em;
+                           padding: 1px 9px; border: 0; background: transparent;
+                           color: var(--dim); cursor: pointer; }
+  .dsstats .axtog button + button { border-left: 1px solid var(--line); }
+  .dsstats .axtog button.on { color: var(--accent);
+                              background: color-mix(in srgb, var(--accent) 12%, transparent); }
+  .dsstats .spbar .cl i { font-style: italic; }
+  /* 종명은 분류 이름보다 길다 — 9em 이면 `Fragilariopsis obli…` 로 잘린다 */
+  .dsstats .cbar.spbar { grid-template-columns: minmax(0, 15em) 1fr auto; }
+  .dsstats .spnone { font-size: 12px; color: var(--dim); margin: 2px 0; }
   .dsstats .cbar .tr i { display: block; height: 100%; min-width: 2px; border-radius: 2px;
                          background: var(--dim); }
   .dsstats .cbar .cn { min-width: 2.8em; text-align: right; color: var(--dim);

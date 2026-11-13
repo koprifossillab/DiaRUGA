@@ -2779,7 +2779,9 @@ def _summary_by_sql(slide: Slide, rows: dict | None = None) -> dict:
     detected_groups = row.get("counted_groups", 0)
     return {"per_cls": per_cls, "n_detected": row["n_detected"],
             "n_auto": row["n_auto"], "n_labeled": row["n_labeled"],
-            "detected_groups": detected_groups}
+            "detected_groups": detected_groups,
+            # `(분류, 종명) → 수` (202). 산출표가 쓴다(P34) — 따로 세지 않는다
+            "per_sp": dict(row.get("per_sp") or {})}
 
 
 # 개체 하나하나를 파이썬으로 올리지 않고 세는 SQL. **원시 SQL 인 이유가 있다.**
@@ -3094,6 +3096,11 @@ def _slide_summary(slide: Slide, rows: dict | None = None) -> dict:
         "counted": counted,
         "counted_cols": counted_cols,
         "class_counts": class_counts,
+        # **종명 축** (P34). `(분류, 종명)` 마다 한 줄 — 산출표(`tally.py`)가 이것을
+        # 접는다. 튜플 열쇠 dict 로 두지 않고 줄 목록으로 둔다: 이 집계는
+        # `/api/d/<slug>.json` 으로 그대로 나가고 JSON 은 튜플 열쇠를 못 싣는다.
+        "species_counts": [{"cls": k, "species": sp, "n": n}
+                           for (k, sp), n in sorted(r["per_sp"].items()) if n],
         "n_removed": agg["removed"],
         "n_accepted": agg["accepted"],
         "n_labeled": n_labeled,
@@ -3534,6 +3541,22 @@ def _core_refs(slides) -> dict[int, list[dict]]:
     return out
 
 
+def count_column(per_cls: dict, n_detected: int) -> dict:
+    """열 하나의 **세는 개체 · 파편 · 파편 비율** — 비교 화면과 산출표가 함께 쓴다 (P34).
+
+    **두 화면이 같은 슬라이드에 다른 비율을 내면 안 된다.** 그래서 식을 한 자리에
+    둔다. 파편 비율의 분모는 **검출 전체**(`n_detected`)다 — 204 가 정한 그대로.
+    미분류는 세는 개체도 파편도 아니다(`is_fragment` 머리말).
+    """
+    counted = {c["key"] for c in counted_classes()}
+    frag = {r["key"] for r in _class_rows() if not r["counted"]}
+    n_counted = sum(v for k, v in per_cls.items() if k in counted)
+    n_frag = sum(v for k, v in per_cls.items() if k in frag)
+    return {"n_counted": n_counted, "n_frag": n_frag,
+            "frag_pct": (round(100.0 * n_frag / n_detected, 1)
+                         if n_detected else None)}
+
+
 def compare_slides(slugs: list[str]) -> dict:
     """슬라이드 몇 장의 산출을 한 표에 나란히 놓는다 (202 · 204).
 
@@ -3589,25 +3612,18 @@ def compare_slides(slugs: list[str]) -> dict:
     det_groups = {sid: r.get("counted_groups", 0) for sid, r in summary.items()}
     refs = _core_refs(slides)
 
-    counted_keys = [c["key"] for c in counted_classes()]
-    frag_keys = [r["key"] for r in _class_rows() if not r["counted"]]
     cols = []
     for sl in slides:
         r = summary.get(sl.id) or {"per_cls": {}, "per_sp": {},
                                    "n_detected": 0}
-        n_counted = sum(v for k, v in r["per_cls"].items()
-                        if k in counted_keys)
-        n_frag = sum(v for k, v in r["per_cls"].items() if k in frag_keys)
+        cc = count_column(r["per_cls"], r["n_detected"])
         dg = det_groups.get(sl.id, 0)
         cols.append({**_slide_head(sl),
                      "n_groups": n_groups.get(sl.id, 0),
                      "detected_groups": dg,
                      "n_detected": r["n_detected"],
-                     "n_counted": n_counted,
-                     "n_frag": n_frag,
-                     "per_view": (round(n_counted / dg, 1) if dg else None),
-                     "frag_pct": (round(100.0 * n_frag / r["n_detected"], 1)
-                                  if r["n_detected"] else None),
+                     **cc,
+                     "per_view": (round(cc["n_counted"] / dg, 1) if dg else None),
                      "refs": refs[sl.id],
                      "_per_cls": r["per_cls"], "_per_sp": r["per_sp"]})
 
@@ -4370,10 +4386,24 @@ def dataset_detail(slug: str) -> dict | None:
         "class_bars": _class_bars(summary["class_counts"]),
         # 분류 막대를 두 단으로 — 위에서 아래로 채우려면 줄 수를 알아야 한다
         "class_bar_rows": (len(summary["class_counts"]) + 1) // 2,
+        # **종 막대** (P34 3단계) — 같은 상자에서 `분류 | 종` 으로 갈아 본다
+        **_species_box(summary),
         # 검토 완료 막대의 길이(%)
         "reviewed_pct": (round(100 * summary["reviewed_groups"] / summary["n_groups"])
                          if summary["n_groups"] else 0),
     }
+
+
+def _species_box(summary: dict) -> dict:
+    """슬라이드 화면 분류 상자의 `종` 쪽 (P34). 셈은 `tally.py` 가 한다."""
+    from . import tally          # tally 가 data 를 부른다 — 머리에서 부르면 돈다
+    col = tally.column(summary)
+    bars = tally.species_bars(col)
+    return {"species_bars": bars,
+            "species_bar_rows": (len(bars) + 1) // 2,
+            "tally_col": {k: col[k] for k in
+                          ("n_counted", "n_identified", "n_unnamed", "id_pct",
+                           "n_frag", "frag_pct")}}
 
 
 def _review_shot(d: dict, image_id: int, rel: str = "") -> dict:
