@@ -12,6 +12,8 @@
 아직 `diatom` 인 것은 **생물 이름**이다(`pipeline/segment_diatoms.py`·YOLO 클래스·
 NAS 의 `DiatomPhotos/`).
 
+**도감 기재문이 운영 DB 와 이미지에서 갈려 있다 (11-13 · [257](devlog/20261113_257_atlas-descriptions.md) 6절).** 운영 DB 에는 Schmidt(823)·논문 넷(170) 기재문이 `import_atlas.py --descriptions /srv/DiaRUGA/scripts/atlas_descriptions` 로 들어가 있고, **이미지(`v0.40.5`)에는 한국 것(510)뿐이다 — 다음 판을 내며 `import_atlas.py` 를 돌리면 Schmidt·논문 기재문이 사라지므로, 다음 판에 `work/20261113-sclee-atlas2` 를 반드시 싣는다.** 그 브랜치의 `import_atlas.py`(dry-run 도 기재문 수를 찍는다)가 `/srv/DiaRUGA/scripts` 에 먼저 가 있어 `smoke.sh` 가 "저장소와 다르다" 경고를 하나 낸다 — 병합하면 사라진다.
+
 **브랜치** main · 도는 판 `v0.40.5` (파이프라인 **`v0.6.0`** · 10-30 · 4차 클래스를 저장한다) ·
 **검토 대상 묶음 `yolo-4.1차`(`Y41`)** · 운영 가중치 `11l-v41seg-1280.pt` · **5차는 학습만 끝났고 운영 교체는
 안 정했다**([251](devlog/20261030_251_yolo5-training.md) — 4.2절) —
