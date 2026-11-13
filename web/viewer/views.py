@@ -431,6 +431,28 @@ def core_page(request, site_code, core_code):
     })
 
 
+def tally_page(request, site_code, core_code):
+    """지점의 산출표 (P34 4단계) — 열은 시료, 줄은 종. 셈은 `tally.py` 머리말.
+
+    `?obs=1` 관찰마다 열을 가른다 · `?unit=pct` 칸을 % 로 · `?format=csv` 내려받기.
+    **주소에 남긴다** — 논문 그림으로 가져갈 표라 같은 모양을 다시 열 수 있어야 한다.
+    """
+    from . import tally
+    split = request.GET.get("obs") == "1"
+    unit = "pct" if request.GET.get("unit") == "pct" else "n"
+    t = tally.locality_table(site_code, core_code, split_obs=split)
+    if t is None:
+        raise Http404(f"unknown locality: {site_code}/{core_code}")
+    if request.GET.get("format") == "csv":
+        # 엑셀이 UTF-8 로 읽게 BOM 을 붙인다 — 없으면 머리의 µ·한글이 깨진다
+        resp = HttpResponse("\ufeff" + tally.table_csv(t, unit),
+                            content_type="text/csv; charset=utf-8")
+        name = f"{t['loc'].code}_tally{'_pct' if unit == 'pct' else ''}.csv"
+        resp["Content-Disposition"] = f'attachment; filename="{name}"'
+        return resp
+    return render(request, "viewer/tally.html", {**t, "unit": unit})
+
+
 @require_POST
 def core_series_edit(request, site_code, core_code):
     """측정 항목을 만들고 고치고 지운다 (P17 5단계). **속성만 건드린다.**

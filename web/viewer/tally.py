@@ -80,3 +80,144 @@ def species_bars(col: dict) -> list[dict]:
                     "pct": round(100 * n / top) if top else 0,
                     "share": round(100.0 * n / n_id, 1) if n_id else None})
     return out
+
+
+# ─────────────────────────────────────────── 지점 단위 산출표 (P34 4단계)
+
+def merge(cols: list[dict]) -> dict:
+    """열 여럿을 하나로 더한다 — **같은 시료의 관찰은 더한다** (P34 6.2).
+
+    관찰은 시료 하나를 처리 방법을 달리해 본 것이라 서로 동등하고 대표를 몰래
+    고를 근거가 없다(063 · `derived_series()` 머리말). 비율은 더한 수에서 다시
+    낸다 — 비율을 평균하면 개체가 적은 관찰이 같은 무게를 받는다.
+    """
+    per: Counter = Counter()
+    for c in cols:
+        per.update(c["per_species"])
+    n = {k: sum(c[k] for c in cols)
+         for k in ("n_detected", "n_counted", "n_frag", "n_identified")}
+    return {**n,
+            "n_unnamed": n["n_counted"] - n["n_identified"],
+            "frag_pct": (round(100.0 * n["n_frag"] / n["n_detected"], 1)
+                         if n["n_detected"] else None),
+            "id_pct": (round(100.0 * n["n_identified"] / n["n_counted"], 1)
+                       if n["n_counted"] else None),
+            "per_species": dict(per)}
+
+
+def _name_key(name: str) -> tuple:
+    """속 알파벳순, 속 안에서 종순 — 견본 표(Table 2)의 차례."""
+    genus, _, rest = name.partition(" ")
+    return (genus.lower(), rest.lower(), name)
+
+
+def _short(name: str, prev: str) -> str:
+    """바로 윗줄과 속이 같으면 속명을 첫 글자로 줄인다 (`A. ingens`). 견본 표가
+    그렇게 적는다. **CSV 에는 안 쓴다** — 줄을 정렬하거나 거르면 윗줄이 바뀐다."""
+    genus, sp, rest = name.partition(" ")
+    if sp and prev.partition(" ")[0] == genus:
+        return f"{genus[0]}. {rest}"
+    return name
+
+
+def locality_table(site_code: str, loc_code: str, split_obs: bool = False) -> dict | None:
+    """지점 하나의 산출표 — 열은 시료(깊이·단면 위치 차례), 줄은 종.
+
+    **`집계 제외` 관찰은 뺀다**(목록·합계·`derived_series` 와 같은 규칙).
+    **`숨김` 은 센다** — 보기 상태이지 자료의 성질이 아니다.
+
+    `split_obs` 면 관찰마다 열을 가른다(사용자가 나중에 조정할 수 있게).
+    """
+    from .models import Locality
+
+    loc = (Locality.objects.select_related("site")
+           .filter(site__code=site_code, code=loc_code).first())
+    if loc is None:
+        return None
+    slides = sorted((sl for sm in loc.samples.select_related("locality").all()
+                     for sl in sm.slides.live()), key=data._slide_order)
+    used = [sl for sl in slides if not sl.exclude_from_totals]
+    summary = data._summary_for(used)
+    outcrop = loc.kind == "outcrop"
+
+    # 열 — 시료마다(또는 관찰마다) 하나. 차례는 `_slide_order` 그대로라 같은
+    # 시료의 관찰은 붙어 있다.
+    groups: list[tuple[tuple, list]] = []
+    for sl in used:
+        key = (sl.sample_id, sl.id if split_obs else None)
+        if groups and groups[-1][0] == key:
+            groups[-1][1].append(sl)
+        else:
+            groups.append((key, [sl]))
+
+    cols = []
+    for _, sls in groups:
+        c = merge([column(data._slide_summary(sl, summary)) for sl in sls])
+        sm = sls[0].sample
+        if outcrop or sm is None or sm.depth_cm is None:
+            head = sm.code if sm else sls[0].name
+        else:
+            head = f"{sm.depth_cm:g} cm"
+        c.update({
+            "head": head,
+            # 이름표가 빈 관찰이 많다 — 비우면 같은 깊이 열 둘이 구분이 안 된다
+            "obs": ((sls[0].obs_label or (f"({sls[0].obs_no})" if sls[0].obs_no
+                                          else sls[0].slug))
+                    if split_obs else ""),
+            "n_obs": len(sls),
+            "slugs": [sl.slug for sl in sls],
+            "depth_cm": sm.depth_cm if sm else None,
+        })
+        cols.append(c)
+
+    names = sorted({n for c in cols for n in c["per_species"]}, key=_name_key)
+    rows, prev = [], ""
+    for name in names:
+        cells = []
+        for c in cols:
+            n = c["per_species"].get(name, 0)
+            cells.append({"n": n,
+                          "pct": (round(100.0 * n / c["n_identified"], 1)
+                                  if n and c["n_identified"] else None),
+                          # 칸에서 카탈로그로 가는 길 — 관찰이 하나인 열만.
+                          # 더한 열은 어느 관찰로 갈지 고를 근거가 없다
+                          "slug": c["slugs"][0] if len(c["slugs"]) == 1 else "",
+                          "noid": not c["n_identified"]})
+        total = sum(x["n"] for x in cells)
+        n_id = sum(c["n_identified"] for c in cols)
+        rows.append({"name": name, "short": _short(name, prev), "cells": cells,
+                     "total": total,
+                     # 합계 열의 % — 더한 수에서 낸다(열마다의 % 를 평균하지 않는다)
+                     "total_pct": round(100.0 * total / n_id, 1) if n_id else None})
+        prev = name
+    tot = merge(cols) if cols else None
+    return {"loc": loc, "site": loc.site, "is_outcrop": outcrop,
+            "cols": cols, "rows": rows, "total": tot,
+            "split_obs": split_obs,
+            "n_excluded": len(slides) - len(used)}
+
+
+def table_csv(t: dict, unit: str = "n") -> str:
+    """산출표를 CSV 로 (P34 6.3). **속명을 줄이지 않는다**, **0 도 0 으로 적는다** —
+    빈칸은 사람이 읽는 표의 관례이고, 받아서 계산하는 쪽에는 "안 셌다" 로 읽힌다."""
+    import csv
+    import io
+    buf = io.StringIO()
+    w = csv.writer(buf)
+    pct = unit == "pct"
+    heads = [c["head"] + (f" ({c['obs']})" if c["obs"] else "") for c in t["cols"]]
+    w.writerow(["species", *heads, "total"])
+    for r in t["rows"]:
+        vals = [(x["pct"] or 0) if pct else x["n"] for x in r["cells"]]
+        w.writerow([r["name"], *vals, (r["total_pct"] or 0) if pct else r["total"]])
+    tot = t["total"] or {}
+    w.writerow(["(identified)", *[c["n_identified"] for c in t["cols"]],
+                tot.get("n_identified", 0)])
+    w.writerow(["(counted, non-fragment)", *[c["n_counted"] for c in t["cols"]],
+                tot.get("n_counted", 0)])
+    w.writerow(["(identified %)", *[c["id_pct"] if c["id_pct"] is not None else ""
+                                    for c in t["cols"]], tot.get("id_pct") or ""])
+    w.writerow(["(fragment % of detected)",
+                *[c["frag_pct"] if c["frag_pct"] is not None else "" for c in t["cols"]],
+                tot.get("frag_pct") or ""])
+    return buf.getvalue()

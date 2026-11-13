@@ -15,6 +15,9 @@ urlpatterns = [
     # 옛 주소. **지우지 않는다** — 적어 둔 링크와 브라우저 기록이 깨진다.
     # 이름(`core`)은 그대로 둔다: 템플릿의 `{% url 'core' %}` 가 새 주소를 낸다.
     path("core/<str:site_code>/<str:core_code>/", views.core_redirect),
+    # 산출표 (P34) — 문헌 출현 기록(`Occurrence`)과 섞지 않으려고 `tally` 다
+    path("loc/<str:site_code>/<str:core_code>/tally/", views.tally_page,
+         name="tally"),
     # **시스템 설정** — 층을 만들고 고치고 지운다. 쓰기는 전부 POST 다.
     # 화면 셋 (083). 묻는 것이 달라 갈랐다 — `_managenav.html` 머리말.
     #

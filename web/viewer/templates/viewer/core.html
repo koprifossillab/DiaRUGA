@@ -23,7 +23,17 @@
 {% if msg %}<div class="okbar">{{ msg }}</div>{% endif %}
 {% if err %}<div class="errbar">{{ err }}</div>{% endif %}
 <div class="crumb"><a href="{% url 'index' %}">데이터셋</a> / {{ core.code }}</div>
+{% comment %}
+  **산출표로 가는 길** (P34 4단계). 이 화면에 표를 넣지 않고 따로 세운다 — 여기는
+  시료·사진·코어 자료가 이미 쌓여 있고, 산출표는 논문 그림으로 가져갈 것이라
+  한 장으로 따로 서야 한다.
+{% endcomment %}
+<div class="pagehead">
 <h2>{{ core.code }} <span class="dim" style="font-size:14px;font-weight:400">{{ site_label }}</span></h2>
+<nav class="pagelinks" aria-label="이 지점의 다른 화면">
+  <a href="{% url 'tally' site.code core.code %}">산출표</a>
+</nav>
+</div>
 <p class="dim" style="font-size:12px;margin-bottom:14px">
   슬라이드 {{ n }}장 · 사진 {{ totals.n_images }} · 시야 {{ totals.n_groups }} ·
   검출 {{ totals.n_counted }} · 검토 {{ totals.reviewed_groups }}/{{ totals.n_groups }}

@@ -1,0 +1,102 @@
+{% extends "viewer/base.html" %}
+{% comment %}
+  지점 하나의 **산출표** (P34 4단계) — 규조 논문의 옛 방식 표(연일층군 Table 2 처럼).
+  열은 시료(깊이·단면 위치 차례), 줄은 종(속 알파벳순). **0 은 빈칸**이고 속명은
+  윗줄과 같을 때 첫 글자로 줄인다 — 견본 그대로다. CSV 는 줄이지 않고 0 도 적는다.
+
+  셈은 `tally.py` 머리말: **검토를 마친 시야만 · 파편은 세지 않는다 · 분모는 종명이
+  붙은 개체**. 그래서 **동정률을 늘 함께** 적는다 — 종명이 2%인 열을 100%의 표처럼
+  읽으면 안 된다. 파편은 비율 한 줄로만 보인다(식은 산출 비교 화면과 같다).
+
+  "출현 기록"(도감의 `Occurrence`)과 다른 것이다 — 그쪽은 문헌, 이쪽은 우리 검토 결과.
+{% endcomment %}
+{% block title %}{{ loc.code }} 산출표 · DiaRUGA{% endblock %}
+{% block subtitle %}{{ site.code }} · <a href="{% url 'core' site.code loc.code %}">{{ loc.code }}</a> · <b>산출표</b>{% endblock %}
+{% block mainclass %} class="wide"{% endblock %}
+{% block content %}
+<style>
+  .tlyopts { display: flex; gap: 14px; flex-wrap: wrap; align-items: center;
+             font-size: 12.5px; margin: 6px 0 12px; }
+  .tlyopts .seg { display: inline-flex; border: 1px solid var(--line); border-radius: 6px; overflow: hidden; }
+  .tlyopts .seg a { padding: 3px 10px; color: var(--dim); text-decoration: none; }
+  .tlyopts .seg a + a { border-left: 1px solid var(--line); }
+  .tlyopts .seg a.on { color: var(--accent); background: color-mix(in srgb, var(--accent) 12%, transparent); }
+  .tlyopts .dl { margin-left: auto; }
+  .tlynote { font-size: 12px; color: var(--dim); margin: 0 0 10px; }
+  .tlywrap { overflow-x: auto; border: 1px solid var(--line); border-radius: 8px; background: var(--panel); }
+  table.tly { border-collapse: collapse; font-size: 12.5px; font-variant-numeric: tabular-nums; }
+  table.tly th, table.tly td { padding: 3px 10px; border-bottom: 1px solid var(--line); white-space: nowrap; }
+  table.tly thead th { position: sticky; top: 0; background: var(--panel); font-weight: 600;
+                       text-align: right; color: var(--fg);
+                       /* 공통 표 머리는 대문자로 바꾼다 — `6 cm` 이 `6 CM` 이 된다 */
+                       text-transform: none; letter-spacing: 0; }
+  table.tly th.sp, table.tly td.sp { text-align: left; position: sticky; left: 0;
+                                      background: var(--panel); z-index: 1; }
+  table.tly td.sp i { color: var(--fg); }
+  table.tly td.n { text-align: right; min-width: 3.2em; }
+  table.tly td.n a { color: var(--fg); text-decoration: none; }
+  table.tly td.n a:hover { color: var(--accent); text-decoration: underline; }
+  table.tly td.tot, table.tly th.tot { text-align: right; border-left: 1px solid var(--line); color: var(--fg); font-weight: 600; }
+  table.tly thead .obs { display: block; font-weight: 400; font-size: 11px; color: var(--dim); }
+  table.tly tbody.foot td { color: var(--dim); border-bottom: 0; }
+  table.tly tbody.foot tr:first-child td { border-top: 2px solid var(--line); }
+  table.tly tbody.foot td.sp { font-style: normal; }
+  /* 동정이 하나도 없는 열 — 빈 칸이 "안 나왔다" 로 읽히면 안 된다 */
+  table.tly .noid { opacity: .45; }
+  .tlyempty { padding: 18px; color: var(--dim); font-size: 13px; }
+</style>
+
+<div class="crumb"><a href="{% url 'index' %}">데이터셋</a> /
+  <a href="{% url 'core' site.code loc.code %}">{{ loc.code }}</a> / 산출표</div>
+<div class="pagehead"><h2>{{ loc.code }} 산출표</h2></div>
+
+<div class="tlyopts">
+  <span class="seg" aria-label="칸에 적을 값">
+    <a href="?{% if split_obs %}obs=1{% endif %}" class="{% if unit == 'n' %}on{% endif %}">개수</a><a
+       href="?unit=pct{% if split_obs %}&obs=1{% endif %}" class="{% if unit == 'pct' %}on{% endif %}">%</a>
+  </span>
+  <span class="seg" aria-label="같은 시료의 관찰">
+    <a href="?{% if unit == 'pct' %}unit=pct{% endif %}" class="{% if not split_obs %}on{% endif %}">시료마다 (관찰을 더한다)</a><a
+       href="?obs=1{% if unit == 'pct' %}&unit=pct{% endif %}" class="{% if split_obs %}on{% endif %}">관찰마다</a>
+  </span>
+  <a class="dl" href="?format=csv{% if unit == 'pct' %}&unit=pct{% endif %}{% if split_obs %}&obs=1{% endif %}">CSV 내려받기</a>
+</div>
+<p class="tlynote">
+  검토를 마친 시야만 셉니다 · <b>파편은 세지 않습니다</b>{% if unit == 'pct' %} · % 의 분모는 <b>그 열에서 종명이 붙은 개체</b>{% endif %}
+  {% if n_excluded %} · 집계 제외 관찰 {{ n_excluded }}개는 뺐습니다{% endif %}
+  · 칸을 누르면 그 관찰의 개체 카탈로그를 그 종명으로 찾습니다(관찰이 하나인 열만)
+</p>
+
+{% if not cols %}
+<div class="tlywrap"><p class="tlyempty">이 지점에 집계할 관찰이 없습니다.</p></div>
+{% else %}
+<div class="tlywrap">
+<table class="tly">
+  <thead>
+    <tr>
+      <th class="sp">{% if is_outcrop %}시료{% else %}깊이{% endif %}</th>
+      {% for c in cols %}<th class="{% if not c.n_identified %}noid{% endif %}">{{ c.head }}{% if c.obs %}<span class="obs">{{ c.obs }}</span>{% elif c.n_obs > 1 %}<span class="obs">관찰 {{ c.n_obs }}</span>{% endif %}</th>{% endfor %}
+      <th class="tot">합계</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for r in rows %}
+    <tr>
+      <td class="sp" title="{{ r.name }}"><i>{{ r.short }}</i></td>
+      {% for x in r.cells %}<td class="n{% if x.noid %} noid{% endif %}">{% if x.n %}{% if x.slug %}<a href="{% url 'catalog' x.slug %}?q={{ r.name|urlencode }}" title="{{ r.name }}">{% endif %}{% if unit == 'pct' %}{{ x.pct }}{% else %}{{ x.n }}{% endif %}{% if x.slug %}</a>{% endif %}{% endif %}</td>{% endfor %}
+      <td class="tot">{% if unit == 'pct' %}{{ r.total_pct }}{% else %}{{ r.total }}{% endif %}</td>
+    </tr>
+    {% empty %}
+    <tr><td class="sp dim" colspan="{{ cols|length|add:2 }}">종명이 붙은 개체가 아직 없습니다 — 개체 카탈로그에서 적습니다.</td></tr>
+    {% endfor %}
+  </tbody>
+  <tbody class="foot">
+    <tr><td class="sp">종명 붙은 개체</td>{% for c in cols %}<td class="n">{{ c.n_identified }}</td>{% endfor %}<td class="tot">{{ total.n_identified }}</td></tr>
+    <tr><td class="sp">세는 개체 (파편 제외)</td>{% for c in cols %}<td class="n">{{ c.n_counted }}</td>{% endfor %}<td class="tot">{{ total.n_counted }}</td></tr>
+    <tr><td class="sp">동정률 %</td>{% for c in cols %}<td class="n">{% if c.id_pct is not None %}{{ c.id_pct }}{% endif %}</td>{% endfor %}<td class="tot">{% if total.id_pct is not None %}{{ total.id_pct }}{% endif %}</td></tr>
+    <tr><td class="sp">파편 비율 % (검출 중)</td>{% for c in cols %}<td class="n">{% if c.frag_pct is not None %}{{ c.frag_pct }}{% endif %}</td>{% endfor %}<td class="tot">{% if total.frag_pct is not None %}{{ total.frag_pct }}{% endif %}</td></tr>
+  </tbody>
+</table>
+</div>
+{% endif %}
+{% endblock %}
