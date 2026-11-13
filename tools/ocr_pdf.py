@@ -60,12 +60,13 @@ def post_pdf(pdf: Path, client_id: str) -> dict:
         f"{BASE_URL}/ocr", data=body, method="POST",
         headers={"Content-Type": f"multipart/form-data; boundary={boundary}"},
     )
-    with urllib.request.urlopen(req, timeout=120) as r:
+    # 392 MB 짜리(Band1)가 120초 안에 안 올라간다 — 올리는 시간은 넉넉히 준다
+    with urllib.request.urlopen(req, timeout=3600) as r:
         return json.loads(r.read())
 
 
 def get_job(job_id: str) -> dict:
-    with urllib.request.urlopen(f"{BASE_URL}/ocr/{job_id}", timeout=60) as r:
+    with urllib.request.urlopen(f"{BASE_URL}/ocr/{job_id}", timeout=300) as r:
         return json.loads(r.read())
 
 
@@ -121,20 +122,41 @@ def main() -> int:
     out = args.out or (pdf.parent.parent / "ocr" / pdf.stem)
     out.mkdir(parents=True, exist_ok=True)
 
+    # 이미 끝난 것은 다시 안 올린다. 올려 놓고 끊긴 것은 그 job 을 이어 받는다 —
+    # 몇 시간짜리 도감을 밤새 돌리다 끊겨도 `job_id` 가 남아 있어야 결과를 찾는다
+    jf = out / "job.json"
+    prev = json.loads(jf.read_text(encoding="utf-8")) if jf.exists() else {}
+    if prev.get("status") == "done" and \
+            len(list(out.glob("p*.raw.html"))) == prev.get("total_pages"):
+        print(f"{pdf.name}: 이미 끝났다 ({prev['total_pages']}쪽 · job {prev['job_id']}) — 건너뛴다")
+        return 0
+
     stats = get_stats()
     print(f"서버 상태: mode={stats['mode']} · 동시성 권장 {stats['recommended_concurrency']} "
           f"· 대기 {stats['counts']['queued']}·처리중 {stats['counts']['processing']}")
 
     t0 = time.monotonic()
-    res = post_pdf(pdf, args.client_id)
-    job_id = res["job_id"]
-    print(f"제출: {pdf.name} → job {job_id} (cached={res['cached']})")
+    if prev.get("status") == "submitted":
+        job_id = prev["job_id"]
+        print(f"이어 받는다: {pdf.name} → job {job_id}")
+    else:
+        res = post_pdf(pdf, args.client_id)
+        job_id = res["job_id"]
+        print(f"제출: {pdf.name} → job {job_id} (cached={res['cached']})", flush=True)
+        jf.write_text(json.dumps(
+            {"job_id": job_id, "client_id": args.client_id, "status": "submitted"},
+            ensure_ascii=False, indent=1), encoding="utf-8")
 
     while True:
-        job = get_job(job_id)
+        try:
+            job = get_job(job_id)
+        except (urllib.error.URLError, TimeoutError, ConnectionError) as e:
+            print(f"  상태를 못 물었다 ({e}) — 다시 묻는다", flush=True)
+            time.sleep(args.poll_interval)
+            continue
         elapsed = time.monotonic() - t0
         print(f"  {elapsed:6.1f}s  {job['done_pages']}/{job['total_pages']} 쪽 "
-              f"({job['status']})")
+              f"({job['status']})", flush=True)
         if job["status"] in ("done", "done_with_errors", "failed"):
             break
         time.sleep(args.poll_interval)
