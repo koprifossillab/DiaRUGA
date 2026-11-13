@@ -72,10 +72,35 @@ FURNITURE = [
 PLATE_PAGE = re.compile(r'^\s*Plate\s+\d+\s*$', re.M)
 # 번호 뒤 마침표가 빠진 자리가 있다 (#177). `pl.` 이 붙어 있어 검색표 줄과 안 섞인다
 HEAD = re.compile(r'^\s*(\d{3})\.?\s*p[l!1][.,]?\s*(\d+)\s+(\S.*)$')
+# OCR — `p. 22`(l 이 빠짐) · 번호 뒤 `pl.` 자체가 없는 표제(`263. Rhizosolenia …`)도 있다.
+# 뒤엣것은 도판 쪽의 캡션과 모양이 같아서 **앞 항목 번호 + 1 일 때만** 표제로 본다
+HEAD_OCR = re.compile(r'^\s*(\d{3})\.?\s*p[l!1I]?[.,]?\s*(\d+)\s+(\S.*)$')
+HEAD_NOPL = re.compile(r'^\s*(\d{3})\.\s+([A-Z]\S*\s+\S.*)$')
 ECO = re.compile(r'^\s*생\s*태\s*[:：;]')
 DIST = re.compile(r'^\s*[분문][포토]\s*[:：;]')
 END = re.compile(r'채\s*집\s*되\s*었\s*다\s*[.,]?')
-FAMILY = re.compile(r'^\s*[<〈＜《]\s*[^<>]{2,20}\s*과\s*[>〉＞》]?\s*$')
+FAMILY = re.compile(r'^\s*[<〈＜《⟨]\s*[^<>]{2,20}\s*과\s*[>〉＞》⟩]?\s*$')
+FAMILY_OCR = re.compile(r'^\s*[<〈＜《⟨〔\[［]\s*[^<>〔〕\[\]]{2,20}\s*과\s*[>〉＞》⟩〕\]］]?\s*$')
+# OCR 쪽 — 라벨이 `〔생태〕:` `[분포] :` 로 대괄호에 싸여 있고, 글자는 곧잘 깨진다
+# (`[ầ錄]` · `【 Cree】` · `☆리썬 :` · `궤태:` · `〔문포]:`). 그래서 **글자가 아니라 자리**로
+# 본다: 기재문 다음의 첫 라벨은 생태, 그 다음은 분포. 분포는 글자가 읽히면 그것으로도 안다
+_SYM = '〔\\[［【☆※★◆■○◎●□▮▯▪◇'
+_C = r'〕\]］】'
+_BR = (rf'(?:[{_SYM}](?!\s*色\s*圖)(?![^{_C}\n]{{0,14}}과\s*[{_C}])\s*[^{_C}:：;\n]{{0,14}}?\s*(?:[{_C}]\s*[{_SYM}]?\s*[:：;]?|[{_SYM}]?\s*[:：;])'
+       rf'|[^\s:：;\n]{{1,8}}[{_C}]\s*[:：;]'          # 여는 괄호를 못 읽은 것 (`.mov] :`)
+       r'|\(\s*[^()\n]{1,6}\s*\)\s*[:：;])')
+_PLAIN = r'[^\s.:：;()\[\]〔〕]{1,6}(?:\s[^\s.:：;()\[\]〔〕]{1,6})?\s*[:：;]'
+OCR_LABEL = re.compile(rf'^\s*({_BR}|{_PLAIN})')
+OCR_DIST = re.compile(r'[분문][포토초]')
+OCR_ECO = re.compile(r'생\s*태')
+# 라벨이 줄 한가운데 있을 수 있다 (`… 한다. 생태: 이 종은 …`) — 거기서 끊는다.
+# 기호 없는 한글 라벨은 앞 문장이 마침표로 끝났을 때만 (`크기: ` 같은 본문을 안 자르려고)
+OCR_INLINE = re.compile(rf'(?:(?<=\S)\s+(?={_BR})|(?<=\S)\s+(?=(?:생\s*태|[분문][포토초])\s*[:：;])|(?<=[.)])\s+(?={_PLAIN}))')
+COLOR_PLATE = re.compile(r'^\s*[〔\[]\s*色\s*圖\s*[〕\]]\s*$')
+
+
+class Furn(str):
+    """OCR 의 Page-Header·Page-Footer 칸에서 온 줄 — 쪽 머리·꼬리다."""
 
 
 def pages_text() -> list[tuple[int, list[str]]]:
@@ -89,31 +114,75 @@ def pages_text() -> list[tuple[int, list[str]]]:
     return out
 
 
-_BLOCK = re.compile(r'</(?:p|div|li|h\d|tr|caption|table)\s*>|<br\s*/?>', re.I)
+_BLOCK = re.compile(r'</(?:p|div|li|h\d|tr|caption|table|ul|ol)\s*>|<br\s*/?>', re.I)
 _TAG = re.compile(r'<[^>]+>')
+_MATH = re.compile(r'<math>(.*?)</math>', re.S)
+# 서버가 숫자·단위를 LaTeX 로 적는다 (`10\text{ }\mu`, `5\sim 7`, `110^{\circ}`) — 이 말뜻만 푼다
+_TEX = [(re.compile(r'\\text\{([^{}]*)\}'), r'\1'), (re.compile(r'\^\{\\circ\}|\\circ'), '°'),
+        (re.compile(r'\\mu(?![a-z])'), 'μ'), (re.compile(r'\\sim(?![a-z])'), '~'),
+        (re.compile(r'\\langle(?![a-z])'), '〈'), (re.compile(r'\\rangle(?![a-z])'), '〉'),
+        (re.compile(r'\\[ ,;]'), ' ')]
+
+
+def tex_plain(m: re.Match) -> str:
+    t = m.group(1)
+    for rx, rep in _TEX:
+        t = rx.sub(rep, t)
+    return t
+_DIV = re.compile(r'<div\b[^>]*data-label="([^"]*)"[^>]*>(.*?)</div>(?=\s*(?:<div\b|$))', re.S)
+_HDR = ("Page-Header", "Page-Footer")
+
+
+def ocr_lines(html: str) -> list[str]:
+    """걷은 .html 한 쪽 → 줄. 칸(`div`)마다 끊고, 머리·꼬리 칸은 `Furn` 으로 표시한다.
+
+    바꾸는 것은 둘뿐이다: `<math>` 속 LaTeX 를 글자로 푼다(`\\mu`→`μ` 등 `_TEX`), 태그를 뗀다(+HTML 엔티티)."""
+    out: list[str] = []
+    pos = 0
+    for m in _DIV.finditer(html):
+        label, inner = m.group(1), _MATH.sub(tex_plain, m.group(2))
+        inner = htmllib.unescape(_TAG.sub("", _BLOCK.sub("\n", inner)))
+        cls = Furn if label in _HDR else str
+        out.extend(cls(x) for x in inner.split("\n"))
+        pos = m.end()
+    rest = html[pos:].strip()
+    if rest:  # div 로 안 싸인 꼬리가 있으면 버리지 않고 줄로 둔다
+        out.extend(htmllib.unescape(_TAG.sub("", _BLOCK.sub("\n", _MATH.sub(tex_plain, rest)))).split("\n"))
+    return out
 
 
 def pages_ocr() -> list[tuple[int, list[str]]]:
-    out = []
-    for f in sorted(OCR_DIR.glob("p[0-9][0-9][0-9][0-9].html")):
-        s = _BLOCK.sub("\n", f.read_text(encoding="utf-8"))
-        s = htmllib.unescape(_TAG.sub("", s))
-        out.append((int(f.stem[1:]), s.split("\n")))
-    return out
+    return [(int(f.stem[1:]), ocr_lines(f.read_text(encoding="utf-8")))
+            for f in sorted(OCR_DIR.glob("p[0-9][0-9][0-9][0-9].html"))]
 
 
 def squeeze(lines: list[str]) -> str:
     return re.sub(r'\s+', ' ', ' '.join(lines)).strip()
 
 
-def parse(pages: list[tuple[int, list[str]]]) -> dict:
+def split_inline(lines: list[str]):
+    """OCR 줄을 라벨 앞에서 자른다. 반환 `(조각, 글자 수)` — 끊는 자리의 공백은 조각에
+    안 남으므로 **뒤 조각이 그만큼을 더해서** 센다. 글자 수 대조가 그대로 성립한다."""
+    for x in lines:
+        cuts = [] if isinstance(x, Furn) or not x.strip() else list(OCR_INLINE.finditer(x))
+        if not cuts:
+            yield x, None
+            continue
+        starts = [0] + [m.end() for m in cuts]
+        ends = [m.start() for m in cuts] + [len(x)]
+        for i, (a, b) in enumerate(zip(starts, ends)):
+            piece = x[a:b]
+            yield piece, len(piece.strip()) + (cuts[i - 1].end() - cuts[i - 1].start() if i else 0)
+
+
+def parse(pages: list[tuple[int, list[str]]], ocr: bool = False) -> dict:
     front, plates, furniture, entries = [], [], [], []
     cur, part = None, None
     n_in = n_out = 0
 
-    def put(bucket: list, page: int, line: str):
+    def put(bucket: list, page: int, line: str, n: int | None = None):
         nonlocal n_out
-        n_out += len(line.strip())
+        n_out += len(line.strip()) if n is None else n
         bucket.append((page, line))
 
     for page, lines in pages:
@@ -124,39 +193,58 @@ def parse(pages: list[tuple[int, list[str]]]) -> dict:
                 if x.strip():
                     put(plates, page, x)
             continue
-        for x in lines:
+        for x, n_x in (split_inline(lines) if ocr else ((y, None) for y in lines)):
             if not x.strip():
                 continue
-            if any(r.match(x) for r in FURNITURE):
-                put(furniture, page, x)
+            if isinstance(x, Furn) or any(r.match(x) for r in FURNITURE):
+                put(furniture, page, x, n_x)
                 continue
-            m = HEAD.match(x)
-            if m:
-                cur = {"item_no": m.group(1), "plate": int(m.group(2)),
-                       "name_raw": m.group(3).strip(), "pdf_page": page,
+            m = (HEAD_OCR if ocr else HEAD).match(x)
+            nopl = None
+            if ocr and not m and entries and part is not None:
+                nopl = HEAD_NOPL.match(x)
+                if nopl and int(nopl.group(1)) != int(entries[-1]["item_no"]) + 1:
+                    nopl = None
+            if m or nopl:
+                mm = m or nopl
+                cur = {"item_no": mm.group(1), "plate": int(m.group(2)) if m else None,
+                       "name_raw": (m.group(3) if m else nopl.group(2)).strip(), "pdf_page": page,
                        "name_more": [], "family": [], "description": [], "ecology": [],
                        "distribution": [], "after": []}
                 entries.append(cur)
                 part = "description"
-                n_out += len(x.strip())
+                n_out += len(x.strip()) if n_x is None else n_x
                 cur["head_raw"] = x.strip()
                 continue
             if cur is None:
-                put(front, page, x)
+                put(front, page, x, n_x)
                 continue
             # 과 이름표는 표제 바로 아래에 온다. 그 사이에 낀 한두 줄은 **이름이
             # 길어 넘어온 줄**이다 (`subsp. subarctica O. F. MÜLLER`) — 기재가 아니다
-            if part == "description" and not cur["family"] and FAMILY.match(x) \
+            if part == "description" and not cur["family"] and (FAMILY_OCR if ocr else FAMILY).match(x) \
                     and len(cur["description"]) <= 2:
-                cur["name_more"].extend(cur["description"])
-                cur["description"].clear()
-                put(cur["family"], page, x)
+                # `[色圖]`(원색 도판 표시)만 있는 줄은 OCR 에서는 기재문 쪽에 둔다.
+                # 텍스트 레이어 쪽은 이미 낸 산출(312항목)이 그것을 이름 쪽에 넣어
+                # 두었고 그 결과를 바꾸지 않는다 (257 — 사람이 정할 일, 보고서)
+                keep = [(p, y) for p, y in cur["description"] if ocr and COLOR_PLATE.match(y)]
+                cur["name_more"].extend(t for t in cur["description"] if t not in keep)
+                cur["description"][:] = keep
+                put(cur["family"], page, x, n_x)
                 continue
-            if part in ("description", "ecology") and ECO.match(x):
+            lab = OCR_LABEL.match(x) if ocr else None
+            if ocr and part in ("description", "ecology") and lab:
+                txt = lab.group(1)
+                if OCR_DIST.search(txt) and (part == "ecology" or END.search(x)):
+                    part = "distribution"
+                elif OCR_ECO.search(txt):
+                    part = "ecology"
+                else:  # 못 읽은 라벨 — 자리로 안다
+                    part = "distribution" if part == "ecology" else "ecology"
+            elif not ocr and part in ("description", "ecology") and ECO.match(x):
                 part = "ecology"
-            elif part in ("description", "ecology") and DIST.match(x):
+            elif not ocr and part in ("description", "ecology") and DIST.match(x):
                 part = "distribution"
-            put(cur[part], page, x)
+            put(cur[part], page, x, n_x)
             if part == "distribution" and END.search(x):
                 part = "after"
 
@@ -222,7 +310,7 @@ def main() -> int:
     pages = pages_text() if args.source == "text" else pages_ocr()
     if not pages:
         raise SystemExit(f"읽을 쪽이 없다 ({args.source})")
-    d = parse(pages)
+    d = parse(pages, ocr=args.source == "ocr")
     d = {"atlas": "korean", "source": args.source, "pages_read": len(pages), **d}
     report(d, json.loads(INDEX.read_text(encoding="utf-8")))
     if not args.dry_run:
