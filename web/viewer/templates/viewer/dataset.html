@@ -43,12 +43,18 @@
     `오프라인 결과 올리기` 는 P25 의 되돌려 넣는 자리다. **꺼내는 것은 여기서 안
     간다** — 검토 화면과 개체 카탈로그 안에 있다(범위를 고르는 일은 그 화면에서
     하는 일이다).
+
+    **`계측 표` 를 걷었다** (P34 · 2026-11-13 · 사용자: "사람이 봐도 이해할 수
+    없어서 의미가 없다"). 개체마다 면적·지표가 늘어선 표라 사람이 읽고 판단할
+    거리가 아니다. **주소 `/d/<slug>/detections/` 와 뷰는 그대로 산다** — 주소를
+    치면 열린다(문턱 조정 링크를 걷을 때와 같다, 2026-08-08). 카탈로그·크롭의
+    머리줄에서도 함께 걷었다 — 한 곳만 남기면 걷은 것이 아니다. 그 자리는 산출표
+    (P34 의 다음 단계)가 받는다.
   {% endcomment %}
   <nav class="pagebtns" aria-label="이 슬라이드의 다른 화면">
     <span class="pbgroup">
       <a class="pbtn" href="{% url 'crops' slug %}">검출 결과만 보기</a>
       <a class="pbtn" href="{% url 'catalog' slug %}">개체 카탈로그</a>
-      <a class="pbtn" href="{% url 'detections' slug %}">계측 표</a>
     </span>
     <span class="pbgroup">
       <a class="pbtn sub" href="{% url 'dataset_edit' slug %}">슬라이드 정보 편집</a>

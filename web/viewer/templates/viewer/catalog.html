@@ -7,7 +7,7 @@
 {% block nav %}
   <a href="{% url 'dataset' slug %}">그룹 목록</a>
   <a href="{% url 'crops' slug %}">검출 결과</a>
-  <a href="{% url 'detections' slug %}">계측 표</a>
+  {% comment %}`계측 표` 는 걷었다 (P34) — 까닭은 dataset.html 의 제목 줄 주석{% endcomment %}
 {% endblock %}
 
 {% block content %}

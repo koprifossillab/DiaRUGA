@@ -116,7 +116,8 @@ class TopNavTest(DiaRUGATestCase):
 class DatasetPageLinksTest(DiaRUGATestCase):
     """시야 목록의 **다른 각도로 보는 길 셋** (사용자 요청 2026-08-08).
 
-    `검출 결과만 보기` · `계측 표` · `정보 편집` 이 제목 줄 오른쪽에 함께 놓인다.
+    `검출 결과만 보기` · `개체 카탈로그` · `정보 편집` 이 제목 줄 오른쪽에 함께 놓인다
+    (`계측 표` 는 P34 에서 걷었다).
     예전에는 앞의 둘이 머리줄 띠에, `정보 편집` 은 본문 문단 한가운데 있었다 —
     **흩어져 있으면 세 번째가 있는 줄도 모른다.**
     """
@@ -138,9 +139,27 @@ class DatasetPageLinksTest(DiaRUGATestCase):
         block = m.group(0)
         # **시야 목록에서만 "슬라이드" 를 붙인다** (사용자 요청) — 옆의 둘과
         # 달리 `정보 편집` 은 목적어가 없어 무엇을 고치는지 안 읽힌다.
-        for label in ("검출 결과만 보기", "계측 표", "슬라이드 정보 편집"):
+        for label in ("검출 결과만 보기", "개체 카탈로그", "슬라이드 정보 편집"):
             with self.subTest(링크=label):
                 self.assertIn(label, block, f"{label} 이 제목 줄에 없다")
+
+    def test_계측_표로_가는_링크가_없다(self):
+        """**`계측 표` 를 걷었다** (P34 · 사용자 2026-11-13). 링크가 세 화면에
+        있었다 — 시야 목록 제목 줄 · 카탈로그와 크롭의 머리줄. 한 곳만 남으면
+        걷은 것이 아니다. **주소로 본다** — 글자 `계측 표` 는 `base.html` 의 CSS
+        주석에도 남아 있어 페이지를 글자로 뒤지면 엉뚱한 데가 걸린다(088).
+
+        **주소 자체는 산다** — 문턱 조정 링크를 걷을 때(2026-08-08)와 같다."""
+        slug = self.w.slide.slug
+        target = reverse("detections", args=[slug])
+        for name, url in (("시야 목록", reverse("dataset", args=[slug])),
+                          ("카탈로그", reverse("catalog", args=[slug])),
+                          ("크롭", reverse("crops", args=[slug]))):
+            with self.subTest(화면=name):
+                html = self.c.get(url).content.decode()
+                self.assertNotIn(f'href="{target}"', html,
+                                 f"{name} 에 계측 표 링크가 남아 있다")
+        self.assertEqual(self.c.get(target).status_code, 200)
 
     def test_머리줄_띠는_비었다(self):
         """올라가 있던 둘을 내렸다 — 두 자리에 있으면 어느 쪽이 정본인지 묻게 된다."""

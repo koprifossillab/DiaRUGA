@@ -6,7 +6,7 @@
   {{ total }}개{% if shown_to %} 중 {{ shown_from }}~{{ shown_to }}{% endif %}{% endblock %}
 {% block nav %}
   <a href="{% url 'dataset' slug %}">그룹 목록</a>
-  <a href="{% url 'detections' slug %}">계측 표</a>
+  {% comment %}`계측 표` 는 걷었다 (P34) — 까닭은 dataset.html 의 제목 줄 주석{% endcomment %}
   <a href="{% url 'catalog' slug %}">개체 카탈로그</a>
 {% endblock %}
 
