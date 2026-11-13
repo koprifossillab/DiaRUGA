@@ -24,6 +24,12 @@
   트랜잭션을 되돌린다. 1단계도 같은 자리를 검산한다 — 조용히 틀리는 것을
   두 겹으로 막는다
 
+- **기재문은 따로 실려 와 여기서 얹힌다** (257). `atlas/descriptions/<도감>.json`
+  이 있으면 그 도감 항목의 `extra` 에 `description`(OCR)·`description_text`
+  (텍스트 레이어)를 얹는다. 색인 JSON 은 `parse_atlas.py` 가 md 에서 다시 뽑는
+  것이라 거기 적으면 다음에 뽑을 때 사라진다. **`seq` 와 표제어가 둘 다 맞아야
+  얹는다** — 어긋나면 되돌린다
+
 ## 함정
 
 - **`AtlasEntry` 에 FK 를 매달지 말 것.** 이 스크립트가 도는 순간 그 행들이
@@ -74,6 +80,46 @@ def load(path: Path) -> dict:
     if "atlas" not in doc or "entries" not in doc:
         raise SystemExit(f"{path.name}: 도감 JSON 이 아니다")
     return doc
+
+
+def load_descriptions(path: Path) -> dict | None:
+    """기재문 사본(`<src>/descriptions/<도감>.json`). 없으면 `None`."""
+    if not path.exists():
+        return None
+    doc = json.loads(path.read_text(encoding="utf-8"))
+    if "atlas" not in doc or "entries" not in doc:
+        raise SystemExit(f"{path}: 기재문 JSON 이 아니다")
+    return doc
+
+
+# 기재문 사본에서 `extra` 로 옮기는 칸. **색인 JSON 이 든 칸과 이름이 안 겹친다**
+DESC_KEYS = ("description", "description_text", "description_source")
+
+
+def merge_descriptions(doc: dict, desc: dict) -> tuple[int, list[str]]:
+    """기재문을 항목의 `extra` 에 얹는다 (257). **색인 JSON 은 안 고친다** —
+    `doc` 은 읽어 들인 사본이고, 얹는 자리는 여기 하나뿐이다.
+
+    열쇠는 `seq` 이고 **표제어를 함께 대조한다** — 색인을 다시 뽑아 `seq` 가
+    밀리면 기재문이 옆 종에 붙는데, 그것은 예외 없이 그냥 틀린 화면이 된다.
+    """
+    bad, n = [], 0
+    by_seq = {e["seq"]: e for e in doc["entries"]}
+    for d in desc["entries"]:
+        e = by_seq.get(d["seq"])
+        if e is None:
+            bad.append(f"기재문: seq {d['seq']} 가 색인에 없다")
+            continue
+        if d.get("name") != e["name"]:
+            bad.append(f"기재문: seq {d['seq']} 의 표제어가 다르다 "
+                       f"({d.get('name')!r} ↔ {e['name']!r})")
+            continue
+        got = {k: d[k] for k in DESC_KEYS if d.get(k)}
+        if not got.get("description") and not got.get("description_text"):
+            continue
+        e["extra"] = {**(e.get("extra") or {}), **got}
+        n += 1
+    return n, bad
 
 
 def put(doc: dict, order: int) -> tuple[Atlas, int, int]:
@@ -132,7 +178,10 @@ def main() -> int:
     ap.add_argument("--src", type=Path, default=SRC, help="도감 JSON 이 있는 자리")
     ap.add_argument("--only", help="도감 코드 하나만")
     ap.add_argument("--dry-run", action="store_true", help="넣고 되돌린다")
+    ap.add_argument("--descriptions", type=Path, default=None,
+                    help="기재문 JSON 이 있는 자리 (기본: <src>/descriptions)")
     args = ap.parse_args()
+    desc_dir = args.descriptions or (args.src / "descriptions")
 
     files = sorted(args.src.glob("*.json"))
     if args.only:
@@ -146,10 +195,16 @@ def main() -> int:
     failed = False
     for order, path in enumerate(files):
         doc = load(path)
+        desc = load_descriptions(desc_dir / path.name)
+        nd, dbad = merge_descriptions(doc, desc) if desc else (0, [])
         try:
             with transaction.atomic():
                 atlas, ne, np_ = put(doc, order)
-                bad = verify(atlas, doc)
+                bad = dbad + verify(atlas, doc)
+                got_d = sum(1 for x in atlas.entries.values_list("extra", flat=True)
+                            if x.get("description") or x.get("description_text"))
+                if got_d != nd:
+                    bad.append(f"기재문: 얹은 것은 {nd} 인데 DB 는 {got_d}")
                 if bad or args.dry_run:
                     raise _Rollback(bad)
         except _Rollback as r:
@@ -163,6 +218,8 @@ def main() -> int:
             continue
         print(f"\n{atlas.short} — 항목 {ne} · 자리 {np_}")
         print(f"  ✓ JSON 과 맞는다  ({path.name} · {doc['atlas']['source_sha256'][:12]})")
+        if desc:
+            print(f"  ✓ 기재문 {nd}  ({desc_dir.name}/{path.name})")
 
     if failed:
         print("\n반입이 어긋났다.", file=sys.stderr)

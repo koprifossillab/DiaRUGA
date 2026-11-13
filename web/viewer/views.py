@@ -2035,6 +2035,8 @@ def atlas_compare(request):
         "biodatums": any(r["biodatums"] for r in rows),
         **{k: any(r["extra"].get(k) for r in rows)
            for k in ("ecology", "distribution", "original_note")},
+        "description": any(r["extra"].get("description")
+                           or r["extra"].get("description_text") for r in rows),
     }
     return render(request, "viewer/atlas_compare.html", {
         "rows": rows, "has": has, "missing": got["missing"], "over": got["over"],
