@@ -23,6 +23,14 @@
 
 ## 뷰어
 
+### `v0.40.5` — 11-13 (마이그레이션 없음 · 파이프라인은 안 굽는다 · 배포 뒤 `import_atlas.py`)
+
+**도감 항목에 기재문을 얹었다 — 한국 도감 510항목** ([257](devlog/20261113_257_atlas-descriptions.md))
+
+- 도감 목록의 항목마다 접힌 **「기재」** 칸, 비교 화면에 「기재」 줄. OCR 이 읽은 것과 PDF 텍스트 레이어를 나란히 내고 **기계가 읽은 원문임을 화면이 말한다** — 고쳐 쓰지 않았다
+- 기재문은 `atlas/descriptions/<도감>.json` 으로 따로 실려 가 `import_atlas.py` 가 `extra` 에 얹는다. `seq` 와 표제어가 둘 다 맞아야 얹는다
+- 도구: `tools/ocr_pdf.py`(끊긴 job 이어 받기) · `parse_descriptions.py` · `merge_descriptions.py` · `build_atlas_descriptions.py`
+
 ### `v0.40.4` — 11-12 (마이그레이션 없음 · 파이프라인은 안 굽는다 · 15:58 배포 · 뒤처리 없음)
 
 **카탈로그의 거르개 줄을 다시 짰다** ([255](devlog/20261112_255_catalog-filter-row.md))
