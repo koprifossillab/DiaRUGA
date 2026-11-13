@@ -126,3 +126,35 @@ class RealDescriptionScreenTest(DiaRUGATestCase):
     def test_논문의_긴_기재가_잘리지_않고_나온다(self):
         x, _ = self._longest("1985-akiba-yanagisawa")
         self.assertGreater(len(x["description"]), 3000)
+
+
+class DryRunReportTest(DiaRUGATestCase):
+    """`--dry-run` 도 기재문 수를 말한다 — 운영 반입 전에 그 수를 대조한다."""
+
+    def test_dry_run_이_기재문_수를_찍는다(self):
+        import contextlib
+        import io
+        import sys
+        import tempfile
+        from pathlib import Path
+
+        mod = _load("import_atlas")
+        with tempfile.TemporaryDirectory() as t:
+            src = Path(t)
+            (src / "descriptions").mkdir()
+            d = doc([entry(1, "Melosira ambigua", "Melosira")])
+            (src / "test-atlas.json").write_text(json.dumps(d), encoding="utf-8")
+            (src / "descriptions" / "test-atlas.json").write_text(json.dumps(desc(
+                (1, "Melosira ambigua", {"description": "세포는 원통상이다."}))), encoding="utf-8")
+            out = io.StringIO()
+            argv = sys.argv
+            sys.argv = ["import_atlas.py", "--src", str(src), "--dry-run"]
+            try:
+                with contextlib.redirect_stdout(out):
+                    rc = mod.main()
+            finally:
+                sys.argv = argv
+        self.assertEqual(rc, 0)
+        self.assertIn("(되돌렸다)", out.getvalue())
+        self.assertIn("✓ 기재문 1", out.getvalue())
+        self.assertFalse(AtlasEntry.objects.exists())

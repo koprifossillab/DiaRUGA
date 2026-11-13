@@ -215,6 +215,9 @@ def main() -> int:
                     print(f"  ✗ {b}")
                 continue
             print(f"\n{doc['atlas']['short']} — 항목 {ne} · 자리 {np_} (되돌렸다)")
+            # 넣어 보고 맞춘 수다 — 실제 반입 전에 사본이 몇 항목에 얹히는지 본다
+            if desc:
+                print(f"  ✓ 기재문 {nd}  ({desc_dir.name}/{path.name})")
             continue
         print(f"\n{atlas.short} — 항목 {ne} · 자리 {np_}")
         print(f"  ✓ JSON 과 맞는다  ({path.name} · {doc['atlas']['source_sha256'][:12]})")
