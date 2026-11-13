@@ -285,7 +285,10 @@ class TallyPlotTest(DiaRUGATestCase):
     def test_고른_것이_없으면_전역_기본(self):
         ps = self.panels(self.client.get(self.url()).content.decode())
         self.assertEqual(len(ps), len(tally.DEFAULT_TAXA) + 2)
-        self.assertEqual(ps[-3][2][:3], "CRS")          # 기본 여섯의 끝이 CRS
+        # 기본 여섯의 끝이 CRS — 이름은 `ClassDef.short` 다(운영은 `CRS`, 시험
+        # 자료는 다른 약칭이라 글자를 박지 않고 그 칸에서 읽는다)
+        want = tally.taxon_label("cls:chaetoceros")["name"]
+        self.assertTrue(ps[-3][2].startswith(want), ps[-3])
 
     def test_점은_분모가_있는_시료에만(self):
         ps = self.panels(self.client.get(
