@@ -7,6 +7,8 @@
 """
 import json
 
+from django.utils.html import escape
+
 from viewer.models import AtlasEntry
 
 from .base import DiaRUGATestCase
@@ -89,3 +91,38 @@ class DescriptionScreenTest(DiaRUGATestCase):
         r = self.client.get("/atlas/compare/", {"e": ks})
         self.assertEqual(r.status_code, 200)
         self.assertIn("세포는 원통상(圓筒狀)이다.", r.content.decode())
+
+
+class RealDescriptionScreenTest(DiaRUGATestCase):
+    """저장소의 기재문을 **그대로** 반입해 화면에 낸다 (257 · Schmidt·논문).
+
+    Schmidt 는 한 항목에 자리가 여럿이면 `Taf. N, Fig. x: …` 를 ` ／ ` 로 잇고,
+    1985 논문은 한 항목이 5천 자를 넘는다. 합성 자료로는 그 모양이 안 나온다.
+    """
+
+    def _put(self, stem):
+        mod = _load("import_atlas")
+        d = json.loads((_ROOT / "atlas" / f"{stem}.json").read_text(encoding="utf-8"))
+        ds = mod.load_descriptions(_ROOT / "atlas" / "descriptions" / f"{stem}.json")
+        n, bad = mod.merge_descriptions(d, ds)
+        self.assertEqual(bad, [])
+        mod.put(d, 0)
+        return ds["entries"]
+
+    def _longest(self, stem, pred=lambda x: True):
+        ents = self._put(stem)
+        x = max((x for x in ents if pred(x)), key=lambda x: len(x["description"]))
+        r = self.client.get("/atlas/", {"q": x["name"]})
+        self.assertEqual(r.status_code, 200)
+        body = r.content.decode()
+        self.assertIn(escape(x["description"]), body)
+        return x, body
+
+    def test_Schmidt_의_여러_자리_해설이_한_칸에_나온다(self):
+        x, body = self._longest("schmidt", lambda x: " ／ " in x["description"])
+        self.assertIn("Taf. ", x["description"])
+        self.assertIn("기계가 읽은 원문", body)
+
+    def test_논문의_긴_기재가_잘리지_않고_나온다(self):
+        x, _ = self._longest("1985-akiba-yanagisawa")
+        self.assertGreater(len(x["description"]), 3000)

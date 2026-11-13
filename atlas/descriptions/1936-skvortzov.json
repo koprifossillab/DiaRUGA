@@ -1,0 +1,270 @@
+{
+ "atlas": "1936-skvortzov",
+ "source": "Diadiction/outputs/descriptions/papers/1936_skvortzov_ampen_neogene.json (tools/parse_descriptions_papers.py)",
+ "entries": [
+  {
+   "seq": 1,
+   "name": "Melosira ambigua (Grun.) O. Mull. status B.",
+   "description": "Melosira ambigua (Grun.) O. Mull. status B. Plate 1, figs. 1, 2. Melosira ambigua (Grun.) O. Mull, status B. Fr. Hustedt, Bacillar. (1930) 89-91, fig. 49. Frustule cylindrical with distinct sulkus and pseudosulkus. Discus round, articulate at the junction of the frustules. Frustule cell-wall with coarse fine puncta in longitudinal oblique rows. Height of the frustule 0.017mm; breadth 0.01mm. Longitudinal rows 24; puncta 28-30 in 0.01mm. Uncommon. A plankton diatom known in fresh-water moors and lakes.",
+   "description_source": "OCR (1936_skvortzov_ampen_neogene · 항목 005 · PDF p.13)"
+  },
+  {
+   "seq": 2,
+   "name": "Melosira distans (Ehr.) Kutz.",
+   "description": "Melosira distans (Ehr.) Kutz. Plate 1, fig. 3. Melosira distans (Ehr.) Kutz., Fr. Hustedt, Bacillar. (1930) 92-93, fig. 53. Frustule compact, short, barrel-forming with distinct pseudosulkus and sulkus. Kollum broad. Frustule cell-wall with fine, oblique lines of small puncta. Frustule height 0.06mm; breadth 0.015mm. Striae 12; puncta in rows 15 in 0.01mm. Uncommon. Reported as recent from bogs, swamps and moors of mountain districts.",
+   "description_source": "OCR (1936_skvortzov_ampen_neogene · 항목 004 · PDF p.13)"
+  },
+  {
+   "seq": 3,
+   "name": "Melosira varians C. A. Ag. Auxospore",
+   "description": "Melosira varians C. A. Ag. Plate 1, figs. 4, 9, 16, 26. Melosira varians C. A. Ag., Fr. Hustedt, Bacillar. (1930 85-86, fig. 41b. Frustule cylindrical with indistinct sulkus and almost hyaline cell-wall. Auxospores semi-circular, large, 2-3 times broader than the frustule with two prolongations from the both ends. Auxospore cell-wall very fine punctate. Auxospore breadth, 0.02 to 0.034mm. Frustule rare, but auxospores very common. Melosira varians is a fresh-water species, common in rivers and lakes.",
+   "description_source": "OCR (1936_skvortzov_ampen_neogene · 항목 001 · PDF p.12)"
+  },
+  {
+   "seq": 4,
+   "name": "Tetracyclus emarginatus (Ehr.) W. Smith",
+   "description": "Tetracyclus emarginatus (Ehr.) W. Smith. Plate 1, figs. 5, 10, 17. Tetracyclus emarginatus (Ehr.) W. Smith, A. Schmidt, Atlas Diatom. (1912) taf. 281, figs. 5-8; taf. 282, fig. 3. Valve elliptical-rhombic, undulate from the both sides. Undulations constricted in the middle. Ends subcapitate. Transverse striae robuste, 4-5 in 0.01 mm. Length 0.02 to 0.023mm; breadth 0.015mm. Infrequent. Reported from Sendai as fresh-water fossil of Neogene age.",
+   "description_source": "OCR (1936_skvortzov_ampen_neogene · 항목 008 · PDF p.14)"
+  },
+  {
+   "seq": 5,
+   "name": "Diatoma anceps (Ehr.) Grun.",
+   "description": "Diatoma anceps (Ehr.) Grun. Plate 1, fig. 6. Diatoma anceps (Ehr.) Grun., Fr. Hustedt, Bacillar. (1930) 130, fig. 117. Valve narrow-linear with slightly attenuate and subcapitate ends. Length 0.017mm; breadth 0.0038mm. Transverse striae 18 in 0.01mm. Differs from var. producta Grun. in its valves more narrow and attenuate towards the ends. Rare. Known in streams of mountain regions.",
+   "description_source": "OCR (1936_skvortzov_ampen_neogene · 항목 011 · PDF p.14)"
+  },
+  {
+   "seq": 7,
+   "name": "Melosira granulata (Ehr.) Ralfs status y.",
+   "description": "Melosira granulata (Ehr.) Ralfs status y. Plate 1, fig. 8. Melosira granulata (Ehr.) Ralfs status y. Fr. Hustedt, Bacillar. (1930) 88. Frustule cylindrical with distinct pseudosulkus and sulkus. Frustule cell-wall with fine puncta in longitudinal oblique rows. Frustule height 0.0085mm; breadth 0.007mm. Striae 15, puncta 16-17 in 0.01mm. Rare. A plankton diatom common in fresh-water basins.",
+   "description_source": "OCR (1936_skvortzov_ampen_neogene · 항목 002 · PDF p.12)"
+  },
+  {
+   "seq": 9,
+   "name": "Eunotia monodon Ehr. var. koreana var. nov. fo. undulata fo. nov.",
+   "description": "| Eunotia monodon Ehr. var. koreana var. nov. fo. undulata fo. nov. Plate 1, figs. 12, 23, 24. Valve slightly undulate at the dorsal margin and with moderate ventral inflation. Length 0.047-0.056mm; breadth 0.0085-0.01mm. Striae 8-9 in 0.01mm. Differs from var. koreana in undulate valves. Infrequent.",
+   "description_source": "OCR (1936_skvortzov_ampen_neogene · 항목 035 · PDF p.19)"
+  },
+  {
+   "seq": 10,
+   "name": "Eunotia monodon Ehr. var. koreana var. nov.",
+   "description": "| Eunotia monodon Ehr. var. koreana var. nov. Plate 1, figs. 13, 14, 19?, 20, 30, 33. Valve slightly curveate, moderately arcuate at the dorsal margin and slightly constricted. Pseudoraphe distinct. Length 0.019-0.034mm; breadth 0.0068-0.0085mm. Striae 8-12 in 0.01mm. Differs from the type in its more narrow valves and broad rounded, not capitate ends. Very common.",
+   "description_source": "OCR (1936_skvortzov_ampen_neogene · 항목 034 · PDF p.19)"
+  },
+  {
+   "seq": 11,
+   "name": "Eunotia kocheliensis O. Mull.",
+   "description": "Eunotia kocheliensis O. Mull. Plate 1, fig. 15. Eunotia kocheliensis O. Mull., Fr. Hustedt, Bacillar. (1930) 182, fig. 244. Valve short sublittical, arcuate with almost straight ventral margin. Striae radiate from both sides. Terminal nodules distinct. Pseudoraphe very narrow near the ventral margin. Rare. Known from fresh-water Lake Kochel, Germany.",
+   "description_source": "OCR (1936_skvortzov_ampen_neogene · 항목 028 · PDF p.18)"
+  },
+  {
+   "seq": 12,
+   "name": "Gomphonema vastum Hust. var. elongata Skv.",
+   "description": "Gomphonema vastum Hust. var. elongata Skv. Plate 1, fig. 18. Gomphonema vastum Hust. var. elongata Skvortzov, Diatoms from Kizaki Lake pl. 13, figs. 33, 40. Valve lanceolate-clavate with long attenuate apex and basis. Striae marginal, slightly radiate, 15 in 0.01mm. Isolated puncta distinct. Axial and central area broad lanceolate. Median line filiform. Length 0.037mm; breadth 0.0068mm. Rare. Known from Kizaki Lake, Nippon.",
+   "description_source": "OCR (1936_skvortzov_ampen_neogene · 항목 096 · PDF p.34)"
+  },
+  {
+   "seq": 13,
+   "name": "Eunotia monodon Ehr. var. koreana var. nov.?",
+   "description": "| Eunotia monodon Ehr. var. koreana var. nov. Plate 1, figs. 13, 14, 19?, 20, 30, 33. Valve slightly curveate, moderately arcuate at the dorsal margin and slightly constricted. Pseudoraphe distinct. Length 0.019-0.034mm; breadth 0.0068-0.0085mm. Striae 8-12 in 0.01mm. Differs from the type in its more narrow valves and broad rounded, not capitate ends. Very common.",
+   "description_source": "OCR (1936_skvortzov_ampen_neogene · 항목 034 · PDF p.19)"
+  },
+  {
+   "seq": 14,
+   "name": "Achnanthes koreana sp. nov.",
+   "description": "Achnanthes koreana sp. nov. Plate 1, fig. 22. Valve lanceolate with attenuate and subacute ends. Upper valve with radiate, robust striae. Striae 12 in 0.01mm, forming in the middle part an unilateral stauros. Axial area narrow linear. Lower valve not seen. Length 0.02mm; breadth 0.005mm. Striae 12 in 0.01mm. Infrequent. A distinct species akin to Achnanthes hungarica Grun.",
+   "description_source": "OCR (1936_skvortzov_ampen_neogene · 항목 037 · PDF p.20)"
+  },
+  {
+   "seq": 15,
+   "name": "Eunotia monodon Ehr. var. asiatica var. nov.",
+   "description": "| Eunotia monodon Ehr. var asiatica var. nov. Plate 1, figs. 25, 35; Plate 2, fig. 7; Plate 3, fig. 1. Eunotia majior var. asiatica Skvortzov, Alpine Diatoms from South China (1929) 40, pl. 2, fig. 11; Eunotia major var.? in Skvortzov, Die Bacillar. des Hankasees (1929) 43, tab. 1, fig. 36. Valve linear or slightly curveate in the middle part with ventral and dorsal inflation. End subcapitate. Length 0.028 to 0.105mm; breadth 0.005-0.007mm. Striae 9-11 in 0.01mm. Differs from var. major in gibbous valve. Common. Known from Foochow, South China and Hanka Lake, Maritime Province of Siberia.",
+   "description_source": "OCR (1936_skvortzov_ampen_neogene · 항목 033 · PDF p.19)"
+  },
+  {
+   "seq": 16,
+   "name": "Navicula mutica Kutz. var. fossilis var. nov.",
+   "description": "Navicula mutica Kutz. var. fossilis var. nov. Plate 1, fig. 27; Plate 3, fig. 8. Differs from the type in its long-attenuate and rostrate ends and by striae forming longitudinal rows from both sides of the valve. Length 0.02-0.047mm; breadth 0.006-0.011mm. Striae 15-18 in 0.01mm. Infrequent.",
+   "description_source": "OCR (1936_skvortzov_ampen_neogene · 항목 050 · PDF p.23)"
+  },
+  {
+   "seq": 17,
+   "name": "Navicula mutica Kutz. var. Chonii (Hilse) Grun. forma",
+   "description": "Navicula mutica Kutz. var. Chonii (Hilse) Grun. forma. Plate 1, fig. 28. Navicula mutica Kutz. var. Chonii (Hilse) Grun., Fr. Hustedt, Bacillar. (1930) 275, fig. 453b. Valve broad elliptical with broad ends. Length 0.01mm; breadth 0.005mm. Striae 18 in 0.01mm. Median line more distinct at the ends. Isolated puncta distinct. Rare.",
+   "description_source": "OCR (1936_skvortzov_ampen_neogene · 항목 049 · PDF p.23)"
+  },
+  {
+   "seq": 18,
+   "name": "Gomphonema lanceolatum Ehr. var. insignis (Greg.) Cleve",
+   "description": "Gomphonema lanceolatum Ehr. var. insignis (Greg.) Cleve. Plate 1, fig. 29. Gomphonema lanceolatum Ehr. var. insignis (Greg.) Cleve, A. Schmidt, Atlas Diatom. (1902) taf. 237, figs. 20, 29. Valve lanceolate-clavate tapering from the middle towards the subacute ends. Striae radiate, 12 in 0.01mm. Isolated puncta distinct. Length 0.027mm; breadth 0.006mm. Infrequent. Known from fresh-water.",
+   "description_source": "OCR (1936_skvortzov_ampen_neogene · 항목 092 · PDF p.33)"
+  },
+  {
+   "seq": 19,
+   "name": "Eunotia praerupta Ehr.",
+   "description": "Eunotia praerupta Ehr. Plate 1, figs. 31, 37; Plate 2, figs. 12, 17. Eunotia praerupta Ehr., Fr. Hustedt, Bacillar (1930) 174, fig. 211. Valve lunate, arcuate with recurved ends. Pseudo-nodules distinct. Striae robuste, composed of very small puncta. Length 0.02-0.04mm; breadth 0.006-0.0085mm. Common. Known in marshes and lakes. A fresh-water species.",
+   "description_source": "OCR (1936_skvortzov_ampen_neogene · 항목 024 · PDF p.17)"
+  },
+  {
+   "seq": 20,
+   "name": "Eunotia holoturia sp. nov.",
+   "description": "Eunotia holoturia sp. nov. Plate 1, figs. 32, 34; Plate 2, fig. 18. Valve broad, slightly lunate, arcuate, with two undulations on the dorsal margin. Striae radiate at the ends. Between long striae in the middle part of the dorsal margin are shortened marginal striae. Pseudoraphe distinct. Length 0.02-0.037mm; breadth 0.011-0.012mm. Striae 11-12 in 0.01mm. Common. Differs from Eunotia zygodon Ehr. (see A. Schmidt, Atlas Diatom. (1913) taf. 289, figs. 16-18; taf. 287, figs. 4-5.) in more rounded ends, more elevated dorsal side and by presense of pseudoraphe.",
+   "description_source": "OCR (1936_skvortzov_ampen_neogene · 항목 030 · PDF p.18)"
+  },
+  {
+   "seq": 21,
+   "name": "Eunotia pectinalis (Kutz.) Rabh.",
+   "description": "Eunotia pectinalis (Kutz.) Rabh. Plate 1, fig. 36. Eunotia pectinalis (Kutz.) Rabh., Fr. Hustedt, Bacillar. (1930) 180-181, fig. 237. Valve slightly lunate with subrostrate broad rounded ends. Length 0.056mm; breadth 0.0076mm. Striae 9 in 0.01mm. Uncommon. A fresh-water species.",
+   "description_source": "OCR (1936_skvortzov_ampen_neogene · 항목 027 · PDF p.17–18)"
+  },
+  {
+   "seq": 22,
+   "name": "Navicula koreana sp. nov.",
+   "description": "Navicula koreana sp. nov. Plate 2, fig. 1. Navicula lanceolata (Ag.) Kutz. var. koreana Skvortzov, Diatoms from Korea (1929) 286, pl. 1, fig. 14. Valve elliptical-lanceolate, gradually tapering to the subacute ends. Axial and central area narrow lanceolate. Striae radiate, distinctly punctate, 9 in 0.01, 15 at the ends. Length 0.093mm; breadth 0.018mm. A form in craticular state of 0.1mm. in length and 0.02 in breadth was also observed. Differs from Navicula cuspidata var. Heribaudi Peraglio, J. Heribaud, Les Diatom. d'Auvergne (1893) pl. 4, fig. 16 in its elongate not subrostrate ends. From Navicula cuspidata var. Heribaudi Peraglio in Fr. Hustedt, Bacillar. (1930) 268, fig. 435 our specimens differ having only one transverse striation and finally our form distiguised from Navicula Elsae Thum Pantocsek, Bacillarien des Balaton (1902) 54, taf. 6, fig. 129 in its coarser median striae and in its not orbicular central area. Rare. Reported as a recent form from Tyôsen (in the lake at Seiryôri in Seoul).",
+   "description_source": "OCR (1936_skvortzov_ampen_neogene · 항목 046 · PDF p.22)"
+  },
+  {
+   "seq": 23,
+   "name": "Stauroneis signata (Meister) Skv. nov. com.",
+   "description": "Stauroneis signata (Meister) Skv. nov. com. Plate 2, fig. 2. Stauroneis phoenicentron Ehr. var. signata Meister, Kieselalgen aus Asien (1932) 45, figs. 149, 150; Stauroneis Brunii Per. in Heriband, Les Diatom d' Auvergne (1893) 76, pl. 3, fig. 22. Valve lanceolate with subacute ends. Striae radiate, punctate, 15 in 0.01mm, forming a fascia truncate outwards. In the middle of the valve striae are shortened. Infrequent. Known from Tai-hu Lake, China; Great Hingan mountains, North Manchuria; Seiryôri in Seoul, Tyôsen, and as a fossil in Europe.",
+   "description_source": "OCR (1936_skvortzov_ampen_neogene · 항목 043 · PDF p.21)"
+  },
+  {
+   "seq": 24,
+   "name": "Eunotia tropica Hust.",
+   "description": "Eunotia tropica Hust. Plate 2, fig. 3. Eunotia tropica Hustedt, Bacillar. aus dem Aokikosee in Japan. 159, taf. 5, fig. 1. Valve lunately curved with numerous dorsal ridges or crenae. Ends subcapitate and slightly attenuate. Striae variable in distance at the both ends. Pseudoraphe distinct, linear along the ventral margin. Length 0.068mm; breadth 0.013mm. Striae 12 in 0.01mm. Smaller than the type. Rare. The type is known from Aoki Lake, Nippon and from tropics.",
+   "description_source": "OCR (1936_skvortzov_ampen_neogene · 항목 026 · PDF p.17)"
+  },
+  {
+   "seq": 25,
+   "name": "Eunotia monodon Ehr. var. major (W. Smith) Hust. fo. bidens (W. Smith)",
+   "description": "Eunotia monodon Ehr. var. major (W. Smith) Hust. fo. bidens (W. Smith.) Plate 2, figs. 4, 15. Eunotia major var. bidens (Greg.) W. Smith, A. Schmidt, Atlas Diatom. (1911) taf. 273, figs. 35-38, 40; Eunotia major W. Smith var. hankensis Skvortzov, Die Bacillar. des Hankasees (1929) 43, tab. 1, fig. 37. Differs from var. major in its bi-undulate dorsal side and broad rounded ends. Length 0.049-0.056mm; breadth 0.013mm. Striae 9-15 in 0.01mm. Common. Known as a fresh-water fossil from Norway and a recent species from Hanka Lake, Maritime Province of Siberia.",
+   "description_source": "OCR (1936_skvortzov_ampen_neogene · 항목 032 · PDF p.18–19)"
+  },
+  {
+   "seq": 26,
+   "name": "Eunotia praerupta Ehr. var. bidens Grun.",
+   "description": "Eunotia praerupta Ehr. var. bidens Grun. Plate 2, figs. 5, 6, 8, 11. Eunotia praerupta Ehr. var. bidens Grun. A. Schmidt, Atlas Diatom. (1911) taf. 273, figs. 27, 28, 32. Valve slightly arcuate with two dorsal crenae or ridges. Ends truncate. Length 0.03 to 0.073mm; breadth 0.006 to 0.012mm. Striae 9-12 in 0.01mm. Common.",
+   "description_source": "OCR (1936_skvortzov_ampen_neogene · 항목 025 · PDF p.17)"
+  },
+  {
+   "seq": 27,
+   "name": "Eunotia gracilis (Ehr.) Rabh.",
+   "description": "Eunotia gracilis (Ehr.) Rabh. Plate 2, fig. 9. Eunotia gracilis (Ehr.) Rabh., A. Schmidt, Atlas Diatom. (1911) taf. 271, fig. 7. Valve linear, slightly curvate with parallel margins and capitete ends. Length 0.111mm; breadth 0.006mm. Striae 10 in 0.01mm. Rare. A fresh-water species known in lakes and swamps.",
+   "description_source": "OCR (1936_skvortzov_ampen_neogene · 항목 029 · PDF p.18)"
+  },
+  {
+   "seq": 28,
+   "name": "Eunotia monodon Ehr. var. major (W. Smith) Hust.",
+   "description": "Eunotia monodon Ehr. var. major (W. Smith). Hust. Plate 2, fig. 10. Eunotia monodon Ehr. var. major (W. Smith). Hust., Fr. Hustedt, Bacillar. (1930) 186, taf. 255. Valve robuste, slightly curvate, arcuate, with broad capitete ends. Pseudoraphe marginal. Length 0.074mm; breadth 0.011mm. Striae 12 in 0.01mm. Rare. Common in fresh-water.",
+   "description_source": "OCR (1936_skvortzov_ampen_neogene · 항목 031 · PDF p.18)"
+  },
+  {
+   "seq": 29,
+   "name": "Fragilaria Harrissonii W. Smith var. dubia Grun.",
+   "description": "Fragilaria Harrissonii W. Smith var. dubia Grun. Plate 2, fig. 13. Fragilaria Harrissonii W. Smith var. dubia Grun., Fr. Hustedt, Bacillar. (1930) 140, fig. 134. Valve almost elliptical with slightly attenuate ends. Length 0.017mm; breadth 0.005mm. Costae robuste, 12 in 0.01mm. Raphe linear-lanceolate. Infrequent. Known from bottom of fresh-water lakes.",
+   "description_source": "OCR (1936_skvortzov_ampen_neogene · 항목 012 · PDF p.14–15)"
+  },
+  {
+   "seq": 30,
+   "name": "Fragilaria virescens Ralfs",
+   "description": "Fragilaria virescens Ralfs. Plate 2, fig. 14. Fragilaria virescens Ralfs, Fr. Hustedt, Bacillar. (1930) 142, fig. 144. Valve linear with subrostrate ends. Length 0.02–0.022mm; breadth 0.0042–0.0045mm. Striae 15 in 0.01mm. Rare. Common in mountain basins.",
+   "description_source": "OCR (1936_skvortzov_ampen_neogene · 항목 016 · PDF p.15)"
+  },
+  {
+   "seq": 31,
+   "name": "Gomphonema parvulum (Kutz.) Grun. var. micropus (Kutz.) Cleve",
+   "description": "Gomphonema parvulum (Kutz.) Grun. var. micropus (Kutz.) Cleve. Plate 2, fig. 16. Gomphonema parvulum (Kutz.) Grun. var. micropus (Kutz.) Cleve, Fr. Hustedt, Bacillar. (1930) 373, fig. 713. Differs from the type in its more robust valves. Length 0.015mm; breadth 0.006mm. Striae 12 in 0.01mm. Rare.",
+   "description_source": "OCR (1936_skvortzov_ampen_neogene · 항목 090 · PDF p.32)"
+  },
+  {
+   "seq": 32,
+   "name": "Navicula soodensis Krasske.",
+   "description": "Navicula soodensis Krasske. Plate 2, fig. 19. Navicula soodensis Krasske, Fr. Hustedt, Bacillar. (1930) 276, fig. 457; Skvortzov, Diatoms from Biwa Lake pl. 5, fig. 8. Valve linear-elliptical with broad rounded ends. Axial area narrow, central a broad fascia. Striae fine, slightly radiate, 15 in 0.01mm. Length 0.032mm; breadth 0.0085mm. Known from brackish water from Germany and from Biwa Lake, Nippon.",
+   "description_source": "OCR (1936_skvortzov_ampen_neogene · 항목 047 · PDF p.22–23)"
+  },
+  {
+   "seq": 33,
+   "name": "Stauroneis javanica Grun.",
+   "description": "Stauroneis javanica Grun. Plot. 3, fig. 2. Stauroneis javanica Grunow, Reise seiner Majestat Fregatte Novara um die Erde. Bot. Teil, Bd. I. (1867) 21, pl. I, fig. 14.; Stauroneis szontaghii Pantocsek, Fossile Bacillar. Ungarns (1893) III, pl. 8. fig. 143; Stauroneis javanica Grun., A. Schmidt, Atlas Diatom. (1903) taf. 241, fig. 3; Stauroneis (Pleurostauron) Okamurae Skv. and var. lanceolata Skvortzov, Die Bacillarien des Hankaseses (1929) 46, taf. 3. fig. 15. Valve lanceolate with rounded, obtuse ends. Length 0.176-0.185mm; breadth 0.027-0.028mm. Stauros linear, widened and truncate outwards. Striae 13-15 in 0.01mm, slightly radiate, distinct punctate, puncta about 15 in 0.01mm. The both ends cohored in short bands. Infrequent. Known as a fossil from fresh-water from Java and Hungary, and as a recent form in Hank Lake, Maritime Province of Siberia.",
+   "description_source": "OCR (1936_skvortzov_ampen_neogene · 항목 042 · PDF p.21)"
+  },
+  {
+   "seq": 34,
+   "name": "Pinnularia koreana sp. nov.",
+   "description": "Pinnularia koreana sp. nov. Plate 3, fig. 3. Valve linear, slightly constricted from the both sides and broader to the broad rounded ends. Striae robust, radiate, divergent in the middle and convergent at the ends, 5-6 in 0.01mm. No longitudinal bands. Axial area linear, central a broad fascia. Median line enlarged, indistinctly complex, with distinct large comma-shaped terminal fissures. Length 0.147mm; breadth 0.017mm. Infrequent. A distinct species akin to Pinnularia cardinalis (Ehr.) W. Smith.",
+   "description_source": "OCR (1936_skvortzov_ampen_neogene · 항목 069 · PDF p.28)"
+  },
+  {
+   "seq": 35,
+   "name": "Pinnularia cardinalis (Ehr.) W. Smith",
+   "description": "Pinnularia cardinalis (Ehr.) W. Smith. Plate 3, figs. 4, 11. Pinnularia cardinalis (Ehr.) W. Smith, Fr. Hustedt, Bacillar. (1930) 337, fig. 321. Valve linear with parallel margins and broad, obtuse, rounded ends. Striae robuste, 6-7 in 0.01mm, moderately radiate, slightly divergent in the middle and convergent at the ends with two longitudinal broad bands. Axial area linear, central a broad fascia. Median line strongly complex. Length 0.093-0.132mm; breadth 0.017-0.022mm. Very common. A fresh-water diatom.",
+   "description_source": "OCR (1936_skvortzov_ampen_neogene · 항목 064 · PDF p.27)"
+  },
+  {
+   "seq": 36,
+   "name": "Pinnularia distinguenda Cleve fo. angustior fo. nov.",
+   "description": "Pinnularia distinguenda Cleve fo. angustior fo. nov. Plate 3, fig. 5. Valve linear or elliptical-linear, slightly enlarged in the middle part and moderately attenuate towards the ends. Striae robuste, radiate, divergent in the middle and convergent at the ends, crossed by a distinct bands. Axial area linear, central broad and orbicular. Median line filiform, slightly complex with comma-shaped terminal fissures. Length 0.102-0.122mm. breadth 0.014-0.018mm. Striae 6-8 in 0.01mm. The type specimens are broader and are reported from fresh and brackish water.",
+   "description_source": "OCR (1936_skvortzov_ampen_neogene · 항목 065 · PDF p.27)"
+  },
+  {
+   "seq": 37,
+   "name": "Achnanthes inflata Kutz.",
+   "description": "Achnanthes inflata Kutz. Plate 3, fig. 6. Achnanthes inflata Kutz., Fr. Hustedt, Bacillar. (1930) 209, fig. 307. Valve linear-lanceolate with undulate middle part and slightly attenuate, broad rounded ends. Upper valve with exentric axial area near the margin. Striae 9-11 in 0.01mm., about parallel, composed of coarse puncta. Lower valve with radiate striae and broad fascia. Striae about 10 in 0.01mm. Length 0.039-0.047mm; breadth 0.014-0.015mm. Common. Known in fresh-waters in tropics and subtropics. Reported by me from South China.",
+   "description_source": "OCR (1936_skvortzov_ampen_neogene · 항목 038 · PDF p.20)"
+  },
+  {
+   "seq": 39,
+   "name": "Pinnularia isostauron (Ehr?) Grun. var. koreana var. nov.",
+   "description": "Pinnularia isostauron (Ehr?) Grun. var. koreana var. nov. Valve linear with parallel margins and rounded ends. Striae slightly radiate, divergent in the middle and convergent at the ends, 11–12 in 0.01mm. Axial area linear, central a broad fascia. Median line filiform, indistinctly complex. No longitudinal lines. Rare. Differs from the type* in its striae not divergent in the middle and convergent at the ends. Rare. A fresh-water form. * Navicula viridis var. isostauron Grun, Cleve and Grunov. Arctisch. Diatom. (1890) 27, pl. 1, fig. 14; Navicula isostauron var. conifera Brun. et. Herib. Les Diatomees d'Auvergne (1893) 91, pl. 2, fig. 2.",
+   "description_source": "OCR (1936_skvortzov_ampen_neogene · 항목 063 · PDF p.26)"
+  },
+  {
+   "seq": 40,
+   "name": "Pinnularia brevicostata Cleve",
+   "description": "Pinnularia brevicostata Cleve. Plate 3, fig. 10; Plate 4, figs. 1, 6, 7. Navicula hemiptera A. S., A. Schmidt, Atlas Diatom. (1876) taf. 43, figs. 26, 27; Pinnularia brevicostata Cleve, Diatom of Finland (1891) 25, pl. 1, fig. 5; Pinnularia montana Hust. var. sinica Skvortzov, Alpine Diatoms from South China (1929) 43, pl. 2, fig. 14; Plate 3, fig. 13. Valve linear with parallel margins and broad rounded ends. Striae robust without longitudinal lines, slightly radiate, 7-9 in 0.01mm. Axial and central area broad, about 1/3 of the valve breadth. Median line not complex with distinct comma-shaped terminal fissures. Length 0.047-0.102mm; breadth 0.013-0.017mm. Differs from Pinnularia major (Kutz.) Cleve var. linearis Cleve fo. neglecta Mayer in its more longer valves, with striae without longitudinal bands. Common. A fresh-water diatom.",
+   "description_source": "OCR (1936_skvortzov_ampen_neogene · 항목 059 · PDF p.25–26)"
+  },
+  {
+   "seq": 41,
+   "name": "Pinnularia appendiculata (Ag.) Cleve var. paeninsulae-koreana var. nov.",
+   "description": "Pinnularia appendiculata (Ag.) Cleve var. paeninsulae-koreana var. nov. Plate 3, fig. 12. Valve linear with parallel margins and attenuate subacute ends. Striae radiate, divergent in the middle part and convergent at the ends. Axial area forming a broad stauros. Median line filiform, slightly enlarged. Terminal fissures distinct, comma-shaped. Length 0.056mm; breadth 0.0085mm. Striae 9–10 in 0.01mm. Differs from the type in its more larger size and more robust median line. Rare. Known from fresh-water.",
+   "description_source": "OCR (1936_skvortzov_ampen_neogene · 항목 052 · PDF p.23–24)"
+  },
+  {
+   "seq": 42,
+   "name": "Pinnularia gentilis (Donk.) Cleve var. neogenica var. nov.",
+   "description": "Pinnularia gentilis (Donk.) Cleve var. neogenica var. nov. Plate 4, fig. 2. Valve elliptical-linear with parallel margins and broad rounded ends. Striae compact, slightly radiate, divergent in the middle and convergent at the ends, 7 in 0.01mm. Axial area narrow, central area suborbicular. Median line slightly complex. Length 0.111mm; breadth 0.02mm. Differs from the type in its narrowed ends and more orbicular central area. Infrequent. Differs from Pinnularia streptorapha in its more radiate striae, more simple median line, suborbicular central area and its smaller size. Pinnularia gentilis is a fresh-water species.",
+   "description_source": "OCR (1936_skvortzov_ampen_neogene · 항목 066 · PDF p.27)"
+  },
+  {
+   "seq": 44,
+   "name": "Pinnularia stomatophora Grun.",
+   "description": "Pinnularia stomatophora Grun. Plate 4, fig. 4. Pinnularia stomatophora Grun., A. Schmidt, Atlas Diatom. (1876) tab. 43, figs. 27-29. Valve linear with parallel margins and broad rounded ends. Striae radiate, divergent in the middle and convergent at the ends. Axial area broad, linear, central suborbicular with a narrow fascia. From the both sides of the central nodules large linear markings. Median line filiform, something enlarged in the middle part with distinct large bayonet shaped terminal fissures. Rare. Known in mountain districts.",
+   "description_source": "OCR (1936_skvortzov_ampen_neogene · 항목 058 · PDF p.25)"
+  },
+  {
+   "seq": 45,
+   "name": "Pinnularia nobilis Ehr. var. parallela var. nov.",
+   "description": "Pinnularia nobilis Ehr. var. parallela var. nov. Plate 4, fig. 5. Differs from the type in its parallel margins. Length 0.2-0.0245mm; breadth 0.029-0.034mm. Striae 4.5-5 in 0.01mm. Very common.",
+   "description_source": "OCR (1936_skvortzov_ampen_neogene · 항목 068 · PDF p.28)"
+  },
+  {
+   "seq": 46,
+   "name": "Pinnularia gibba Ehr. var. linearis Hust.",
+   "description": "Pinnularia gibba Ehr. var. linearis Hust. Plate 4, fig. 8. Pinnularia gibba Ehr. var. linearis Hust, Fr. Hustedt, Bacillar. (1930) 327, fig. 604. Differs from the type in its almost linear valves. Striae radiate, 8-9 in 0.01mm. Axial area broad, central a transverse fascia. Length 0.059-0.093mm; breadth 0.008-0.01mm. Rare.",
+   "description_source": "OCR (1936_skvortzov_ampen_neogene · 항목 057 · PDF p.25)"
+  },
+  {
+   "seq": 47,
+   "name": "Hantzschia amphioxys (Ehr.) Grun. var. xerophila Grun.",
+   "description": "Hantzschia amphioxys (Ehr.) Grun. var. xerophila Grun. Plate 4, fig. 9 Hantzschia amphioxys (Ehr.) Grun. var. xerophila Grunow, Diatomeen von Franz Josefs-Land (1884) 47. Differs from the type in its more coarser striae. Length 0.037 mm; breadth 0.0085 mm. Keel puncta 5, striae 30 in 0.01 mm. Rare.",
+   "description_source": "OCR (1936_skvortzov_ampen_neogene · 항목 103 · PDF p.35)"
+  },
+  {
+   "seq": 48,
+   "name": "Gomphonema constrictum Ehr. with anomal striae",
+   "description": "Gomphonema constrictum Ehr. Plate 4, fig. 10 with anomal striae. Gomphonema constrictum Ehr., Fr. Hustedt, Bacillar. (1930) 377, fig. 714. Valve subtruncate with constricted apex. Striae radiate, 12 in 0.01mm, being longer and shorter with distinct isolated puncta. Length 0.042mm; breadth 0.013mm. One valve with anomal striae was observed. Infrequent. Common in fresh-water.",
+   "description_source": "OCR (1936_skvortzov_ampen_neogene · 항목 094 · PDF p.33)"
+  }
+ ]
+}

@@ -1,0 +1,360 @@
+{
+ "atlas": "1992-lee-galmal",
+ "source": "Diadiction/outputs/descriptions/papers/1992_lee_galmal_quaternary_flora.json (tools/parse_descriptions_papers.py)",
+ "entries": [
+  {
+   "seq": 2,
+   "name": "Achnanthes lanceolata (Breb.) Grun. var. omissa Reimer",
+   "description": "Achnanthes lanceolata(Breb). Grun. var. omissa Reimer 1966; Partrick and Reimer, 1966, p. 272, pl. 8, figs. 16~17. Remarks: This variety has more strongly curved striae than the nominate variety. The raphe valve of this variety has a smaller, somewhat diamond shaped central area. This diatom is similar to Achnanthes lanceolata var. elliptica Cleve in valve shape. [plate 1, Fig. 2]",
+   "description_source": "OCR (1992_lee_galmal_quaternary_flora · 항목 002 · PDF p.6)"
+  },
+  {
+   "seq": 3,
+   "name": "Cyclotella meneghiniana Kutzing",
+   "description": "Cyclotella meneghiniana Kützling : Husredt, 1930, Bacill., p.100, fig.67 ; Kokubo, 1955, p.84, fig.48, PKling and Hakanssin, 1988, Dia. Res., v.3, n.1, p.72, figs.47, 89~91. Remarks : The marginal zone of valve is striated and the centre of the valve face may be without distinct structure or with radially orientated diffuse punctate striations. Ecology : This species is nearshore freshwater species. The ecology of this species are follows : Prefer alkaline water(about PH.8~8.1) ; halophilous, requiring small amount of salt to be abundant ; Usually benthonic from, but sometimes in plankton ; Seems to be indifferent to H_2S in small amount ; Widely distributed in temperate and warm-temperate region. According to Patrick(1948), this species is widely distributed in stagnant waters and ground slimes rich in hydrogen sulphide. [Plate 1, Fig. 3]",
+   "description_source": "OCR (1992_lee_galmal_quaternary_flora · 항목 010 · PDF p.7)"
+  },
+  {
+   "seq": 5,
+   "name": "Cocconeis plancentula (Ehr.) var. euglypta (Ehr.) Cleve",
+   "description": "Cocconeis plancentula(Ehr.) var. euglypta(Ehr.) Cleve 1895 : Hustedt, 1930, Bacill., p. 189~190, fig.261 ; Hajós, 1968, p. 162, Taf.XLVI, figs. 9~11 ; Akutsu, 1964, p. 269, pl. 65, fig.6 ; Patrick and Reimer, 1966, p. 241, pl. 15, fig.8. Remarks : Striae on pseudoraphe valve brocken into a series of two to four conspicuous \"dashes\" forming as many irregular longitudinal hyaline spaces. [Plate 1, Fig. 5]",
+   "description_source": "OCR (1992_lee_galmal_quaternary_flora · 항목 006 · PDF p.7)"
+  },
+  {
+   "seq": 6,
+   "name": "Coscinodiscus lacustris Geunow",
+   "description": "Coscinodiscus lacustris Grunow 1880 : Hustedt, 1930, Bacill., p.113, fig.90 ; Ichikawa, 1960, p.192, pl.4, fig.29. [Plate 1, fig.6]",
+   "description_source": "OCR (1992_lee_galmal_quaternary_flora · 항목 008 · PDF p.7)"
+  },
+  {
+   "seq": 8,
+   "name": "Amphora pediculus (Kutz.) Grunow",
+   "description": "Amphora pediculus(Kütz). Grunow: Syn: A. ovalis Kütz. var. pediculus Kützing 1884; Lee and Round, 1989, p. 80~85, figs. 3~9, 14~17, 26, 28. Remarks: This species is small in size, and with a broad distinct rectangular central area. The critical characteristic is the flatness of the ventral and proximal dorsal valve surface, the single row of ventral areolae, the 1~3 rows of proximal dorsal areolae and the straight filiform raphe. Differs from A. ovalis var. affinis (= A. copulata) principally in strea number and size. Ecology: Commonly found as an epiphyta in well aerated, shallow water or in current. Oligohalobae, alkaliphilous from. According to Hustedt(1930), the variety is found frequently attached to larger diatoms such as Nibschia, Surriella. [Plate 1, Fig. 8]",
+   "description_source": "OCR (1992_lee_galmal_quaternary_flora · 항목 003 · PDF p.6)"
+  },
+  {
+   "seq": 9,
+   "name": "Cyclotella sp.",
+   "description": "Cyclotella sp. Remarks : The valve surface is almost flat and central zone shows a few small and large pores as well as granules. The marginal zone reveals punctate striations divided by hyaline striae. The present species is similar to C. radiosa(Grun.) Lemm. and C. cf. comensis in valve shape. But, it differs by the length of striation and distributed pattern of the pores. [Plate 1, Fig. 9]",
+   "description_source": "OCR (1992_lee_galmal_quaternary_flora · 항목 012 · PDF p.7)"
+  },
+  {
+   "seq": 10,
+   "name": "Cyclotella comta (Ehr.) Kutzing",
+   "description": "Cyclotella comta(Ehr.) Kützling 1894 in Grunow (in Van Heurck 1882) : Hakensson, 1988, p.331, fig.1~10. Basionym : Discoplea comta Ehr. 1884. Remarks : This species is similar to C. bodanica var. affinis Grunow in Schneider 1876 and C. radiosa (Grun.) Lemmermann 1900 in central part of the present specimens shows the central area with either scattered or radially pores. Ecology : Widely found in freshwater such as lake and pond. This taxon is a well known species living in oligotrophic to mesotrophic lakes, though also found in habitats from widely different situations, such as brackish water and acidophilic habitats. Cholnoy(1968) mentioned that this species has a high PH optimum. According to Pankow(1976), this species is planktonic, common in European lakes and rivers, oligohalobous mioeuryhaline. [Plate 1, Fig. 10]",
+   "description_source": "OCR (1992_lee_galmal_quaternary_flora · 항목 009 · PDF p.7)"
+  },
+  {
+   "seq": 11,
+   "name": "Cymbella sp. A",
+   "description": "Cymbella sp. A : Remarks : This species is similar to C. affinis Kützing 1884 in valve shape. But, it differs from C. affines by bluntly rounded ends. [Plate 1, Fig. 11]",
+   "description_source": "OCR (1992_lee_galmal_quaternary_flora · 항목 019 · PDF p.10)"
+  },
+  {
+   "seq": 12,
+   "name": "Cymbella minuta Hilse ex Rabh.",
+   "description": "Cymbella minuta Hilse ex Rabh. 1862 : Patrick and Reimer, 1975, p.47, pl.8, figs. 1a~4b : Watanabe, 1977, p.38, pl.9, fig.125. Syn. : Cymbella ventricosa Kützing 1884. Remarks : This taxon is distinguished by the relatively small size, narrow, fine linear, and ventrally displaced axial and filiform, usually straight raphe which are nearly parallel to the ventral margin. Ecology : Very widespread and eurytopic. It appears to be PH \"indifferent\" oligohalobous. [Plate 1, Fig. 12]",
+   "description_source": "OCR (1992_lee_galmal_quaternary_flora · 항목 016 · PDF p.8)"
+  },
+  {
+   "seq": 13,
+   "name": "Cymbella sinuata Gregory",
+   "description": "Cymbella sinuata Gregory 1856 : Hustedt, 1930, Bacill., p.361, fig.668a~668b : Patrick and Reimer, 1975, p.51, pl.9, figs.3a~4b. Remarks : The characteristic features of this species are follows : Ventral margin almost smoothly convex, but several times undulate. Central area unilateral, extending to the margin on ventral side. Tiny stigma present at the central area. Striae slightly radiate, punctate-lineate. Ecology : Seems to be PH \"indifferent\" oligohalobe. [Plate 1, Fig. 13]",
+   "description_source": "OCR (1992_lee_galmal_quaternary_flora · 항목 017 · PDF p.8)"
+  },
+  {
+   "seq": 14,
+   "name": "Caloneis sp.",
+   "description": "Caloneis sp. : Remarks : Valve slightly biconstricted, inflated in the middle portion. Ends broadoy rounded and slightly cuneate. Axial area distinct, narrow, and widening to the elliptical area. The present specimens is similar to C. limosa (Kütz.) Patr. var. limosa Patrick in valve shape. [Plate 1, Fig. 14]",
+   "description_source": "OCR (1992_lee_galmal_quaternary_flora · 항목 004 · PDF p.7)"
+  },
+  {
+   "seq": 16,
+   "name": "Cymbella sp. B",
+   "description": "Cymbella sp. B : Remarks : Valve dorsal-ventral with obtusely rounded ends. Dorsal margin strongly and rather evenly arched. Ventral margin somewhat gibbous in center. The present taxon is similar to C. cymbiformis in valve shape. But it differs from C. cymbiformis by obtusely rounded ends and more strongly gibbous of ventral margin. [Plate 1, Fig. 16]",
+   "description_source": "OCR (1992_lee_galmal_quaternary_flora · 항목 020 · PDF p.10)"
+  },
+  {
+   "seq": 17,
+   "name": "Cymbella hebridica Grunow ex Cleve",
+   "description": "Cymbella hebridica Grunow ex Cleve 1894 : Hustedt, 1930, Bacill., p.359, fig.662 : Patrick and Reimer, 1975, p.30, pl.4, fig.7. Remarks : The features of this diatom are : Valve moderately dorsi-ventral. Dorsal margin slightly convex. Ventral margin nearly straight or convex, tapering. Ends ventrally bent. Raphe lateral, dorsally deflected, and not filiform. Distal raphe ends comma-shaped, ventrally curved. Striae radiate except at the ends. [Plate 1, Fig. 17]",
+   "description_source": "OCR (1992_lee_galmal_quaternary_flora · 항목 014 · PDF p.8)"
+  },
+  {
+   "seq": 18,
+   "name": "Cymbella sp. C",
+   "description": "Cymbella sp. C : Remarks : The present taxon is similar to C. minuta var. silesica in valve shape. [Plate 1, Fig. 18]",
+   "description_source": "OCR (1992_lee_galmal_quaternary_flora · 항목 021 · PDF p.10)"
+  },
+  {
+   "seq": 19,
+   "name": "Cymbella cymbiformis var. nonpunctata Font.",
+   "description": "Cymbella cymbiformis var. nonpunctata Font. 1917 : Patrick and Reimer, 1975, p.55, pl.10, figs.5. Remarks : This variety is similar to C. affinis, but is distinguished by bluntly rounded ends, very slightly concave ventral margin except at mid-valve where it is slightly tumid, and more distinct distal raphe ends. Differs from the C. cymbiformis by the lack of an isolated stigma in the ventral side of the central area. Ecology : The species is principally a lake form, but sometimes found in streams and springs. [Plate 1, Figs. 19]",
+   "description_source": "OCR (1992_lee_galmal_quaternary_flora · 항목 013 · PDF p.8)"
+  },
+  {
+   "seq": 20,
+   "name": "Cymbella leptoceros (Ehr.) Grunow",
+   "description": "Cymbella leptoceros (Ehr.) Grunow 1881 : Hustedt, 1930, Bacill., p.353, fig. 645 : Hajós, 1968, p.194, Taf. LVII, figs. 3~4 : Haworth, 1972, p.168, fig.17. Remarks : The present taxon is similar to C. minuta var. silesiaca in valve shape. But, it differs from the variety by slightly arched axial area. Ecology : This species is freshwater species. But, sometimes found in fresh-brackish water. Seems to be acidophilous to indifferent in PH spectra [Plate 1, Fig. 30]",
+   "description_source": "OCR (1992_lee_galmal_quaternary_flora · 항목 015 · PDF p.8)"
+  },
+  {
+   "seq": 21,
+   "name": "Diploneis oblongella (Naeg. ex Kutzing) Ross",
+   "description": "Diploneis oblongella (Naeg. ex Kützing) Ross 1947 : Patrick and Reimer, 1966, p.413, pl.38, fig.8. Remarks : This species closely resembles Diploneis parma Cleve and D. subovalis Cleve in many of its characteristics. It differs in the presence of a single row of alveoli between the costae rather than the double row which is characteristic of these two taxa. Ecology : Fresh to slightly brackishwater ; Sometimes in damp places. [Plate 1, Fig. 21]",
+   "description_source": "OCR (1992_lee_galmal_quaternary_flora · 항목 023 · PDF p.10)"
+  },
+  {
+   "seq": 22,
+   "name": "Diploneis elliptica (Kutz.) Cleve",
+   "description": "Diploneis elliptica (Kütz.) Cleve 1891 : Hustedt, 1930, Bacill., p.250, fig.395 ; Patrick and Reimer, 1966, p.414, pl.38, fig.10. Remarks : Comparing with the description of the species given by Patrick and Reimer(1966), the present specimens are more linear-elliptical in valve outline. The present specimens is very similar to D. subovalis Cleve in valve shape. Ecology : This species is freshwater to slightly brackish water species ; found in bogs, lakes, and springs. [Plate 1, Fig. 22]",
+   "description_source": "OCR (1992_lee_galmal_quaternary_flora · 항목 022 · PDF p.10)"
+  },
+  {
+   "seq": 24,
+   "name": "Diploneis sp.",
+   "description": "Diploneis sp. The present specimens is very similar to D. smithii in valve shape. But, it differs from D. smithii by the absence of distinct siliceous rib and the shape of central area and longitudinal carinal. [Plate 2, Fig. 1]",
+   "description_source": "OCR (1992_lee_galmal_quaternary_flora · 항목 025 · PDF p.10)"
+  },
+  {
+   "seq": 25,
+   "name": "Fragilaria construens var. binodis (Ehr.) Grunow",
+   "description": "Fragilaria construens var. binodis (Ehr.) 1862 : Hustedt, 1930, Bacill. p. 141, fig.137 ; Patrick and Reimer, 1966, p.125, pl.4, fig.7. Remarks : This species is characterized by the constriction in the middle portion of the valve. The valve shape of this species is very similar to F. pseudoconstruend var. bigibba (Marciniak, 1988, pl.1, figs.18~28, pl.2, figs.48~52). Marciniak (1988) stated that F. pseudoconstituens var. bigibba should probably incorporate F. construens var. binodis and F. robusta or F. consuens var. robusta described by Manguin (1956). Ecology : Seems to prefer cool, freshwater [Plate 2, Fig. 2]",
+   "description_source": "OCR (1992_lee_galmal_quaternary_flora · 항목 029 · PDF p.11)"
+  },
+  {
+   "seq": 26,
+   "name": "Fragilaria construens (Ehr.) Grunow",
+   "description": "Fragilaria construens (Ehr.) Grunow 1862 : Hustedt, 1930, Bacill., p.140, fig.135 ; Patrick and Reimer, 1966, p.125, pl.4, fig.4. Syn : Odontidium tabellaria W. Smith 1856, p.17, pl.34, fig. 291 ; Staurosira construens Ehrenberg 1843a, 45, Williams and Rund, 1987 Dia. Res., v.2, n.2, p.272, figs. 15~17. Remarks : William and Rund(1987) who studied on large number of the species usually placed in genus Fragilaria using scanning electron microscope redefined the \"construens\" group of genus Fragilaria as genus Staurosira. Ecology : Seems to prefer slightly alkaline water and circum eutral water ; Often found to be indifferent to chlorides ; Common. nly found in shallow water zone of lake ; Widely distributed in temperate region. [Plate 2, Fig. 3]",
+   "description_source": "OCR (1992_lee_galmal_quaternary_flora · 항목 028 · PDF p.10–11)"
+  },
+  {
+   "seq": 27,
+   "name": "Fragilaria construens var. venter (Ehr.) Grunow",
+   "description": "Fragilaria construens var. venter (Ehr.) Grunow 1881 : Hustedt, 1930, Bacill., p.141, fig.138 ; Akutsu, 1964, p.274, pl.61, fig.9 ; Patrick and Reimer, 1966, p.126, pl.4, figs. 8~9. Remarks : This species is variable in shape, and includes a wide variety of forms. The present specimens are : Valve elliptical-lanceolate with somewhat attenuated, rostrate, rounded apices. Pseudoraphe distinct, slightly wide in the middle of the valve. Striae radiate throughout most of the valve, and alternating over the whole valve. The present specimen is very similar to F. pinnata var. lanecttula (Schum.) Hustedt 1913 in valve shape. Ecology : Widely distributed, seems to prefer water of fairly low nutrient content (oligotrophic to mesotrophic). Hutchison et. al stated this variety is : “indifferent to low concentrations of salt ; widely distributed in temperate United States”. Koivo & Ritchie (1978) stated this variety, with Fragilaria pinnata, F. construens var. conuens, is modern dominants in many boreal-arctic lakes. [Plate 2, Fig. 4]",
+   "description_source": "OCR (1992_lee_galmal_quaternary_flora · 항목 030 · PDF p.11)"
+  },
+  {
+   "seq": 29,
+   "name": "Fragilaria pinnate var. minutissima Grunow",
+   "description": "Fragilaria pinnate var. minutissima Grunow : Hustedt, 1930, Bacill., p.142, fig.14b. Remarks : Valve liner with rounded ends. Pseudoraphe narrow. Striae coarse, slightly radiate at the apices, almost parallel in the middle portion, and alternating over the whole valve. The present specimen is very similar to F. elliptica (Schumann) Haworth in valve shape. Ecology : Widely distributed in freshwater [Plate 2, fig.6]",
+   "description_source": "OCR (1992_lee_galmal_quaternary_flora · 항목 032 · PDF p.11)"
+  },
+  {
+   "seq": 30,
+   "name": "Fragilaria sp. A",
+   "description": "Fragilaria sp. A.: Remarks: The present form shows close resemblance to F. leptostauron var. dubia (Grun) Hustedt. Valve lanceolate, narrowed toward the ends which are rounded or slightly attenuate-rounded. Pseudoraphe distinct, but narrow. Striae coarse, slightly radiate except in the middle portion of the valve where they are almost parallel, and alternating over the whole valve. [Plate 2, Fig. 7]",
+   "description_source": "OCR (1992_lee_galmal_quaternary_flora · 항목 037 · PDF p.12)"
+  },
+  {
+   "seq": 31,
+   "name": "Eunotia monodon var. koreana Skvortzov",
+   "description": "Eunotia monodon var. koreana Skvortzov 1936 : Skvortzov, 1936, p.13, figs.13~14, 20, 30, 33 ; Chung, 1968, p.266, pl.52, fig.423. Remarks : This taxon is variable in shape. This species distinguished by its valve shape (dorsal margin convex, ventral margin concave ; two margin are smooth and nearly parallel) and broad, rounded ends which are almost as wide as the main body of the valve. Terminal nodules distinct, located in near the ends of the valve. This variety is similar to E. veneris var. exsecta in valve shape [Plate 2, Fig. 8]",
+   "description_source": "OCR (1992_lee_galmal_quaternary_flora · 항목 027 · PDF p.10)"
+  },
+  {
+   "seq": 32,
+   "name": "Fragilaria pinnate var. parallel Mayer",
+   "description": "Fragilaria pinnate var. parallel Mayer : Hustedt, 1930, Bacill., p.142, fig. 141c. Remarks : Valve liner to slightly lanceolate with rounded ends. The pseudoraphe distinct, linear to lanceolate in shape. Striae coarse, alternating over the whole valve, and radiate at the apices, but almost parallel in the middle portion of the valve. [Plate 2, Figs. 9, 11]",
+   "description_source": "OCR (1992_lee_galmal_quaternary_flora · 항목 033 · PDF p.11)"
+  },
+  {
+   "seq": 33,
+   "name": "Gomphonema acuminatum var. coronata (Ehr.) W. Smith",
+   "description": "Gomphonema acuminatum var. coronata (Ehr.) W. Smith: Hustedt, 1930, Bacill., p. 370, fig.684. Ecology: Indifferent to small concentrations of salt; Widely distributed in temperate region. [Plate 2, Fig. 10]",
+   "description_source": "OCR (1992_lee_galmal_quaternary_flora · 항목 039 · PDF p.12)"
+  },
+  {
+   "seq": 34,
+   "name": "Fragilaria striatula Lyngbye",
+   "description": "Fragilaria striatula Lyngbye : Poulin et. al., 1986, Dia. Res., v.1, n.1, p.103, figs.20 Remarks : The valve shows narrow, slender and linear-elliptical shape with very slightly capitate or rounded apices. Axial area narrow and central area feature absent. Striae single areolae row and slightly radiate at the apices, but almost parallel in the middle portion. Ecology : This species is cold water species. [Plate 2, Fig. 12]",
+   "description_source": "OCR (1992_lee_galmal_quaternary_flora · 항목 034 · PDF p.11)"
+  },
+  {
+   "seq": 35,
+   "name": "Gomphonema brasiliense Grunow",
+   "description": "Gomphonema brasiliense Grunow 1878: Patrick and Reimer, 1975, pl.18, fig. 15–17. Remarks: Axial area broad, lanceolate. Striae marginal, and slightly radiate. Isolated punctum which is absence in the Patrick and Reimer's specimens (1975, p. 143, pl.8, figs. 15~17) present at the central area. Ecology : Seems to prefer circumneutral, warm water with moderate conductivity. [Plate 2, Fig. 13]",
+   "description_source": "OCR (1992_lee_galmal_quaternary_flora · 항목 042 · PDF p.12–14)"
+  },
+  {
+   "seq": 37,
+   "name": "Gomphonema truncatum Ehrenberg",
+   "description": "Gomphonema truncatum Ehrenberg 1832 : Patrick and Reimer, 1975, p.119, pl.16, fig.3. Remarks : This species differs from G. truncatum var. capitatum by its more capitate apex. Ecology : Freshwater species ; Seems to be prefer circumneutral water with moderate hardness ; tolerant of a fairly wide range of cool to moderately warmwater ; Prefers water of low to moderate nutrient content. [Plate 2, Fig. 15]",
+   "description_source": "OCR (1992_lee_galmal_quaternary_flora · 항목 047 · PDF p.14)"
+  },
+  {
+   "seq": 38,
+   "name": "Gomphonema parvulum Kutzing",
+   "description": "Gomphonema parvulum Kützing 1849 : Patrick and Reimer, 1975, p.125, pl.17, figs. 8~9. Remarks : This species is similar to G. angustatum, but is distinguished by its narrower central area. The central area is narrow, and is formed by the medium striae on one side of the central nodule being shortened ; On the otherside, the striae ends in an isolated punctum. Striae slightly radiate over the whole valve. Ecology : Typically found in circumneutral to slightly alkaline freshwater. Best development in nutrient-rich water, particulary water containing sanitary or farm wastes. Widely distributed in temperate region. [Plate 2, Figs. 16, 19]",
+   "description_source": "OCR (1992_lee_galmal_quaternary_flora · 항목 044 · PDF p.14)"
+  },
+  {
+   "seq": 39,
+   "name": "Cocconeis sp. aff. Cocconeis costata Gregory",
+   "description": "Cocconeis sp. eff. Cocconeis costata Gregory : Fourtancier, 1986, p.718, pl.2, fig.27, [Plate 2, Fig. 17]",
+   "description_source": "OCR (1992_lee_galmal_quaternary_flora · 항목 007 · PDF p.7)"
+  },
+  {
+   "seq": 41,
+   "name": "Gomphonema clevei Fricke",
+   "description": "Gomphonema clevei Fricke 1902 : Patrick and Reimer, 1975, p.138, pl.18, fig.6. Remarks : According to Hustedt(1938), this species is freshwater forms, oligohalobae with optimum development at PH 8.6. [Plate 2, Fig. 20]",
+   "description_source": "OCR (1992_lee_galmal_quaternary_flora · 항목 043 · PDF p.14)"
+  },
+  {
+   "seq": 42,
+   "name": "Gomphonema acuminatum var. pusilla Grunow",
+   "description": "Gomphonema acuminatum var. pusilla Grunow 1880: Patrick and Reimer, 1975, pl.15, fig.3. Remarks: This species differs from G. acuminatum by its typically much smaller size, more linear-shaped valve, and isolated punctum on right side. Striae is usually more radiate about the central nodule. Ecology: Seems to prefer cool water. [Plate 2, Fig. 21]",
+   "description_source": "OCR (1992_lee_galmal_quaternary_flora · 항목 040 · PDF p.12)"
+  },
+  {
+   "seq": 43,
+   "name": "Gomphonema sphaerophorum Ehrenberg",
+   "description": "Gomphonema sphaerophorum Ehrenberg 1846 : Hustedt, 1930, Bacill., p.372, fig.695 ; Fukunima, 1973, p.39, pl.24, fig.6 ; Chung and Watanabe, 1984, p.201, pl.7, fig.129 ; Patrick and Reimer, 1975, p.115, pl.15, fig.11 ; Ueyama and Kobayashi, 1988, p.450. pl. 1~2, figs. 1~9, 13~24. Remarks : The characterized feature of this taxon are ; a narrow neck, striaion almost parallel at the center, and radiate slightly elsewhere, and with a pain of short striae at the Center. Ecology : This species is found in various lakes and pond ; Seems to prefer medium to fairly hard water, and mesotrophic to eutrophic in nutrient level. [Plate 2, Fig. 22]",
+   "description_source": "OCR (1992_lee_galmal_quaternary_flora · 항목 045 · PDF p.14)"
+  },
+  {
+   "seq": 44,
+   "name": "Gomphonema subtile var. sagitta (Schum.) Cleve",
+   "description": "Gomphonema subtile var. sagitta (Schum.) Cleve 1894 : Hustedt, 1930, Bacill., p.377, fig. 710 ; Patrick and Reimer, 1975, p.118, pl.16, fig.2. Remarks : This species is distinguished by its wedged shape apex, swollen median portion, and broad central space without striae on one side of central nodule. Striae radiate in most of the valve, but more strongly radiate toward the basis. Ecology : Seems to prefer cool water with very low conductivity. [Plate 2, Fig. 23]",
+   "description_source": "OCR (1992_lee_galmal_quaternary_flora · 항목 046 · PDF p.14)"
+  },
+  {
+   "seq": 46,
+   "name": "Melosira granulata (Ehr.) Ralfs",
+   "description": "Melosira granulata (Ehr.) Ralfs 1861 : Hustedt, 1930, Bacill., p.248~252, fig. 104 ; Akutsu, 1974, p.161~163, pl.XXII, figs. 1a~12b ; Watanabe et. al., 1982, p.51, pl.6, fig.61 ; Koizumi, 1966, pl.8, fig.18 ; Hajós, 1968, p.74, Taf.VII. Ecology : This species is a plankton diatom widely distributed in eutrophic water(Hustedt, 1930~1966 ; Foged, 1964) with PH optimum at 7.8~8.2 (Cholnoky, 1968). Huber-Pestalozzi(1942) mentioned the maximum abundance in summer or nearly fall. Foged(1954) gave the ecological preference of this species as follows : in PH spectra alkaliphilous forms, appearing at a PH about 7, with their optimum above PH 7 ; in halobion spectra, it is indifferent meaning freshwater proper ; in current spectra, it belongs to limnophilous having their of development in stagnant water. Stoermr and Yang(1970) found this species \"a common component of summer phytoplankton assemblages of shallow, eutrophic bays and harbours, river mouths and adjacent near-shore water.\" [Plate 3, Fig. 1]",
+   "description_source": "OCR (1992_lee_galmal_quaternary_flora · 항목 049 · PDF p.14)"
+  },
+  {
+   "seq": 47,
+   "name": "Melosira granulata var. angustissima Muller",
+   "description": "Melosira granulata var. angustissima Müller 1899 : Hustedt, 1930. Bacill., p.88, fig. 45 ; Kokubo, 1955, p.61~62, fig. 32b. Remarks : This variety is distinguished from the species by its fine long valve. Pores on valve mantle are arranged in oblique to the apical axis. Plankton diatom common in freshwater. According to Kokubo(1955), this variety flourished in September with the surface water temperature fallen down to 17°C. [Plate 3, Fig. 2]",
+   "description_source": "OCR (1992_lee_galmal_quaternary_flora · 항목 050 · PDF p.14–15)"
+  },
+  {
+   "seq": 49,
+   "name": "Navicula sp. B",
+   "description": "Navicula sp. B : Valve linear with slightly rostrate, rounded ends. Axial area narrow. Central area small. Terminal fissures of the raphe curved to one side and turned in the same direction. Strae slightly radiate at the center of the valve, parallel to slightly convergent at the ends. Remarks : This species is similar to N. graciloides or N. cincta, but it differs from those species by valve shape, the shape and size of central area, not strongly radiate striae and shape of terminal fissure of the raphe. [Plate 3, Fig. 4]",
+   "description_source": "OCR (1992_lee_galmal_quaternary_flora · 항목 060 · PDF p.16)"
+  },
+  {
+   "seq": 50,
+   "name": "Navicula latens Krasske",
+   "description": "Navicula latens Krasche 1937 : Patrick and Reimer, 1966, p. 521, pl.49, fig.21. Remarks : This species is similar to Navicula anglica var. subsalsa or N. exigua var. capitata in valve shape, but is distinguished by presence of an isolated punctum on one side of the central area. [Plate 3, Fig. 5]",
+   "description_source": "OCR (1992_lee_galmal_quaternary_flora · 항목 054 · PDF p.15)"
+  },
+  {
+   "seq": 52,
+   "name": "Nitzschia amphibia Grunow",
+   "description": "Nitzschia amphibia Grunow 1862 : Hustedt, 1930, Bacill., p.414, fig.793; Hájòse, 1968, p.202, Taf. LIX, figs. 3~10, 15~16, 19~21; Takahashi and Koizumi, 1987, p.429, pl.1, fig.1. Remarks : This species is freshwater to slightly brackish water species. Hutchinson et. al (1956) stated that this species is \"Prefers alkaline water; Oligohalobious; in shallow area of lakes; well distributed throughout temperate United States\". [Plate 3, Figs. 7, 9, 15]",
+   "description_source": "OCR (1992_lee_galmal_quaternary_flora · 항목 061 · PDF p.16)"
+  },
+  {
+   "seq": 53,
+   "name": "Navicula gottlandica Grunow",
+   "description": "Navicula gottlandica Grunow 1880 : Hustedt, 1930, Bacill., p.296, fig.499 ; Patrick and Reimer, 1966, p.509, pl.48, fig.14. Remarks : This species is recognized by lanceolate valve shape, protracted, subacute ends and the angle of the striae. Striae radiate throughout most of the valve, convergent at the ends. Ecology : Fresh to brackish water species. [Plate 3, Fig. 8]",
+   "description_source": "OCR (1992_lee_galmal_quaternary_flora · 항목 053 · PDF p.15)"
+  },
+  {
+   "seq": 56,
+   "name": "Synedra parastica (W. Smith) Hustedt",
+   "description": "Synedra parastica (W. Smith) Hustedt 1930, 1930, Bacill., p.161, fig.195 ; Patrick and Reimer, 1966, p.140, pl.5, fig.12. Syn. Fragilaria parastica W. Smith 1881. Remarks : This species is characterized by its shape, which are rhombic-lanceolate with sharply attenuated. Ecology : Freshwater, usually epiphytic of other diatoms such as Nitzschia or Surirella, in circumneutral, slightly alkaline water ; mesotrophic to eutrophic. [Plate 3, Fig. 12]",
+   "description_source": "OCR (1992_lee_galmal_quaternary_flora · 항목 071 · PDF p.18)"
+  },
+  {
+   "seq": 57,
+   "name": "Nitzschia frustulum (Kutz.) Grunow",
+   "description": "Nitzschia frustulum (Kütz.) Grunow 1880 : Hustedt, 1930, Bacill., p.414, fig. 795; Hájòse, 1968, Taf. LVIII, figs. 14~16. Remarks : This species is very similar to Nitzschia amphibia in valve shape. Found commonly in mesotrophic to eutrophic freshwater and slightly brackish water. Seems to halophilous to mesohalobous. [Plate 3, Fig. 13]",
+   "description_source": "OCR (1992_lee_galmal_quaternary_flora · 항목 062 · PDF p.16)"
+  },
+  {
+   "seq": 58,
+   "name": "Nitzschia palea (Kutz.) W. Smith",
+   "description": "Nitzschia palea (Kützing) W. Smith : Watanabe, T. et. al., 1982, p.54, pl.9, fig.123; Chung and Watanabe, 1984, p.202, pl.8, fig.146; Takahashi and Koizumi, 1987, p.429, pl.1, fig.15; Weincker & Geissler, 1988, p.470, pl.1, figs. 1~4. Remarks : The valve is lanceolate, have a strongly excentric keel and more or less visible striae. This species is very similar to N. gandersheimiensis Krasske 1927 in valve shape. According to Lange-Bertalot (1976), N. palea and N. gandersheimiensis both belong to the Nitzchia lanceolate, a problematic taxon which was (Hustedt, 1930) and is in taxonomic confusion. Ecology : It is a cosmopolitan taxon. Concerning the halobion preference, it was described as indifferent (Kolbe, 1927) or oligo-to slightly mesohalobion (Van der Werff, 1976). [Plate 3, Fig. 14]",
+   "description_source": "OCR (1992_lee_galmal_quaternary_flora · 항목 063 · PDF p.16–18)"
+  },
+  {
+   "seq": 59,
+   "name": "Gomphonema sp.",
+   "description": "Gomphonema sp. : Remarks : This species possess an isolated punctum opposite the central nodule. Valve linear to linear lanceolate. Striae slightly radiate. This species is similar to G. exiguum in valve shape, but is distinguished by having less striae number than in G. exiguum. [Plate 3, Fig. 16]",
+   "description_source": "OCR (1992_lee_galmal_quaternary_flora · 항목 048 · PDF p.14)"
+  },
+  {
+   "seq": 61,
+   "name": "Pinnularia sp. A",
+   "description": "Pinnularia sp. A : Remarks : This species is similar to Pinnularia sublinearis (Grun.) Cleve in valve shape. But, it distinguished by having less striae number than in P. sublinearis and parallel striae throughout most of the valve [Plate 3, Fig. 18]",
+   "description_source": "OCR (1992_lee_galmal_quaternary_flora · 항목 065 · PDF p.18)"
+  },
+  {
+   "seq": 62,
+   "name": "Synedra sp. B",
+   "description": "Synedra sp. B : Valve linear-lanceolate with arrenuate-rostrate apices. Pseudoraphe very narrow, but distinct. Valve slightly constricted and then swollen in the middle portion in the region of the central area. Striae almost parallel throught most of the valve, sometimes slightly radiate at the apices. Striae alternately opposite each other on each side of the pseudoraphe. Remarks : This species is very similar to S. socia in valve shape. But, it differs from S. socia by its very narrow pseudoraphe and alternatly opposite arrangement of striae on each side of the pseudoraphe. This taxon also similar to Fragilaria mazamaensis (Sovereign) Lange-Bertalot 1980 (Basionym : Synedra mazamaensis Sovereign 1958). But, it differs from that species by the valve shape of apics portion. [Plate 3, Fig. 19]",
+   "description_source": "OCR (1992_lee_galmal_quaternary_flora · 항목 074 · PDF p.20)"
+  },
+  {
+   "seq": 64,
+   "name": "Surirella sp.",
+   "description": "Surirella sp. : Remarks : The present specimen is similar to S. ovalis or S. brevissonii Bisson 1838 in valve shape. [Plate 3, Fig. 21]",
+   "description_source": "OCR (1992_lee_galmal_quaternary_flora · 항목 069 · PDF p.18)"
+  },
+  {
+   "seq": 65,
+   "name": "Navicula laterostrata Hustedt",
+   "description": "Navicula laterostrata Hustedt 1925 : Hustedt, 1930, Bacill., p.301, fig.521 ; Patrick and Reimer, 1966, p.523, pl.49, fig.25. Remarks : This species is very similar to Anomoeoneis paludigena Scherer 1988 in valve shape. The most distinguishing characteristics of this diatom are shape of the valve and the orbicular shaped central area surrounding by striae of irregular length. Valve elliptical-lanceolate, strongly and variable capitate. Ecology : Seems to prefer water of high mineral content. [Plate 3, Fig. 22] NaviculaOURNEI Patrick 1959 : Patrick and Reimer, 1966, p.461, pl.43, fig.5. Ecology : Freshwater species, sometimes found in slightly brackish water. [Plate 3, Fig. 6]",
+   "description_source": "OCR (1992_lee_galmal_quaternary_flora · 항목 055 · PDF p.15)"
+  },
+  {
+   "seq": 66,
+   "name": "Navicula pupula fo. rectangularis (Greg.) Grunow",
+   "description": "Navicula pupula fo. rectangularis (Greg.) Grunow 1880 : Patrick and Reimer, 1966, p.497, fig.12 ; Chung and Watanabe, 1984, p.210, pl.5, fig.82. Remarks : valve linear in general outline very slightly swollen in the middle portion. Central area transverse, formed by the irregular shorting of the striae. Striae somewhat radiate and slightly curved. Ecology : Seems to prefer water of higher mineral content. [Plate 3, Fig. 23]",
+   "description_source": "OCR (1992_lee_galmal_quaternary_flora · 항목 057 · PDF p.15)"
+  },
+  {
+   "seq": 67,
+   "name": "Synedra arcus Kutzing",
+   "description": "Synedra arcus Kützing 1844 : Hustedt, 1930, Bacill., p.155, fig.170 ; Patrick and Reimer, 1966, p.135, pl.5, fig.1. Remarks : This taxon is distinguished by the shape of the apices which are tapering to rounded or slightly capitate and the shape of the central area. Central area distinct, longer than broad. Length-to-breadth ratio 20 : 1~30 : 1. Ecology : Widely distributed freshwater species ; Seems to prefer circumneutral water. [Plate 4, Fig. 1]",
+   "description_source": "OCR (1992_lee_galmal_quaternary_flora · 항목 070 · PDF p.18)"
+  },
+  {
+   "seq": 68,
+   "name": "Tabularia fenestrata (Lynb.) Kutzing",
+   "description": "Tabularia fenestrata (Lynn.) Kützing 1884 : Hustedt, 1930. Bacill., p.122, fihs. 99a~99c ; Patrick and Reimer, 1966, p.103, pl.1~2 ; Scherer, 1988, Dia. Res., v.3, n.1, p.144, fig.12. Remarks : Found commonly in lakes or ponds which are mesotrophic to eutrophic ; usually in shallow water, often attached to substrata. [Plate 4, Fig. 2]",
+   "description_source": "OCR (1992_lee_galmal_quaternary_flora · 항목 075 · PDF p.20)"
+  },
+  {
+   "seq": 69,
+   "name": "Stauroneis sp.",
+   "description": "Stauroneis sp. : Remarks : The present specimen is more narrow-lanceolate than S. phoenicentron in valve shape. Ecology : This genus is often found in lakes and ponds. [Plate 4, Fig. 3]",
+   "description_source": "OCR (1992_lee_galmal_quaternary_flora · 항목 068 · PDF p.18)"
+  },
+  {
+   "seq": 70,
+   "name": "Synedra sp. A",
+   "description": "Synedra sp. A : Valve linear, narrowing toward the angular, wedge-shape end, and somewhat constricted in the middle portion of the valve. Pseudoraphe narrow, distinct. Central area transverse, usually not reaching the margin of the valve. Striae parallel, but slightly radiate at the apices. Sometimes very short striae apparent on the margins of the central area. Length-to-breadth ratio 10 : 1~12 : 1. Remarks : This species is similar to Synedra ulna var. ramesi Herib. or Synedra ulna var. exyrchus. But, it differs from the variety by its shape of the valve end and length-to-breadth ratio. The present species also is similar to S. gouldardii. But, it differs from by its valve end shape and less constructed central area. [Plate 4, Fig. 4]",
+   "description_source": "OCR (1992_lee_galmal_quaternary_flora · 항목 073 · PDF p.20)"
+  },
+  {
+   "seq": 71,
+   "name": "Nitzschia sp.",
+   "description": "Nitzschia sp. [Plate 4, Fig. 5]",
+   "description_source": "OCR (1992_lee_galmal_quaternary_flora · 항목 064 · PDF p.18)"
+  },
+  {
+   "seq": 72,
+   "name": "Pleurosigma salinarum Grunow",
+   "description": "Pleurosigma salinarum Geunow 1880 : Patrick and Reimer, 1966, p.333, pl.27, figs. 2a~2c. Remarks : This species is distinguished by the characteristic of the ends and the relatively fine striae. Ecology : Euryhaline, nearly fresh to moderately brackish water. [Plate 4, Fig. 6]",
+   "description_source": "OCR (1992_lee_galmal_quaternary_flora · 항목 067 · PDF p.18)"
+  },
+  {
+   "seq": 73,
+   "name": "Gomphonema affine var. insigne (Greg.) Andrew",
+   "description": "Gomphonema affine var. insigne (Greg.) Andrews 1970: Patrick and Reimer, 1975, p.133, pl.17, fig.4. Remarks: Valve lanceolate, tapering to the rounded apices. Upper part of the valve slightly shorter than the lower part. Striae punctate, parallel in the central portion of the valve, radiate toward the apices. The present specimens is similar to G. longiceps fo. gracilis Hustedt (Hustedt, 1930, Bacill., fig.706) or G. gracile Ehrenberg 1838 in valve shape. Ecology: Seems to prefer medium hard, circumneutral water, mesotrophic to eutrophic. [Plate 4, Fig. 8]",
+   "description_source": "OCR (1992_lee_galmal_quaternary_flora · 항목 041 · PDF p.12)"
+  },
+  {
+   "seq": 74,
+   "name": "Navicula sp. A",
+   "description": "Navicula sp. A. : Remarks : Valve linear lanceolate with slightly rostrate, rounded ends. Axial area distinct, narrow, becoming wider toward the cental area. Cental area elliptical. Striae radiate at the center of the valve to convergent at the ends. The present species is similar to Navicular angusta Grunow in valve shape and the type of striae, but it differs from N. angusta in the shape and striation type of cental area. [Plate 4, Fig. 9]",
+   "description_source": "OCR (1992_lee_galmal_quaternary_flora · 항목 059 · PDF p.16)"
+  }
+ ]
+}
