@@ -553,6 +553,17 @@
     });
     h.push('</div>');
     var ex = e.extra || {};
+    // 기재문 (257) — OCR 이 읽은 것이라 오독이 있다. 그것을 화면이 말한다
+    // (뷰어 `atlas.html` 의 `.entrydesc` 와 같은 모양). 어느 쪽도 고쳐 쓰지 않았다
+    if (ex.description || ex.description_text) {
+      h.push('<details class="entryextra entrydesc"><summary><span class="dim">기재</span> '
+        + '<span class="pnote">기계가 읽은 원문 · 쪽과 대조할 것</span></summary>');
+      if (ex.description) h.push('<div class="desctext">' + esc(ex.description) + '</div>');
+      if (ex.description_text) h.push('<div class="desctext alt"><span class="dim">PDF 텍스트 레이어</span> '
+        + esc(ex.description_text) + '</div>');
+      if (ex.description_source) h.push('<div class="desctext src dim">' + esc(ex.description_source) + '</div>');
+      h.push('</details>');
+    }
     if (ex.ecology || ex.distribution || ex.original_note || (ex.samples || []).length) {
       h.push('<div class="entryextra">');
       if (ex.ecology) h.push('<div><span class="dim">생태</span> ' + esc(ex.ecology) + '</div>');
@@ -951,6 +962,13 @@
         h.push('<td>' + (t ? '<span class="chip warnchip" title="AlgaeBase 확인 — 이 표기는 이명이다">이명</span> '
           + '<i>' + esc(t.valid_name) + '</i>'
           + (t.note ? ' <span class="pnote">' + esc(t.note) + '</span>' : '') : '—') + '</td>');
+      });
+      h.push('</tr>');
+    }
+    if (any(function (e) { return ex(e, 'description') || ex(e, 'description_text'); })) {
+      h.push(sec('기재 (기계가 읽은 원문)') + '<tr>');
+      rows.forEach(function (e) {
+        h.push('<td>' + (esc(ex(e, 'description') || ex(e, 'description_text')) || '—') + '</td>');
       });
       h.push('</tr>');
     }

@@ -41,6 +41,7 @@
   .entrydesc > summary { cursor: pointer; }
   .entrydesc .desctext { margin: 4px 0 0 14px; line-height: 1.55; max-width: 72ch; }
   .entrydesc .desctext.alt { opacity: .8; }
+  .entrydesc .desctext.src { font-size: .8rem; }
   .platehead { margin: 22px 0 10px; font-size: 1rem; }
   .pager { display: flex; gap: 8px; margin: 14px 0; align-items: center; }
   /* 미리보기. **`display` 를 안 준다** — 주면 브라우저 기본 `[hidden]` 을
@@ -349,6 +350,7 @@
           {% if r.extra.description_text %}
             <div class="desctext alt"><span class="dim" data-en="PDF text layer">PDF 텍스트 레이어</span> {{ r.extra.description_text }}</div>
           {% endif %}
+          {% if r.extra.description_source %}<div class="desctext src dim">{{ r.extra.description_source }}</div>{% endif %}
         </details>
       {% endif %}
       {% if r.extra.ecology or r.extra.distribution or r.extra.original_note %}

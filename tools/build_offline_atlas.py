@@ -177,6 +177,22 @@ def read_indexes(paths: list[Path], have=None,
             "source": a.get("source") or "", "source_sha256": a.get("source_sha256") or "",
         })
         hashes[p.name] = sha256(p)
+        # 기재문 (257) — `atlas/descriptions/<같은 이름>.json`. 반입기
+        # (`ops/import_atlas.merge_descriptions`)와 **같은 규칙의 두 벌**이다:
+        # 열쇠는 `seq`, 표제어가 어긋나면 옆 종에 붙은 것이라 멈춘다
+        dp = p.parent / "descriptions" / p.name
+        if dp.exists():
+            hashes[f"descriptions/{p.name}"] = sha256(dp)
+            by_seq = {e["seq"]: e for e in doc["entries"]}
+            for d in json.loads(dp.read_text(encoding="utf-8"))["entries"]:
+                e = by_seq.get(d["seq"])
+                if e is None or d.get("name") != e["name"]:
+                    raise SystemExit(f"{dp}: seq {d['seq']} 의 표제어가 색인과 다르다 "
+                                     f"({d.get('name')!r} ↔ {e and e['name']!r})")
+                got = {k: d[k] for k in ("description", "description_text",
+                                         "description_source") if d.get(k)}
+                if got.get("description") or got.get("description_text"):
+                    e["extra"] = {**(e.get("extra") or {}), **got}
         for e in doc["entries"]:
             places = []
             for pl in e.get("placements") or []:

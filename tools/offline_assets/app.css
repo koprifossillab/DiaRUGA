@@ -69,6 +69,10 @@ h2 { font-size: 1.05rem; margin: 0 0 6px; }
 .place { display: inline-flex; gap: 5px; align-items: center; flex-wrap: wrap; }
 .pnote { font-size: .82rem; color: var(--warn-fg); }
 .entryextra { margin-top: 4px; font-size: .86rem; }
+.entrydesc > summary { cursor: pointer; }
+.entrydesc .desctext { margin: 4px 0 0 14px; line-height: 1.55; max-width: 72ch; }
+.entrydesc .desctext.alt { opacity: .8; }
+.entrydesc .desctext.src { font-size: .8rem; }
 
 /* 도감 카드 */
 .bookrow { display: flex; gap: 16px; align-items: flex-start; padding: 14px;

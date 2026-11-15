@@ -74,7 +74,8 @@ class DescriptionScreenTest(DiaRUGATestCase):
                  entry(2, "Melosira distans", "Melosira")])
         mod.merge_descriptions(d, desc(
             (1, "Melosira ambigua", {"description": "세포는 원통상(圓筒狀)이다.",
-                                     "description_text": "세포는 원통상()이다."})))
+                                     "description_text": "세포는 원통상()이다.",
+                                     "description_source": "OCR · 이름 근사 일치: 색인 x ↔ 원문 y"})))
         mod.put(d, 0)
 
     def test_도감_목록에_기재문이_나온다(self):
@@ -85,6 +86,9 @@ class DescriptionScreenTest(DiaRUGATestCase):
         self.assertEqual(body.count('class="entryextra entrydesc"'), 1)
         # **기계가 읽은 것임을 화면이 말한다** — 원문으로 알고 인용하면 안 된다
         self.assertIn("기계가 읽은 원문", body)
+        # 근사 일치로 얹은 것은 출처 줄이 그것을 말한다 (257 8절) — 안 보이면
+        # 철자가 다른 이름의 기재가 정확히 맞은 것과 구별되지 않는다
+        self.assertIn("이름 근사 일치: 색인 x ↔ 원문 y", body)
 
     def test_비교_화면에_기재_줄이_생긴다(self):
         ks = [f"test-atlas:{e.name}" for e in AtlasEntry.objects.order_by("seq")]
