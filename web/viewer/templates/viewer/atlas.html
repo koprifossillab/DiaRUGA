@@ -38,6 +38,9 @@
   .warnchip { background: var(--warn-bg); color: var(--warn-fg); }
   .pnote { font-size: .82rem; color: var(--warn-fg); }
   .entryextra { margin-top: 4px; font-size: .86rem; }
+  .entrydesc > summary { cursor: pointer; }
+  .entrydesc .desctext { margin: 4px 0 0 14px; line-height: 1.55; max-width: 72ch; }
+  .entrydesc .desctext.alt { opacity: .8; }
   .platehead { margin: 22px 0 10px; font-size: 1rem; }
   .pager { display: flex; gap: 8px; margin: 14px 0; align-items: center; }
   /* 미리보기. **`display` 를 안 준다** — 주면 브라우저 기본 `[hidden]` 을
@@ -333,6 +336,21 @@
           </span>
         {% empty %}<span class="dim" data-en="No location recorded">자리가 안 적혀 있다</span>{% endfor %}
       </div>
+      {% if r.extra.description or r.extra.description_text %}
+        {% comment %}
+          기재문 (257). **OCR 이 읽은 것이라 오독이 있다** — 그것을 화면이 말한다.
+          텍스트 레이어가 있는 항목은 그것도 함께 낸다: 한글은 그쪽이 낫고
+          `μ`·한자는 OCR 쪽이 낫다. 어느 쪽도 고쳐 쓰지 않았다
+        {% endcomment %}
+        <details class="entryextra entrydesc">
+          <summary><span class="dim" data-en="Description">기재</span>
+            <span class="pnote" data-en="machine-read — check the page">기계가 읽은 원문 · 쪽과 대조할 것</span></summary>
+          {% if r.extra.description %}<div class="desctext">{{ r.extra.description }}</div>{% endif %}
+          {% if r.extra.description_text %}
+            <div class="desctext alt"><span class="dim" data-en="PDF text layer">PDF 텍스트 레이어</span> {{ r.extra.description_text }}</div>
+          {% endif %}
+        </details>
+      {% endif %}
       {% if r.extra.ecology or r.extra.distribution or r.extra.original_note %}
         <div class="entryextra">
           {% if r.extra.ecology %}<div><span class="dim" data-en="Ecology">생태</span> {{ r.extra.ecology }}</div>{% endif %}

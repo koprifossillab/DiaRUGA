@@ -1,0 +1,174 @@
+{
+ "atlas": "1993-lee-chaetoceros",
+ "source": "Diadiction/outputs/descriptions/papers/1993_lee_chaetoceros_yeonil.json (tools/parse_descriptions_papers.py)",
+ "entries": [
+  {
+   "seq": 2,
+   "name": "Chaetoceros subsecundus (Grunow) Hustedt, 1930",
+   "description": "Chaetoceros subsecundus (Grunow) Hustedt, 1930 Pl. 1, fig. 2, 3, 4 ; Pl. 3, fig. 18 1930 Chaetoceros subsecundus (Grunow) Hustedt, p. 709, fig. 404. 1943 C. subsecundus (Grunow) Hustedt – Cupp, p. 130, fig. 83. 1988 C. diadema (Ehr.) Gran – Rines & Hargraves, p. 76, figs. 150, 151, 153. Remarks : The present specimens are resting spores of the species. Valve dissimilar. Primary valve evenly vaulted, with two to several process, which branch in several direction. Secondary valve fits tightly under the margin of the primary valve, and smooth and slightly vaulted in center. No girdle bands are present between the two valve. According to Cupp (1943), this species is neritic and boreal – arctic or north temperate species.",
+   "description_source": "OCR (1993_lee_chaetoceros_yeonil · 항목 011 · PDF p.13)"
+  },
+  {
+   "seq": 3,
+   "name": "Chaetoceros compressus Lauder, 1864",
+   "description": "Chaetoceros compressus Lauder, 1864 Pl. 1, fig. 5 ; Pl. 3, fig. 8 1864 Chaetoceros compressus Lauder, p. 78, pl. 8, fig. 6 Remarks : The present specimens are resting spore of this species. Resting spore have thick girdle band ; smooth, without row of small spines on upper margin in primary valve. Primary valve highly vaulted with distinct marginal ridge and fairly high valve mantle. Secondary valve slightly vaulted. According to Copp (1943), the species is neritic, boreal to temperate species.",
+   "description_source": "OCR (1993_lee_chaetoceros_yeonil · 항목 003 · PDF p.9–10)"
+  },
+  {
+   "seq": 4,
+   "name": "Chaetoceros coronatus Gran., 1897",
+   "description": "Chaetoceros coronatus Gran., 1897 Pl. 1, fig. 6 ; Pl. 3, fig. 15 1897 Chaetoceros coronatus Gran, 7 (24). 1 - 36 1930 C. coronatus Gran - Hustedt, p. 712, figs. 406. 1988 C. coronatus Gran - Rines & Hargraves, v. 7, p. 68, figs. 135 - 138. Remarks : The present specimens are resting spores of this species. Valve dissimilar. Primary valve evenly vaulted, and covered with prominent thornlike spines. Secondary valve is quite reduced in size, and centrally inflated, and covered with small, irregular short spines in the central part.",
+   "description_source": "OCR (1993_lee_chaetoceros_yeonil · 항목 004 · PDF p.10)"
+  },
+  {
+   "seq": 5,
+   "name": "Chaetoceros amanita Cleve-Euler, 1915",
+   "description": "Chaetoceros amanita Cleve - Euler, 1915 Pl. 1, fig. 7, 9 1915 Chaetoceros amanita Cleve - Euler, 14 (9), p. 1 - 81. 1988 C. amanita Cleve - Euler - Rines & Hargraves, p. 60, figs. 115 - 119. Remarks : The present specimens are resting spore of the species. Primary valve evenly vaulted and covered with small spines. Valve mantle high, marginal ridge distinct. Secondary valve considerably narrower in diameter than the primary valve and somewhat variable in shape. The secondary valve of the present specimens is smoothly rounded, although most of the secondary valve of this species are commonly a truncated cone.",
+   "description_source": "OCR (1993_lee_chaetoceros_yeonil · 항목 001 · PDF p.9)"
+  },
+  {
+   "seq": 6,
+   "name": "Chaetoceros costatus Pavillard, 1911",
+   "description": "Chaetoceros costatus Pavillard, 1911 Pl. 1, fig. 8, 12 1911 Chaetoceros costatus Pavillard, p. 21 - 29. 1943 C. costatus Pavillard - Copp, p. 127, fig. 79. 1988 C. costatus Pavillard - Rines & Hargraves, p. 68, figs. 139 - 140. Remarks : The present specimens are resting spores of this species. Valve dissimilar. Primary valve evenly vaulted and covered with short spines. Secondary valve centrally vaulted, smooth, and smaller than the primary valve in size. Neritic, warmwater species. Resting spores situated near center of parent cell.",
+   "description_source": "OCR (1993_lee_chaetoceros_yeonil · 항목 005 · PDF p.10)"
+  },
+  {
+   "seq": 7,
+   "name": "Chaetoceros sp. B",
+   "description": "Chaetoceros sp. B Pl. 1, fig. 10 Description : The present specimen is resting spores. Valve evenly vaulted. Valve shape is broadly elliptical or broadly lanceolate in valve view. Setae emerge along the apical axis, and are fused for a short distance, and bifurcate nearly perpendiclula to the apical axis (parallel to the transapical axis). Remarks : The present specimen is similar to C. radicans in valve shape.",
+   "description_source": "OCR (1993_lee_chaetoceros_yeonil · 항목 014 · PDF p.14)"
+  },
+  {
+   "seq": 8,
+   "name": "Chaetoceros furcellatus Bail., 1873",
+   "description": "Chaetoceros furcellatus Bail., 1873 Pl. 1, fig. 11 1943 C. compressus Lauder - Copp, p. 120, fig. 74. 1968 Chaetoceros furcellatus Bail. - Hajos, p. 129, Taf. XXXIV, fig. 2. 1984 C. furcellatus Bail. - Stockwell & Hargraves, p. 85, figs. 8 - 15. Remarks : The present specimens are resting spore of this species. Equally paired spores are held closely together by a specialized valve, bearing nearly straight setae. The setae are smooth and fused together at the base for a rather long distance before bifurcating. The primary valve is slightly convex or highly domed in girdle view. The valve surface is smooth, and lacking processes.",
+   "description_source": "OCR (1993_lee_chaetoceros_yeonil · 항목 007 · PDF p.10–11)"
+  },
+  {
+   "seq": 9,
+   "name": "Chaetoceros cinctus Gran, 1897",
+   "description": "Chaetoceros cinctus Gran, 1897 Pl. 1, fig. 13 1897 Chaetoceros cinctus Gran., p. 24, pl. 2, figs. 23 - 27 1968 C. cinctus Gran - Wornardt, p. 69, fig. 135 Remarks : The present specimens are resting spore of this species. The primary valve evently vaulted, and is elliptic or broadly lanceolate in valve view. Setae emerge along the apical axis, and are fused for a short distance, and curve back around the cell away from the apical axis. Setae are typically smooth. This resting spore is one of the Chaetoceros resting spores which have paired frustules and have specialized setate structure (ex. Chaetoceros radicans, C. furcellatus, C. didymus). According to Cupp (1943), this species is neritic, and south temperate species.",
+   "description_source": "OCR (1993_lee_chaetoceros_yeonil · 항목 002 · PDF p.9)"
+  },
+  {
+   "seq": 10,
+   "name": "Dossetia sp.",
+   "description": "Dossetia sp. Pl. 1, fig. 15 ; Pl. 2, fig. 19 ; Pl. 3, fig. 19 Description : Valve broadly elliptical or broadly lanceolate and highly vaulted with a smooth surface. The convex main part of the valve shows an irregular granular structure. A single ring of irregular and strongly dentate spines are surrounded the valve in valv plane. Remarks : The present specimens is similar to D. temperei in outline, though the valve shape is more round than that of the D. temperei.",
+   "description_source": "OCR (1993_lee_chaetoceros_yeonil · 항목 023 · PDF p.18)"
+  },
+  {
+   "seq": 12,
+   "name": "Pterotheca carinifera (Grunow) Forti, 1909",
+   "description": "Pterotheca carinifera (Grunow) Forti, 1909 Pl. 1, fig. 19 ; Pl. 2, fig. 17 ; Pl. 3, fig. 10 1909 Pterotheca carinifera (Grunow) Forti, p. 13. 1927 P. carinifera (Grunow) Forti–Hanna, p. 119, pl. 20, figs. 9–10. 1975 P. carinifera (Grunow) Forti–McCollum, p. 535, pl. 10, fig. 4, pl. 16, figs. 6–7 1976 P. carinifera (Grunow) Forti–Schrader & Fenner, p. 994, pl. 9, fig. 6, pl. 43, fig. 12. Remarks : In girdle view, valve tubular with a simple ends, and tapering abruptly into a conical blunt-tipped upper portion. Valve circular or slightly broad ellipsoidal in valve view. Valve surface not areolated nor coarsely punctate. This species is very similar to P. danica (Grunow) Forti and P. spada Brun. et Temp. in valve structure and outline. But, this species is more slender than the P. danica. The distinction between Pterotheca and Pyxilla is ague. The affinities of Pterotheca are not known. The valves of Pterotheca most closely resemble valves of Pyxilla in shape. According to Gombos & Ciesielski (1983), it is possible that Pterotheca represents resting spores of Pyxilla. The present specimen is very similar to Pyxilla (Pyxilla) danica of Kanaya's figures (1959, pl. 8, fig. 5) and P. danica (elongate variety) of Gombos & Ciesielski's figures (1983, pl. 13, fig. 9).",
+   "description_source": "OCR (1993_lee_chaetoceros_yeonil · 항목 027 · PDF p.19)"
+  },
+  {
+   "seq": 13,
+   "name": "Chaetoceros sp. A",
+   "description": "Chaetoceros sp. A Pl. 1, fig. 21 Description : Valve surface concave. Foramen circular or rounded. Two of the four strong setae start from the lower valve of a cell and intersect two rising ones from the upper valve of another cell. Point of fusion of sibling setae situate external to the margin. Setae diverge nearly equally from the apical plane at an angle of 60° - 80°. Suture is not appear in this specimens.",
+   "description_source": "OCR (1993_lee_chaetoceros_yeonil · 항목 013 · PDF p.14)"
+  },
+  {
+   "seq": 15,
+   "name": "Goniothecium rogersii Ehrenberg, 1843",
+   "description": "Goniothecium rogersii Ehrenberg, 1843 Pl. 2, fig. 1 ; Pl. 3, fig. 9 1843 Goniothecium rogersii Ehrenberg, pp. 401, 406. 1979 G. rogersii Ehrenberg - Abbott and Andrews, p. 244, p. 4, figs. 12 - 13. Remarks : Valves commonly seen as linked pairs of entire frustules. Valve irregularly elliptical with bluntly pointed apices, highly convex. The primary valve has characterized structure with 2 or 3 levels of surface elevation, culminating in blunt circular top at the valve center. The surface of primary valve shows large scattered pores without discernible orientation. The secondary valve has one large raised elevation in central area of the valve with two ovoid rings of spinule.",
+   "description_source": "OCR (1993_lee_chaetoceros_yeonil · 항목 017 · PDF p.14–15)"
+  },
+  {
+   "seq": 16,
+   "name": "Stephanogonia hanzawae Kanaya, 1959",
+   "description": "Stephanogonia hanzawae Kanaya, 1959 Pl. 2, fig. 2, 3, 8 1959 Stephanogonia hanzawae Kanaya, p. 118-119, pl. 11, figs. 3-7. 1968 S. hanzawae Kanaya-Keizumi, p. 217, pl. 35, fig. 3a, 3b, 4; 1976 S. hanzawae Kanaya-Schrader & Fenner, p. 1000, pl. 12, figs. 10, 12; pl. 13, figs. 5, 7, 8. Remarks : In girdle view, the shape of valve look like jar shape with swollen at the middle part and with wide flat circular brim at the base, turning up shortly at its eadge ; Widest part of the valve present at the base. Facets, about 8-16, weakly concave outwardly and bounded by ribs running from the base to top the valve. In valve view, valve circular and thick wall, with irregular area in center. About 8-16 elevations which are truncated pyramidal or subtriangular shape radiate from margin to center. The ribs form a circle around the central area of approximately one-third or one-farth of the valve diameter. In the center, boundaries of elevations connected in a irregular circle. Valve surface hyaline, not areolated nor coarsely punctate. Resting spores of centric diatom, uncertain affinity (Barron, 1974).",
+   "description_source": "OCR (1993_lee_chaetoceros_yeonil · 항목 035 · PDF p.21)"
+  },
+  {
+   "seq": 17,
+   "name": "Chaetoceros dicladia Castracane, 1886",
+   "description": "Chaetoceros dicladia Castracane, 1886 Pl. 2, fig. 5, 6, 27 ? ; Pl. 3, fig. 29 1845 Dicladia capreolus Ehrenberg 1975 Chaetoceros dicladia Castracane - Barron, p. 128, pl. 5, figs. 6, 7. 1926 Dicladea pylea Hanna and Grant, p. 142, pl. 16, fig. 4, 5. Remarks : The present specimens are resting spores of this species. Valve dissimilar. Primary valve have two conical protuberances which are repeatedly dichotomously branch at their tips. Secondary valve smooth, centrally inflated, and mantle distinct. The resting spore of this species is very similar to C. lorenzianus Grunow in the shape.",
+   "description_source": "OCR (1993_lee_chaetoceros_yeonil · 항목 006 · PDF p.10)"
+  },
+  {
+   "seq": 18,
+   "name": "Pseudopyxilla americana (Ehr.) Forti, 1909",
+   "description": "Pseudopyxilla americana (Ehr.) Forti, 1909 Pl. 2, fig. 9 1909 Pseudopyxilla americana (Ehr.) Forti, pl. 1, figs. 6 – 7. 1973 P. americana (Ehr.) Forti – Schrader, p. 708, pl. 10, fig. 22. 1979 P. americana (Ehr.) Forti – Abbott & Andrew p. 249, pl. 5, fig. 6. Remarks : The shape of valve is cylindrical or tubular, tapering gradually into a conical at one end, and bifurcated as bident fork in griddle view. Valve surface not areolated nor punctate.",
+   "description_source": "OCR (1993_lee_chaetoceros_yeonil · 항목 029 · PDF p.20)"
+  },
+  {
+   "seq": 19,
+   "name": "Liradiscus asperulus Andrews, 1976",
+   "description": "Liradiscus asperulus Andrews, 1976 Pl. 2, fig. 10 1976 Liradiscus asperulus Andrews, p. 16, pl. 5, figs. 3 - 5. 1979 L. asperulus Andrews - Abbott & Andrews, p. 245, pl. 4, fig. 18. Remarks : Valve ovate, convex. Single row of irregularly spaced thornlike spines along margin of valve. Entire valve surface covered with an irregular network of anastomosing low ridges.",
+   "description_source": "OCR (1993_lee_chaetoceros_yeonil · 항목 024 · PDF p.18)"
+  },
+  {
+   "seq": 20,
+   "name": "Xanthiopyxis ovalis Lohman, 1938",
+   "description": "Xanthiopyxis ovalis Lohman, 1938 Pl. 2, fig. 12 1932 Liradiscus regulosus Forti-Hanna, p. 195, pl. 2, figs. 5-6. 1938 Xanthiopyxis ovalis Lohman, p. 91, pl. 20, fig. 6. 1967 Xanthiopyxis ovalis Lohman-Wornardt, p. 72, figs. 150-152. 1968 Xanthiopyxis ovalis Lohman-Hajos, p. 116, Taf. XXVIII, figs. 3, 5, 6. Remarks : Valve egg-shaped, broadly arched. Surface of valve covered with many of the spines which the arranged pattern is irregular. The number of spines are 4-5 in 10 µm. This species is characterized by a distinct oval-shaped valve, and by spines never projecting beyond the margin of the valve.",
+   "description_source": "OCR (1993_lee_chaetoceros_yeonil · 항목 039 · PDF p.22–23)"
+  },
+  {
+   "seq": 21,
+   "name": "Liradiscus bipolaris Lohman, 1948",
+   "description": "Liradiscus bipolaris Lohman, 1948 Pl. 2, fig. 13 ; Pl. 3, fig. 16 1948 Liradiscus bipolaris Lohman, p. 165, pl. VIII, fig. 5 1968 L. bipolaris Lohman - Hajos, Taf. XXVIII, figs. 13 - 14. 1979 L. bipolaris Lohman - Abbott & Andrews, p. 145, pl. 4, fig. 19. Remarks : Valve oblong with parallel to slightly concave sides and a fine ring of marginal spines. Surface of valve flat with two low elevations radiating curved to linear anastomosing margins, which form an irregular network, but all running toward the center in the surrounding of the central depression. Interspaces between makings are hyaline.",
+   "description_source": "OCR (1993_lee_chaetoceros_yeonil · 항목 025 · PDF p.18–19)"
+  },
+  {
+   "seq": 22,
+   "name": "Xanthiopyxis sp. A",
+   "description": "Xanthiopyxis sp. A Pl. 2, fig. 14 Description : In valve view, valves are ovate, convex, with the central hyaline area having a central blunt protuberance. Short, sharp spines surround the central zone in a somewhat radial pattern, decrease toward the border and do not project beyond the border. Xanthiopyxis sp. B No illustration Description : Valve oblongly egg-shaped. Surface of valve covered with many of fine punctae which arrange pattern is irregular. Margin of valve wide, and with broad coarsely striae.",
+   "description_source": "OCR (1993_lee_chaetoceros_yeonil · 항목 040 · PDF p.23)"
+  },
+  {
+   "seq": 23,
+   "name": "Goniothecium tenue Brun, 1894",
+   "description": "Goniothecium tenue Brun, 1894 Pl.2, fig. 16, 24? 1894 Goniothecium tenue Brun, p.77, pl.5, figs.5 - 6. 1976 G. tenue Brun - Schrader & Fenner, p.983, pl.6, figs.6 - 10, pl.37, figs.6 - 10. Remarks : Valves hyaline, and jointed in pairs with a definite distance. Valves show elongate quadrilateral shape in side view. But, they are dissimilar in form. One side is slightly convex, the other side is slightly concave in the longitudinal side margin. The ends of valve is slightly round.",
+   "description_source": "OCR (1993_lee_chaetoceros_yeonil · 항목 018 · PDF p.15)"
+  },
+  {
+   "seq": 26,
+   "name": "Liradiscus ovalis Greville, 1865a",
+   "description": "Liradiscus ovalis Greville, 1865a Pl. 2, fig. 23, 25 1865a Liradiscus ovalis Greville, p. 5, pl. 1, figs. 15–16. 1927a L. Greville–Hanna, p. 114, pl. 19, figs. 4–6. 1968 L. ovalis Greville–Hajos, p. 114, Taf. XXVIII, figs. 8, 9, 12. 1979 L. ovalis Greville–Abbott & Andrews, p. 246, pl. 4, fig. 20. Remarks : Valve convex, ovale to ellipsoidal, with bluntly round apices. Valve surface covered with short spines having random distribution. The sinous reticulation are coarse and irregular in shape. A marginal rim is narrow and irregularly striate. In girdle view, a frustule is lens-shaped. This species can be distinguish from other Liradiscus species by its bluntly round ends, and its coarse sinous recticulation.",
+   "description_source": "OCR (1993_lee_chaetoceros_yeonil · 항목 026 · PDF p.19)"
+  },
+  {
+   "seq": 27,
+   "name": "Stephanogonia actinoptychus (Ehr.) Grunow, 1882",
+   "description": "Stephanogonia actinoptychus (Ehr.) Grunow, 1882 Pl. 3, fig. 1 1882 Stephanogonia actinoptychus (Ehr.) Grunow, pl. 83, figs. 2-4. 1913 Stephanogonia polyachantha Forti, p. 1560, pl. 12, fig. 11. Remarks : In valve view, valve subround to broadly ovate and thick wall. Outer part of valve divided into somewhat irregular or subangular shaped sectors (about 8-12) by septa that fuse to form a subangular ring at about half the radius of the valve. Valve surface hyaline.",
+   "description_source": "OCR (1993_lee_chaetoceros_yeonil · 항목 034 · PDF p.21)"
+  },
+  {
+   "seq": 28,
+   "name": "Goniothecium odontella Ehrenberg, 1854",
+   "description": "Goniothecium odontella Ehrenberg, 1854 Pl. 3, fig. 2, 26 1976 Goniothecium odontella Ehrenberg - Schrader and Fenner, p. 983, pl. 6, figs. 1, 2, 4. Remarks : In the valve view, valve irregularly elliptical shaped with bluntly pointed to subrounded apices, and has a thired surface with two or three levels of surface elevation. Valve surface shows very fine pores, randomly distributed on the round central area.",
+   "description_source": "OCR (1993_lee_chaetoceros_yeonil · 항목 016 · PDF p.14)"
+  },
+  {
+   "seq": 29,
+   "name": "Pterotheca danica Grunow",
+   "description": "Pterotheca danica Grunow Pl. 3, fig. 4 1927 Pterotheca danica Grunow–Hanna, no. 2, p. 119, pl. 20, fig. 11. Remarks : This species is very similar to P. cainifera in valve structure and outline. But, this species is more broader than the P. carinifera.",
+   "description_source": "OCR (1993_lee_chaetoceros_yeonil · 항목 028 · PDF p.19)"
+  },
+  {
+   "seq": 30,
+   "name": "Chaetoceros sp. C",
+   "description": "Chaetoceros sp. C Pl. 3, fig. 5, 6 Remarks : The present specimens are similar to Chaetoceros dicludia in valve shape. But, the present specimens have one conical protuberance which repeatly dichotomously branch at the tip.",
+   "description_source": "OCR (1993_lee_chaetoceros_yeonil · 항목 015 · PDF p.14)"
+  },
+  {
+   "seq": 31,
+   "name": "Chaetoceros vanheurecki Gran, 1897",
+   "description": "Chaetoceros vanheurecki Gran, 1897 Pl. 3, fig. 11 1897 Chaetoceros vanheurecki Gran, p. 18. 1943 C. vanheurecki Gran – Cupp, p. 123, fig. 77. Remarks : The present specimens are resting spore of this species. Valve dissimilar. Primary valve arched or evenly vaulted and covered with spines. Secondary valve considerable narrower in diometer than the primary valve and covered with parallel or palisade spines. This species is similar to C. constrictus in valve shape. Distinguished from C. constrictus only by the parallel or pallsaе spines on the secondary valve. Neritic, north temperate species.",
+   "description_source": "OCR (1993_lee_chaetoceros_yeonil · 항목 012 · PDF p.13–14)"
+  },
+  {
+   "seq": 32,
+   "name": "Chaetoceros seiracanthus Gran, 1897",
+   "description": "Chaetoceros seiracanthus Gran, 1897 Pl. 3, fig. 12 ? 1897 Chaetoceros seiracanthus Gran, p. 21, pl. 3, figs. 39 – 41. 1943 C. seiracanthus Gran – Cupp, p. 131, fig. 84. 1988 C. seiracanthus Gran – Rines & Hargraves, p. 92, fig. 199. Remarks : The present specimens are resting spores of this species. Valves dissimilar. The primary valve strongly arched in center, flatter at the margin, covered with long and thin spines at central area, and a series of parallel spines at the margin. Secondary valve rounded to capitate, and also covered with small spines. According to Cupp (1943), this species is north temperate to north boreal species.",
+   "description_source": "OCR (1993_lee_chaetoceros_yeonil · 항목 010 · PDF p.13)"
+  },
+  {
+   "seq": 33,
+   "name": "Xanthiopyxis globosa Ehrenberg, 1845",
+   "description": "Xanthiopyxis globosa Ehrenberg, 1845 Pl. 3, fig. 22 ? 1845 Xanthiopyxis globosa Ehrenberg, p. 273. 1932 Xanthiopyxis globosa Ehrenberg - Hanna, p. 224, pl. 18, fig. 3. 1959 Xanthiopyxis globosa Ehrenberg - Kanaya, p. 115. Remarks : In valve view, valves nearly circular or globular in outline. Valve covered with many spines which are longer and project beyond margin in valve view. Xanthiopyxis micropunctata Hajos, 1968 No illustration 1968 Xanthiopyxis micropunctata Hajos, p. 117, Taf. XXV - III, figs. 1 - 2. Remarks : Valve slightly elongate - oval to ovoid shape. Fine puncta are densely and irregularly distributed over the valve surface.",
+   "description_source": "OCR (1993_lee_chaetoceros_yeonil · 항목 037 · PDF p.22)"
+  }
+ ]
+}

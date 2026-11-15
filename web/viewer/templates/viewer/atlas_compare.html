@@ -123,6 +123,11 @@
       {% else %}—{% endif %}</td>{% endfor %}</tr>
       {% endif %}
 
+      {% if has.description %}
+      <tr class="sec"><th colspan="{{ rows|length }}" data-en="Description (machine-read)">기재 (기계가 읽은 원문)</th></tr>
+      <tr>{% for r in rows %}<td>{% if r.extra.description %}{{ r.extra.description }}{% elif r.extra.description_text %}{{ r.extra.description_text }}{% else %}—{% endif %}</td>{% endfor %}</tr>
+      {% endif %}
+
       {% if has.ecology %}
       <tr class="sec"><th colspan="{{ rows|length }}" data-en="Ecology">생태</th></tr>
       <tr>{% for r in rows %}<td>{{ r.extra.ecology|default:"—" }}</td>{% endfor %}</tr>
