@@ -71,8 +71,9 @@ class DatasetPageTest(DiaRUGATestCase):
     def test_제목_줄의_길이_버튼이다(self):
         m = re.search(r'<nav class="pagebtns"[^>]*>(.*?)</nav>', self.html(), re.S)
         self.assertIsNotNone(m)
-        # 다섯이던 것이 넷이다 — `계측 표` 를 걷었다 (P34)
-        self.assertEqual(len(re.findall(r'<a class="pbtn', m.group(1))), 4)
+        # 다섯이던 것이 넷이 됐고(`계측 표` 를 걷었다 · P34) 다시 다섯이다(`산출표` · 261)
+        self.assertEqual(len(re.findall(r'<a class="pbtn', m.group(1))), 5)
+        self.assertIn('/tally/', m.group(1))
 
     def test_통계_상자에_분류_막대가_있다(self):
         html = self.html()

@@ -1,0 +1,156 @@
+{% extends "viewer/base.html" %}
+{% comment %}
+  **슬라이드 산출표** (261 · 사용자 11-15: "지금 건 그대로 둔 상태에서 화면을 따로").
+  슬라이드 화면 분류 상자의 `종` 쪽(258)을 펼친 것이고 **셈은 같다** — `tally.column()`.
+  검토를 마친 시야만 · 파편은 세지 않는다 · 종 % 의 분모는 종명 붙은 개체.
+
+  지점 산출표(`/loc/…/tally/`)가 시료를 열로 늘어놓는다면, 이 화면은 **관찰 하나를
+  깊게** 본다 — 해상도 목표까지 얼마 남았는지, 어느 분류가 덜 동정됐는지.
+{% endcomment %}
+{% block title %}{{ label }} 산출표 — DiaRUGA{% endblock %}
+{% block subtitle %}<a href="{% url 'index' %}">데이터셋</a> /
+  <a href="{% url 'dataset' slug %}">{{ label }}</a> / <b>산출표</b>{% endblock %}
+{% block nav %}
+  <a href="{% url 'dataset' slug %}">그룹 목록</a>
+  <a href="{% url 'catalog' slug %}">개체 카탈로그</a>
+  {% if loc %}<a href="{% url 'tally' loc.site.code loc.code %}">지점 산출표</a>{% endif %}
+{% endblock %}
+{% block mainclass %} class="wide"{% endblock %}
+{% block content %}
+<style>
+  .tlyopts { display: flex; gap: 14px; flex-wrap: wrap; align-items: center;
+             font-size: 12.5px; margin: 6px 0 12px; }
+  .tlyopts .seg { display: inline-flex; border: 1px solid var(--line); border-radius: 6px; overflow: hidden; }
+  .tlyopts .seg a { padding: 3px 10px; color: var(--dim); text-decoration: none; }
+  .tlyopts .seg a + a { border-left: 1px solid var(--line); }
+  .tlyopts .seg a.on { color: var(--accent); background: color-mix(in srgb, var(--accent) 12%, transparent); }
+  .tlyopts .dl { margin-left: auto; }
+  .tlynote { font-size: 12px; color: var(--dim); margin: 0 0 10px; }
+
+  .stcards { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 10px; margin: 0 0 14px; }
+  .stcard { border: 1px solid var(--line); border-radius: 8px; background: var(--panel); padding: 10px 12px; }
+  .stcard .k { font-size: 11px; color: var(--dim); letter-spacing: .03em; }
+  .stcard .v { font-size: 22px; font-weight: 700; font-variant-numeric: tabular-nums; margin-top: 2px; }
+  .stcard .v small { font-size: 12px; font-weight: 400; color: var(--dim); }
+  .stcard .meter { height: 6px; border-radius: 3px; background: var(--line); margin-top: 6px; overflow: hidden; }
+  .stcard .meter i { display: block; height: 100%; background: var(--accent); }
+  .stcard.done .meter i { background: var(--ok, #2e9d5b); }
+
+  .stgrid { display: grid; grid-template-columns: minmax(0, 3fr) minmax(0, 2fr); gap: 14px; align-items: start; }
+  @media (max-width: 1000px) { .stgrid { grid-template-columns: 1fr; } }
+  .stgrid h3 { font-size: 13px; margin: 0 0 6px; }
+  .tlywrap { overflow-x: auto; border: 1px solid var(--line); border-radius: 8px; background: var(--panel); }
+  table.st { border-collapse: collapse; width: 100%; font-size: 12.5px; font-variant-numeric: tabular-nums; }
+  table.st th, table.st td { padding: 3px 10px; border-bottom: 1px solid var(--line); white-space: nowrap; }
+  table.st thead th { text-align: right; color: var(--fg); font-weight: 600;
+                      /* 공통 표 머리는 대문자로 바꾼다 */
+                      text-transform: none; letter-spacing: 0; }
+  table.st th.l, table.st td.l { text-align: left; }
+  table.st td.n { text-align: right; }
+  table.st td.l a { color: var(--fg); text-decoration: none; }
+  table.st td.l a:hover { color: var(--accent); text-decoration: underline; }
+  table.st td.bar { width: 28%; min-width: 80px; background: transparent; }
+  table.st td.bar i { display: block; height: 8px; border-radius: 2px; background: var(--accent); }
+  table.st .chip { display: inline-block; font-size: 10.5px; padding: 0 5px; border-radius: 4px;
+                   border: 1px solid var(--line); color: var(--dim); margin-right: 3px; }
+  table.st .sw { display: inline-block; width: 9px; height: 9px; border-radius: 2px; margin-right: 5px;
+                 vertical-align: -1px; }
+  table.st tr.frag td { color: var(--dim); }
+  table.st tbody.foot td { color: var(--dim); border-bottom: 0; }
+  table.st tbody.foot tr:first-child td { border-top: 2px solid var(--line); }
+  .stempty { padding: 18px; color: var(--dim); font-size: 13px; }
+</style>
+
+<div class="crumb"><a href="{% url 'index' %}">데이터셋</a> /
+  <a href="{% url 'dataset' slug %}">{{ label }}</a> / 산출표</div>
+<div class="pagehead"><h2>{{ label }} 산출표</h2></div>
+
+<div class="tlyopts">
+  {% include "viewer/_tally_target.html" %}
+  <span class="seg" aria-label="종 표의 차례">
+    <a href="?target={{ target }}" class="{% if sort != 'name' %}on{% endif %}">많은 순</a><a
+       href="?target={{ target }}&sort=name" class="{% if sort == 'name' %}on{% endif %}">속 알파벳순</a>
+  </span>
+  <a class="dl" href="?format=csv&target={{ target }}{% if sort == 'name' %}&sort=name{% endif %}">CSV 내려받기</a>
+</div>
+<p class="tlynote">
+  검토를 마친 시야만 셉니다 · <b>파편은 세지 않습니다</b> · 종 % 의 분모는 <b>종명이 붙은 개체</b> ·
+  완형 = 세는 개체(파편 분류를 뺀 것) · 슬라이드 화면 분류 상자의 <b>종</b> 쪽과 같은 셈입니다
+</p>
+
+<div class="stcards">
+  <div class="stcard"><div class="k">검토 완료 시야</div>
+    <div class="v">{{ reviewed_groups }}<small> / {{ n_groups }}</small></div></div>
+  <div class="stcard{% if target_pct >= 100 %} done{% endif %}" id="tgtcard"><div class="k">완형 / 해상도 목표 {{ target }}</div>
+    <div class="v">{{ col.n_counted }}<small> / {{ target }} · {{ target_pct }}%</small></div>
+    <div class="meter"><i style="width:{{ target_bar }}%"></i></div></div>
+  <div class="stcard"><div class="k">종명 붙은 개체 (동정률)</div>
+    <div class="v">{{ col.n_identified }}<small>{% if col.id_pct is not None %} · {{ col.id_pct }}%{% endif %}</small></div>
+    <div class="meter"><i style="width:{{ col.id_pct|default:0 }}%"></i></div></div>
+  <div class="stcard"><div class="k">종명 없음</div>
+    <div class="v">{{ col.n_unnamed }}</div></div>
+  <div class="stcard"><div class="k">파편 (검출 중)</div>
+    <div class="v">{{ col.n_frag }}<small>{% if col.frag_pct is not None %} · {{ col.frag_pct }}%{% endif %}</small></div></div>
+</div>
+
+<div class="stgrid">
+  <div>
+    <h3>종 ({{ sp_rows|length }})</h3>
+    <div class="tlywrap">
+    {% if sp_rows %}
+    <table class="st" id="sptable">
+      <thead><tr>
+        <th class="l">종명</th><th class="l">분류</th><th>개체</th>
+        <th title="종명이 붙은 개체 중">% (종명 중)</th><th title="세는 개체(완형) 중">% (완형 중)</th><th></th>
+      </tr></thead>
+      <tbody>
+        {% for r in sp_rows %}
+        <tr>
+          <td class="l" title="{{ r.name }}"><a href="{% url 'catalog' slug %}?q={{ r.name|urlencode }}"><i>{{ r.short }}</i></a></td>
+          <td class="l">{% for c in r.cls %}<span class="chip" title="{{ c.key }} {{ c.n }}">{% if c.color %}<span class="sw" style="background:rgb({{ c.color }})"></span>{% endif %}{{ c.short }}{% if r.cls|length > 1 %} {{ c.n }}{% endif %}</span>{% endfor %}</td>
+          <td class="n">{{ r.n }}</td>
+          <td class="n">{{ r.share_id }}</td>
+          <td class="n">{{ r.share_cnt|default_if_none:"" }}</td>
+          <td class="bar"><i style="width:{{ r.bar }}%"></i></td>
+        </tr>
+        {% endfor %}
+      </tbody>
+      <tbody class="foot">
+        <tr><td class="l">종명 붙은 개체</td><td></td><td class="n">{{ col.n_identified }}</td><td class="n">100</td><td class="n">{{ col.id_pct|default_if_none:"" }}</td><td></td></tr>
+        <tr><td class="l">종명 없음</td><td></td><td class="n">{{ col.n_unnamed }}</td><td></td><td></td><td></td></tr>
+        <tr><td class="l">세는 개체 (완형)</td><td></td><td class="n">{{ col.n_counted }}</td><td></td><td class="n">{% if col.n_counted %}100{% endif %}</td><td></td></tr>
+      </tbody>
+    </table>
+    {% else %}
+    <p class="stempty">종명이 붙은 개체가 아직 없습니다 — <a href="{% url 'catalog' slug %}">개체 카탈로그</a>에서 적습니다.</p>
+    {% endif %}
+    </div>
+  </div>
+  <div>
+    <h3>분류</h3>
+    <div class="tlywrap">
+    {% if cls_rows %}
+    <table class="st" id="clstable">
+      <thead><tr>
+        <th class="l">분류</th><th>개체</th><th title="세는 개체(완형) 중">% (완형 중)</th>
+        <th title="그 분류에서 종명이 붙은 개체">종명</th><th title="그 분류 안의 동정률">동정률</th>
+      </tr></thead>
+      <tbody>
+        {% for c in cls_rows %}
+        <tr class="{% if not c.counted %}frag{% endif %}">
+          <td class="l">{% if c.color %}<span class="sw" style="background:rgb({{ c.color }})"></span>{% endif %}{{ c.label }}{% if not c.counted %} <span class="chip">세지 않음</span>{% endif %}</td>
+          <td class="n">{{ c.n }}</td>
+          <td class="n">{{ c.share_cnt|default_if_none:"" }}</td>
+          <td class="n">{{ c.n_id|default_if_none:"" }}</td>
+          <td class="n">{% if c.id_pct is not None %}{{ c.id_pct }}%{% endif %}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% else %}
+    <p class="stempty">검토를 마친 시야가 아직 없습니다.</p>
+    {% endif %}
+    </div>
+  </div>
+</div>
+{% endblock %}

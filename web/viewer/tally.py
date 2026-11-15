@@ -588,3 +588,106 @@ def taxa_options(t: dict, loc) -> list[dict]:
             ps = tot.get("per_species") or {}
             o["total"] = sum(ps.get(m, 0) for m in _members(item))
     return list(seen.values())
+
+
+# ─────────────────────────────────────────── 슬라이드 산출표 (261)
+
+def slide_table(slide, target: int = TARGET_DEFAULT, sort: str = "n") -> dict:
+    """슬라이드 하나의 **산출표 화면** (261 · 사용자 11-15: "지금 건 그대로 두고
+    화면을 따로 하나"). 슬라이드 화면 분류 상자의 `종` 쪽(258)과 **같은 셈**이다 —
+    `column()` 하나를 두 화면이 쓴다. 다른 것은 펼친 정도다:
+
+    - 요약 — 검토 완료 시야 · 완형(세는 개체) · 해상도 목표 · 동정률 · 파편
+    - 종 표 — 개수 · 종명 붙은 개체 중 % · 세는 개체 중 % · 붙은 분류
+    - 분류 표 — 분류마다 개체 · **그 분류 안의 동정률** · 세는가
+
+    `sort` — `n`(많은 순, 기본) · `name`(속 알파벳순 — 옛 산출표의 차례, 윗줄과 같은
+    속은 줄인다).
+    """
+    summary = data._slide_summary(slide)
+    col = column(summary)
+    n_id, n_cnt = col["n_identified"], col["n_counted"]
+    rows_by = {r["key"]: r for r in data._class_rows()}
+
+    sp_rows = []
+    for name, n in col["per_species"].items():
+        by_cls = col["species_cls"].get(name, {})
+        cls_keys = sorted(by_cls, key=lambda k: (-by_cls[k], k))
+        sp_rows.append({
+            "name": name, "n": n,
+            "share_id": round(100.0 * n / n_id, 1) if n_id else None,
+            "share_cnt": round(100.0 * n / n_cnt, 1) if n_cnt else None,
+            "cls": [{"key": k, "short": (rows_by.get(k) or {}).get("short", k),
+                     "color": (rows_by.get(k) or {}).get("color") or "",
+                     "n": by_cls[k]} for k in cls_keys],
+        })
+    if sort == "name":
+        sp_rows.sort(key=lambda r: _name_key(r["name"]))
+        prev = ""
+        for r in sp_rows:
+            r["short"] = _short(r["name"], prev)
+            prev = r["name"]
+    else:
+        sp_rows.sort(key=lambda r: (-r["n"], _name_key(r["name"])))
+        for r in sp_rows:
+            r["short"] = r["name"]
+    top = max((r["n"] for r in sp_rows), default=0)
+    for r in sp_rows:
+        r["bar"] = round(100 * r["n"] / top) if top else 0
+
+    # 분류마다 — 세는 분류 먼저(정렬 차례), 파편은 뒤에 따로
+    id_by_cls: Counter = Counter()
+    for name, by_cls in col["species_cls"].items():
+        id_by_cls.update(by_cls)
+    cls_rows = []
+    for r in data._class_rows():
+        n = col["per_cls"].get(r["key"], 0)
+        if not n:
+            continue
+        counted = bool(r["counted"])
+        cls_rows.append({
+            "key": r["key"], "label": r["label"], "short": r["short"],
+            "color": r["color"] or "", "n": n, "counted": counted,
+            "n_id": id_by_cls.get(r["key"], 0) if counted else None,
+            "id_pct": (round(100.0 * id_by_cls.get(r["key"], 0) / n, 1)
+                       if counted else None),
+            "share_cnt": round(100.0 * n / n_cnt, 1) if counted and n_cnt else None,
+        })
+    cls_rows.sort(key=lambda c: (not c["counted"],
+                                 rows_by[c["key"]]["sort_order"], c["key"]))
+    return {
+        "col": col, "target": target,
+        "target_pct": round(100.0 * n_cnt / target, 1),
+        "target_bar": min(100, round(100 * n_cnt / target)),
+        "n_groups": summary["n_groups"],
+        "reviewed_groups": summary["reviewed_groups"],
+        "sp_rows": sp_rows, "cls_rows": cls_rows, "sort": sort,
+    }
+
+
+def slide_csv(st: dict) -> str:
+    """슬라이드 산출표 CSV — 종 표 + 요약 줄. 속명을 줄이지 않는다."""
+    import csv
+    import io
+    buf = io.StringIO()
+    w = csv.writer(buf)
+    w.writerow(["species", "n", "% of identified", "% of counted", "classes"])
+    for r in st["sp_rows"]:
+        w.writerow([r["name"], r["n"],
+                    r["share_id"] if r["share_id"] is not None else "",
+                    r["share_cnt"] if r["share_cnt"] is not None else "",
+                    " ".join(f'{c["key"]}:{c["n"]}' for c in r["cls"])])
+    c = st["col"]
+    w.writerow([])
+    for k, v in (("identified", c["n_identified"]),
+                 ("counted (non-fragment)", c["n_counted"]),
+                 ("unnamed", c["n_unnamed"]),
+                 ("identified %", c["id_pct"] if c["id_pct"] is not None else ""),
+                 ("fragments", c["n_frag"]),
+                 ("fragment % of detected",
+                  c["frag_pct"] if c["frag_pct"] is not None else ""),
+                 (f"target attainment % of {st['target']} counted", st["target_pct"]),
+                 ("reviewed viewpoints", st["reviewed_groups"]),
+                 ("viewpoints", st["n_groups"])):
+        w.writerow([f"({k})", v])
+    return buf.getvalue()

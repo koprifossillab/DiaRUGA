@@ -15,6 +15,7 @@ from django.urls import reverse
 from .base import DiaRUGATestCase
 from . import factories as fx
 from .. import data, tally
+from ..models import Slide
 
 
 def _done(w):
@@ -431,3 +432,69 @@ class TallyOutcropPlotTest(DiaRUGATestCase):
         self.assertIn("시료 차례", html)
         self.assertNotIn("깊이 (cm)", html)
         self.assertNotIn("코어 자료 (같은 깊이 축)", html)
+
+
+class SlideTallyTest(DiaRUGATestCase):
+    """슬라이드 산출표 화면 (261) — 슬라이드 화면 `종` 쪽과 같은 셈을 펼친 것."""
+
+    @classmethod
+    def setUpTestData(cls):
+        fx.make_classes()
+        # 후보 여덟 = round · round_frag · rod · rod_frag · eucampia · chaetoceros ·
+        # rhizosolenia · dactyliosolen (CLASSES 차례) — 세는 것 여섯, 파편 둘
+        w = fx.make_world(slug="s", depth_cm=71.0, n_candidates=8)
+        k = w.keys()
+        fx.add_review(w.vp, k[0], species="Thalassiosira gracilis")
+        fx.add_review(w.vp, k[4], species="Thalassiosira gracilis")      # 분류 둘에 걸친 종명
+        fx.add_review(w.vp, k[2], species="Fragilariopsis curta")
+        fx.add_review(w.vp, k[1], species="Thalassiosira gracilis")      # 파편 — 안 센다
+        _done(w)
+
+    def get(self, qs=""):
+        return self.client.get(reverse("slide_tally", args=["s"]) + qs)
+
+    def rows(self, html, tid):
+        m = re.search(rf'<table class="st" id="{tid}">.*?<tbody>(.*?)</tbody>', html, re.S)
+        self.assertIsNotNone(m, tid)
+        return [re.sub(r"<[^>]+>", "|", tr) for tr in re.findall(r"<tr.*?</tr>", m.group(1), re.S)]
+
+    def test_종_표는_파편을_안_세고_많은_순이다(self):
+        html = self.get().content.decode()
+        rs = self.rows(html, "sptable")
+        self.assertEqual(len(rs), 2)
+        self.assertIn("Thalassiosira gracilis", rs[0])
+        self.assertRegex(rs[0], r"(?s)\|2\|.*\|66\.7\|.*\|33\.3\|")   # 종명 3 중 2 · 완형 6 중 2
+        self.assertIn("Fragilariopsis curta", rs[1])
+
+    def test_속_알파벳순(self):
+        rs = self.rows(self.get("?sort=name").content.decode(), "sptable")
+        self.assertIn("Fragilariopsis curta", rs[0])
+
+    def test_분류_표는_분류_안의_동정률과_파편을_가른다(self):
+        st = tally.slide_table(Slide.objects.get(slug="s"))
+        by = {c["key"]: c for c in st["cls_rows"]}
+        self.assertEqual((by["round"]["n"], by["round"]["id_pct"]), (1, 100.0))
+        self.assertEqual((by["chaetoceros"]["n"], by["chaetoceros"]["id_pct"]), (1, 0.0))
+        self.assertFalse(by["round_frag"]["counted"])
+        self.assertIsNone(by["round_frag"]["id_pct"])
+        # 세는 분류가 먼저, 파편이 뒤
+        self.assertEqual([c["counted"] for c in st["cls_rows"]], [True] * 6 + [False] * 2)
+
+    def test_슬라이드_화면_종_쪽과_같은_수다(self):
+        st = tally.slide_table(Slide.objects.get(slug="s"))
+        box = data.dataset_detail("s")
+        box = data._species_box(box)["tally_col"] if "tally_col" not in box else box["tally_col"]
+        for k in ("n_counted", "n_identified", "n_unnamed", "id_pct", "n_frag", "frag_pct"):
+            self.assertEqual(st["col"][k], box[k], k)
+
+    def test_해상도_목표(self):
+        html = self.get().content.decode()
+        self.assertRegex(html, r"6<small> / 400 · 1\.5%")
+        html = self.get("?target=200").content.decode()
+        self.assertRegex(html, r"6<small> / 200 · 3\.0%")
+        csv_ = self.get("?format=csv&target=250").content.decode()
+        self.assertIn("(target attainment % of 250 counted),2.4", csv_)
+        self.assertIn("Thalassiosira gracilis,2,66.7,33.3,eucampia:1 round:1", csv_)
+
+    def test_없는_슬라이드는_404(self):
+        self.assertEqual(self.client.get(reverse("slide_tally", args=["nope"])).status_code, 404)

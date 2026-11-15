@@ -94,6 +94,7 @@ urlpatterns = [
     # **저장은 개체 하나만 고치는 좁은 문이다** (`save_catalog`) — `/review` 처럼
     # 범위를 갈아치우지 않으므로 017·027·053 계열의 사고가 안 생긴다.
     path("d/<slug:slug>/catalog/", views.catalog, name="catalog"),
+    path("d/<slug:slug>/tally/", views.slide_tally, name="slide_tally"),
     path("d/<slug:slug>/catalog/save", views.save_catalog, name="save_catalog"),
     # 도감 도판 (P15 §6 · 129). **DB 를 안 본다** — 파일이 곧 자료다
     # (`viewer/atlas.py`). 글자 자료(`AtlasEntry`)가 아직 없어도 이 화면은 선다.

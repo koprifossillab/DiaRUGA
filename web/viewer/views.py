@@ -472,6 +472,33 @@ def _target_ctx(request, t):
     return {"target_links": links}
 
 
+def slide_tally(request, slug):
+    """슬라이드 하나의 산출표 화면 (261). 셈은 `tally.slide_table`.
+
+    `?target=` 해상도 목표(200~400) · `?sort=name` 속 알파벳순 · `?format=csv`.
+    슬라이드 화면 분류 상자의 `종` 쪽(258)은 그대로 둔다 — 이 화면은 그것을 펼친 것이다.
+    """
+    from . import tally
+    to = _merged_away(slug)
+    if to:
+        return redirect(f"{to}tally/?from={slug}")
+    slide = Slide.objects.filter(slug=slug).first()
+    if slide is None:
+        raise Http404(f"unknown dataset: {slug}")
+    sort = "name" if request.GET.get("sort") == "name" else "n"
+    st = tally.slide_table(slide, tally.parse_target(request.GET.get("target")), sort)
+    if request.GET.get("format") == "csv":
+        resp = HttpResponse("\ufeff" + tally.slide_csv(st),
+                            content_type="text/csv; charset=utf-8")
+        resp["Content-Disposition"] = f'attachment; filename="{slug}_tally.csv"'
+        return resp
+    loc = slide.locality
+    return render(request, "viewer/slide_tally.html", {
+        **st, "slug": slug, "label": slide.name, "slide": slide, "loc": loc,
+        **_target_ctx(request, st),
+    })
+
+
 def _tally_plot(request, t):
     """산출 그래프 (P34 5단계). 그림은 `tally.plot` 이 SVG 로 만든다.
 
