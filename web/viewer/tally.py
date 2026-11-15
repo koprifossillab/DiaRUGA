@@ -272,8 +272,17 @@ def table_csv(t: dict, unit: str = "n") -> str:
 # 항목은 종명이거나 `cls:<분류>` 다 — CRS 는 종 하나가 아니라 **`chaetoceros`
 # 분류 전체**다(사용자 11-13: "일단 c 클래스 전체로").
 CLS_PREFIX = "cls:"
+GRP_PREFIX = "grp:"
+# **종 묶음** — 논문이 한 값으로 다루는 종들. 분자는 구성 종의 합, 분모는 종처럼
+# 종명이 붙은 개체다(분류 항목과 다르다). 사용자 11-15: FCC complex =
+# *F. curta* + *F. cylindrus* — 남극 해빙 지표로 함께 센다.
+GROUPS = {
+    "fcc": {"name": "FCC complex",
+            "members": ("Fragilariopsis curta", "Fragilariopsis cylindrus")},
+}
 DEFAULT_TAXA = ["Actinocyclus actinochilus", "Eucampia antarctica",
-                "Fragilariopsis kerguelensis", "Rhizosolenia styliformis",
+                "Fragilariopsis kerguelensis", "grp:fcc",
+                "Rhizosolenia styliformis",
                 "Thalassionema nitzschioides", "cls:chaetoceros"]
 SETTING_KEY = "tally_default_taxa"
 
@@ -302,8 +311,28 @@ def taxon_label(item: str) -> dict:
         full = row["label"] if row else key
         return {"item": item, "name": name, "note": f"{full} 분류 전체",
                 "italic": False, "is_cls": True}
+    if item.startswith(GRP_PREFIX):
+        g = GROUPS.get(item[len(GRP_PREFIX):])
+        if g:
+            note = " + ".join(_abbr(m) for m in g["members"])
+            return {"item": item, "name": g["name"], "note": note,
+                    "italic": False, "is_cls": False, "is_grp": True}
     return {"item": item, "name": item, "note": "", "italic": True,
             "is_cls": False}
+
+
+def _abbr(name: str) -> str:
+    genus, _, rest = name.partition(" ")
+    return f"{genus[0]}. {rest}" if rest else name
+
+
+def _members(item: str) -> tuple:
+    """종 묶음이면 구성 종, 아니면 그 종 하나. 모르는 묶음은 빈 것 — 0 이 아니라
+    `None` 이 나오게 부르는 쪽이 거른다."""
+    if item.startswith(GRP_PREFIX):
+        g = GROUPS.get(item[len(GRP_PREFIX):])
+        return tuple(g["members"]) if g else ()
+    return (item,)
 
 
 def taxon_values(cols: list[dict], item: str) -> list[float | None]:
@@ -319,9 +348,11 @@ def taxon_values(cols: list[dict], item: str) -> list[float | None]:
             d = c["n_counted"]
             out.append(round(100.0 * c["per_cls"].get(key, 0) / d, 2) if d else None)
     else:
+        ms = _members(item)
         for c in cols:
             d = c["n_identified"]
-            out.append(round(100.0 * c["per_species"].get(item, 0) / d, 2) if d else None)
+            n = sum(c["per_species"].get(m, 0) for m in ms)
+            out.append(round(100.0 * n / d, 2) if d and ms else None)
     return out
 
 
@@ -384,7 +415,8 @@ def plot(t: dict, taxa: list[str], series_keys: list[str] | None = None) -> dict
         vals = taxon_values(cols, item)
         top = max([v for v in vals if v is not None] + [0])
         panels.append({"title": lab["name"], "italic": lab["italic"],
-                       "sub": "% (세는 개체)" if lab["is_cls"] else "%",
+                       "sub": ("% (세는 개체)" if lab["is_cls"]
+                               else "% (종 합)" if lab.get("is_grp") else "%"),
                        "kind": "pct", "vals": vals, "xmax": _nice_max(top)})
     idv = [c["id_pct"] for c in cols]
     target = t.get("target")
@@ -513,6 +545,8 @@ def plot(t: dict, taxa: list[str], series_keys: list[str] | None = None) -> dict
              f'% 의 분모: 종 = 종명이 붙은 개체 · 분류 항목 = 세는 개체 · 파편은 세지 않는다 · '
              f'검토를 마친 시야만'
              + (f' · 완형/{target} = 세는 개체 ÷ 해상도 목표 {target}' if target else '')
+             + "".join(f' · {escape(taxon_label(x)["name"])} = {escape(taxon_label(x)["note"])}'
+                       for x in taxa if x.startswith(GRP_PREFIX) and x[len(GRP_PREFIX):] in GROUPS)
              + '</text>')
     o.append("</svg>")
     return {"svg": "".join(o), "panels": len(panels),
@@ -541,6 +575,8 @@ def taxa_options(t: dict, loc) -> list[dict]:
         add(x, "saved")
     for r in t["rows"]:
         add(r["name"], "table")
+    for k in GROUPS:
+        add(GRP_PREFIX + k, "group")
     for r in data._class_rows():
         if r["counted"] and r.get("is_taxon"):
             add(CLS_PREFIX + r["key"], "class")
@@ -549,5 +585,6 @@ def taxa_options(t: dict, loc) -> list[dict]:
         if item.startswith(CLS_PREFIX):
             o["total"] = (tot.get("per_cls") or {}).get(item[len(CLS_PREFIX):], 0)
         else:
-            o["total"] = (tot.get("per_species") or {}).get(item, 0)
+            ps = tot.get("per_species") or {}
+            o["total"] = sum(ps.get(m, 0) for m in _members(item))
     return list(seen.values())

@@ -293,6 +293,27 @@ class TallyPlotTest(DiaRUGATestCase):
         crs = tally.taxon_values(t["cols"], "cls:rod")
         self.assertEqual(crs, [50.0, 50.0, 50.0])          # 세는 개체 둘 중 rod 하나
 
+    def test_FCC_는_두_종의_합을_종명_붙은_개체로_나눈다(self):
+        # 사용자 11-15 — FCC complex = F. curta + F. cylindrus
+        t = tally.locality_table("RS23", "GC03")
+        self.assertEqual(tally.taxon_values(t["cols"], "grp:fcc"), [50.0, None, 100.0])
+        # cylindrus 를 하나 얹으면 분자에 더해진다(분모도 그 개체만큼 는다)
+        c = t["cols"][0]
+        c["per_species"]["Fragilariopsis cylindrus"] = 2
+        c["n_identified"] += 2
+        self.assertEqual(tally.taxon_values(t["cols"], "grp:fcc")[0], 75.0)
+        self.assertEqual(tally.taxon_values(t["cols"], "grp:없는것"), [None] * 3)
+        lab = tally.taxon_label("grp:fcc")
+        self.assertEqual((lab["name"], lab["note"]),
+                         ("FCC complex", "F. curta + F. cylindrus"))
+
+    def test_FCC_가_기본_그래프에_있다(self):
+        self.assertIn("grp:fcc", tally.DEFAULT_TAXA)
+        ps = self.panels(self.client.get(self.url()).content.decode())
+        fcc = [p for p in ps if p[2].startswith("FCC")]
+        self.assertEqual(len(fcc), 1)
+        self.assertEqual(fcc[0][1], 2)                     # 71 · 369 — 231 은 분모 없음
+
     def test_고른_것이_없으면_전역_기본(self):
         ps = self.panels(self.client.get(self.url()).content.decode())
         self.assertEqual(len(ps), len(tally.DEFAULT_TAXA) + 2)
