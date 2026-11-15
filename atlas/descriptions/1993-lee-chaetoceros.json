@@ -3,6 +3,12 @@
  "source": "Diadiction/outputs/descriptions/papers/1993_lee_chaetoceros_yeonil.json (tools/parse_descriptions_papers.py)",
  "entries": [
   {
+   "seq": 1,
+   "name": "Chaetoceros lauderi Ralfs in Lauder, 1864",
+   "description": "Chaetocereos lauderi Ralfs in Lauder, 1864 Pl. 1, fig. 1 ; Pl. 2, fig. 4, 7 1864 Chaetocereos lauderi Ralfs in Lauder, p. 77, pl. 8, fig. 3, 4. 1943 C. lauderi Ralfs in Lauder-Cupp, 1943, p. 118, fig. 73. 1979 C. lauderi Ralfs in Lauder-Hargraves, 1979, p. 102, figs. 7 - 12. 1988 C. lauderi Ralfs in Lauder-Rines & Hargraves, p. 84, figs. 170 - 173. Remarks : The present specimens are resting spores of this species. Resting spores are variable. The primary valve is more or less capitate, and is circular at the base. The capitate portion of the primary valve is covered with irregularly sereted spines. The secondary valve is quite reduced in size, somewhat convex with slightly flattened apex, and also have short spines in the center, although they are not as thick as those on the primary valve. No girdle bands are present between the two valves. Although several authors have described irregular spines on the secondary valve, which are not as thick as those on the primary valve. The spines were not present in present material. According to Cupp (1943), this species is neritic and south temperate form.",
+   "description_source": "OCR (1993_lee_chaetoceros_yeonil · 항목 008 · PDF p.11) · 이름 근사 일치: 색인 chaetoceros lauderi ↔ 원문 chaetocereos lauderi"
+  },
+  {
    "seq": 2,
    "name": "Chaetoceros subsecundus (Grunow) Hustedt, 1930",
    "description": "Chaetoceros subsecundus (Grunow) Hustedt, 1930 Pl. 1, fig. 2, 3, 4 ; Pl. 3, fig. 18 1930 Chaetoceros subsecundus (Grunow) Hustedt, p. 709, fig. 404. 1943 C. subsecundus (Grunow) Hustedt – Cupp, p. 130, fig. 83. 1988 C. diadema (Ehr.) Gran – Rines & Hargraves, p. 76, figs. 150, 151, 153. Remarks : The present specimens are resting spores of the species. Valve dissimilar. Primary valve evenly vaulted, with two to several process, which branch in several direction. Secondary valve fits tightly under the margin of the primary valve, and smooth and slightly vaulted in center. No girdle bands are present between the two valve. According to Cupp (1943), this species is neritic and boreal – arctic or north temperate species.",
@@ -55,6 +61,12 @@
    "name": "Dossetia sp.",
    "description": "Dossetia sp. Pl. 1, fig. 15 ; Pl. 2, fig. 19 ; Pl. 3, fig. 19 Description : Valve broadly elliptical or broadly lanceolate and highly vaulted with a smooth surface. The convex main part of the valve shows an irregular granular structure. A single ring of irregular and strongly dentate spines are surrounded the valve in valv plane. Remarks : The present specimens is similar to D. temperei in outline, though the valve shape is more round than that of the D. temperei.",
    "description_source": "OCR (1993_lee_chaetoceros_yeonil · 항목 023 · PDF p.18)"
+  },
+  {
+   "seq": 11,
+   "name": "Stephanopyxis lineata (Ehrenberg) Forti, 1912",
+   "description": "Stephanophyxis lineata (Ehrenberg) Forti, 1912 Pl. 1, fig. 16 1912 Stephanophyxis lineata (Ehr.) Forti, p. 83. 1967 S. lineata (Ehr.) Forti - Wornardt, p. 17, figs. 9 - 11. 1968 S. lineata (Ehr.) Forti - Hajos, p. 85, Taf. IX, fig. 5. 1979 S. lineata (Ehr.) Forti - Abbott & Andrews, p. 252, Pl. 5, fig. 28. Remarks : Distinguished by the high marginal spines near the border and the linear pattern of areolae.",
+   "description_source": "OCR (1993_lee_chaetoceros_yeonil · 항목 020 · PDF p.17) · 이름 근사 일치: 색인 stephanopyxis lineata ↔ 원문 stephanophyxis lineata"
   },
   {
    "seq": 12,
@@ -123,6 +135,18 @@
    "description_source": "OCR (1993_lee_chaetoceros_yeonil · 항목 018 · PDF p.15)"
   },
   {
+   "seq": 24,
+   "name": "Cladogramma californicium Ehrenberg, 1854",
+   "description": "Cladogramma californicum Ehrenberg, 1854 Pl. 2, fig. 18 1948 Cladogramma dubium Lohman, p. 168, pl. 9, fig. 5. 1854 C. californicum Ehrenberg, pl. 33, no. 13, fig. 1 ; 1959 C. californicum Ehrenberg - Kanaya, p. 87, pl. 6, fig. 1. 1967 C. californicum Ehrenberg - Wornardt, p. 42, fig. 64. 1968 C. californicum Ehrenberg - Koizumi, p. 210, pl. 32, fig. 19. Remarks : Valve circular, with vaulted center, and thick walled with broadly hyaline margin. Radial ridges (=furrow), about 15 - 25, are running from the margin towards the center, but not reach at the center. The central area hyaline and small. The ridges are variable in length. This species is marine, tychopelagic and benthonics species. This species can be distinguished from C. jordani Hanna 1927 by its broader hyaline margin and coarser radial furrows.",
+   "description_source": "OCR (1993_lee_chaetoceros_yeonil · 항목 022 · PDF p.18) · 이름 근사 일치: 색인 cladogramma californicium ↔ 원문 cladogramma californicum"
+  },
+  {
+   "seq": 25,
+   "name": "Stephanopyxis corona (Ehrenberg) Grunow, 1882",
+   "description": "Stephanophyxis corona (Ehrenberg) Grunow, 1882 Pl. 2, fig. 20 ; Pl. 3, fig. 3 1976 Stephanophyxis corona (Ehr.) Grunow - Andrews, p. 9, pl. 1, figs. 11 - 12. 1979 S. corona (Ehr.) Grunow - Abbott and Andrews, p. 252, pl. 5, fig. 27. Remarks : Valve round, convex, hemispherical, but markedly flattened in the central area. Margin loculate, convex. Valve covered with an areolate net arranged in orderly hexagonal pattern. A ring of prominent thornlike siliceous spines occurs at about half the distance from the margin to the center.",
+   "description_source": "OCR (1993_lee_chaetoceros_yeonil · 항목 019 · PDF p.17) · 이름 근사 일치: 색인 stephanopyxis corona ↔ 원문 stephanophyxis corona"
+  },
+  {
    "seq": 26,
    "name": "Liradiscus ovalis Greville, 1865a",
    "description": "Liradiscus ovalis Greville, 1865a Pl. 2, fig. 23, 25 1865a Liradiscus ovalis Greville, p. 5, pl. 1, figs. 15–16. 1927a L. Greville–Hanna, p. 114, pl. 19, figs. 4–6. 1968 L. ovalis Greville–Hajos, p. 114, Taf. XXVIII, figs. 8, 9, 12. 1979 L. ovalis Greville–Abbott & Andrews, p. 246, pl. 4, fig. 20. Remarks : Valve convex, ovale to ellipsoidal, with bluntly round apices. Valve surface covered with short spines having random distribution. The sinous reticulation are coarse and irregular in shape. A marginal rim is narrow and irregularly striate. In girdle view, a frustule is lens-shaped. This species can be distinguish from other Liradiscus species by its bluntly round ends, and its coarse sinous recticulation.",
@@ -169,6 +193,12 @@
    "name": "Xanthiopyxis globosa Ehrenberg, 1845",
    "description": "Xanthiopyxis globosa Ehrenberg, 1845 Pl. 3, fig. 22 ? 1845 Xanthiopyxis globosa Ehrenberg, p. 273. 1932 Xanthiopyxis globosa Ehrenberg - Hanna, p. 224, pl. 18, fig. 3. 1959 Xanthiopyxis globosa Ehrenberg - Kanaya, p. 115. Remarks : In valve view, valves nearly circular or globular in outline. Valve covered with many spines which are longer and project beyond margin in valve view. Xanthiopyxis micropunctata Hajos, 1968 No illustration 1968 Xanthiopyxis micropunctata Hajos, p. 117, Taf. XXV - III, figs. 1 - 2. Remarks : Valve slightly elongate - oval to ovoid shape. Fine puncta are densely and irregularly distributed over the valve surface.",
    "description_source": "OCR (1993_lee_chaetoceros_yeonil · 항목 037 · PDF p.22)"
+  },
+  {
+   "seq": 34,
+   "name": "Chaetoceros lorenzianus Grunow, 1863",
+   "description": "Chaetocereos lorenzianus Grunow, 1863 Pl. 3, fig. 28 1863 Chaetocereos lorenzianus Grunow, p. 157, pl. 5, fig. 13. 1943 C. lorenzianus Grunow – Cupp, p. 118, fig. 71. 1964 C. lorenzianus Grunow – Hendey, p. 124, pl. 16, fig. 1. 1988 C. lorenzianus Grunow – Rines & Hargraves, p. 85, figs. 178 – 184. Remarks : The present specimens are resting spores of this species. Valve dissimilar. Primary valve have two conical protuberances each of which are repeatedly dichotomously branched process. Secondary valve smooth, centrally inflated and slightly concave in central area, and mantle distinct. The protuberances of present specimens are more shorter and straight than that of the Hendey's figure (1964). The ecology of this species is polyhalobous, meioeuryhaline. According to Cupp (1943), this species is neritic, tropical and temperate species. The resting spores of this species are very similar to Chaetoceros dicladia in valve shape.",
+   "description_source": "OCR (1993_lee_chaetoceros_yeonil · 항목 009 · PDF p.11–13) · 이름 근사 일치: 색인 chaetoceros lorenzianus ↔ 원문 chaetocereos lorenzianus"
   }
  ]
 }

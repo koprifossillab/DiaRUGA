@@ -105,6 +105,12 @@
    "description_source": "OCR (Schmidt 해설면 · 그림 번호로 짝 지은 줄)"
   },
   {
+   "seq": 35,
+   "name": "Achnanthes minutisslma",
+   "description": "49, 50. Bremen, r. S. Achnanthes minutissima Kütz.",
+   "description_source": "OCR (Schmidt 해설면 · 그림 번호로 짝 지은 줄) · 이름 근사 일치: 색인 minutisslma ↔ minutissima"
+  },
+  {
    "seq": 36,
    "name": "Achnanthes modica",
    "description": "28—31. Drammensfjord, Norwegen, r. m. Achnanthes modica Hust., l. c., S. 388, Fig. 72—75.",
@@ -127,6 +133,12 @@
    "name": "Achnanthes obliqua",
    "description": "1—5. Suistamonjärvi, Finnland, r. S. Achnanthes obliqua (Greg.) Hust.",
    "description_source": "OCR (Schmidt 해설면 · 그림 번호로 짝 지은 줄)"
+  },
+  {
+   "seq": 40,
+   "name": "Achnanthes oblongelladstr",
+   "description": "49—54. Bach bei Surabaya, Sumatra, r. S. Achnanthus oblongella Östr. Freshwat. Diat. Koh Chang, S. 34, F. 9. Charakteristisch sind die grob punktierten Transapikalstreifen der raphenlosen Schalen!",
+   "description_source": "OCR (Schmidt 해설면 · 그림 번호로 짝 지은 줄) · 이름 근사 일치: 색인 oblongelladstr ↔ oblongella"
   },
   {
    "seq": 41,
@@ -195,6 +207,12 @@
    "description_source": "OCR (Schmidt 해설면 · 그림 번호로 짝 지은 줄)"
   },
   {
+   "seq": 54,
+   "name": "Achnanthes tenulstriata",
+   "description": "8, 9. Demerara River, r. S. Achnanthes tenuistriata nov. spec.",
+   "description_source": "OCR (Schmidt 해설면 · 그림 번호로 짝 지은 줄) · 이름 근사 일치: 색인 tenulstriata ↔ tenuistriata"
+  },
+  {
    "seq": 55,
    "name": "Achnanthes trigibba",
    "description": "23, 24. Ebenda. Achnanthes trigibba nov. spec.",
@@ -205,6 +223,12 @@
    "name": "Achnanthidium danicum",
    "description": "50. Ostsee (Janisch), A. danicum (Cocconeis) Flügel, Bestimmung von Cleve als richtig anerkannt.",
    "description_source": "OCR (Schmidt 해설면 · 그림 번호로 짝 지은 줄)"
+  },
+  {
+   "seq": 57,
+   "name": "Actinocyclus bremianus",
+   "description": "21. Büijt, f. m.: Actinocyclus bremanus Pant.",
+   "description_source": "OCR (Schmidt 해설면 · 그림 번호로 짝 지은 줄) · 이름 근사 일치: 색인 bremianus ↔ bremanus"
   },
   {
    "seq": 60,
@@ -351,6 +375,12 @@
    "description_source": "OCR (Schmidt 해설면 · 그림 번호로 짝 지은 줄)"
   },
   {
+   "seq": 95,
+   "name": "Amphiprora coffeaeformis",
+   "description": "Taf. 26, Fig. 56—58: 56-58. Isigny, A. coffeeaformis Ktzg. ／ Taf. 26, Fig. 98: 98. Nizza, A. coffeeaformis Ktzg. forma minima = A. borealis Ktzg.",
+   "description_source": "OCR (Schmidt 해설면 · 그림 번호로 짝 지은 줄) · 이름 근사 일치: 색인 coffeaeformis ↔ coffeeaformis"
+  },
+  {
    "seq": 99,
    "name": "Amphiprora gracilis",
    "description": "97. Brandis Heide, A. gracilis E. ?",
@@ -415,6 +445,12 @@
    "name": "Amphora exsecta",
    "description": "55. Camp. Bai, A. exsecta Grunow.",
    "description_source": "OCR (Schmidt 해설면 · 그림 번호로 짝 지은 줄)"
+  },
+  {
+   "seq": 140,
+   "name": "Amphora laevissima",
+   "description": "Taf. 26, Fig. 3: 3. Hvidingsoe, A. laevisima Gregory.",
+   "description_source": "OCR (Schmidt 해설면 · 그림 번호로 짝 지은 줄) · 이름 근사 일치: 색인 laevissima ↔ laevisima"
   },
   {
    "seq": 141,
@@ -621,6 +657,12 @@
    "description_source": "OCR (Schmidt 해설면 · 그림 번호로 짝 지은 줄)"
   },
   {
+   "seq": 207,
+   "name": "Aulacodiscus multispadix",
+   "description": "6. Sendai (Brun), A. multipadix Temp. & Br. 7. dasselbe Ex. in geringer Vergrösserung.",
+   "description_source": "OCR (Schmidt 해설면 · 그림 번호로 짝 지은 줄) · 이름 근사 일치: 색인 multispadix ↔ multipadix"
+  },
+  {
    "seq": 208,
    "name": "Aulacodiscus neogradensis",
    "description": "Taf. 456, Fig. 11: 11. Szent Peter, Ungarn, f. m. Aulacodiscus neogradensis Pant. Foss. Bac. Ung. 1, T. 25, F. 227. RATTRAY zieht diese Form als var. neogradensis zu Aulacodiscus angulatus Grev. (vgl. RATTRAY, Rev. Aulacodiscus, S. 11), aber mit Unrecht, wenn auch vielleicht auf Grund der unzureichenden Abbildung PANTOCTSEKS. Aulacodiscus neogradensis unterscheidet sich von Aul. angulatus nicht allein durch Form und Lage des Schalenwulstes an der Basis der Prozesse, sondern auch durch die Anordnung der Strukturelemente: die Areolenreihen laufen bei Aul. neogradensis durchweg radial (dieses Merkmal ist auch in der Abbildung PANTOCTSEKS zu erkennen), während sie bei Aul. angulatus innerhalb der Sektoren untereinander parallel laufen! Ich verweise auf Taf. 103, Fig. 2 und Taf. 105, Fig. 7. Daher ergeben sich bei Aul. neogradensis notwendigerweise zahlreiche und regelmäßig eingeschobene kürzere Areolenreihen, die bei Aul. angulatus nur vereinzelt und unregelmäßig auftreten. Ich halte es dagegen für möglich, daß Aulacodiscus patulus Grun. (A. S. Atl. Taf. 134, Fig. 6) mit Aul. neogradensis Pant. identisch ist, mir liegen bisher nicht genügend Exemplare von Oamaru vor, um die Sache hier schon entscheiden zu können.",
@@ -649,6 +691,12 @@
    "name": "Aulacodiscus quadrans",
    "description": "Taf. 161, Fig. 5: 5. Simbirsk (Brun), A. quadrans A. S. cf. 35, 10.",
    "description_source": "OCR (Schmidt 해설면 · 그림 번호로 짝 지은 줄)"
+  },
+  {
+   "seq": 215,
+   "name": "Aulacodiscus radiosus",
+   "description": "1. Omaru (Grove), Aulacodiscus radiusus Grove & St. Grove ist mit dieser Abbildung sehr zufrieden; sie mag denn die ganz verfehlte von West (Pl. XII, 33.) in Vergessenheit bringen. Man beachte die kleinen Anhängsel an der Basis der Prozesse, von welchen gleich weiter die Rede sein wird. Grove hebt hervor, das Centrum sei etwas convex, was durch den die Mitte umgebenden schwachen Schatten angedeutet ist. 3. 4. Omaru Bains farm (Grove), „A. Crux var. subsquamosa Grunow & Grove“. Wenn 124, 1. der echte A. Crux E. ist, kann ich diese Form nicht als dessen Varietät anerkennen; ich halte sie für eine sp. n.",
+   "description_source": "OCR (Schmidt 해설면 · 그림 번호로 짝 지은 줄) · 이름 근사 일치: 색인 radiosus ↔ radiusus"
   },
   {
    "seq": 221,
@@ -867,6 +915,12 @@
    "description_source": "OCR (Schmidt 해설면 · 그림 번호로 짝 지은 줄)"
   },
   {
+   "seq": 278,
+   "name": "Biddulphia elegantula",
+   "description": "1. Oamaru (Jordan), als Biddulphia elegatula Grev. var. polygibba Pant. bezeichnet, wozu Witt bemerkt, der Mittelhöker sei bei P.'s Form höher.",
+   "description_source": "OCR (Schmidt 해설면 · 그림 번호로 짝 지은 줄) · 이름 근사 일치: 색인 elegantula ↔ elegatula"
+  },
+  {
    "seq": 280,
    "name": "Biddulphia granulata",
    "description": "26. 27. Cuxhaven, B. granulata Roper.",
@@ -1017,6 +1071,12 @@
    "description_source": "OCR (Schmidt 해설면 · 그림 번호로 짝 지은 줄)"
   },
   {
+   "seq": 317,
+   "name": "Campylodiscus contiguus",
+   "description": "19. Singapore (trockne Auftrag.), 20. Brasilien (Gründl.), C. contiguous A. S.",
+   "description_source": "OCR (Schmidt 해설면 · 그림 번호로 짝 지은 줄) · 이름 근사 일치: 색인 contiguus ↔ contiguous"
+  },
+  {
    "seq": 321,
    "name": "Campylodiscus exilis",
    "description": "3. Sansego, C. exilis Grunow. (Originalex.).",
@@ -1077,6 +1137,18 @@
    "description_source": "OCR (Schmidt 해설면 · 그림 번호로 짝 지은 줄)"
   },
   {
+   "seq": 334,
+   "name": "Campylodiscus nofatus",
+   "description": "15. Samoa, C. notatus var. Vitiensis Grunow, forma minor. O. E.",
+   "description_source": "OCR (Schmidt 해설면 · 그림 번호로 짝 지은 줄) · 이름 근사 일치: 색인 nofatus ↔ notatus"
+  },
+  {
+   "seq": 335,
+   "name": "Campylodiscus norlcus",
+   "description": "8. Rammer Moor, C. noricus E.",
+   "description_source": "OCR (Schmidt 해설면 · 그림 번호로 짝 지은 줄) · 이름 근사 일치: 색인 norlcus ↔ noricus"
+  },
+  {
    "seq": 336,
    "name": "Campylodiscus notatus",
    "description": "8. Samoa, C. notatus var. Vitiensis Grunow.",
@@ -1093,6 +1165,12 @@
    "name": "Campylodiscus singularis",
    "description": "29. Singapore (trockne Auftr.), C. singularis A. S. (Die Gestalt der Schleifen, wie bei keiner andern auf diesen 5 Tafeln abgebildeten Form.).",
    "description_source": "OCR (Schmidt 해설면 · 그림 번호로 짝 지은 줄)"
+  },
+  {
+   "seq": 344,
+   "name": "Campylodiscus striclatus",
+   "description": "1. 2. Baltischik, Campylodiscus striolatus Grunow.",
+   "description_source": "OCR (Schmidt 해설면 · 그림 번호로 짝 지은 줄) · 이름 근사 일치: 색인 striclatus ↔ striolatus"
   },
   {
    "seq": 348,
@@ -1297,6 +1375,12 @@
    "name": "Cocconeis delicata",
    "description": "24. Yokohama (Gründl.), C. delicata A. S. 23 und 24 nach Cleve C. disrupta var..",
    "description_source": "OCR (Schmidt 해설면 · 그림 번호로 짝 지은 줄)"
+  },
+  {
+   "seq": 397,
+   "name": "Cocconeis dirupta",
+   "description": "Taf. 196, Fig. 16: 16. Moron (Grove), C. disrupta var. californica Cleve. ／ Taf. 197, Fig. 1: 1. Schottland (Weissfl.), Coccoeis disrupta E.; C. disrupta Grég. scheint etwas anderes zu sein. ／ Taf. 197, Fig. 31: 31. Moron (Grove), C. disrupta.",
+   "description_source": "OCR (Schmidt 해설면 · 그림 번호로 짝 지은 줄) · 이름 근사 일치: 색인 dirupta ↔ disrupta"
   },
   {
    "seq": 398,
@@ -1579,6 +1663,12 @@
    "name": "Coscinodiscus apiculatus",
    "description": "Taf. 64, Fig. 9: 9. Nottingham, C. apiculatus var.",
    "description_source": "OCR (Schmidt 해설면 · 그림 번호로 짝 지은 줄)"
+  },
+  {
+   "seq": 461,
+   "name": "Coscinodiscus apliculatus",
+   "description": "10. Nottingham, C. apiculatus ?",
+   "description_source": "OCR (Schmidt 해설면 · 그림 번호로 짝 지은 줄) · 이름 근사 일치: 색인 apliculatus ↔ apiculatus"
   },
   {
    "seq": 463,
@@ -2025,6 +2115,12 @@
    "description_source": "OCR (Schmidt 해설면 · 그림 번호로 짝 지은 줄)"
   },
   {
+   "seq": 603,
+   "name": "Cymbella yarrensis",
+   "description": "21, 22. Yarra-Yarra, Australien, f. B. Cymbella yarrens (A. S.) Cleve. Vgl. T. 71, F. 16.",
+   "description_source": "OCR (Schmidt 해설면 · 그림 번호로 짝 지은 줄) · 이름 근사 일치: 색인 yarrensis ↔ yarrens"
+  },
+  {
    "seq": 605,
    "name": "Diatoma anceps",
    "description": "50—54. St. Andreasberg. Diatoma anceps (Ehr.) Grun. 51. „Cum valvis internis.“",
@@ -2273,8 +2369,14 @@
   {
    "seq": 699,
    "name": "Gomphonema acuminatum",
-   "description": "Taf. 234, Fig. 38: 38. Bemis Lake, V. S. A. Herr Cleve: G. acuminatum v. ?",
-   "description_source": "OCR (Schmidt 해설면 · 그림 번호로 짝 지은 줄)"
+   "description": "Taf. 72, Fig. 10: 10. Alexisbad, Harz, Gomphonema acuminaatum E. in Regeneration. ／ Taf. 234, Fig. 38: 38. Bemis Lake, V. S. A. Herr Cleve: G. acuminatum v. ?",
+   "description_source": "OCR (Schmidt 해설면 · 그림 번호로 짝 지은 줄) · 이름 근사 일치: 색인 acuminatum ↔ acuminaatum"
+  },
+  {
+   "seq": 701,
+   "name": "Gomphonema brasiliense",
+   "description": "10. Rio Primero, Argent., Brackw. Herr Cleve: G. brasilense Grun. Herr Brun: Wie eine var. tenuistriata von G. Puiggarianum Grun. Ich glaube wegen des Stigmas eine neue Spezies vor mir zu haben.",
+   "description_source": "OCR (Schmidt 해설면 · 그림 번호로 짝 지은 줄) · 이름 근사 일치: 색인 brasiliense ↔ brasilense"
   },
   {
    "seq": 703,
@@ -2439,6 +2541,12 @@
    "description_source": "OCR (Schmidt 해설면 · 그림 번호로 짝 지은 줄)"
   },
   {
+   "seq": 751,
+   "name": "Mastogloia acutiuscula",
+   "description": "Taf. 187, Fig. 31: 31. Bahama (Grove), Cleve: M. Smithii var. Grove: M. acutuscula Grunow, = M. apiculata W. Sm.; nach Bruns Ansicht M. Aquilegiae Grunow. Keine Querstreifung gesehen.",
+   "description_source": "OCR (Schmidt 해설면 · 그림 번호로 짝 지은 줄) · 이름 근사 일치: 색인 acutiuscula ↔ acutuscula"
+  },
+  {
    "seq": 752,
    "name": "Mastogloia albifrons",
    "description": "38. Japan (Brun), M. albifrons Brun. Querstreifung wie Atlassium, Längstreifung durchaus der Mittellinie parallel = M. exarata Cleve.",
@@ -2461,6 +2569,12 @@
    "name": "Mastogloia concinna",
    "description": "9. Valparaiso, M. concinna A. S.",
    "description_source": "OCR (Schmidt 해설면 · 그림 번호로 짝 지은 줄)"
+  },
+  {
+   "seq": 761,
+   "name": "Mastogloia cruclata",
+   "description": "50. Cebu (Grove), M. cruciata Leuduger Fortm., nach Brun M. Jelineckiana var.",
+   "description_source": "OCR (Schmidt 해설면 · 그림 번호로 짝 지은 줄) · 이름 근사 일치: 색인 cruclata ↔ cruciata"
   },
   {
    "seq": 762,
@@ -2523,6 +2637,12 @@
    "description_source": "OCR (Schmidt 해설면 · 그림 번호로 짝 지은 줄)"
   },
   {
+   "seq": 778,
+   "name": "Mastogloia lemniscata",
+   "description": "14. Macassar Str. (Grove), 15. Java (Grove), M. lemnicatta Leuduger Fortm.",
+   "description_source": "OCR (Schmidt 해설면 · 그림 번호로 짝 지은 줄) · 이름 근사 일치: 색인 lemniscata ↔ lemnicatta"
+  },
+  {
    "seq": 779,
    "name": "Mastogloia lineolata",
    "description": "33. Malabar (Weissfl.), M. lineolata A. S. Brun, Cleve und Grove ziehen diese Form zu M. acuta Grunow.",
@@ -2539,6 +2659,12 @@
    "name": "Mastogloia obtusa",
    "description": "18. Laucing, Sussex (Grove), M. obtusa Pant. v. fluvalis Brun.",
    "description_source": "OCR (Schmidt 해설면 · 그림 번호로 짝 지은 줄)"
+  },
+  {
+   "seq": 786,
+   "name": "Mastogloia quinquecostata",
+   "description": "10. Neapel (Brun), sp. n. (M. quinquecosata Grun. var. Neapolitana Brun.) 11. Japan (Grove), M. sinuata A. S. Beide, 10. und 11. von M. Gronovii durch die schmalen Kanäle, die ausgezogenen Enden, die stärkere Streifung verschieden.",
+   "description_source": "OCR (Schmidt 해설면 · 그림 번호로 짝 지은 줄) · 이름 근사 일치: 색인 quinquecostata ↔ quinquecosata"
   },
   {
    "seq": 787,
@@ -2563,6 +2689,18 @@
    "name": "Mastogloia sulcata",
    "description": "51. Cebu (Grove), M. sulcata Cleve.",
    "description_source": "OCR (Schmidt 해설면 · 그림 번호로 짝 지은 줄)"
+  },
+  {
+   "seq": 792,
+   "name": "Mastogloia trivolva",
+   "description": "40. 41. Sandw.-I., 42—44. I. Rodriguez im ind. Ocean (Brun), M. trivolta Brun, nach Cleve M. decussata Grunow.",
+   "description_source": "OCR (Schmidt 해설면 · 그림 번호로 짝 지은 줄) · 이름 근사 일치: 색인 trivolva ↔ trivolta"
+  },
+  {
+   "seq": 793,
+   "name": "Mastogloia troplca",
+   "description": "8. Miäng Besar, Borneo, r. m. Mastogloia tropica nov. spec.",
+   "description_source": "OCR (Schmidt 해설면 · 그림 번호로 짝 지은 줄) · 이름 근사 일치: 색인 troplca ↔ tropica"
   },
   {
    "seq": 798,
@@ -2829,6 +2967,12 @@
    "description_source": "OCR (Schmidt 해설면 · 그림 번호로 짝 지은 줄)"
   },
   {
+   "seq": 865,
+   "name": "Navicula approximata",
+   "description": "6. Bay von Mexiko, rec. mar.: Navicula aproximata Grev. var. mexicana n. v.",
+   "description_source": "OCR (Schmidt 해설면 · 그림 번호로 짝 지은 줄) · 이름 근사 일치: 색인 approximata ↔ aproximata"
+  },
+  {
    "seq": 867,
    "name": "Navicula asellus",
    "description": "1—5. Vogtland, Sachsen, Pfütze unter einer Brücke, r. S. Navicula asellus Weigold, nov. spec. 3—5 = 1000/1.",
@@ -2845,6 +2989,12 @@
    "name": "Navicula augustissima",
    "description": "19. Ebenda. Navicula augustissima nov. spec. 19a = 2000/1.",
    "description_source": "OCR (Schmidt 해설면 · 그림 번호로 짝 지은 줄)"
+  },
+  {
+   "seq": 870,
+   "name": "Navicula aérophila",
+   "description": "38—42. Schlernklamm, Südtirol, Moos vom Quellfassungen, r. S. Navicula aërophila Krasske. 42 = 1000/1.",
+   "description_source": "OCR (Schmidt 해설면 · 그림 번호로 짝 지은 줄) · 이름 근사 일치: 색인 aérophila ↔ aerophila"
   },
   {
    "seq": 871,
@@ -2955,6 +3105,12 @@
    "description_source": "OCR (Schmidt 해설면 · 그림 번호로 짝 지은 줄)"
   },
   {
+   "seq": 905,
+   "name": "Navicula cocconelformis",
+   "description": "96—98. Reinigungavatn, Norwegen, r. S. Navicula cocconeiformis Greg. 96 = 1000/1.",
+   "description_source": "OCR (Schmidt 해설면 · 그림 번호로 짝 지은 줄) · 이름 근사 일치: 색인 cocconelformis ↔ cocconeiformis"
+  },
+  {
    "seq": 910,
    "name": "Navicula compressicauda",
    "description": "62. Sölsvig, N. compressicauda A. S.",
@@ -2995,6 +3151,12 @@
    "name": "Navicula copiosa",
    "description": "6. Mexillones (Weissfl.), N. copiosa A. S.",
    "description_source": "OCR (Schmidt 해설면 · 그림 번호로 짝 지은 줄)"
+  },
+  {
+   "seq": 921,
+   "name": "Navicula correpta",
+   "description": "15. Yokohama (Gründl.), N. correcta A. S. (Nordsee-Diatom. 1. c.) = N. Gallapagensis var. Japonica Cleve in litt.",
+   "description_source": "OCR (Schmidt 해설면 · 그림 번호로 짝 지은 줄) · 이름 근사 일치: 색인 correpta ↔ correcta"
   },
   {
    "seq": 925,
@@ -3087,6 +3249,12 @@
    "description_source": "OCR (Schmidt 해설면 · 그림 번호로 짝 지은 줄)"
   },
   {
+   "seq": 950,
+   "name": "Navicula duerrenbergiana",
+   "description": "8, 9. Ebenda. Navicula durerenbergiana nov. spec. Verwandt mit Nav. ramosissima Ag. 9. Demerara River, Südamerika, r. S. Pinnularia trigibba nov. spec. Ich mache auf die Asymmetrie der Polspalten aufmerksam!",
+   "description_source": "OCR (Schmidt 해설면 · 그림 번호로 짝 지은 줄) · 이름 근사 일치: 색인 duerrenbergiana ↔ durerenbergiana"
+  },
+  {
    "seq": 951,
    "name": "Navicula egena",
    "description": "1. Camp. Bay, Navicula egena A. S., besser T. 160.",
@@ -3151,6 +3319,12 @@
    "name": "Navicula farta",
    "description": "7—9. Ebenda. Navicula farta nov. spec. 8, 9 = 2000/1.",
    "description_source": "OCR (Schmidt 해설면 · 그림 번호로 짝 지은 줄)"
+  },
+  {
+   "seq": 964,
+   "name": "Navicula fimitanea",
+   "description": "12. Funafuti (Gründler), N. limitanea A. S. var.?",
+   "description_source": "OCR (Schmidt 해설면 · 그림 번호로 짝 지은 줄) · 이름 근사 일치: 색인 fimitanea ↔ limitanea"
   },
   {
    "seq": 965,
@@ -3285,6 +3459,12 @@
    "description_source": "OCR (Schmidt 해설면 · 그림 번호로 짝 지은 줄)"
   },
   {
+   "seq": 1000,
+   "name": "Navicula insoclabilis",
+   "description": "103—105. Kapruner Tal, an Moos, r. S. Navicula insociabilis Krasske. 103 = 1000/1. Nach Styraxpräparaten! Vgl. Fig. 19—26.",
+   "description_source": "OCR (Schmidt 해설면 · 그림 번호로 짝 지은 줄) · 이름 근사 일치: 색인 insoclabilis ↔ insociabilis"
+  },
+  {
    "seq": 1001,
    "name": "Navicula integra",
    "description": "64—66. Tents Muir, Cymb. integra A. S. = Navicula integra W. Sm. Die Riefen in der Mitte der Rückenseite weitläufiger; die Endknößchen neigen sich etwas nach der Bauchseite (besonders deutlich an F. 66 zu sehen).",
@@ -3397,6 +3577,12 @@
    "name": "Navicula maeandrina",
    "description": "4, 5. Ebenda. Navicula maeandrina Cleve, Diatomiste II, Taf. 1, Fig. 6.",
    "description_source": "OCR (Schmidt 해설면 · 그림 번호로 짝 지은 줄)"
+  },
+  {
+   "seq": 1031,
+   "name": "Navicula maeandrinoides",
+   "description": "3. Columbia-River, Oregon, f. S. Navicula maeandrinoidea nov. spec.",
+   "description_source": "OCR (Schmidt 해설면 · 그림 번호로 짝 지은 줄) · 이름 근사 일치: 색인 maeandrinoides ↔ maeandrinoidea"
   },
   {
    "seq": 1032,
@@ -3567,6 +3753,12 @@
    "description_source": "OCR (Schmidt 해설면 · 그림 번호로 짝 지은 줄)"
   },
   {
+   "seq": 1080,
+   "name": "Navicula permulsa",
+   "description": "22-25. Galapagos-Inseln, r. m. Diese 4 kleinen Formen stammen aus dem Originalmaterial, werden aber von Cleve nur zum Teil erwähnt. Alle zeichnen sich durch einen hohen Schalenmantel und von den Enden entfernt liegende Polspalten aus. 22. Navicula permula nov. spec.",
+   "description_source": "OCR (Schmidt 해설면 · 그림 번호로 짝 지은 줄) · 이름 근사 일치: 색인 permulsa ↔ permula"
+  },
+  {
    "seq": 1081,
    "name": "Navicula perobesa",
    "description": "22—25. Rumänien, f. B. Navicula perobesa nov. spec. 25 = 2000/1, Teil der Struktur.",
@@ -3613,6 +3805,12 @@
    "name": "Navicula pseudodemerarae",
    "description": "9. Demerarariver, r. S. Navicula pseudodemerarae nov. spec. Transapikalstreifen äußerst fein liniert. Hierher gehört wahrscheinlich die Abbildung Cleves im Diatomiste II, Taf. 1, Fig. 9, während N. demerarae Grun. eine Form mit punktierten Streifen, sonst aber sehr ähnlich ist (vgl. Taf. 243, Fig. 11). Vermutlich sind beide Arten von Cleve nicht auseinandergehalten.",
    "description_source": "OCR (Schmidt 해설면 · 그림 번호로 짝 지은 줄)"
+  },
+  {
+   "seq": 1097,
+   "name": "Navicula pseudoscutiformis",
+   "description": "46. Ebenda. Navicula pseudocutiformis Hust. (l. c. Fig. 485).",
+   "description_source": "OCR (Schmidt 해설면 · 그림 번호로 짝 지은 줄) · 이름 근사 일치: 색인 pseudoscutiformis ↔ pseudocutiformis"
   },
   {
    "seq": 1100,
@@ -3673,6 +3871,12 @@
    "name": "Navicula reticulo-radiata",
    "description": "18. Sendai (Brun), N. reticulo-radiata Temp. & Br.",
    "description_source": "OCR (Schmidt 해설면 · 그림 번호로 짝 지은 줄)"
+  },
+  {
+   "seq": 1117,
+   "name": "Navicula rhynchocephaloides",
+   "description": "8. Ebenda. Navicula rhynchocephaloidea nov. spec. Terminalstreifen parallel, Pole strukturlös!",
+   "description_source": "OCR (Schmidt 해설면 · 그림 번호로 짝 지은 줄) · 이름 근사 일치: 색인 rhynchocephaloides ↔ rhynchocephaloidea"
   },
   {
    "seq": 1119,
@@ -3849,6 +4053,12 @@
    "description_source": "OCR (Schmidt 해설면 · 그림 번호로 짝 지은 줄)"
   },
   {
+   "seq": 1180,
+   "name": "Navicula typografica",
+   "description": "6. Ebenda. Navicula typographica nov. spec.",
+   "description_source": "OCR (Schmidt 해설면 · 그림 번호로 짝 지은 줄) · 이름 근사 일치: 색인 typografica ↔ typographica"
+  },
+  {
    "seq": 1182,
    "name": "Navicula vacillans",
    "description": "55. Celebes, N. vacillans var. renitens A. S.",
@@ -4007,8 +4217,8 @@
   {
    "seq": 1228,
    "name": "Pinnularia asymmetrica",
-   "description": "Taf. 260, Fig. 29: 29. Eis an der Ostküste Grönlands; nördl. Br. 72° 46', östl. L. 0° 13': Pinnularia asymmetrica n. sp.",
-   "description_source": "OCR (Schmidt 해설면 · 그림 번호로 짝 지은 줄)"
+   "description": "Taf. 260, Fig. 29: 29. Eis an der Ostküste Grönlands; nördl. Br. 72° 46', östl. L. 0° 13': Pinnularia asymmetrica n. sp. ／ Taf. 386, Fig. 4: 4. Südamerika, r. S. (ohne nähere Fundortsangabe). Pinnularia asymetrica (Cl.) nov. comb. Cleve zieht diese Form als Varietät zu P. major, dagegen spricht aber das breite Band der inneren Kammeröffnungen! Die schiefe Orientierung der Raphe ist eine konstante Erscheinung, so daß es sich um eine gute Art handelt.",
+   "description_source": "OCR (Schmidt 해설면 · 그림 번호로 짝 지은 줄) · 이름 근사 일치: 색인 asymmetrica ↔ asymetrica"
   },
   {
    "seq": 1232,
@@ -4123,6 +4333,12 @@
    "name": "Pinnularia robusta",
    "description": "1, 2. Pernambuco, r. S. Pinnularia robusta nov. spec. Diese bisher zu Pinn. latevitata Cl. gezogene Form muß aus dem bei Taf. 386, Fig. 5 genannten Grunde ebenfalls als besondere Art hervorgehoben werden. Polspalten leicht unsymmetrisch!",
    "description_source": "OCR (Schmidt 해설면 · 그림 번호로 짝 지은 줄)"
+  },
+  {
+   "seq": 1260,
+   "name": "Pinnularia semiinflata",
+   "description": "Taf. 260, Fig. 9: 9. 10. Nansens Nordpolexpedition; nördl. Br. 81° 26', östl. L. 125° 10': Pinnularia semiinflatua (Östr.) Gran var. genuina Gran. ／ Taf. 260, Fig. 18: 18. Eis an der Ostküste Grönlands; nördl. Br. 72° 46', östl. L. 0° 13': Pinnularia semiinflatua (Östr.) Gran var. decipiens (Cl.) Gran.",
+   "description_source": "OCR (Schmidt 해설면 · 그림 번호로 짝 지은 줄) · 이름 근사 일치: 색인 semiinflata ↔ semiinflatua"
   },
   {
    "seq": 1262,
@@ -4455,6 +4671,12 @@
    "description_source": "OCR (Schmidt 해설면 · 그림 번호로 짝 지은 줄)"
   },
   {
+   "seq": 1359,
+   "name": "Surirella anfractuosa",
+   "description": "4. Sandw. I. (Weissfl.) S. anfractusa A. S.",
+   "description_source": "OCR (Schmidt 해설면 · 그림 번호로 짝 지은 줄) · 이름 근사 일치: 색인 anfractuosa ↔ anfractusa"
+  },
+  {
    "seq": 1361,
    "name": "Surirella arabica",
    "description": "5. Rothes Meer, S. arabica Grunow. (Originalex.).",
@@ -4507,6 +4729,12 @@
    "name": "Surirella constricta",
    "description": "Taf. 245, Fig. 19: 19. Nyassa-See. Plankton. Surirella constricta var. maxima n. var. S. auch Tafel 246, Fig. 12. ／ Taf. 246, Fig. 12: 12. Malomba-See. Plankton. Surirella constricta var. africana n. var. S. auch Tafel 245, Fig. 19.",
    "description_source": "OCR (Schmidt 해설면 · 그림 번호로 짝 지은 줄)"
+  },
+  {
+   "seq": 1370,
+   "name": "Surirella contoita",
+   "description": "2. Auklands I., S. contorta Kitton, O. E.",
+   "description_source": "OCR (Schmidt 해설면 · 그림 번호로 짝 지은 줄) · 이름 근사 일치: 색인 contoita ↔ contorta"
   },
   {
    "seq": 1371,
@@ -4627,6 +4855,12 @@
    "name": "Surirella latecostata",
    "description": "2-9. Tanganjikasee, r. S. Grundprobe bei Rumonge, 157 m tief. 2, 3 (580/1). S. spiraloides nov. spec. 5-7. S. latecostata nov. spec.",
    "description_source": "OCR (Schmidt 해설면 · 그림 번호로 짝 지은 줄)"
+  },
+  {
+   "seq": 1398,
+   "name": "Surirella lepida",
+   "description": "3. Panama (Weissfl.), S. lepidia A. S. var.",
+   "description_source": "OCR (Schmidt 해설면 · 그림 번호로 짝 지은 줄) · 이름 근사 일치: 색인 lepida ↔ lepidia"
   },
   {
    "seq": 1400,
