@@ -23,7 +23,7 @@
 
 ## 뷰어
 
-### `v0.41.0` — 11-15 (마이그레이션 `0056` 더하기만 · 파이프라인은 안 굽는다 · **뒤처리 `import_atlas.py` 한 번**)
+### `v0.41.0` — 11-15 (마이그레이션 `0056` 더하기만 · 파이프라인은 안 굽는다 · 14:44 배포 · **뒤처리 `import_atlas.py` 한 번**)
 
 **지점마다 산출표와 산출 그래프를 낸다** ([258](devlog/20261113_258_tally-slide-species.md) · [259](devlog/20261113_259_tally-core-table-and-plot.md) · [260](devlog/20261115_260_tally-target-attainment.md) · 계획 P34)
 
