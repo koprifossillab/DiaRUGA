@@ -205,6 +205,35 @@ def locality_table(site_code: str, loc_code: str, split_obs: bool = False) -> di
             "n_excluded": len(slides) - len(used)}
 
 
+# ─────────────────────────────────────────── 해상도 목표 (260)
+
+# 시료마다 **완형(세는 개체 = 파편 제외)을 몇 개 셌어야 하는가**. 규조 산출의 관례가
+# 시료당 300~400 개체다 — 사용자 11-15: 400 을 기준으로, 200~400 에서 고른다.
+TARGET_DEFAULT = 400
+TARGET_MIN, TARGET_MAX = 200, 400
+TARGET_CHOICES = (200, 250, 300, 350, 400)
+
+
+def parse_target(raw) -> int:
+    """`?target=` — 범위 밖이거나 수가 아니면 기본값. **조용히 끝값으로 붙이지
+    않는다** — 1000 을 적었는데 400 으로 그려지면 그 그림이 1000 기준인 줄 안다."""
+    try:
+        v = int(raw)
+    except (TypeError, ValueError):
+        return TARGET_DEFAULT
+    return v if TARGET_MIN <= v <= TARGET_MAX else TARGET_DEFAULT
+
+
+def attach_target(t: dict, target: int) -> dict:
+    """열마다 `target_pct` = 완형 ÷ 목표 × 100. **100 에서 자르지 않는다** — 넘은
+    것도 정보다(그래프는 칸 끝에 붙이고 글자로 실제 값을 적는다). 합계 열에는 안
+    낸다 — 목표는 시료 하나의 것이라 시료를 더한 수와 비교하는 것이 성립하지 않는다."""
+    t["target"] = target
+    for c in t["cols"]:
+        c["target_pct"] = round(100.0 * c["n_counted"] / target, 1)
+    return t
+
+
 def table_csv(t: dict, unit: str = "n") -> str:
     """산출표를 CSV 로 (P34 6.3). **속명을 줄이지 않는다**, **0 도 0 으로 적는다** —
     빈칸은 사람이 읽는 표의 관례이고, 받아서 계산하는 쪽에는 "안 셌다" 로 읽힌다."""
@@ -228,6 +257,9 @@ def table_csv(t: dict, unit: str = "n") -> str:
     w.writerow(["(fragment % of detected)",
                 *[c["frag_pct"] if c["frag_pct"] is not None else "" for c in t["cols"]],
                 tot.get("frag_pct") or ""])
+    if t.get("target"):
+        w.writerow([f"(target attainment % of {t['target']} counted)",
+                    *[c["target_pct"] for c in t["cols"]], ""])
     return buf.getvalue()
 
 
@@ -355,8 +387,14 @@ def plot(t: dict, taxa: list[str], series_keys: list[str] | None = None) -> dict
                        "sub": "% (세는 개체)" if lab["is_cls"] else "%",
                        "kind": "pct", "vals": vals, "xmax": _nice_max(top)})
     idv = [c["id_pct"] for c in cols]
-    panels.append({"title": "동정률", "italic": False, "sub": "%", "kind": "pct",
-                   "vals": idv, "xmax": 100})
+    target = t.get("target")
+    # 동정률 점마다 **완형 수 / 목표 · 달성률** 을 적는다 (260) — 동정률 60% 가 완형
+    # 20개의 60% 인지 400개의 60% 인지 그림에서 갈려야 한다
+    labels = ([(c["n_counted"], c.get("target_pct")) for c in cols]
+              if target else None)
+    panels.append({"title": "동정률", "italic": False,
+                   "sub": f"% · 완형/{target}" if target else "%", "kind": "pct",
+                   "vals": idv, "xmax": 100, "labels": labels})
     pv = [(round(c["n_counted"] / c["detected_groups"], 2)
            if c.get("detected_groups") else None) for c in cols]
     panels.append({"title": "시야당 개체", "italic": False, "sub": "개/시야",
@@ -370,6 +408,11 @@ def plot(t: dict, taxa: list[str], series_keys: list[str] | None = None) -> dict
 
     def Y(v):
         return TOP + (v - lo) / (hi - lo) * H
+
+    # 글자를 적을 만큼 시료가 떨어져 있는가 — 촘촘한 코어(1 cm 간격)에서는 글자가
+    # 겹쳐 아무것도 안 읽힌다. 그때는 점의 <title> 과 표에만 남는다.
+    yp = sorted(Y(y) for y in ys if y is not None)
+    roomy = all(b - a >= 22 for a, b in zip(yp, yp[1:]))
 
     o = [f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 {W} {HH}" '
          f'width="{W}" height="{HH}" font-family="Helvetica, Arial, sans-serif" '
@@ -440,14 +483,37 @@ def plot(t: dict, taxa: list[str], series_keys: list[str] | None = None) -> dict
                 if len(r) > 1:
                     o.append('<polyline fill="none" stroke="#000" stroke-width="0.9" points="'
                              + " ".join(f"{x:.1f},{y:.1f}" for x, y, _ in r) + '"/>')
-            for x, y, v in pts:
-                o.append(f'<path class="pt" d="M{x:.1f} {y - 3:.1f}L{x + 3:.1f} {y:.1f}'
-                         f'L{x:.1f} {y + 3:.1f}L{x - 3:.1f} {y:.1f}Z" fill="#fff" '
-                         f'stroke="#000" stroke-width="0.8"><title>{v:g}</title></path>')
+            labs = pn.get("labels")
+            k = 0
+            for y, v, lab in zip(ys, pn["vals"], labs or [None] * len(ys)):
+                if y is None or v is None:
+                    continue
+                x, yy, _ = pts[k]
+                k += 1
+                tip = f"{v:g}"
+                if lab:
+                    tip += f" · 완형 {lab[0]}/{target} · 목표 달성 {lab[1]:g}%"
+                o.append(f'<path class="pt" d="M{x:.1f} {yy - 3:.1f}L{x + 3:.1f} {yy:.1f}'
+                         f'L{x:.1f} {yy + 3:.1f}L{x - 3:.1f} {yy:.1f}Z" fill="#fff" '
+                         f'stroke="#000" stroke-width="0.8"><title>{escape(tip)}</title></path>')
+            # 달성률 글자는 **점의 반대쪽 절반**에 — 점·선과 안 겹친다
+            if labs and roomy:
+                for y, v, lab in zip(ys, pn["vals"], labs):
+                    if y is None or lab is None:
+                        continue
+                    yy = Y(y)
+                    right = v is None or v < xm / 2
+                    tx, anchor = (x0 + PW - 3, "end") if right else (x0 + 3, "start")
+                    o.append(f'<text class="tgt" x="{tx}" y="{yy - 1:.1f}" text-anchor="{anchor}" '
+                             f'font-size="8" fill="#000">{lab[0]}/{target}</text>')
+                    o.append(f'<text class="tgt" x="{tx}" y="{yy + 8:.1f}" text-anchor="{anchor}" '
+                             f'font-size="8" fill="#555">{lab[1]:g}%</text>')
         o.append("</g>")
     o.append(f'<text x="{LEFT}" y="{HH - 8}" fill="#555">{escape(loc.code)} · '
              f'% 의 분모: 종 = 종명이 붙은 개체 · 분류 항목 = 세는 개체 · 파편은 세지 않는다 · '
-             f'검토를 마친 시야만</text>')
+             f'검토를 마친 시야만'
+             + (f' · 완형/{target} = 세는 개체 ÷ 해상도 목표 {target}' if target else '')
+             + '</text>')
     o.append("</svg>")
     return {"svg": "".join(o), "panels": len(panels),
             "n_points": sum(1 for pn in panels if pn["kind"] == "pct"

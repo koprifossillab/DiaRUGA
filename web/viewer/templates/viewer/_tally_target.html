@@ -1,0 +1,7 @@
+{% comment %}
+  해상도 목표 고르기 (260) — 시료마다 완형(세는 개체)을 몇 개 셌어야 하는가. 기본 400,
+  200~400. 주소의 다른 인자(고른 종·관찰 가르기)는 그대로 두고 `target` 만 바꾼다.
+{% endcomment %}
+<span class="seg" aria-label="해상도 목표 (시료당 완형)" title="시료당 완형 개체 목표 — 동정률 옆에 완형 수/목표와 달성률을 적습니다">
+  <a class="lab" style="pointer-events:none">목표</a>{% for l in target_links %}<a href="?{{ l.qs }}" class="{% if l.on %}on{% endif %}">{{ l.v }}</a>{% endfor %}
+</span>

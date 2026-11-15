@@ -51,8 +51,8 @@
 <div class="pagehead"><h2>{{ loc.code }} 산출표</h2>
   <span class="tlyopts" style="margin:0">
     <span class="seg" aria-label="보기">
-      <a href="?" class="{% if view != 'plot' %}on{% endif %}">표</a><a
-         href="?view=plot" class="{% if view == 'plot' %}on{% endif %}">그래프</a>
+      <a href="?target={{ target }}" class="{% if view != 'plot' %}on{% endif %}">표</a><a
+         href="?view=plot&target={{ target }}" class="{% if view == 'plot' %}on{% endif %}">그래프</a>
     </span>
   </span>
 </div>
@@ -63,14 +63,15 @@
 {% else %}
 <div class="tlyopts">
   <span class="seg" aria-label="칸에 적을 값">
-    <a href="?{% if split_obs %}obs=1{% endif %}" class="{% if unit == 'n' %}on{% endif %}">개수</a><a
-       href="?unit=pct{% if split_obs %}&obs=1{% endif %}" class="{% if unit == 'pct' %}on{% endif %}">%</a>
+    <a href="?target={{ target }}{% if split_obs %}&obs=1{% endif %}" class="{% if unit == 'n' %}on{% endif %}">개수</a><a
+       href="?target={{ target }}&unit=pct{% if split_obs %}&obs=1{% endif %}" class="{% if unit == 'pct' %}on{% endif %}">%</a>
   </span>
   <span class="seg" aria-label="같은 시료의 관찰">
-    <a href="?{% if unit == 'pct' %}unit=pct{% endif %}" class="{% if not split_obs %}on{% endif %}">시료마다 (관찰을 더한다)</a><a
-       href="?obs=1{% if unit == 'pct' %}&unit=pct{% endif %}" class="{% if split_obs %}on{% endif %}">관찰마다</a>
+    <a href="?target={{ target }}{% if unit == 'pct' %}&unit=pct{% endif %}" class="{% if not split_obs %}on{% endif %}">시료마다 (관찰을 더한다)</a><a
+       href="?target={{ target }}&obs=1{% if unit == 'pct' %}&unit=pct{% endif %}" class="{% if split_obs %}on{% endif %}">관찰마다</a>
   </span>
-  <a class="dl" href="?format=csv{% if unit == 'pct' %}&unit=pct{% endif %}{% if split_obs %}&obs=1{% endif %}">CSV 내려받기</a>
+  {% include "viewer/_tally_target.html" %}
+  <a class="dl" href="?format=csv&target={{ target }}{% if unit == 'pct' %}&unit=pct{% endif %}{% if split_obs %}&obs=1{% endif %}">CSV 내려받기</a>
 </div>
 <p class="tlynote">
   검토를 마친 시야만 셉니다 · <b>파편은 세지 않습니다</b>{% if unit == 'pct' %} · % 의 분모는 <b>그 열에서 종명이 붙은 개체</b>{% endif %}
@@ -105,6 +106,8 @@
     <tr><td class="sp">종명 붙은 개체</td>{% for c in cols %}<td class="n">{{ c.n_identified }}</td>{% endfor %}<td class="tot">{{ total.n_identified }}</td></tr>
     <tr><td class="sp">세는 개체 (파편 제외)</td>{% for c in cols %}<td class="n">{{ c.n_counted }}</td>{% endfor %}<td class="tot">{{ total.n_counted }}</td></tr>
     <tr><td class="sp">동정률 %</td>{% for c in cols %}<td class="n">{% if c.id_pct is not None %}{{ c.id_pct }}{% endif %}</td>{% endfor %}<td class="tot">{% if total.id_pct is not None %}{{ total.id_pct }}{% endif %}</td></tr>
+    <tr><td class="sp" title="세는 개체(완형) ÷ 해상도 목표 {{ target }}">완형 / 목표 {{ target }}</td>{% for c in cols %}<td class="n">{{ c.n_counted }}/{{ target }}</td>{% endfor %}<td class="tot"></td></tr>
+    <tr><td class="sp">목표 달성률 %</td>{% for c in cols %}<td class="n">{{ c.target_pct }}</td>{% endfor %}<td class="tot"></td></tr>
     <tr><td class="sp">파편 비율 % (검출 중)</td>{% for c in cols %}<td class="n">{% if c.frag_pct is not None %}{{ c.frag_pct }}{% endif %}</td>{% endfor %}<td class="tot">{% if total.frag_pct is not None %}{{ total.frag_pct }}{% endif %}</td></tr>
   </tbody>
 </table>

@@ -232,6 +232,17 @@ class LocalityTableTest(DiaRUGATestCase):
         self.assertIn("Actinocyclus ingens,0,1,1", lines)
         self.assertIn("Fragilariopsis curta,2,0,2", lines)
 
+    def test_목표_달성률은_완형을_목표로_나눈다(self):
+        # 71 cm 는 관찰 둘을 더해 완형 넷, 231 cm 는 둘 (260)
+        t = tally.attach_target(self.t(), 400)
+        self.assertEqual([c["target_pct"] for c in t["cols"]], [1.0, 0.5])
+        url = reverse("tally", args=["RS23", "GC03"])
+        html = self.client.get(url + "?target=200").content.decode()
+        self.assertIn("4/200", html)
+        self.assertIn("목표 달성률", html)
+        csv_ = self.client.get(url + "?format=csv&target=200").content.decode()
+        self.assertIn("(target attainment % of 200 counted),2.0,1.0,", csv_)
+
     def test_지점_화면에서_산출표로_간다(self):
         html = self.client.get(reverse("core", args=["RS23", "GC03"])).content.decode()
         self.assertIn(f'href="{reverse("tally", args=["RS23", "GC03"])}"', html)
@@ -296,6 +307,45 @@ class TallyPlotTest(DiaRUGATestCase):
         self.assertEqual(len(ps), 3)                       # 종 하나 + 동정률 + 시야당
         self.assertEqual(ps[0][1], 2)                      # 71 · 369 — 231 은 없다
         self.assertEqual(ps[1][1], 3)                      # 동정률은 세 시료 다
+
+    def tgt(self, html):
+        """동정률 패널의 목표 글자 (260) — 파싱해서 본다."""
+        import xml.etree.ElementTree as ET
+        m = re.search(r"<svg [^>]*font-family=.*?</svg>", html, re.S)
+        ns = "{http://www.w3.org/2000/svg}"
+        return [t.text for t in ET.fromstring(m.group(0)).iter(f"{ns}text")
+                if t.get("class") == "tgt"]
+
+    def test_동정률_점마다_완형_수와_목표_달성률(self):
+        # 시료마다 세는 개체(완형) 둘 — 파편 둘은 안 든다
+        got = self.tgt(self.client.get(self.url()).content.decode())
+        self.assertEqual(got, ["2/400", "0.5%"] * 3)
+
+    def test_목표를_고르면_글자와_단추_주소가_따라간다(self):
+        html = self.client.get(
+            self.url("&pick=1&sp=Fragilariopsis+curta&target=200")).content.decode()
+        self.assertEqual(self.tgt(html), ["2/200", "1%"] * 3)
+        # 다른 목표 단추가 고른 종을 잃지 않는다
+        self.assertRegex(html, r'href="\?[^"]*sp=Fragilariopsis\+curta[^"]*target=250')
+
+    def test_범위_밖_목표는_기본값이다(self):
+        for raw in ("1000", "199", "401", "abc", None):
+            self.assertEqual(tally.parse_target(raw), tally.TARGET_DEFAULT, raw)
+        self.assertEqual(tally.parse_target("200"), 200)
+        self.assertEqual(tally.parse_target("400"), 400)
+        got = self.tgt(self.client.get(self.url("&target=1000")).content.decode())
+        self.assertEqual(got[0], "2/400")
+
+    def test_촘촘하면_글자를_안_적는다(self):
+        # 축이 0~400 cm 인데 두 시료가 1 cm 떨어져 있으면 글자가 겹친다 — 점의
+        # title 에만 남는다(축은 자료 범위에 맞춰 펴지므로 셋을 다 몰면 안 된다)
+        t = tally.locality_table("RS23", "GC03")
+        for c, d in zip(t["cols"], (0.0, 1.0, 400.0)):
+            c["depth_cm"] = d
+        tally.attach_target(t, 400)
+        svg = tally.plot(t, [])["svg"]
+        self.assertNotIn('class="tgt"', svg)
+        self.assertIn("완형 2/400", svg)
 
     def test_pick_만_있고_종이_없으면_다_끈_것이다(self):
         ps = self.panels(self.client.get(self.url("&pick=1")).content.decode())

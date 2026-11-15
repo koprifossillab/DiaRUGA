@@ -28,12 +28,14 @@
   <b>파편은 세지 않습니다</b> · 검토를 마친 시야만 · 같은 시료의 관찰은 더합니다 ·
   종명이 하나도 없는 시료는 점을 찍지 않습니다(0 이 아니라 아직 안 본 것)
 </p>
+<div class="tlyopts">{% include "viewer/_tally_target.html" %}</div>
 <div class="tplot">
   <div class="fig" aria-label="산출 그래프">{{ plot.svg|safe }}</div>
   <div>
   <form class="pick" method="get">
     <input type="hidden" name="view" value="plot">
     <input type="hidden" name="pick" value="1">
+    <input type="hidden" name="target" value="{{ target }}">
     <h4>종 · 분류 항목</h4>
     {% for o in taxa_options %}
     <label title="{{ o.note|default:o.name }}"><input type="checkbox" name="sp" value="{{ o.item }}"{% if o.on %} checked{% endif %}>

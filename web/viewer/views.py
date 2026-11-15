@@ -443,6 +443,8 @@ def tally_page(request, site_code, core_code):
     t = tally.locality_table(site_code, core_code, split_obs=split)
     if t is None:
         raise Http404(f"unknown locality: {site_code}/{core_code}")
+    # 해상도 목표 (260) — 표·CSV·그래프가 같은 값을 쓴다
+    tally.attach_target(t, tally.parse_target(request.GET.get("target")))
     if request.GET.get("view") == "plot":
         return _tally_plot(request, t)
     if request.GET.get("format") == "csv":
@@ -452,7 +454,22 @@ def tally_page(request, site_code, core_code):
         name = f"{t['loc'].code}_tally{'_pct' if unit == 'pct' else ''}.csv"
         resp["Content-Disposition"] = f'attachment; filename="{name}"'
         return resp
-    return render(request, "viewer/tally.html", {**t, "unit": unit})
+    return render(request, "viewer/tally.html", {**t, "unit": unit,
+                                                 **_target_ctx(request, t)})
+
+
+def _target_ctx(request, t):
+    """목표 고르기 단추 (260). 다른 인자는 그대로 두고 `target` 만 바꾼 주소를 만든다
+    — 고른 종·관찰 가르기가 목표를 바꿀 때 풀리면 안 된다."""
+    from . import tally
+    q = request.GET.copy()
+    q.pop("msg", None)
+    q.pop("format", None)
+    links = []
+    for v in tally.TARGET_CHOICES:
+        q["target"] = str(v)
+        links.append({"v": v, "on": v == t["target"], "qs": q.urlencode()})
+    return {"target_links": links}
 
 
 def _tally_plot(request, t):
@@ -499,6 +516,7 @@ def _tally_plot(request, t):
         "is_saved": list(loc.tally_taxa or []) == taxa,
         "qs": request.GET.urlencode(),
         "msg": request.GET.get("msg", ""),
+        **_target_ctx(request, t),
     })
 
 
