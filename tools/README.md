@@ -98,3 +98,10 @@ python tools/build_offline_atlas.py --version 1.0.0 --no-images # 글자만
   P20)을 `data/taxa.js`·`data/occurrence.js` 로 싣고, 현재 통용 학명으로
   찾아도 이명 항목이 걸린다. 권역(한국·남극·전역)·속 목록·자동완성도 뷰어와
   같다 — **권역 표는 `web/viewer/atlas.py` 의 `AREA_OF` 하나뿐이다**
+- **그림 크롭과 바둑판·비교를 싣는다** (v1.4.0 · 2026-10-29). 색인의
+  `crop_image` 2,584장을 `crops/` 로(JPEG 품질 85 · 해상도 그대로 · 157 MB),
+  검색 결과의 목록·바둑판 보기와 종 2~5개 비교(`#/compare?e=<도감>:<표제어>`)를
+  뷰어 238 의 규칙대로 낸다 — **크롭이 먼저, 없으면 도판 쪽, 주석이 달린 자리는
+  안 띄운다**(`data._row_figure` 의 두 벌이라 규칙을 고치면 둘 다 고친다).
+  크롭은 `--crops-root`(기본 `/data3/DiaRUGA`) 밑에서 찾고, 디스크에 없는
+  것은 세어서 말한다. 완전판 1.5 GB · 4분

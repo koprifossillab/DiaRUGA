@@ -7,7 +7,8 @@
  *
  * 규칙은 뷰어에서 그대로 가져왔다 — 검색 셋(표제어·이명법·속) · 이명의 현재
  * 학명으로도 찾기(P24) · 권역(한국·남극·전역, 196) · 속 고르는 목록 · 자동완성 ·
- * 한 판 50줄 · 격자 60칸 · 펼침의 좌우 판정. **굽는 쪽(`tools/build_offline_atlas.py`)이
+ * 한 판 50줄 · 격자 60칸 · 펼침의 좌우 판정 · 바둑판·비교와 "크롭이 먼저"(238 · v1.4.0).
+ * **굽는 쪽(`tools/build_offline_atlas.py`)이
  * 이미지 경로를 미리 만들어 준다**: 이름 규칙은 `web/viewer/atlas.py` 하나뿐이고
  * 화면이 다시 만들지 않는다.
  */
@@ -64,16 +65,18 @@
     var h = location.hash.replace(/^#/, '') || '/';
     var i = h.indexOf('?');
     var path = i < 0 ? h : h.slice(0, i);
-    var p = {};
+    var p = {}, multi = {};
     if (i >= 0) {
       h.slice(i + 1).split('&').forEach(function (pair) {
         if (!pair) return;
         var j = pair.indexOf('=');
         var k = decodeURIComponent(j < 0 ? pair : pair.slice(0, j));
         p[k] = decodeURIComponent(j < 0 ? '' : pair.slice(j + 1).replace(/\+/g, ' '));
+        (multi[k] = multi[k] || []).push(p[k]);
       });
     }
-    return { parts: path.split('/').filter(Boolean), q: p };
+    // `multi` — 같은 이름이 거듭 오는 값(비교의 `e`). `q` 는 늘 마지막 값이다
+    return { parts: path.split('/').filter(Boolean), q: p, multi: multi };
   }
 
   function go(path, params) { location.hash = '#' + path + qs(params || {}); }
@@ -117,6 +120,72 @@
     if (akey) return e.atlas === akey;
     if (area) return atlasMeta(e.atlas).area === area;
     return true;
+  }
+
+  /* ── 바둑판·비교 (뷰어 238) ────────────────────────────────── */
+
+  // 항목의 열쇠는 `<도감>:<표제어>` — 뷰어 `atlas_compare` 와 같다. 한국 도감에
+  // 표제어가 한 번 겹치는데(항목번호가 둘) 그때는 앞엣것이다(뷰어도 `seq` 앞).
+  function entryKey(e) { return e.atlas + ':' + e.name; }
+  var BYKEY = {};
+  ENTRIES.forEach(function (e) { var k = entryKey(e); if (!BYKEY[k]) BYKEY[k] = e; });
+  var CMP_MAX = 5;  // 뷰어 `ATLAS_COMPARE_MAX`
+  var VKEY = 'diaruga.atlas.view', TKEY = 'diaruga.atlas.compare';
+
+  // 칸에 띄울 그림 하나 (뷰어 `data._row_figure`). **크롭이 먼저**, 없으면 도판
+  // 쪽 하나. **주석이 달린 자리는 안 띄운다** — 실측 21건 전부가 `Tafel 아님 ·
+  // 권 뒤 Verzeichnis` 이고 그 "도판 쪽" 은 글자뿐인 색인 쪽이다.
+  function rowFigure(e) {
+    var pl, i, places = e.places || [];
+    for (i = 0; i < places.length; i++) {
+      pl = places[i];
+      if (pl.crop_rel) return { src: pl.crop_rel, href: plateHref(pl), crop: true,
+        label: pl.figures ? 'fig. ' + pl.figures : '' };
+    }
+    for (i = 0; i < places.length; i++) {
+      pl = places[i];
+      if (pl.plate_rel && !pl.note) return { src: pl.plate_thumb || pl.plate_rel,
+        full: pl.plate_rel, href: plateHref(pl), crop: false,
+        label: '도판 p.' + pl.pdf_plate_page };
+    }
+    return null;
+  }
+
+  function plateHref(pl) {
+    return (pl.plate_rel && META.images)
+      ? '#/page/' + pl.vol_path + '/' + pl.pdf_plate_page : '';
+  }
+
+  function loadPicked() {
+    var v = [];
+    try { v = JSON.parse(localStorage.getItem(TKEY) || '[]'); } catch (err) { v = []; }
+    return Array.isArray(v) ? v.filter(function (x) { return x && x.k; }).slice(0, CMP_MAX) : [];
+  }
+  function storePicked(v) {
+    try { localStorage.setItem(TKEY, JSON.stringify(v)); } catch (err) { /* 사생활 모드 */ }
+  }
+  function compareHash(picked) {
+    return '#/compare?' + picked.map(function (x) {
+      return 'e=' + encodeURIComponent(x.k);
+    }).join('&');
+  }
+
+  // 그림이 안 열리면 칸이 그렇게 말한다 — 빈 흰 칸은 "그림이 원래 없다" 로 읽힌다
+  function bindFigFail(root, sel, capSel) {
+    function failed(img) {
+      var box = img.closest(sel);
+      if (!box || box.classList.contains('failed')) return;
+      box.classList.add('failed');
+      var cap = capSel ? box.querySelector(capSel) : null;
+      if (cap) cap.textContent += ' — 이 꾸러미에 없습니다';
+      else box.setAttribute('data-msg', '이 꾸러미에 없습니다');
+    }
+    root.addEventListener('error', function (e) {
+      if (e.target.tagName === 'IMG') failed(e.target);
+    }, true);
+    root.querySelectorAll(sel + ' img').forEach(function (img) {
+      if (img.complete && img.naturalWidth === 0) failed(img);
+    });
   }
 
   function bookOf(code) { return BOOKS[code] || null; }
@@ -257,18 +326,135 @@
     off = Math.min(off, Math.max(0, hits.length - 1));
     var rows = hits.slice(off, off + PER);
     var pager = pagerHtml(hits.length, off, rows.length, q, akey, genus, area);
-    h.push(pager);
+    // 보기 단추는 **앞 판 줄에만** 둔다 — 뒤 줄에도 두면 같은 id 가 둘이 된다
+    h.push(pager.replace(/<\/div>$/, rows.length
+      ? '<span class="aviewbtns">'
+        + '<button type="button" class="chip" data-aview="list"'
+        + ' title="목록으로 본다 — 자리·생태·분포까지">목록</button>'
+        + '<button type="button" class="chip" data-aview="grid"'
+        + ' title="도판 그림을 칸마다 띄운다 · 비교할 종을 고른다">바둑판</button>'
+        + '</span></div>'
+      : '</div>'));
     if (!rows.length) {
       h.push('<p class="warn">찾은 것이 없습니다. <b>도감에 없는 것</b>일 수도, '
         + '<b>표기가 달라 안 걸린 것</b>일 수도 있습니다 — 도감은 옛 표기를 쓰고'
         + ' (<i>Actinocyclus Ehrenbergii</i>) Schmidt 는 전량 OCR 입니다.'
         + ' 속만으로 다시 찾아 보세요.</p>');
     }
+    // 비교에 담은 것 — 페이지·검색을 바꿔도 남는다(`localStorage`). 다른 속끼리
+    // 비교하려면 검색을 두 번 해야 하기 때문이다 (뷰어 238)
+    h.push('<div class="atray" id="atray"><span class="dim">비교할 종</span>'
+      + ' <b id="atray-n">0</b><span class="dim">/' + CMP_MAX + '</span>'
+      + '<span id="atray-list"></span>'
+      + '<a class="chip off" id="atray-go" aria-disabled="true"'
+      + ' title="고른 종을 나란히 놓는다 (2~' + CMP_MAX + '종)">비교</a>'
+      + '<button type="button" class="chip" id="atray-clear">비운다</button></div>');
+    // **보기는 감싸는 칸의 클래스 하나가 정한다** — `[hidden]` 을 안 쓴다:
+    // `.agrid` 의 `display: grid` 가 특이도에서 이겨 그대로 보인다(CLAUDE.md)
+    var view = 'list';
+    try { view = localStorage.getItem(VKEY) === 'grid' ? 'grid' : 'list'; } catch (err) { /* 사생활 모드 */ }
+    h.push('<div id="aresults" class="av-' + view + '"><div class="alist">');
     rows.forEach(function (e) { h.push(entryHtml(e)); });
+    h.push('</div><div class="agrid">');
+    rows.forEach(function (e) { h.push(cardHtml(e)); });
+    h.push('</div></div>');
     h.push(pager);
     app.innerHTML = h.join('');
     wireSearchForm(akey, genus, area);
     bindPreview(app);
+    if (rows.length) wireGrid();
+  }
+
+  function cardHtml(e) {
+    var a = atlasMeta(e.atlas), f = META.images ? rowFigure(e) : null, k = entryKey(e);
+    var h = ['<div class="acard" data-key="' + esc(k) + '">'];
+    if (f) {
+      h.push((f.href ? '<a class="afig" href="' + esc(f.href) + '">' : '<div class="afig">')
+        + '<img loading="lazy" alt="' + esc(e.name) + '" src="' + esc(f.src) + '">'
+        + (f.href ? '</a>' : '</div>'));
+    } else {
+      // 한국 도감 201건은 PDF 쪽이 없다 — 빈 칸 대신 말한다
+      h.push('<div class="afig nofig">그림 없음</div>');
+    }
+    h.push('<div class="aname"><i>' + esc(e.name) + '</i></div>'
+      + '<div class="dim">' + esc(a.short) + (f && f.label ? ' · ' + esc(f.label) : '')
+      + (e.genus_guess ? ' · 속명 추정' : '') + '</div>'
+      + '<label class="apick"><input type="checkbox" class="apick-cb" value="' + esc(k)
+      + '" data-name="' + esc(e.name) + '"><span>비교에 담기</span></label></div>');
+    return h.join('');
+  }
+
+  function wireGrid() {
+    var box = document.getElementById('aresults');
+    var tray = document.getElementById('atray');
+    var goBtn = document.getElementById('atray-go');
+    var picked = loadPicked();
+    function view() { return box.className === 'av-grid' ? 'grid' : 'list'; }
+    function has(k) { return picked.some(function (x) { return x.k === k; }); }
+
+    function draw() {
+      var full = picked.length >= CMP_MAX;
+      box.querySelectorAll('.apick-cb').forEach(function (cb) {
+        cb.checked = has(cb.value);
+        // 다 찼으면 담지 않은 칸만 잠근다 — 담은 것은 뺄 수 있어야 한다
+        cb.disabled = full && !cb.checked;
+        cb.closest('.acard').classList.toggle('picked', cb.checked);
+      });
+      document.getElementById('atray-n').textContent = picked.length;
+      var list = document.getElementById('atray-list');
+      list.innerHTML = picked.map(function (x) {
+        return '<span class="chip"><i>' + esc(x.n || x.k) + '</i>'
+          + '<button type="button" class="adrop" data-k="' + esc(x.k)
+          + '" title="뺀다" aria-label="뺀다">×</button></span>';
+      }).join('');
+      if (picked.length >= 2) {
+        goBtn.href = compareHash(picked);
+        goBtn.classList.remove('off');
+        goBtn.removeAttribute('aria-disabled');
+      } else {
+        goBtn.removeAttribute('href');
+        goBtn.classList.add('off');
+        goBtn.setAttribute('aria-disabled', 'true');
+      }
+      tray.classList.toggle('on', view() === 'grid' || picked.length > 0);
+      document.querySelectorAll('[data-aview]').forEach(function (b) {
+        b.classList.toggle('on', b.getAttribute('data-aview') === view());
+      });
+    }
+
+    document.querySelectorAll('[data-aview]').forEach(function (b) {
+      b.addEventListener('click', function () {
+        var v = b.getAttribute('data-aview');
+        box.className = 'av-' + v;
+        try { localStorage.setItem(VKEY, v); } catch (err) { /* 사생활 모드 */ }
+        draw();
+      });
+    });
+    box.addEventListener('change', function (e) {
+      var cb = e.target;
+      if (!cb.classList || !cb.classList.contains('apick-cb')) return;
+      // **담기 직전에 다시 읽는다** — 다른 탭에서 담은 것을 덮지 않게
+      picked = loadPicked().filter(function (x) { return x.k !== cb.value; });
+      if (cb.checked && picked.length < CMP_MAX) {
+        picked.push({ k: cb.value, n: cb.getAttribute('data-name') });
+      }
+      storePicked(picked);
+      draw();
+    });
+    tray.addEventListener('click', function (e) {
+      var b = e.target.closest('.adrop');
+      if (b) {
+        picked = loadPicked().filter(function (x) { return x.k !== b.getAttribute('data-k'); });
+        storePicked(picked);
+        draw();
+      } else if (e.target.id === 'atray-clear') {
+        picked = [];
+        storePicked(picked);
+        draw();
+      }
+    });
+    bindFigFail(box, '.afig');
+    draw();
   }
 
   function wireSearchForm(akey, genus, area) {
@@ -353,6 +539,15 @@
       if (pl.book_page) h.push(' <span class="dim">책 p.' + esc(pl.book_page) + '</span>');
       h.push(pageLink(e.atlas, pl, 'text'));
       h.push(pageLink(e.atlas, pl, 'plate'));
+      // **그림 하나의 크롭** (뷰어 P23·239~241). 도판 쪽 전체가 아니라 이 그림만
+      // 미리 보여 준다. 누르면 도판 쪽으로 간다 — 크롭 자체는 쪽이 아니다
+      if (pl.crop_rel && META.images) {
+        var ph = plateHref(pl);
+        h.push((ph ? '<a class="chip" href="' + esc(ph) + '"' : '<span class="chip"')
+          + ' data-prev="' + esc(pl.crop_rel) + '" data-prevlabel="'
+          + esc(pl.figures ? 'fig. ' + pl.figures : '그림') + '">그림 보기'
+          + (ph ? '</a>' : '</span>'));
+      }
       if (pl.note) h.push('<span class="pnote">' + esc(pl.note) + '</span>');
       h.push('</span>');
     });
@@ -649,6 +844,160 @@
     };
   }
 
+  /* ── 비교 (뷰어 238 · `atlas_compare.html`) ─────────────────── */
+
+  // **표로 놓는다.** 종마다 카드를 따로 세우면 "생태" 가 칸마다 다른 높이에 놓여
+  // 옆 종과 같은 줄을 비교할 수 없다. 줄이 곧 항목이고, **한 종이라도 값이 있는
+  // 줄만 낸다.** 값이 있는 줄의 빈 칸은 「—」 — 그 종에 그 자료가 없다는 것도 비교다.
+  function viewCompare(multi) {
+    var keys = [], seen = {};
+    (multi.e || []).forEach(function (k) {
+      k = (k || '').trim();
+      if (k && !seen[k]) { seen[k] = 1; keys.push(k); }
+    });
+    var over = Math.max(0, keys.length - CMP_MAX);
+    keys = keys.slice(0, CMP_MAX);
+    var rows = [], missing = [];
+    keys.forEach(function (k) { if (BYKEY[k]) rows.push(BYKEY[k]); else missing.push(k); });
+
+    // **보고 있는 비교가 곧 담은 것이다** — 여기서 빼고 돌아갔는데 검색 화면에
+    // 그대로 담겨 있으면 무엇을 비교하는지가 두 자리에서 갈린다
+    storePicked(rows.map(function (e) { return { k: entryKey(e), n: e.name }; }));
+
+    var h = ['<h1><a href="#/" id="cmpback">도감</a> · 비교 <span class="dim">'
+      + rows.length + '종</span></h1>'];
+    if (missing.length) {
+      h.push('<p class="warn">도감 색인에서 못 찾았습니다(판이 바뀌어 표제어가 고쳐졌을 수'
+        + ' 있습니다): ' + missing.map(function (k) { return '<code>' + esc(k) + '</code>'; })
+        .join(' · ') + '</p>');
+    }
+    if (over) h.push('<p class="warn">앞의 다섯 종만 놓았습니다 — ' + over + ' 종은 뺐습니다.</p>');
+    if (!rows.length) {
+      h.push('<p class="warn">비교할 종이 없습니다. 색인 검색 결과의 바둑판 보기에서 2~'
+        + CMP_MAX + '종을 고르세요. <a href="#/">색인 검색으로</a></p>');
+      app.innerHTML = h.join('');
+      return;
+    }
+    if (rows.length === 1) h.push('<p class="dim">한 종만 남았습니다 — 바둑판 보기에서 더 고르세요.</p>');
+
+    function drop(e) {
+      var rest = rows.filter(function (x) { return x !== e; })
+        .map(function (x) { return { k: entryKey(x) }; });
+      return compareHash(rest);
+    }
+    function tax(e) {
+      var t = e.binomial ? TAXA[e.binomial] : null;
+      return t && t.status === 'synonym' ? t : null;
+    }
+    function occ(e) { return e.binomial ? (OCC[e.binomial] || []) : []; }
+    function bd(e) { return e.binomial ? (BD[e.binomial] || []) : []; }
+    function ex(e, k) { return (e.extra || {})[k] || ''; }
+    var n = rows.length;
+    function sec(label) {
+      return '<tr class="sec"><th colspan="' + n + '">' + esc(label) + '</th></tr>';
+    }
+    function any(fn) { return rows.some(function (e) { return !!fn(e); }); }
+
+    h.push('<div class="cmpwrap"><table class="cmp" id="cmp" style="min-width:'
+      + (n * 250) + 'px"><thead><tr>');
+    rows.forEach(function (e) {
+      var a = atlasMeta(e.atlas);
+      h.push('<th><div class="cname"><i>' + esc(e.name) + '</i></div>'
+        + '<div class="cmeta dim">' + esc(a.short) + (e.item_no ? ' #' + esc(e.item_no) : '')
+        + (e.genus_guess ? ' <span class="chip warnchip">속명 추정</span>' : '')
+        + (e.rank === 'genus_only' ? ' <span class="chip">속까지</span>'
+          : e.rank === 'unreadable' ? ' <span class="chip warnchip">못 읽음</span>' : '')
+        + '</div><a class="cdrop" href="' + esc(drop(e)) + '">빼기</a></th>');
+    });
+    h.push('</tr></thead><tbody>');
+
+    // 그림 — 자리마다 하나. 크롭이 있으면 크롭, 없으면 도판 한 쪽(바둑판과 같은 규칙)
+    h.push(sec('그림') + '<tr>');
+    rows.forEach(function (e) {
+      var figs = [];
+      if (META.images) (e.places || []).forEach(function (pl) {
+        var src = pl.crop_rel || (pl.plate_rel && !pl.note ? pl.plate_rel : '');
+        if (!src) return;
+        var ph = plateHref(pl);
+        figs.push((ph ? '<a class="cfig" href="' + esc(ph) + '">' : '<div class="cfig">')
+          + '<img loading="lazy" alt="' + esc(e.name) + '" src="' + esc(src) + '">'
+          + '<div class="cap">' + (pl.volume ? esc(pl.volume) + ' ' : '') + esc(pl.where)
+          + (pl.figures ? ' fig. ' + esc(pl.figures) : '')
+          + (pl.pdf_plate_page ? ' · p.' + esc(pl.pdf_plate_page) : '') + '</div>'
+          + (ph ? '</a>' : '</div>'));
+      });
+      h.push('<td>' + (figs.length ? figs.join('') : '<span class="dim">그림 없음</span>') + '</td>');
+    });
+    h.push('</tr>');
+
+    h.push(sec('자리') + '<tr>');
+    rows.forEach(function (e) {
+      var ps = (e.places || []).map(function (pl) {
+        return '<span>' + (pl.volume ? '<span class="dim">' + esc(pl.volume) + '</span> ' : '')
+          + esc(pl.where) + (pl.figures ? ' <span class="dim">fig. ' + esc(pl.figures) + '</span>' : '')
+          + (pl.book_page ? ' <span class="dim">책 p.' + esc(pl.book_page) + '</span>' : '')
+          + ' ' + pageLink(e.atlas, pl, 'text') + ' ' + pageLink(e.atlas, pl, 'plate')
+          + (pl.note ? ' <span class="pnote">' + esc(pl.note) + '</span>' : '') + '</span>';
+      });
+      h.push('<td><div class="cplaces">' + (ps.length ? ps.join('')
+        : '<span class="dim">자리가 안 적혀 있다</span>') + '</div></td>');
+    });
+    h.push('</tr>');
+
+    if (any(tax)) {
+      h.push(sec('현재 통용 학명') + '<tr>');
+      rows.forEach(function (e) {
+        var t = tax(e);
+        h.push('<td>' + (t ? '<span class="chip warnchip" title="AlgaeBase 확인 — 이 표기는 이명이다">이명</span> '
+          + '<i>' + esc(t.valid_name) + '</i>'
+          + (t.note ? ' <span class="pnote">' + esc(t.note) + '</span>' : '') : '—') + '</td>');
+      });
+      h.push('</tr>');
+    }
+    [['ecology', '생태'], ['distribution', '분포'], ['original_note', '원문 표기']]
+      .forEach(function (c) {
+        if (!any(function (e) { return ex(e, c[0]); })) return;
+        h.push(sec(c[1]) + '<tr>');
+        rows.forEach(function (e) { h.push('<td>' + (esc(ex(e, c[0])) || '—') + '</td>'); });
+        h.push('</tr>');
+      });
+    if (any(function (e) { return occ(e).length; })) {
+      h.push(sec('출현') + '<tr>');
+      rows.forEach(function (e) {
+        var o = occ(e);
+        h.push('<td>' + (o.length ? o.map(function (x) {
+          return '<div>' + esc(x.region) + ' <span class="dim">(' + esc(x.authors) + ', '
+            + esc(x.year) + ')</span>' + (x.note ? ' <span class="pnote">' + esc(x.note) + '</span>' : '')
+            + '</div>';
+        }).join('') : '—') + '</td>');
+      });
+      h.push('</tr>');
+    }
+    if (any(function (e) { return bd(e).length; })) {
+      h.push(sec('기준면') + '<tr>');
+      rows.forEach(function (e) {
+        var b = bd(e);
+        h.push('<td>' + (b.length ? b.map(function (x) {
+          return '<div>' + esc(x.datum) + ' ' + esc(x.age)
+            + (x.uncertainty ? '±' + esc(x.uncertainty) : '') + ' Ma <span class="dim">('
+            + esc(x.ref_label) + (x.via_label ? ' — ' + esc(x.via_label) + ' 경유' : '')
+            + (x.infra ? ' · ' + esc(x.infra) : '')
+            + (x.variant_label ? ' · ' + esc(x.variant_label) : '') + ')</span></div>';
+        }).join('') : '—') + '</td>');
+      });
+      h.push('</tr>');
+    }
+    h.push('</tbody></table></div>');
+    app.innerHTML = h.join('');
+    bindPreview(app);
+    bindFigFail(document.getElementById('cmp'), '.cfig', '.cap');
+
+    // 검색 결과에서 왔으면 그 결과로 돌아간다 — 첫 화면으로 보내면 검색을 다시 해야 한다
+    document.getElementById('cmpback').addEventListener('click', function (ev) {
+      if (lastSearch !== null) { ev.preventDefault(); location.hash = lastSearch; }
+    });
+  }
+
   /* ── 학명 대조표 (종 검색) ─────────────────────────────────── */
 
   function viewNames(p) {
@@ -741,6 +1090,13 @@
     h.push('<dt>도판</dt><dd>' + (META.images
       ? META.page_count + '쪽 · ' + META.dpi + ' dpi JPEG (품질 ' + META.quality + ')'
       : '이 꾸러미에는 없다 (글자만)') + '</dd>');
+    if (META.crop_count) {
+      h.push('<dt>그림 크롭</dt><dd>' + META.crop_count + '장 — 도판에서 그 종의 그림만 뗀 것.'
+        + ' 결과의 <b>그림 보기</b> · 바둑판 칸 · 비교 화면이 쓴다(크롭이 먼저, 없으면 도판 쪽).</dd>');
+    }
+    h.push('<dt>바둑판 · 비교</dt><dd>색인 결과의 <b>목록 · 바둑판</b> 단추로 오간다.'
+      + ' 바둑판 칸의 <b>비교에 담기</b>로 2~' + CMP_MAX + '종을 골라 <b>비교</b>를 누르면'
+      + ' 그림·자리·생태·분포·출현·기준면을 한 표에 나란히 놓는다. 담은 것은 검색을 바꿔도 남는다.</dd>');
     h.push('<dt>학명 대조표</dt><dd>' + NAMES.rows.length + '건 · 출처 '
       + esc(META.names_source || '') + '</dd>');
     h.push('<dt>이명 판정 · 출현</dt><dd>학명 유효성 판정 ' + (META.taxa || 0)
@@ -771,8 +1127,11 @@
     else if (head === 'page') viewPage(r.parts, r.q);
     else if (head === 'names') viewNames(r.q);
     else if (head === 'about') viewAbout();
-    else viewSearch(r.q);
+    else if (head === 'compare') viewCompare(r.multi);
+    else { lastSearch = location.hash || '#/'; viewSearch(r.q); }
   }
+  // 마지막으로 본 검색 결과 — 비교 화면의 「도감」 이 그리로 돌아간다
+  var lastSearch = null;
 
   function start() {
     app = document.getElementById('app');
@@ -781,6 +1140,13 @@
     previewCap = document.getElementById('apreview-cap');
     document.getElementById('ver').textContent = META.version
       + ' · ' + (META.images ? '완전판' : '글자만');
+    // 비교 띠가 머리줄 밑에 붙도록 그 높이를 잰다 — 화면 폭에 따라 줄이 접힌다
+    var head = document.querySelector('header.top');
+    function headh() {
+      if (head) document.documentElement.style.setProperty('--headh', head.offsetHeight + 'px');
+    }
+    headh();
+    window.addEventListener('resize', headh);
     window.addEventListener('hashchange', route);
     route();
   }
