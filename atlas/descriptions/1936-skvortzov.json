@@ -33,10 +33,22 @@
    "description_source": "OCR (1936_skvortzov_ampen_neogene · 항목 011 · PDF p.14)"
   },
   {
+   "seq": 6,
+   "name": "Stepanodiscus carconensis Grun.?",
+   "description": "Stephanodiscus carconensis Grun. ? Plate 1, fig. 7. Stephanodiscus carconensis Grun., A. Schmidt, Atlas Diatom. (1901) taf. 228, fig. 9. Valve circular with 19-21 radial marginal processes. Beads large, robust, radiate disposed, 12 in 0.01mm. Diameter of the valve 0.034mm. Differs from Stephanodiscus astraea (Ehr.) Grun. in its more robuste beads 4-5 in marginal radiating rows. Rare. Reported from Klamath Lake, Shasta country, Oregon, North America and common in Biwa Lake, Nippon.",
+   "description_source": "OCR (1936_skvortzov_ampen_neogene · 항목 007 · PDF p.13–14) · 이름 근사 일치: 색인 stepanodiscus carconensis ↔ 원문 stephanodiscus carconensis"
+  },
+  {
    "seq": 7,
    "name": "Melosira granulata (Ehr.) Ralfs status y.",
    "description": "Melosira granulata (Ehr.) Ralfs status y. Plate 1, fig. 8. Melosira granulata (Ehr.) Ralfs status y. Fr. Hustedt, Bacillar. (1930) 88. Frustule cylindrical with distinct pseudosulkus and sulkus. Frustule cell-wall with fine puncta in longitudinal oblique rows. Frustule height 0.0085mm; breadth 0.007mm. Striae 15, puncta 16-17 in 0.01mm. Rare. A plankton diatom common in fresh-water basins.",
    "description_source": "OCR (1936_skvortzov_ampen_neogene · 항목 002 · PDF p.12)"
+  },
+  {
+   "seq": 8,
+   "name": "Synedra Vaucheriae Kutz. var. truncata (Grev.) Grun.",
+   "description": "Syndra Vaucheriae Kutz. var. truncata (Grev.) Grun. Plate 1, figs. 11, 21. Synedra Vaucheriae Kutz. var. truncata (Grev.) Grun., Fr. Hustedt, Bacillar. (1930) 161, fig. 193. Valve linear-lanceolate with almost parallel margins and slightly attenuate ends. Striae parallel, in the middle from one side only. Length 0.018-0.025 mm; breadth 0.0034-0.0038mm. Striae 12-15 in 0.01mm. Infrequent. A fresh-water diatom.",
+   "description_source": "OCR (1936_skvortzov_ampen_neogene · 항목 023 · PDF p.16–17) · 이름 근사 일치: 색인 synedra vaucheriae var truncata ↔ 원문 syndra vaucheriae var truncata"
   },
   {
    "seq": 9,
@@ -211,6 +223,12 @@
    "name": "Achnanthes inflata Kutz.",
    "description": "Achnanthes inflata Kutz. Plate 3, fig. 6. Achnanthes inflata Kutz., Fr. Hustedt, Bacillar. (1930) 209, fig. 307. Valve linear-lanceolate with undulate middle part and slightly attenuate, broad rounded ends. Upper valve with exentric axial area near the margin. Striae 9-11 in 0.01mm., about parallel, composed of coarse puncta. Lower valve with radiate striae and broad fascia. Striae about 10 in 0.01mm. Length 0.039-0.047mm; breadth 0.014-0.015mm. Common. Known in fresh-waters in tropics and subtropics. Reported by me from South China.",
    "description_source": "OCR (1936_skvortzov_ampen_neogene · 항목 038 · PDF p.20)"
+  },
+  {
+   "seq": 38,
+   "name": "Pinnularia acrosphaeria Breb.",
+   "description": "Pinnularia acrosphae ia Breb. Plate 3, fig. 7. Pinnularia acrosphaeria Breb., Fr. Hustedt, Bacillar. (1930) 330, fig. 610. Valve linear with slightly undulate middle part and capitate, and broad rounded ends. Striae slightly divergent in the middle part and convergent at the ends, 10 in 0.01mm. Axial and central area broad, about 1/3 of the valve breadth, covered with irregular dots. Median line filiform with distinct comma-shaped terminal fissures. Rare. Common in Alpine regions.",
+   "description_source": "OCR (1936_skvortzov_ampen_neogene · 항목 060 · PDF p.26) · 이름 근사 일치: 색인 pinnularia acrosphaeria ↔ 원문 pinnularia acrosphae"
   },
   {
    "seq": 39,

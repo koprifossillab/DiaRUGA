@@ -36,9 +36,11 @@
 from __future__ import annotations
 
 import argparse
+import difflib
 import json
 import re
 import sys
+import unicodedata
 from collections import Counter
 from pathlib import Path
 
@@ -90,6 +92,53 @@ def korean() -> dict:
 
 SEP = " ／ "
 
+# ── 근사 일치 (2026-11-15 · 사용자 결정) ─────────────────────────────────
+#
+# 철자만 다른 것은 얹는다 — 색인도 OCR 로 읽은 것이라 `minutisslma` ↔
+# `minutissima` 같은 어긋남이 대부분 색인 쪽 오독이다. **얹은 것은 전부
+# 목록(`build_notes` 의 `fuzzy_attached`)에 남기고, 화면에 보이는
+# `description_source` 에도 "이름 근사 일치: 색인 X ↔ 원문 Y" 를 적는다** —
+# `striata` 와 `striatula` 처럼 닮은 다른 이름이 걸릴 수 있어 사람이 볼 자리를
+# 남긴다. 색인의 이름은 안 고친다.
+FUZZ_WORD = 0.8      # 낱말 하나(종소명·속명)의 닮음 문턱
+FUZZ_KEY = 0.88      # 논문 이름 열쇠 전체의 닮음 문턱
+FUZZ_MINLEN = 5      # 이보다 짧은 종소명은 근사로 안 본다 — 우연히 닮는다
+
+
+def _ascii(s: str) -> str:
+    return unicodedata.normalize("NFKD", s).encode("ascii", "ignore").decode().lower()
+
+
+def _ratio(a: str, b: str) -> float:
+    return difflib.SequenceMatcher(None, a, b).ratio()
+
+
+def near_word(ep: str, line: str) -> tuple[str, float] | None:
+    """줄 안에서 종소명과 가장 닮은 낱말. 문턱을 못 넘으면 None."""
+    ep = _ascii(ep)
+    if len(ep) < FUZZ_MINLEN:
+        return None
+    best = max(((w, _ratio(ep, w)) for w in set(re.findall(r"[a-z]+", _ascii(line)))),
+               key=lambda x: x[1], default=None)
+    return best if best and best[1] >= FUZZ_WORD else None
+
+
+def near_key(k: str, cands: list[str]) -> tuple[str, float] | None:
+    """이름 열쇠와 닮은 후보 **하나**. 낱말 수가 같고 낱말마다 닮아야 하며,
+    문턱을 넘는 후보가 둘이면 어느 것인지 모르므로 None."""
+    kt = k.split()
+    hits = []
+    for c in cands:
+        ct = c.split()
+        if len(ct) != len(kt) or min(_ratio(a, b) for a, b in zip(kt, ct)) < 0.75:
+            continue
+        if _ratio(kt[0], ct[0]) < FUZZ_WORD:
+            continue
+        r = _ratio(k, c)
+        if r >= FUZZ_KEY:
+            hits.append((c, r))
+    return hits[0] if len(hits) == 1 else None
+
 
 def _schmidt_figs():
     from parse_descriptions_schmidt import parse_index_figs   # 같은 펼침 규칙을 쓴다
@@ -112,10 +161,11 @@ def schmidt() -> list[tuple[str, dict]]:
                 if it["kind"] == "entry":
                     by_page.setdefault((b["band"], it["pdf_page"]), []).append(it)
 
-    out, skipped = [], []
+    out, skipped, fuzzy = [], [], []
     states = Counter()
     for e in index["entries"]:
         parts = []
+        near = []
         for i, p in enumerate(e["placements"]):
             key = (p["volume"], p["pdf_page"])
             figs = parse_index_figs(p.get("figures"))
@@ -136,7 +186,15 @@ def schmidt() -> list[tuple[str, dict]]:
                 continue
             line = " ".join(it["text"] for it in hit)
             ep = (e["binomial"] or e["name"]).split()[-1].lower()
-            if ep not in line.lower():
+            nw = None if ep in line.lower() else near_word(ep, line)
+            if nw:
+                states["epithet_near"] += 1
+                near.append(f"{ep} ↔ {nw[0]}")
+                fuzzy.append({"seq": e["seq"], "name": e["name"], "volume": p["volume"],
+                              "plate": p["plate"], "figures": p["figures"],
+                              "pdf_page": p["pdf_page"], "index_epithet": ep,
+                              "line_word": nw[0], "ratio": round(nw[1], 3), "line": line})
+            elif ep not in line.lower():
                 states["epithet_missing"] += 1
                 skipped.append({"seq": e["seq"], "name": e["name"], "volume": p["volume"],
                                 "plate": p["plate"], "figures": p["figures"],
@@ -149,15 +207,19 @@ def schmidt() -> list[tuple[str, dict]]:
             text = SEP.join(f"Taf. {p['plate']}, Fig. {p['figures']}: {ln}" for p, ln in parts)
         else:
             text = parts[0][1]
+        src = "OCR (Schmidt 해설면 · 그림 번호로 짝 지은 줄)"
+        if near:
+            src += " · 이름 근사 일치: 색인 " + ", ".join(dict.fromkeys(near))
         out.append({"seq": e["seq"], "name": e["name"], "description": text,
-                    "description_source": "OCR (Schmidt 해설면 · 그림 번호로 짝 지은 줄)"})
+                    "description_source": src})
     print(f"schmidt — 색인 {len(index['entries'])} · 기재문 {len(out)} · 자리 {dict(states)} "
-          f"· 종소명이 줄에 없어 안 얹은 자리 {len(skipped)}")
+          f"· 근사 일치로 얹은 자리 {len(fuzzy)} · 종소명이 줄에 없어 안 얹은 자리 {len(skipped)}")
     doc = {"atlas": "schmidt",
            "source": "Diadiction/outputs/descriptions/schmidt_ocr.json "
                      "(tools/parse_descriptions_schmidt.py)",
            "entries": out}
-    return [("schmidt", doc, {"skipped_epithet_missing": skipped, "states": dict(states)})]
+    return [("schmidt", doc, {"skipped_epithet_missing": skipped, "fuzzy_attached": fuzzy,
+                             "states": dict(states)})]
 
 
 # ── 논문 ──────────────────────────────────────────────────────────────────
@@ -230,15 +292,17 @@ def papers() -> list[tuple[str, dict]]:
         pkeys = Counter(name_key(e["name"]) for e in ents)
         by_key = {name_key(e["name"]): e for e in ents}
         out, notes = [], {"index_no_key": [], "index_dup_attached": [], "paper_dup_key": [],
-                          "index_not_in_paper": [], "paper_not_in_index": []}
+                          "index_not_in_paper": [], "paper_not_in_index": [],
+                          "fuzzy_attached": []}
         used = set()
+        pending = []
         for e in index["entries"]:
             k = name_key(e["name"])
             if k is None:
                 notes["index_no_key"].append(e["name"])
                 continue
             if k not in pkeys:
-                notes["index_not_in_paper"].append(e["name"])
+                pending.append((e, k))
                 continue
             if pkeys[k] > 1:
                 notes["paper_dup_key"].append(e["name"])
@@ -255,6 +319,25 @@ def papers() -> list[tuple[str, dict]]:
             out.append({"seq": e["seq"], "name": e["name"], "description": text,
                         "description_source": f"OCR ({code} · 항목 {pe['id'].split('#')[-1]}"
                                               f" · PDF p.{'–'.join(map(str, sorted({pe['pdf_pages'][0], pe['pdf_pages'][-1]})))})"})
+        # 둘째 바퀴 — 정확히 맞은 것을 뺀 나머지에서 철자만 다른 것을 찾는다.
+        # 논문 쪽 항목 하나에 색인 행이 여럿 닮으면(캡션 꼬리만 다른 행) 다 얹는다
+        cands = [c for c in pkeys if c and c not in used and pkeys[c] == 1]
+        for e, k in pending:
+            nk = near_key(k, cands)
+            text = _entry_text(by_key[nk[0]]) if nk else ""
+            if not text:
+                notes["index_not_in_paper"].append(e["name"])
+                continue
+            pe = by_key[nk[0]]
+            notes["fuzzy_attached"].append({"seq": e["seq"], "index_name": e["name"],
+                                            "paper_name": pe["name"], "index_key": k,
+                                            "paper_key": nk[0], "ratio": round(nk[1], 3)})
+            out.append({"seq": e["seq"], "name": e["name"], "description": text,
+                        "description_source": f"OCR ({code} · 항목 {pe['id'].split('#')[-1]}"
+                                              f" · PDF p.{'–'.join(map(str, sorted({pe['pdf_pages'][0], pe['pdf_pages'][-1]})))})"
+                                              f" · 이름 근사 일치: 색인 {k} ↔ 원문 {nk[0]}"})
+        used |= {n["paper_key"] for n in notes["fuzzy_attached"]}
+        out.sort(key=lambda d: d["seq"])
         notes["paper_not_in_index"] = [e["name"] for e in ents if name_key(e["name"]) not in used]
         print(f"{stem} — 색인 {len(index['entries'])} · 가른 기재 {len(ents)} · 얹음 {len(out)} · "
               + " · ".join(f"{k} {len(v)}" for k, v in notes.items()))
