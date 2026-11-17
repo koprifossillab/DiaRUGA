@@ -190,6 +190,15 @@
       <input type="text" name="core_code" value="{{ core.code|default:'' }}" maxlength="32">
       <span class="hint">시추코어는 폴더 이름의 가운데 토막(<code class="mono">GC03</code>),
         노두는 앞 토막(<code class="mono">BP09</code>)입니다.</span></label>
+    <label>산출 해상도
+      <select name="core_resolution">
+        {% for k, lab, n in resolutions %}
+          <option value="{{ k }}" {% if core.resolution == k %}selected{% endif %}>{{ lab }} — 완형 {{ n }}개</option>
+        {% endfor %}
+      </select>
+      <span class="hint">g0 부터 검토를 마친 시야를 따라가며 완형이 이 수에 닿는 시야까지가
+        산출 대상입니다. 그 뒤의 시야는 <b>보충 시야</b>라 산출표·그래프·비교에서 빠집니다.
+        산출표 화면에서 다른 목표로 바꿔 볼 수 있지만 그것은 여기 값을 안 바꿉니다.</span></label>
     <label>채취 방식
       <input type="text" name="core_kind" value="{{ core.collect_kind|default:'' }}" maxlength="64"
              placeholder="gravity core">

@@ -450,6 +450,8 @@
   .badge.on { color: var(--good); border-color: var(--good); }
   /* 검토 완료 — 다른 배지(초록·주황)와 갈라져야 목록에서 한눈에 짚인다 */
   .badge.done { color: var(--danger); border-color: var(--danger); }
+  /* 보충 시야 (P36) — 산출표·비교에서 빠지는 시야. 테마 토큰을 빌린다(107) */
+  .badge.supp { color: var(--warn-fg); background: var(--warn-bg); border-color: var(--warn-line); }
   .badge.warn { color: var(--warn); border-color: var(--warn); }
   /* 시야 목록 표지의 주 묶음 — 088 의 머리줄 표시(`.batchtag`)와 같은 색이다.
      같은 것(검출이 어느 묶음의 것인가)을 가리키는 표시가 화면마다 다르면 같은
@@ -1839,6 +1841,9 @@
     content: ''; position: absolute; right: 4px; top: 4px; width: 8px; height: 8px;
     border-radius: 50%; background: #3fb950; box-shadow: 0 0 0 1.5px rgba(255,255,255,.85);
   }
+  /* 보충 시야 (P36) — 산출에서 빠진다. 흐리게 두되 검토는 할 수 있다 */
+  .dvside .vt.supp img { opacity: .55; }
+  .dvside .vt.supp .vid { background: var(--warn-bg); color: var(--warn-fg); }
   .dvside .vt.cur { border: 2px solid var(--accent); }
   .dvside .vt:hover { border-color: var(--accent); }
   /* 통계 (230) — 큰 수 셋 · 분류 막대 · 교정 셋 */

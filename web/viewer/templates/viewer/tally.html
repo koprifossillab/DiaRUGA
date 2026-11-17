@@ -17,6 +17,11 @@
 <style>
   .tlyopts { display: flex; gap: 14px; flex-wrap: wrap; align-items: center;
              font-size: 12.5px; margin: 6px 0 12px; }
+  .tlyopts .goalform { display: inline-flex; gap: 4px; align-items: center; margin: 0; }
+  .tlyopts .goalform input { width: 5.5em; }
+  .tlyopts .goalform input.on { border-color: var(--accent); }
+  .warnline { background: var(--warn-bg); color: var(--warn-fg); border: 1px solid var(--warn-line); padding: 4px 8px; border-radius: 4px; margin: 4px 0; }
+  .tly .short { color: var(--warn-fg); background: var(--warn-bg); border-radius: 3px; padding: 0 3px; font-size: 11px; }
   .tlyopts .seg { display: inline-flex; border: 1px solid var(--line); border-radius: 6px; overflow: hidden; }
   .tlyopts .seg a { padding: 3px 10px; color: var(--dim); text-decoration: none; }
   .tlyopts .seg a + a { border-left: 1px solid var(--line); }
@@ -74,7 +79,8 @@
   <a class="dl" href="?format=csv&target={{ target }}{% if unit == 'pct' %}&unit=pct{% endif %}{% if split_obs %}&obs=1{% endif %}">CSV 내려받기</a>
 </div>
 <p class="tlynote">
-  검토를 마친 시야만 셉니다 · <b>파편은 세지 않습니다</b>{% if unit == 'pct' %} · % 의 분모는 <b>그 열에서 종명이 붙은 개체</b>{% endif %}
+  {% if goal.n %}목표 <b>{{ goal.label }}</b> — g0 부터 검토를 마친 시야를 따라가 {% if goal.mode == 'E' %}완형 Eucampia 수가{% else %}완형 수가{% endif %} 목표에 닿는 시야까지 셉니다(뒤는 보충 시야) ·
+  {% else %}목표 없음 — 검토를 마친 시야를 전부 셉니다 · {% endif %}<b>파편은 세지 않습니다</b>{% if unit == 'pct' %} · % 의 분모는 <b>그 열에서 종명이 붙은 개체</b>{% endif %}
   {% if n_excluded %} · 집계 제외 관찰 {{ n_excluded }}개는 뺐습니다{% endif %}
   · 칸을 누르면 그 관찰의 개체 카탈로그를 그 종명으로 찾습니다(관찰이 하나인 열만)
 </p>
@@ -106,8 +112,14 @@
     <tr><td class="sp">종명 붙은 개체</td>{% for c in cols %}<td class="n">{{ c.n_identified }}</td>{% endfor %}<td class="tot">{{ total.n_identified }}</td></tr>
     <tr><td class="sp">세는 개체 (파편 제외)</td>{% for c in cols %}<td class="n">{{ c.n_counted }}</td>{% endfor %}<td class="tot">{{ total.n_counted }}</td></tr>
     <tr><td class="sp">동정률 %</td>{% for c in cols %}<td class="n">{% if c.id_pct is not None %}{{ c.id_pct }}{% endif %}</td>{% endfor %}<td class="tot">{% if total.id_pct is not None %}{{ total.id_pct }}{% endif %}</td></tr>
-    <tr><td class="sp" title="세는 개체(완형) ÷ 해상도 목표 {{ target }}">완형 / 목표 {{ target }}</td>{% for c in cols %}<td class="n">{{ c.n_counted }}/{{ target }}</td>{% endfor %}<td class="tot"></td></tr>
+    <tr><td class="sp" title="g0 부터 검토를 마친 시야 중 산출에 든 것 — 괄호는 그 뒤의 보충 시야">산출 시야 (보충)</td>{% for c in cols %}<td class="n">{{ c.n_scope }}{% if c.n_supp %} <span class="dim">({{ c.n_supp }})</span>{% endif %}</td>{% endfor %}<td class="tot">{{ total.n_scope }}{% if total.n_supp %} <span class="dim">({{ total.n_supp }})</span>{% endif %}</td></tr>
+    {% if goal.n %}
+    <tr><td class="sp" title="목표 {{ goal.label }} — 관찰을 더한 열은 관찰 수만큼 목표도 더한다">{% if goal.mode == 'E' %}Eucampia{% else %}완형{% endif %} / 목표</td>{% for c in cols %}<td class="n">{{ c.goal_hit }}/{{ c.goal_n }}{% if not c.reached %} <span class="short">미달</span>{% endif %}</td>{% endfor %}<td class="tot"></td></tr>
     <tr><td class="sp">목표 달성률 %</td>{% for c in cols %}<td class="n">{{ c.target_pct }}</td>{% endfor %}<td class="tot"></td></tr>
+    {% endif %}
+    {% if goal.mode == 'E' %}
+    <tr><td class="sp" title="산출 범위 안의 Eucampia 파편 — 목표 수에는 안 든다">Eucampia 파편</td>{% for c in cols %}<td class="n">{{ c.e_frag }}</td>{% endfor %}<td class="tot">{{ total.e_frag }}</td></tr>
+    {% endif %}
     <tr><td class="sp">파편 비율 % (검출 중)</td>{% for c in cols %}<td class="n">{% if c.frag_pct is not None %}{{ c.frag_pct }}{% endif %}</td>{% endfor %}<td class="tot">{% if total.frag_pct is not None %}{{ total.frag_pct }}{% endif %}</td></tr>
   </tbody>
 </table>

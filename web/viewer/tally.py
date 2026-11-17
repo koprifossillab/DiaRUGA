@@ -103,7 +103,20 @@ def merge(cols: list[dict]) -> dict:
     n = {k: sum(c.get(k) or 0 for c in cols)
          for k in ("n_detected", "n_counted", "n_frag", "n_identified",
                    "detected_groups")}
-    return {**n,
+    # 산출 범위 (P36) — **관찰마다 따로 끊은 뒤에 더한다**(사용자 11-17). 목표도
+    # 관찰 수만큼 더한다: 관찰 둘을 200 씩 세었으면 그 열은 400 중 몇이다.
+    # 하나라도 미달이면 미달이다.
+    sc = {}
+    if cols and "goal_hit" in cols[0]:
+        sc = {k: sum(c.get(k) or 0 for c in cols)
+              for k in ("goal_hit", "n_reviewed", "n_scope", "n_supp", "e_n", "e_frag")}
+        gn = [c.get("goal_n") for c in cols]
+        sc["goal_n"] = None if None in gn else sum(gn)
+        rs = [c.get("reached") for c in cols]
+        sc["reached"] = None if None in rs else all(rs)
+        sc["target_pct"] = (round(100.0 * sc["goal_hit"] / sc["goal_n"], 1)
+                            if sc["goal_n"] else None)
+    return {**n, **sc,
             "n_unnamed": n["n_counted"] - n["n_identified"],
             "frag_pct": (round(100.0 * n["n_frag"] / n["n_detected"], 1)
                          if n["n_detected"] else None),
@@ -128,13 +141,17 @@ def _short(name: str, prev: str) -> str:
     return name
 
 
-def locality_table(site_code: str, loc_code: str, split_obs: bool = False) -> dict | None:
+def locality_table(site_code: str, loc_code: str, split_obs: bool = False,
+                   goal_key: str = "site") -> dict | None:
     """지점 하나의 산출표 — 열은 시료(깊이·단면 위치 차례), 줄은 종.
 
     **`집계 제외` 관찰은 뺀다**(목록·합계·`derived_series` 와 같은 규칙).
     **`숨김` 은 센다** — 보기 상태이지 자료의 성질이 아니다.
 
     `split_obs` 면 관찰마다 열을 가른다(사용자가 나중에 조정할 수 있게).
+
+    **열은 산출 범위로 끊은 것이다** (P36). `goal_key` 는 `parse_goal` 의 열쇠 —
+    `site` 면 이 지점의 해상도, `all` 이면 끊지 않는다(260 까지의 셈).
     """
     from .models import Locality
 
@@ -145,7 +162,8 @@ def locality_table(site_code: str, loc_code: str, split_obs: bool = False) -> di
     slides = sorted((sl for sm in loc.samples.select_related("locality").all()
                      for sl in sm.slides.live()), key=data._slide_order)
     used = [sl for sl in slides if not sl.exclude_from_totals]
-    summary = data._summary_for(used)
+    goal = goal_for(goal_key, loc)
+    scoped = data.scope_rows(used)
     outcrop = loc.kind == "outcrop"
 
     # 열 — 시료마다(또는 관찰마다) 하나. 차례는 `_slide_order` 그대로라 같은
@@ -160,7 +178,7 @@ def locality_table(site_code: str, loc_code: str, split_obs: bool = False) -> di
 
     cols = []
     for _, sls in groups:
-        c = merge([column(data._slide_summary(sl, summary)) for sl in sls])
+        c = merge([cut_column(scoped[sl.id], goal) for sl in sls])
         sm = sls[0].sample
         if outcrop or sm is None or sm.depth_cm is None:
             head = sm.code if sm else sls[0].name
@@ -201,37 +219,141 @@ def locality_table(site_code: str, loc_code: str, split_obs: bool = False) -> di
     tot = merge(cols) if cols else None
     return {"loc": loc, "site": loc.site, "is_outcrop": outcrop,
             "cols": cols, "rows": rows, "total": tot,
-            "split_obs": split_obs,
+            "split_obs": split_obs, "goal": goal, "target": goal["key"],
             "n_excluded": len(slides) - len(used)}
 
 
-# ─────────────────────────────────────────── 해상도 목표 (260)
+# ─────────────────────────────────────────── 산출 대상 시야 (260 → P36)
 
-# 시료마다 **완형(세는 개체 = 파편 제외)을 몇 개 셌어야 하는가**. 규조 산출의 관례가
-# 시료당 300~400 개체다 — 사용자 11-15: 400 을 기준으로, 200~400 에서 고른다.
-TARGET_DEFAULT = 400
-TARGET_MIN, TARGET_MAX = 200, 400
-TARGET_CHOICES = (200, 250, 300, 350, 400)
+# 지점의 해상도 → 완형 목표 (P36 · 사용자 11-17). 수를 칸에 안 두는 이유는
+# `Locality.resolution` 머리말.
+RESOLUTION_TARGET = {"low": 200, "high": 400}
+GOAL_CHOICES = (200, 300, 400)
+GOAL_MAX = 5000            # 직접 입력의 위쪽 — 오타(20000)를 그대로 받지 않는다
+# E — Eucampia 만 센다 (P35 의 개수). **완형 유형만** 100 에 들어가고 파편은 수만 보인다.
+E_TARGET = 100
+E_CLS = "eucampia"
+E_FRAG = "eucampia_frag"
 
 
-def parse_target(raw) -> int:
-    """`?target=` — 범위 밖이거나 수가 아니면 기본값. **조용히 끝값으로 붙이지
-    않는다** — 1000 을 적었는데 400 으로 그려지면 그 그림이 1000 기준인 줄 안다."""
+def parse_goal(raw) -> tuple[str, str]:
+    """`?target=` → `(열쇠, 오류 문구)`. 열쇠는 `site` · `all` · `E` · 정수 문자열.
+
+    비었으면 `site`(지점의 해상도). **못 읽은 값은 조용히 바꾸지 않고 말한다** —
+    1000 을 적었는데 다른 수로 그려지면 그 그림이 1000 기준인 줄 안다(260).
+    """
+    v = str(raw or "").strip()
+    if v in ("", "site"):
+        return "site", ""
+    if v == "all":
+        return "all", ""
+    if v in ("E", "e"):
+        return "E", ""
     try:
-        v = int(raw)
-    except (TypeError, ValueError):
-        return TARGET_DEFAULT
-    return v if TARGET_MIN <= v <= TARGET_MAX else TARGET_DEFAULT
+        n = int(v)
+    except ValueError:
+        return "site", f"목표 「{v}」 를 읽지 못해 지점 설정으로 셉니다."
+    if not 1 <= n <= GOAL_MAX:
+        return "site", f"목표는 1~{GOAL_MAX} 입니다 — 「{v}」 대신 지점 설정으로 셉니다."
+    return str(n), ""
 
 
-def attach_target(t: dict, target: int) -> dict:
-    """열마다 `target_pct` = 완형 ÷ 목표 × 100. **100 에서 자르지 않는다** — 넘은
-    것도 정보다(그래프는 칸 끝에 붙이고 글자로 실제 값을 적는다). 합계 열에는 안
-    낸다 — 목표는 시료 하나의 것이라 시료를 더한 수와 비교하는 것이 성립하지 않는다."""
-    t["target"] = target
-    for c in t["cols"]:
-        c["target_pct"] = round(100.0 * c["n_counted"] / target, 1)
-    return t
+def goal_for(key: str, loc) -> dict:
+    """열쇠와 지점 → 이 열을 세는 목표. `mode` 는 `n`(완형 n 개) · `all` · `E`."""
+    if key == "all":
+        return {"key": key, "mode": "all", "n": None, "label": "전체"}
+    if key == "E":
+        return {"key": key, "mode": "E", "n": E_TARGET, "label": f"E {E_TARGET}"}
+    if key == "site":
+        res = getattr(loc, "resolution", None) or "low"
+        n = RESOLUTION_TARGET.get(res, RESOLUTION_TARGET["low"])
+        return {"key": key, "mode": "n", "n": n, "res": res,
+                "label": f"{n} ({'고' if res == 'high' else '저'}해상도)"}
+    return {"key": key, "mode": "n", "n": int(key), "label": key}
+
+
+def cut(sc: dict, goal: dict, counted: set) -> dict:
+    """관찰 하나의 줄(`data.scope_rows` 의 한 슬라이드)을 목표에서 끊는다 (P36).
+
+    - g0 부터 **검토를 마친 시야만** 따라간다(미검토는 줄에 아예 없다 — 건너뛴다)
+    - 누적이 목표에 **닿는 시야까지**가 산출 대상, 그 뒤는 **보충 시야**
+    - 마지막 시야에서 목표를 넘는 완형은 **자리 순으로 뒤의 것부터 밖**이다.
+      파편·미분류·(E 일 때) 다른 개체는 그 시야 것을 **전부** 센다
+    - 못 닿으면 전부 세고 `reached=False`(미달)
+
+    누적하는 것: `n` 이면 세는 분류(완형), `E` 면 `eucampia` 하나. `all` 은 안 끊는다.
+    """
+    mode, n = goal["mode"], goal["n"]
+    whole = {E_CLS} if mode == "E" else counted
+    by_vp: dict[int, list] = {}
+    for r in sc["rows"]:
+        by_vp.setdefault(r[0], []).append(r)
+    kept, scope, supp = [], [], []
+    acc, done = 0, False
+    for vp in sc["vps"]:
+        if done:
+            supp.append(vp)
+            continue
+        scope.append(vp)
+        for r in by_vp.get(vp, ()):
+            if mode != "all" and r[2] in whole:
+                if acc >= n:
+                    continue               # 마지막 시야의 넘친 완형
+                acc += 1
+            kept.append(r)
+        if mode != "all" and acc >= n:
+            done = True
+    return {"rows": kept, "scope": scope, "supp": supp,
+            "reached": None if mode == "all" else done, "acc": acc}
+
+
+def cut_column(sc: dict, goal: dict) -> dict:
+    """끊은 줄을 산출표 열 하나로 — `column()` 에 그대로 넣는다. 그 뒤의 표·그래프·
+    CSV 는 무엇이 끊겼는지 모른다(끊은 결과만 받는다)."""
+    counted = {c["key"] for c in data.counted_classes()}
+    ct = cut(sc, goal, counted)
+    per_cls: Counter = Counter()
+    per_sp: Counter = Counter()
+    for _vp, _pos, cls, sp in ct["rows"]:
+        per_cls[cls] += 1
+        if sp:
+            per_sp[(cls, sp)] += 1
+    c = column({
+        "class_counts": [{"key": k, "n": v} for k, v in per_cls.items()],
+        "species_counts": [{"cls": k, "species": sp, "n": v}
+                           for (k, sp), v in sorted(per_sp.items())],
+        "n_detected": len(ct["rows"]),
+        "detected_groups": len(ct["scope"]),
+    })
+    mode = goal["mode"]
+    hit = per_cls.get(E_CLS, 0) if mode == "E" else c["n_counted"]
+    c.update({
+        "goal_n": goal["n"],
+        "goal_hit": hit,
+        "reached": ct["reached"],
+        "n_reviewed": len(sc["vps"]),
+        "n_scope": len(ct["scope"]),
+        "n_supp": len(ct["supp"]),
+        "supp_vps": ct["supp"],
+        "e_n": per_cls.get(E_CLS, 0),
+        "e_frag": per_cls.get(E_FRAG, 0),
+        "target_pct": (round(100.0 * hit / goal["n"], 1) if goal["n"] else None),
+        # 산출 비교(202)가 파편 분류 아래의 종명까지 쓴다 — `per_species` 는 세는
+        # 분류만이라 그쪽에는 모자란다. 튜플 열쇠라 JSON 으로 내보내지 않는다
+        "_per_sp": dict(per_sp),
+        "goal_label": goal["label"],
+    })
+    return c
+
+
+def supplement_vps(slide) -> set:
+    """시야 목록·검토 화면의 「보충」 표지 — **지점 설정의 목표로** 끊는다 (P36).
+    화면에서 고른 목표가 아니다: 시야 목록에는 고르는 줄이 없고, 보충인지 아닌지가
+    보는 화면마다 달라지면 검토하는 사람이 범위를 잡을 수 없다."""
+    sc = data.scope_rows([slide])[slide.id]
+    goal = goal_for("site", slide.locality)
+    counted = {c["key"] for c in data.counted_classes()}
+    return set(cut(sc, goal, counted)["supp"])
 
 
 def table_csv(t: dict, unit: str = "n") -> str:
@@ -257,9 +379,20 @@ def table_csv(t: dict, unit: str = "n") -> str:
     w.writerow(["(fragment % of detected)",
                 *[c["frag_pct"] if c["frag_pct"] is not None else "" for c in t["cols"]],
                 tot.get("frag_pct") or ""])
-    if t.get("target"):
-        w.writerow([f"(target attainment % of {t['target']} counted)",
-                    *[c["target_pct"] for c in t["cols"]], ""])
+    # 산출 범위 (P36) — 어떤 목표로 끊었는지 표 밖에서도 읽혀야 한다
+    g = t.get("goal") or {}
+    cols = t["cols"]
+    w.writerow([f"(goal: {g.get('label', '')})", *["" for _ in cols], ""])
+    w.writerow(["(viewpoints counted)", *[c.get("n_scope", "") for c in cols], ""])
+    w.writerow(["(supplementary viewpoints)", *[c.get("n_supp", "") for c in cols], ""])
+    if g.get("mode") == "E":
+        w.writerow(["(Eucampia whole)", *[c.get("e_n", "") for c in cols], ""])
+        w.writerow(["(Eucampia fragments)", *[c.get("e_frag", "") for c in cols], ""])
+    if g.get("n"):
+        w.writerow(["(goal reached)", *["yes" if c.get("reached") else "no"
+                                        for c in cols], ""])
+        w.writerow([f"(goal attainment %)",
+                    *[c["target_pct"] for c in cols], ""])
     return buf.getvalue()
 
 
@@ -419,13 +552,17 @@ def plot(t: dict, taxa: list[str], series_keys: list[str] | None = None) -> dict
                                else "% (종 합)" if lab.get("is_grp") else "%"),
                        "kind": "pct", "vals": vals, "xmax": _nice_max(top)})
     idv = [c["id_pct"] for c in cols]
-    target = t.get("target")
+    goal = t.get("goal") or {}
+    target = goal.get("n")
+    hitname = "Eucampia" if goal.get("mode") == "E" else "완형"
     # 동정률 점마다 **완형 수 / 목표 · 달성률** 을 적는다 (260) — 동정률 60% 가 완형
-    # 20개의 60% 인지 400개의 60% 인지 그림에서 갈려야 한다
-    labels = ([(c["n_counted"], c.get("target_pct")) for c in cols]
+    # 20개의 60% 인지 400개의 60% 인지 그림에서 갈려야 한다. 못 닿은 열은 「미달」
+    # (P36). 목표는 열마다다 — 관찰을 더한 열은 관찰 수만큼 크다.
+    labels = ([(c.get("goal_hit"), c.get("goal_n"), c.get("target_pct"),
+                c.get("reached")) for c in cols]
               if target else None)
     panels.append({"title": "동정률", "italic": False,
-                   "sub": f"% · 완형/{target}" if target else "%", "kind": "pct",
+                   "sub": f"% · {hitname}/목표" if target else "%", "kind": "pct",
                    "vals": idv, "xmax": 100, "labels": labels})
     pv = [(round(c["n_counted"] / c["detected_groups"], 2)
            if c.get("detected_groups") else None) for c in cols]
@@ -524,7 +661,8 @@ def plot(t: dict, taxa: list[str], series_keys: list[str] | None = None) -> dict
                 k += 1
                 tip = f"{v:g}"
                 if lab:
-                    tip += f" · 완형 {lab[0]}/{target} · 목표 달성 {lab[1]:g}%"
+                    tip += (f" · {hitname} {lab[0]}/{lab[1]} · 목표 달성 {lab[2]:g}%"
+                            + ("" if lab[3] else " · 미달"))
                 o.append(f'<path class="pt" d="M{x:.1f} {yy - 3:.1f}L{x + 3:.1f} {yy:.1f}'
                          f'L{x:.1f} {yy + 3:.1f}L{x - 3:.1f} {yy:.1f}Z" fill="#fff" '
                          f'stroke="#000" stroke-width="0.8"><title>{escape(tip)}</title></path>')
@@ -537,14 +675,17 @@ def plot(t: dict, taxa: list[str], series_keys: list[str] | None = None) -> dict
                     right = v is None or v < xm / 2
                     tx, anchor = (x0 + PW - 3, "end") if right else (x0 + 3, "start")
                     o.append(f'<text class="tgt" x="{tx}" y="{yy - 1:.1f}" text-anchor="{anchor}" '
-                             f'font-size="8" fill="#000">{lab[0]}/{target}</text>')
+                             f'font-size="8" fill="#000">{lab[0]}/{lab[1]}</text>')
                     o.append(f'<text class="tgt" x="{tx}" y="{yy + 8:.1f}" text-anchor="{anchor}" '
-                             f'font-size="8" fill="#555">{lab[1]:g}%</text>')
+                             f'font-size="8" fill="#555">{lab[2]:g}%'
+                             + ("" if lab[3] else " 미달") + '</text>')
         o.append("</g>")
     o.append(f'<text x="{LEFT}" y="{HH - 8}" fill="#555">{escape(loc.code)} · '
              f'% 의 분모: 종 = 종명이 붙은 개체 · 분류 항목 = 세는 개체 · 파편은 세지 않는다 · '
              f'검토를 마친 시야만'
-             + (f' · 완형/{target} = 세는 개체 ÷ 해상도 목표 {target}' if target else '')
+             + (f' · 목표 {escape(goal.get("label", ""))} — g0 부터 검토를 마친 시야를 따라가'
+                f' {hitname} 수가 목표에 닿는 시야까지 센다(뒤는 보충 시야)' if target
+                else ' · 목표 없음 — 검토를 마친 시야 전부')
              + "".join(f' · {escape(taxon_label(x)["name"])} = {escape(taxon_label(x)["note"])}'
                        for x in taxa if x.startswith(GRP_PREFIX) and x[len(GRP_PREFIX):] in GROUPS)
              + '</text>')
@@ -592,7 +733,7 @@ def taxa_options(t: dict, loc) -> list[dict]:
 
 # ─────────────────────────────────────────── 슬라이드 산출표 (261)
 
-def slide_table(slide, target: int = TARGET_DEFAULT, sort: str = "n") -> dict:
+def slide_table(slide, goal_key: str = "site", sort: str = "n") -> dict:
     """슬라이드 하나의 **산출표 화면** (261 · 사용자 11-15: "지금 건 그대로 두고
     화면을 따로 하나"). 슬라이드 화면 분류 상자의 `종` 쪽(258)과 **같은 셈**이다 —
     `column()` 하나를 두 화면이 쓴다. 다른 것은 펼친 정도다:
@@ -603,9 +744,12 @@ def slide_table(slide, target: int = TARGET_DEFAULT, sort: str = "n") -> dict:
 
     `sort` — `n`(많은 순, 기본) · `name`(속 알파벳순 — 옛 산출표의 차례, 윗줄과 같은
     속은 줄인다).
+
+    **셈은 산출 범위로 끊은 것이다** (P36) — `goal_key` 는 `parse_goal` 의 열쇠.
     """
     summary = data._slide_summary(slide)
-    col = column(summary)
+    goal = goal_for(goal_key, slide.locality)
+    col = cut_column(data.scope_rows([slide])[slide.id], goal)
     n_id, n_cnt = col["n_identified"], col["n_counted"]
     rows_by = {r["key"]: r for r in data._class_rows()}
 
@@ -656,9 +800,10 @@ def slide_table(slide, target: int = TARGET_DEFAULT, sort: str = "n") -> dict:
     cls_rows.sort(key=lambda c: (not c["counted"],
                                  rows_by[c["key"]]["sort_order"], c["key"]))
     return {
-        "col": col, "target": target,
-        "target_pct": round(100.0 * n_cnt / target, 1),
-        "target_bar": min(100, round(100 * n_cnt / target)),
+        "col": col, "target": goal["key"], "goal": goal, "loc": slide.locality,
+        "target_pct": col["target_pct"],
+        "target_bar": (min(100, round(col["target_pct"]))
+                       if col["target_pct"] is not None else 0),
         "n_groups": summary["n_groups"],
         "reviewed_groups": summary["reviewed_groups"],
         "sp_rows": sp_rows, "cls_rows": cls_rows, "sort": sort,
@@ -686,7 +831,14 @@ def slide_csv(st: dict) -> str:
                  ("fragments", c["n_frag"]),
                  ("fragment % of detected",
                   c["frag_pct"] if c["frag_pct"] is not None else ""),
-                 (f"target attainment % of {st['target']} counted", st["target_pct"]),
+                 ("goal", st["goal"]["label"]),
+                 ("goal attainment %", st["target_pct"] if st["target_pct"] is not None else ""),
+                 ("goal reached", "" if c["reached"] is None
+                  else ("yes" if c["reached"] else "no")),
+                 ("viewpoints counted", c["n_scope"]),
+                 ("supplementary viewpoints", c["n_supp"]),
+                 ("Eucampia whole", c["e_n"]),
+                 ("Eucampia fragments", c["e_frag"]),
                  ("reviewed viewpoints", st["reviewed_groups"]),
                  ("viewpoints", st["n_groups"])):
         w.writerow([f"({k})", v])

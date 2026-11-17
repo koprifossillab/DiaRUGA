@@ -20,6 +20,10 @@
 <style>
   .tlyopts { display: flex; gap: 14px; flex-wrap: wrap; align-items: center;
              font-size: 12.5px; margin: 6px 0 12px; }
+  .tlyopts .goalform { display: inline-flex; gap: 4px; align-items: center; margin: 0; }
+  .tlyopts .goalform input { width: 5.5em; }
+  .tlyopts .goalform input.on { border-color: var(--accent); }
+  .warnline { background: var(--warn-bg); color: var(--warn-fg); border: 1px solid var(--warn-line); padding: 4px 8px; border-radius: 4px; margin: 4px 0; }
   .tlyopts .seg { display: inline-flex; border: 1px solid var(--line); border-radius: 6px; overflow: hidden; }
   .tlyopts .seg a { padding: 3px 10px; color: var(--dim); text-decoration: none; }
   .tlyopts .seg a + a { border-left: 1px solid var(--line); }
@@ -74,16 +78,28 @@
   <a class="dl" href="?format=csv&target={{ target }}{% if sort == 'name' %}&sort=name{% endif %}">CSV 내려받기</a>
 </div>
 <p class="tlynote">
-  검토를 마친 시야만 셉니다 · <b>파편은 세지 않습니다</b> · 종 % 의 분모는 <b>종명이 붙은 개체</b> ·
+  {% if goal.n %}목표 <b>{{ goal.label }}</b> — g0 부터 검토를 마친 시야를 따라가 목표에 닿는 시야까지 셉니다(뒤는 보충 시야{% if col.supp_vps %}: {% for v in col.supp_vps %}g{{ v }}{% if not forloop.last %} {% endif %}{% endfor %}{% endif %}) ·
+  {% else %}검토를 마친 시야를 전부 셉니다 ·{% endif %} <b>파편은 세지 않습니다</b> · 종 % 의 분모는 <b>종명이 붙은 개체</b> ·
   완형 = 세는 개체(파편 분류를 뺀 것) · 슬라이드 화면 분류 상자의 <b>종</b> 쪽과 같은 셈입니다
 </p>
 
 <div class="stcards">
   <div class="stcard"><div class="k">검토 완료 시야</div>
     <div class="v">{{ reviewed_groups }}<small> / {{ n_groups }}</small></div></div>
-  <div class="stcard{% if target_pct >= 100 %} done{% endif %}" id="tgtcard"><div class="k">완형 / 해상도 목표 {{ target }}</div>
-    <div class="v">{{ col.n_counted }}<small> / {{ target }} · {{ target_pct }}%</small></div>
+  <div class="stcard" id="scopecard"><div class="k">산출 시야 · 보충</div>
+    <div class="v">{{ col.n_scope }}<small> · 보충 {{ col.n_supp }}</small></div></div>
+  {% if goal.n %}
+  <div class="stcard{% if col.reached %} done{% endif %}" id="tgtcard"><div class="k">{% if goal.mode == 'E' %}Eucampia{% else %}완형{% endif %} / 목표 {{ goal.label }}</div>
+    <div class="v">{{ col.goal_hit }}<small> / {{ goal.n }} · {{ target_pct }}%{% if not col.reached %} · 미달{% endif %}</small></div>
     <div class="meter"><i style="width:{{ target_bar }}%"></i></div></div>
+  {% else %}
+  <div class="stcard" id="tgtcard"><div class="k">완형 (목표 없음 · 전체)</div>
+    <div class="v">{{ col.n_counted }}</div></div>
+  {% endif %}
+  {% if goal.mode == 'E' %}
+  <div class="stcard"><div class="k">Eucampia 파편 (목표에 안 듦)</div>
+    <div class="v">{{ col.e_frag }}</div></div>
+  {% endif %}
   <div class="stcard"><div class="k">종명 붙은 개체 (동정률)</div>
     <div class="v">{{ col.n_identified }}<small>{% if col.id_pct is not None %} · {{ col.id_pct }}%{% endif %}</small></div>
     <div class="meter"><i style="width:{{ col.id_pct|default:0 }}%"></i></div></div>

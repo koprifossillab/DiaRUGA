@@ -211,6 +211,9 @@ class Locality(models.Model):
     # 두는 수밖에 없었는데, 그러면 화면에 `—` 로 나와 **"깊이가 없는 시료" 와
     # "아직 안 채운 시료" 가 구별되지 않는다.** 화면은 이 값을 보고 `OC` 를 쓴다.
     KIND = [("core", "시추코어"), ("outcrop", "노두")]
+    # 해상도 — 몇 개를 세면 산출이 되는가 (P36 · 0057). 목표 **수**는
+    # `tally.RESOLUTION_TARGET` 에 둔다: "고해상도" 의 수를 바꿀 때 지점마다 고치지 않게.
+    RESOLUTION = [("low", "저해상도"), ("high", "고해상도")]
 
     site = models.ForeignKey(Site, on_delete=models.CASCADE,
                              related_name="localities")
@@ -246,6 +249,13 @@ class Locality(models.Model):
     # 모른다(CLAUDE.md "NOT NULL 칸을 더할 때"). 더하기만 하는 마이그레이션이라
     # 파이프라인 이미지는 안 굽는다.
     tally_taxa = models.JSONField(default=list, blank=True, db_default=[])
+    # **산출 해상도** (P36 · 0057). 목표에 닿는 시야까지가 산출 대상이고 그 뒤는
+    # 보충 시야다 — 목표 수는 이 값이 정한다(저 200 · 고 400). **지점의 성질이다**:
+    # 한 코어의 시료는 같은 해상도로 센다(사용자 2026-11-17). 산출표 화면의 목표
+    # 단추는 이 값을 바꾸지 않고 그 화면에서만 다른 목표로 본다.
+    # `db_default` — 옛 파이프라인 이미지가 지점을 만들어도 들어간다.
+    resolution = models.CharField(max_length=8, choices=RESOLUTION,
+                                  default="low", db_default="low")
 
     class Meta:
         verbose_name = "지점"

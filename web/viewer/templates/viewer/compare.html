@@ -117,6 +117,17 @@
   .cmp td.ref.none { color: var(--dim); font-size: 12px; }
   .cmp .nodet { color: var(--dim); }
   .cmp-note { font-size: 12.5px; color: var(--dim); line-height: 1.6; margin: 10px 0 0; }
+  /* 산출 목표 고르기 (P36) — 산출표와 같은 모양 */
+  .tlyopts { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin: 8px 0; font-size: 12.5px; }
+  .tlyopts .seg { display: inline-flex; border: 1px solid var(--line); border-radius: 6px; overflow: hidden; }
+  .tlyopts .seg a { padding: 3px 10px; color: var(--dim); text-decoration: none; }
+  .tlyopts .seg a + a { border-left: 1px solid var(--line); }
+  .tlyopts .seg a.on { color: var(--accent); background: color-mix(in srgb, var(--accent) 12%, transparent); }
+  .tlyopts .goalform { display: inline-flex; gap: 4px; align-items: center; margin: 0; }
+  .tlyopts .goalform input { width: 5.5em; }
+  .tlyopts .goalform input.on { border-color: var(--accent); }
+  .warnline { background: var(--warn-bg); color: var(--warn-fg); border: 1px solid var(--warn-line); padding: 4px 8px; border-radius: 4px; margin: 4px 0; }
+  .cmp .short { color: var(--warn-fg); background: var(--warn-bg); border-radius: 3px; padding: 0 3px; font-size: 11px; margin-left: 3px; }
 </style>
 
 <div class="pagehead">
@@ -157,6 +168,11 @@
 </details>
 
 {% if cols %}
+{% comment %}
+  산출 범위의 목표 (P36). 열마다 그 지점의 해상도로 끊는 것이 기본이다 — 비교하는
+  열이 다른 지점이면 목표도 다를 수 있어 아래 「목표」 줄에 열마다 적는다.
+{% endcomment %}
+<div class="tlyopts">{% include "viewer/_tally_target.html" %}</div>
 <div class="cmp-layout">
 <div class="scroll cmp">
 <table style="min-width: calc(230px + {% widthratio cols|length 1 165 %}px)">
@@ -177,11 +193,17 @@
     <tr class="sub">
       <th>시야</th>
       {% for c in cols %}
-        <th title="시야 {{ c.n_groups }}개{% if c.detected_groups < c.n_groups %} 중 검토를 마쳐 센 시야 {{ c.detected_groups }}개{% endif %}"><b>{% if c.detected_groups < c.n_groups %}{{ c.detected_groups }}/{% endif %}{{ c.n_groups }}</b><span class="u">시야</span></th>
+        <th title="시야 {{ c.n_groups }}개{% if c.detected_groups < c.n_groups %} 중 산출에 든 시야 {{ c.detected_groups }}개(검토 완료 {{ c.n_reviewed }}){% endif %}"><b>{% if c.detected_groups < c.n_groups %}{{ c.detected_groups }}/{% endif %}{{ c.n_groups }}</b><span class="u">시야</span></th>
       {% endfor %}
     </tr>
     <tr class="sub">
-      <th title="세는 분류의 개체 ÷ 검출이 돈 시야 — 파편·미분류는 안 든다">시야당 개체 (파편 제외)</th>
+      <th title="g0 부터 검토를 마친 시야를 따라가 완형이 목표에 닿는 시야까지 센다 — 그 뒤는 보충 시야">목표 · 보충 시야</th>
+      {% for c in cols %}
+        <th title="목표 {{ c.goal_label }}{% if c.n_supp %} · 보충 시야 {{ c.n_supp }}개는 안 셌다{% endif %}">{% if c.goal_n %}<b>{{ c.goal_hit }}/{{ c.goal_n }}</b>{% if not c.reached %}<span class="short">미달</span>{% endif %}{% else %}<b>전체</b>{% endif %}{% if c.n_supp %}<span class="u">보충 {{ c.n_supp }}</span>{% endif %}</th>
+      {% endfor %}
+    </tr>
+    <tr class="sub">
+      <th title="세는 분류의 개체 ÷ 산출 대상 시야 — 파편·미분류는 안 든다">시야당 개체 (파편 제외)</th>
       {% for c in cols %}
         <th>{% if c.per_view is not None %}<b>{{ c.per_view }}</b><span class="u">개/시야</span>{% else %}<span class="u">—</span>{% endif %}</th>
       {% endfor %}

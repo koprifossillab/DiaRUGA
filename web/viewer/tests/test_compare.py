@@ -150,7 +150,9 @@ class ComparePageTest(DiaRUGATestCase):
         # 고른 것은 체크된 채로 다시 뜬다 — 하나 더하고 다시 비교할 수 있게.
         self.assertIn('value="a" checked', html)
         self.assertIn('value="b" checked', html)
-        self.assertEqual(html.count("value=\"a\""), 1)
+        # 체크박스는 하나 — 다른 하나는 목표 직접 입력 폼이 고른 것을 다시 싣는 숨은 칸(P36)
+        self.assertEqual(html.count("value=\"a\""), 2)
+        self.assertEqual(html.count('<input type="hidden" name="s" value="a">'), 1)
 
     def test_고른_것이_없어도_열린다(self):
         r = self.client.get(reverse("compare"))
@@ -252,3 +254,33 @@ class CompareCoreRefTest(DiaRUGATestCase):
         # 「비교 대상」 거르기의 열쇠가 표의 줄과 같은 꼴로 있다.
         self.assertIn('data-cls="round"', html)
         self.assertIn('class="cmp-filter"', html)
+
+
+class CompareScopeTest(DiaRUGATestCase):
+    """산출 비교도 산출 범위로 끊는다 (P36) — 산출표와 같은 수여야 한다."""
+
+    @classmethod
+    def setUpTestData(cls):
+        fx.make_classes()
+        cls.w = fx.make_world(slug="s", n_viewpoints=3, n_candidates=5)
+        for vp in cls.w.viewpoints:
+            fx.review_done(vp)
+
+    def test_목표로_끊고_보충_시야를_적는다(self):
+        # 시야마다 완형 셋 — 목표 4 면 g1 까지, g2 는 보충
+        ctx = data.compare_slides(["s"], "4")
+        c = ctx["cols"][0]
+        self.assertEqual((c["detected_groups"], c["n_supp"], c["n_counted"]), (2, 1, 4))
+        self.assertEqual(c["per_view"], 2.0)
+        html = self.client.get(reverse("compare"), {"s": ["s"], "target": "4"}).content.decode()
+        self.assertIn("보충 1", html)
+        self.assertIn("<b>4/4</b>", html)
+
+    def test_전체는_끊지_않는다(self):
+        c = data.compare_slides(["s"], "all")["cols"][0]
+        self.assertEqual((c["detected_groups"], c["n_supp"], c["n_counted"]), (3, 0, 9))
+
+    def test_기본은_지점_설정이고_못_닿으면_미달(self):
+        html = self.client.get(reverse("compare"), {"s": ["s"]}).content.decode()
+        self.assertIn("<b>9/200</b>", html)
+        self.assertIn("미달", html)

@@ -1,7 +1,16 @@
 {% comment %}
-  해상도 목표 고르기 (260) — 시료마다 완형(세는 개체)을 몇 개 셌어야 하는가. 기본 400,
-  200~400. 주소의 다른 인자(고른 종·관찰 가르기)는 그대로 두고 `target` 만 바꾼다.
+  산출 범위의 목표 (260 → P36). g0 부터 검토를 마친 시야를 따라가며 완형이 목표에
+  닿는 시야까지가 산출 대상이고 뒤는 보충 시야다. **기본은 지점 설정**(그 단추는
+  `target` 이 없는 주소). 주소의 다른 인자(고른 종·관찰 가르기)는 그대로 둔다 —
+  직접 입력 폼은 그것들을 숨은 칸으로 다시 싣는다.
 {% endcomment %}
-<span class="seg" aria-label="해상도 목표 (시료당 완형)" title="시료당 완형 개체 목표 — 동정률 옆에 완형 수/목표와 달성률을 적습니다">
-  <a class="lab" style="pointer-events:none">목표</a>{% for l in target_links %}<a href="?{{ l.qs }}" class="{% if l.on %}on{% endif %}">{{ l.v }}</a>{% endfor %}
+<span class="seg" aria-label="산출 목표" title="g0 부터 검토를 마친 시야를 따라가 완형이 목표에 닿는 시야까지 셉니다 — 뒤는 보충 시야">
+  <a class="lab" style="pointer-events:none">목표</a>{% for l in target_links %}<a href="?{{ l.qs }}" class="{% if l.on %}on{% endif %}"{% if l.title %} title="{{ l.title }}"{% endif %}>{{ l.v }}</a>{% endfor %}
 </span>
+<form class="goalform" method="get" action="">
+  {% for k, vs in goal_hidden %}{% for v in vs %}<input type="hidden" name="{{ k }}" value="{{ v }}">{% endfor %}{% endfor %}
+  <input type="number" name="target" min="1" max="{{ goal_max }}" step="1" value="{{ goal_custom }}"
+         placeholder="직접" aria-label="목표 직접 입력" class="{% if goal_custom %}on{% endif %}">
+  <button type="submit">적용</button>
+</form>
+{% if goal_err %}<p class="warnline">{{ goal_err }}</p>{% endif %}

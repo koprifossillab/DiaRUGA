@@ -2809,7 +2809,34 @@ def _summary_by_sql(slide: Slide, rows: dict | None = None) -> dict:
 # 같은 이미지에 남아 있는 **옛 회차의 교정이 새 후보에 붙는다.** 키가 겹칠 확률은
 # 낮지만(엔진이 다르면 `exact` 가 0%다) 겹치면 `LEFT JOIN` 이 행을 불려 개수가
 # 조용히 는다. `IS` 로 비교하는 것은 사람이 그린 개체가 `batch IS NULL` 이라서다.
-_SUMMARY_SQL = """
+# 아래 세 토막은 **셈의 규칙 그 자체**라 두 질의(`_SUMMARY_SQL` · `_SCOPE_ROWS_SQL`)가
+# 같이 쓴다 (P36). 복사해 두 벌이 되면 산출표의 「전체」 가 목록의 수와 갈린다.
+_EFF_CLS_SQL = """CASE WHEN o.label IS NOT NULL AND o.label <> '' THEN o.label
+            WHEN NOT c.passed THEN CASE
+                 WHEN c.elongation < 1.4 THEN 'round'
+                 WHEN c.elongation >= 2.0 AND c.elongation <= 20.0 THEN 'rod'
+                 ELSE '' END
+            ELSE c.cls END"""
+
+_ENGINE_FROM_SQL = """FROM viewer_candidate c
+JOIN rep ON rep.det_id = c.detection_id AND rep.rn = 1
+JOIN viewer_viewpoint v ON v.id = rep.viewpoint_id
+LEFT JOIN viewer_objectreview r
+       ON r.image_id = rep.image_id AND r.mask_key = c.mask_key
+      AND r.batch_id IS rep.batch_id
+-- 분류는 개체에 산다 (P12). `LEFT JOIN` 이라 판정이 없으면 `o.label` 도 NULL 이고,
+-- 아래 `IS NOT NULL` 검사가 예전 그대로 걸린다.
+LEFT JOIN viewer_diatomobject o ON o.id = r.diatom_object_id
+"""
+
+_MANUAL_FROM_SQL = """FROM viewer_objectreview r
+JOIN viewer_diatomobject o ON o.id = r.diatom_object_id
+JOIN rep ON rep.image_id = r.image_id AND rep.rn = 1
+JOIN viewer_viewpoint v ON v.id = rep.viewpoint_id
+WHERE r.batch_id IS NULL AND r.source = 'manual' AND """
+
+# 대상 시야를 고르는 CTE (`cnt`·`rep`) — 위 질의들이 함께 쓴다.
+_SUMMARY_CTE_SQL = """
 WITH cnt AS (
     -- **검토를 마친 시야만, 시야마다 마지막으로 완료한 묶음의 기록으로 센다**
     -- (P31 ⑥ · P32 ③). 미검토 시야의 엔진 출력은 파편을 개체로 세고 빽빽한
@@ -2838,13 +2865,10 @@ rep AS (
       JOIN cnt ON cnt.viewpoint_id = d.viewpoint_id AND cnt.batch_id = run.batch_id
      WHERE d.is_current
 )
-SELECT v.slide_id AS slide_id,
-       CASE WHEN o.label IS NOT NULL AND o.label <> '' THEN o.label
-            WHEN NOT c.passed THEN CASE
-                 WHEN c.elongation < 1.4 THEN 'round'
-                 WHEN c.elongation >= 2.0 AND c.elongation <= 20.0 THEN 'rod'
-                 ELSE '' END
-            ELSE c.cls END                                          AS eff_cls,
+"""
+
+_SUMMARY_SQL = _SUMMARY_CTE_SQL + """SELECT v.slide_id AS slide_id,
+       """ + _EFF_CLS_SQL + """                                          AS eff_cls,
        -- 종명은 분류 아래 한 단계다 (202). 목록 화면은 `_summary_rows` 가
        -- 접어서 못 보고, 비교 화면만 이 축을 쓴다.
        COALESCE(o.species, '')                                      AS species,
@@ -2854,16 +2878,7 @@ SELECT v.slide_id AS slide_id,
        COUNT(*) FILTER (WHERE ((c.passed AND NOT COALESCE(r.removed, 0))
                             OR (NOT c.passed AND COALESCE(r.accepted, 0)))
                           AND o.label IS NOT NULL AND o.label <> '')        AS n_labeled
-FROM viewer_candidate c
-JOIN rep ON rep.det_id = c.detection_id AND rep.rn = 1
-JOIN viewer_viewpoint v ON v.id = rep.viewpoint_id
-LEFT JOIN viewer_objectreview r
-       ON r.image_id = rep.image_id AND r.mask_key = c.mask_key
-      AND r.batch_id IS rep.batch_id
--- 분류는 개체에 산다 (P12). `LEFT JOIN` 이라 판정이 없으면 `o.label` 도 NULL 이고,
--- 아래 `IS NOT NULL` 검사가 예전 그대로 걸린다.
-LEFT JOIN viewer_diatomobject o ON o.id = r.diatom_object_id
-WHERE {where}
+""" + _ENGINE_FROM_SQL + """WHERE {where}
 GROUP BY v.slide_id, eff_cls, species
 
 UNION ALL
@@ -2883,23 +2898,88 @@ SELECT v.slide_id AS slide_id,
        COUNT(*)                                                  AS n_kept,
        0                                                         AS n_auto,
        COUNT(*) FILTER (WHERE o.label IS NOT NULL AND o.label <> '') AS n_labeled
-FROM viewer_objectreview r
-JOIN viewer_diatomobject o ON o.id = r.diatom_object_id
-JOIN rep ON rep.image_id = r.image_id AND rep.rn = 1
-JOIN viewer_viewpoint v ON v.id = rep.viewpoint_id
-WHERE r.batch_id IS NULL AND r.source = 'manual' AND {where}
+""" + _MANUAL_FROM_SQL + """{where}
 GROUP BY v.slide_id, eff_cls, species
 """
 
 # 세는 시야 수 — 시야당 평균의 분모 (P32 ③). 위와 **같은 `rep`** 에서 센다:
 # 분자(개체)와 분모(시야)가 다른 기준이면 "시야당" 이 아무 뜻도 없다.
-_COUNTED_GROUPS_SQL = _SUMMARY_SQL.split("SELECT v.slide_id AS slide_id,")[0] + """
+_COUNTED_GROUPS_SQL = _SUMMARY_CTE_SQL + """
 SELECT v.slide_id, COUNT(*)
   FROM rep
   JOIN viewer_viewpoint v ON v.id = rep.viewpoint_id
  WHERE rep.rn = 1 AND {where}
  GROUP BY v.slide_id
 """
+
+
+# **산출 범위를 끊으려고 개체를 한 줄씩** (P36). 위 `_SUMMARY_SQL` 과 같은 대상
+# (검토 완료 시야 · 마지막 완료 묶음 · 대표 이미지 하나)과 같은 판정 식을 쓰고, 끝만
+# 묶지 않는다 — 목표에 닿는 자리를 찾으려면 시야·개체의 차례가 살아 있어야 한다.
+# 남는 개체의 조건도 `n_kept` 의 FILTER 와 같다.
+_SCOPE_ROWS_SQL = _SUMMARY_CTE_SQL + """
+SELECT v.slide_id, v.idx, c.mask_key, 0 AS manual,
+       """ + _EFF_CLS_SQL + """ AS eff_cls,
+       COALESCE(o.species, '') AS species
+""" + _ENGINE_FROM_SQL + """WHERE {where}
+  AND ((c.passed AND NOT COALESCE(r.removed, 0))
+       OR (NOT c.passed AND COALESCE(r.accepted, 0)))
+
+UNION ALL
+
+SELECT v.slide_id, v.idx, r.mask_key, 1 AS manual,
+       COALESCE(NULLIF(o.label, ''), '') AS eff_cls,
+       COALESCE(o.species, '') AS species
+""" + _MANUAL_FROM_SQL + """{where}
+"""
+
+# 세는 시야(검토 완료 · 대표 이미지가 있는 것)의 번호 — 개체가 하나도 없는 시야도
+# 차례에 들어가야 한다(빈 시야도 "본 시야" 다).
+_SCOPE_VPS_SQL = _SUMMARY_CTE_SQL + """
+SELECT v.slide_id, v.idx
+  FROM rep
+  JOIN viewer_viewpoint v ON v.id = rep.viewpoint_id
+ WHERE rep.rn = 1 AND {where}
+"""
+
+
+def _pos_key(mask_key: str, manual: int) -> tuple:
+    """시야 안의 개체 차례 — **카탈로그 번호의 자리 토막 순** (P36 · 사용자 11-17).
+
+    엔진 개체의 키는 `x_y_w_h` 라 수로 읽어 정렬한다(글자로 정렬하면 `1000` 이
+    `200` 앞에 온다). 손그림은 엔진 개체 뒤, 그 키 순.
+    """
+    if not manual:
+        try:
+            return (0, *(int(x) for x in str(mask_key).split("_")))
+        except ValueError:
+            pass
+    return (1, str(mask_key))
+
+
+def scope_rows(slides) -> dict[int, dict]:
+    """슬라이드 번호 → `{"vps": [시야 번호…], "rows": [(시야, 차례, 분류, 종명)…]}`.
+    둘 다 차례대로 정렬해서 낸다. 질의 두 번 — 슬라이드 수와 무관하다(253).
+
+    **세는 규칙은 `_summary_rows` 와 같다** — 끊지 않고 이 줄을 전부 더하면 목록의
+    수가 나와야 한다(시험이 그것을 본다).
+    """
+    ids = [sl.id for sl in slides]
+    out: dict[int, dict] = {i: {"vps": [], "rows": []} for i in ids}
+    if not ids:
+        return out
+    where = f"v.slide_id IN ({','.join(['%s'] * len(ids))})"
+    with connection.cursor() as cur:
+        cur.execute(_SCOPE_VPS_SQL.format(where=where), ids)
+        for sid, idx in cur.fetchall():
+            out[sid]["vps"].append(idx)
+        cur.execute(_SCOPE_ROWS_SQL.format(where=where), ids * 2)
+        for sid, idx, key, manual, cls, sp in cur.fetchall():
+            out[sid]["rows"].append((idx, _pos_key(key, manual), cls or "", sp or ""))
+    for r in out.values():
+        r["vps"].sort()
+        r["rows"].sort(key=lambda x: (x[0], x[1]))
+    return out
 
 
 # 시야 목록의 표지에 얹을 마스크. **화면에 남는 개체만** 가져온다.
@@ -3557,7 +3637,7 @@ def count_column(per_cls: dict, n_detected: int) -> dict:
                          if n_detected else None)}
 
 
-def compare_slides(slugs: list[str]) -> dict:
+def compare_slides(slugs: list[str], goal_key: str = "site") -> dict:
     """슬라이드 몇 장의 산출을 한 표에 나란히 놓는다 (202 · 204).
 
     열은 슬라이드, 줄은 분류이고 분류 아래에 **종명**이 한 단계 더 있다 —
@@ -3601,31 +3681,34 @@ def compare_slides(slugs: list[str]) -> dict:
         return {"cols": [], "rows": [], "extra_rows": [], "unknown": unknown,
                 "n_species": 0, "ref_rows": []}
 
+    # **열은 산출 범위로 끊은 것이다** (P36). 관찰마다 그 지점의 해상도로 — 비교하는
+    # 열이 서로 다른 지점이면 목표도 다를 수 있다. `goal_key` 가 `all` 이면 끊지
+    # 않는다(202·204 의 셈). 셈은 `tally.cut_column` 하나 — 산출표와 같은 수다.
+    from . import tally
     ids = [sl.id for sl in slides]
-    marks = ",".join(["%s"] * len(ids))
-    summary = _summary_rows(f"v.slide_id IN ({marks})", ids)
+    scoped = scope_rows(slides)
     n_groups = dict(Viewpoint.objects.filter(slide_id__in=ids)
                     .values_list("slide_id").annotate(n=Count("id")))
-    # 세는 시야 수 — `_summary_by_sql` 과 같은 셈이다(분자와 같은 `rep` ·
-    # 검토를 마친 시야만 · P32 ③). 시야 전부를 안 셌으면 열의 수가 다른 열과
-    # 같은 밀도가 아니다.
-    det_groups = {sid: r.get("counted_groups", 0) for sid, r in summary.items()}
     refs = _core_refs(slides)
 
     cols = []
     for sl in slides:
-        r = summary.get(sl.id) or {"per_cls": {}, "per_sp": {},
-                                   "n_detected": 0}
-        cc = count_column(r["per_cls"], r["n_detected"])
-        dg = det_groups.get(sl.id, 0)
+        tc = tally.cut_column(scoped[sl.id], tally.goal_for(goal_key, sl.locality))
+        cc = {k: tc[k] for k in ("n_counted", "n_frag", "frag_pct")}
+        # 세는 시야 수 — 분자와 같은 범위(산출 대상 시야)다. 시야 전부를 안
+        # 셌으면 열의 수가 다른 열과 같은 밀도가 아니다(P32 ③).
+        dg = tc["n_scope"]
         cols.append({**_slide_head(sl),
                      "n_groups": n_groups.get(sl.id, 0),
                      "detected_groups": dg,
-                     "n_detected": r["n_detected"],
+                     "n_reviewed": tc["n_reviewed"], "n_supp": tc["n_supp"],
+                     "goal_label": tc["goal_label"], "goal_n": tc["goal_n"],
+                     "goal_hit": tc["goal_hit"], "reached": tc["reached"],
+                     "n_detected": tc["n_detected"],
                      **cc,
                      "per_view": (round(cc["n_counted"] / dg, 1) if dg else None),
                      "refs": refs[sl.id],
-                     "_per_cls": r["per_cls"], "_per_sp": r["per_sp"]})
+                     "_per_cls": tc["per_cls"], "_per_sp": tc["_per_sp"]})
 
     def cells(get, pct: bool):
         out = []
@@ -4215,6 +4298,9 @@ def slide_tiles(slide: Slide) -> dict:
     갈라지면 어느 쪽이 맞는지 따지는 일이 생긴다.
     """
     reviewed = done_viewpoints(slide=slide)
+    # 보충 시야 (P36) — 지점 설정의 목표로 끊은 뒤의 검토 완료 시야
+    from . import tally
+    supp = tally.supplement_vps(slide)
     tiles = []
     for vp in _viewpoints_of(slide, light=True):
         st = getattr(vp, "stack", None)
@@ -4224,7 +4310,7 @@ def slide_tiles(slide: Slide) -> dict:
             if fr and (Path(settings.DATA_ROOT) / fr.path).exists():
                 cover = fr.path
         tiles.append({"id": vp.idx, "n": vp.n_frames, "cover_rel": cover,
-                      "reviewed": vp.id in reviewed})
+                      "reviewed": vp.id in reviewed, "supp": vp.idx in supp})
     n = len(tiles)
     done = sum(1 for t in tiles if t["reviewed"])
     summary = _slide_summary(slide)
@@ -4306,6 +4392,9 @@ def dataset_detail(slug: str) -> dict | None:
         if d["run__batch_id"] == prim.get(d["viewpoint_id"]):
             dets.setdefault(d["viewpoint_id"], d)
     reviewed = done_viewpoints(slide=slide)
+    # 보충 시야 (P36) — 지점 설정의 목표로 끊는다(`tally.supplement_vps`)
+    from . import tally
+    supp = tally.supplement_vps(slide)
     # 표지마다 그 시야의 주 묶음 이름을 단다 — 시야마다 다르므로 머리줄에 전역 검토
     # 대상 하나를 적으면 표지와 안 맞는다. 이름은 질의 하나로 한 번에 푼다(105).
     names = dict(RunBatch.objects.filter(id__in=[b for b in set(prim.values())
@@ -4358,6 +4447,8 @@ def dataset_detail(slug: str) -> dict | None:
             "n_detected": n_kept.get(vp.id, 0) if det else None,
             "n_counted": n_counted.get(vp.id, 0) if det else None,
             "reviewed": vp.id in reviewed,
+            # 보충 시야 (P36) — 산출표·비교에서 빠지는 시야
+            "supp": vp.idx in supp,
         })
 
     summary = _slide_summary(slide)

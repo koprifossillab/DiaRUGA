@@ -140,10 +140,10 @@
   <div class="vgrid" id="vgrid-{{ uid }}">
     {% for t in vside.tiles %}
     <a href="{% url 'group' slug t.id %}{{ vside_q }}"
-       class="vt{% if t.reviewed %} done{% endif %}{% if t.id == id %} cur{% endif %}"
-       title="g{{ t.id }} · {{ t.n }}장{% if t.reviewed %} · 검토 완료{% endif %}">
+       class="vt{% if t.reviewed %} done{% endif %}{% if t.supp %} supp{% endif %}{% if t.id == id %} cur{% endif %}"
+       title="g{{ t.id }} · {{ t.n }}장{% if t.reviewed %} · 검토 완료{% endif %}{% if t.supp %} · 보충 시야(산출에서 빠진다){% endif %}">
       {% if t.cover_rel %}<img loading="lazy" src="{% thumb t.cover_rel 200 %}" alt="">{% endif %}
-      <span class="vid">g{{ t.id }}</span>
+      <span class="vid">g{{ t.id }}{% if t.supp %} 보충{% endif %}</span>
     </a>
     {% endfor %}
   </div>

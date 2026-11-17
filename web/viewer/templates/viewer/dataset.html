@@ -334,6 +334,7 @@
         {% if g.n_detected is not None %}<span class="badge on"
           title="세는 분류(파편·미분류를 뺀다) {{ g.n_counted }} · 검토 후 남은 것 전부 {{ g.n_detected }}">개체 {{ g.n_counted }} · 전체 {{ g.n_detected }}</span>{% endif %}
         {% if g.reviewed %}<span class="badge done">✓ 검토</span>{% endif %}
+        {% if g.supp %}<span class="badge supp" title="보충 시야 — 지점 설정의 목표에 앞 시야들이 이미 닿아 산출표·비교에서 빠진다 (P36)">보충</span>{% endif %}
         {% comment %}
           **그 시야의 주 묶음** — 표지의 마스크·개수와 누르면 열리는 검토 화면이 이
           묶음의 것이다. 시야마다 다르므로 머리줄이 아니라 여기 단다.

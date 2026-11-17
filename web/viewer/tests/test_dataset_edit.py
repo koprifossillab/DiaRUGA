@@ -78,3 +78,30 @@ class DatasetEditAttachTest(DiaRUGATestCase):
                       core_code=self.w.locality.code, site_code=self.w.site.code)
         self.assertContains(r, "저장했습니다")
         self.assertNotContains(r, "붙였습니다")
+
+
+class LocalityResolutionTest(DatasetEditAttachTest):
+    """지점의 산출 해상도 (P36 · 0057) — 정보 편집의 지점 탭에서 고른다."""
+
+    def edit(self, **data):
+        return self.post("rs23", sample_code=self.w.sample.code, depth_cm="71",
+                         core_code=self.w.locality.code, site_code=self.w.site.code,
+                         **data)
+
+    def test_새_지점은_저해상도다(self):
+        self.assertEqual(self.w.locality.resolution, "low")
+        html = self.client.get(reverse("dataset_edit", args=["rs23"])).content.decode()
+        self.assertIn('name="core_resolution"', html)
+        self.assertIn("고해상도 — 완형 400개", html)
+
+    def test_고르면_저장되고_칸이_없으면_그대로다(self):
+        self.edit(core_resolution="high")
+        self.w.locality.refresh_from_db()
+        self.assertEqual(self.w.locality.resolution, "high")
+        # 칸을 안 보낸 저장(옛 화면)이 저해상도로 되돌리면 안 된다
+        self.edit()
+        self.w.locality.refresh_from_db()
+        self.assertEqual(self.w.locality.resolution, "high")
+        self.edit(core_resolution="ultra")          # 모르는 값도 그대로 둔다
+        self.w.locality.refresh_from_db()
+        self.assertEqual(self.w.locality.resolution, "high")

@@ -234,15 +234,20 @@ class LocalityTableTest(DiaRUGATestCase):
         self.assertIn("Fragilariopsis curta,2,0,2", lines)
 
     def test_목표_달성률은_완형을_목표로_나눈다(self):
-        # 71 cm 는 관찰 둘을 더해 완형 넷, 231 cm 는 둘 (260)
-        t = tally.attach_target(self.t(), 400)
-        self.assertEqual([c["target_pct"] for c in t["cols"]], [1.0, 0.5])
+        # 71 cm 는 관찰 둘을 더해 완형 넷, 231 cm 는 둘 (260). **관찰마다 따로
+        # 끊으므로 더한 열의 목표도 관찰 수만큼이다** (P36) — 지점 설정 저해상도 200
+        t = self.t()
+        self.assertEqual([c["goal_n"] for c in t["cols"]], [400, 200])
+        self.assertEqual([c["target_pct"] for c in t["cols"]], [1.0, 1.0])
+        self.assertEqual([c["reached"] for c in t["cols"]], [False, False])
         url = reverse("tally", args=["RS23", "GC03"])
-        html = self.client.get(url + "?target=200").content.decode()
-        self.assertIn("4/200", html)
+        html = self.client.get(url + "?target=300").content.decode()
+        self.assertIn("4/600", html)
+        self.assertIn("미달", html)
         self.assertIn("목표 달성률", html)
         csv_ = self.client.get(url + "?format=csv&target=200").content.decode()
-        self.assertIn("(target attainment % of 200 counted),2.0,1.0,", csv_)
+        self.assertIn("(goal attainment %),1.0,1.0,", csv_)
+        self.assertIn("(goal reached),no,no,", csv_)
 
     def test_지점_화면에서_산출표로_간다(self):
         html = self.client.get(reverse("core", args=["RS23", "GC03"])).content.decode()
@@ -340,23 +345,34 @@ class TallyPlotTest(DiaRUGATestCase):
 
     def test_동정률_점마다_완형_수와_목표_달성률(self):
         # 시료마다 세는 개체(완형) 둘 — 파편 둘은 안 든다
+        # 목표는 지점 설정(저해상도 200)이 기본이고, 못 닿으면 「미달」 (P36)
         got = self.tgt(self.client.get(self.url()).content.decode())
-        self.assertEqual(got, ["2/400", "0.5%"] * 3)
+        self.assertEqual(got, ["2/200", "1% 미달"] * 3)
 
     def test_목표를_고르면_글자와_단추_주소가_따라간다(self):
         html = self.client.get(
             self.url("&pick=1&sp=Fragilariopsis+curta&target=200")).content.decode()
-        self.assertEqual(self.tgt(html), ["2/200", "1%"] * 3)
+        self.assertEqual(self.tgt(html), ["2/200", "1% 미달"] * 3)
         # 다른 목표 단추가 고른 종을 잃지 않는다
-        self.assertRegex(html, r'href="\?[^"]*sp=Fragilariopsis\+curta[^"]*target=250')
+        self.assertRegex(html, r'href="\?[^"]*sp=Fragilariopsis\+curta[^"]*target=300')
+        # 직접 입력 폼도 고른 종을 숨은 칸으로 싣는다
+        self.assertIn('<input type="hidden" name="sp" value="Fragilariopsis curta">', html)
 
-    def test_범위_밖_목표는_기본값이다(self):
-        for raw in ("1000", "199", "401", "abc", None):
-            self.assertEqual(tally.parse_target(raw), tally.TARGET_DEFAULT, raw)
-        self.assertEqual(tally.parse_target("200"), 200)
-        self.assertEqual(tally.parse_target("400"), 400)
-        got = self.tgt(self.client.get(self.url("&target=1000")).content.decode())
-        self.assertEqual(got[0], "2/400")
+    def test_못_읽은_목표는_지점_설정으로_세고_말한다(self):
+        for raw in ("abc", "0", "-3", str(tally.GOAL_MAX + 1)):
+            key, err = tally.parse_goal(raw)
+            self.assertEqual(key, "site", raw)
+            self.assertTrue(err, raw)
+        for raw, want in ((None, "site"), ("", "site"), ("site", "site"), ("all", "all"),
+                          ("E", "E"), ("e", "E"), ("1000", "1000"), ("150", "150")):
+            self.assertEqual(tally.parse_goal(raw), (want, ""), raw)
+        html = self.client.get(self.url("&target=abc")).content.decode()
+        self.assertEqual(self.tgt(html)[0], "2/200")
+        self.assertIn("읽지 못해 지점 설정으로", html)
+        # 직접 적은 1000 은 그대로 받는다 — 단추에 없는 값이라 입력 칸에 남는다
+        html = self.client.get(self.url("&target=1000")).content.decode()
+        self.assertEqual(self.tgt(html)[0], "2/1000")
+        self.assertRegex(html, r'name="target"[^>]*value="1000"')
 
     def test_촘촘하면_글자를_안_적는다(self):
         # 축이 0~400 cm 인데 두 시료가 1 cm 떨어져 있으면 글자가 겹친다 — 점의
@@ -364,10 +380,9 @@ class TallyPlotTest(DiaRUGATestCase):
         t = tally.locality_table("RS23", "GC03")
         for c, d in zip(t["cols"], (0.0, 1.0, 400.0)):
             c["depth_cm"] = d
-        tally.attach_target(t, 400)
         svg = tally.plot(t, [])["svg"]
         self.assertNotIn('class="tgt"', svg)
-        self.assertIn("완형 2/400", svg)
+        self.assertIn("완형 2/200", svg)
 
     def test_pick_만_있고_종이_없으면_다_끈_것이다(self):
         ps = self.panels(self.client.get(self.url("&pick=1")).content.decode())
@@ -488,13 +503,132 @@ class SlideTallyTest(DiaRUGATestCase):
             self.assertEqual(st["col"][k], box[k], k)
 
     def test_해상도_목표(self):
+        # 기본은 지점 설정(저해상도 200), 못 닿으면 미달 (P36)
         html = self.get().content.decode()
+        self.assertRegex(html, r"6<small> / 200 · 3\.0% · 미달")
+        html = self.get("?target=400").content.decode()
         self.assertRegex(html, r"6<small> / 400 · 1\.5%")
-        html = self.get("?target=200").content.decode()
-        self.assertRegex(html, r"6<small> / 200 · 3\.0%")
         csv_ = self.get("?format=csv&target=250").content.decode()
-        self.assertIn("(target attainment % of 250 counted),2.4", csv_)
+        self.assertIn("(goal attainment %),2.4", csv_)
+        self.assertIn("(goal reached),no", csv_)
         self.assertIn("Thalassiosira gracilis,2,66.7,33.3,eucampia:1 round:1", csv_)
 
     def test_없는_슬라이드는_404(self):
         self.assertEqual(self.client.get(reverse("slide_tally", args=["nope"])).status_code, 404)
+
+
+class ScopeCutTest(DiaRUGATestCase):
+    """산출 대상 시야 (P36) — g0 부터 검토 완료 시야를 따라가 목표에서 끊는다.
+
+    시야 넷 · 후보 다섯(차례대로 원형 · 원형조각 · 봉상 · 봉상조각 · Eucampia — 완형
+    셋, 파편 둘). **g2 는 검토를 안 마쳤다.** 후보의 x 는 40·160·280·400·520 이라
+    글자로 정렬하면 `280` 이 `40` 앞에 온다 — 자리 순이 수로 정렬되는지 그것으로 본다.
+    """
+
+    @classmethod
+    def setUpTestData(cls):
+        fx.make_classes()
+        cls.w = fx.make_world(slug="s", n_viewpoints=4, n_candidates=5)
+        for i, vp in enumerate(cls.w.viewpoints):
+            if i != 2:
+                fx.review_done(vp)
+        # g0 의 원형조각을 Eucampia 파편으로 — E 의 파편 수를 본다
+        fx.add_review(cls.w.vp, cls.w.keys()[1], label="eucampia_frag")
+
+    def col(self, key):
+        sl = self.w.slide
+        return tally.cut_column(data.scope_rows([sl])[sl.id],
+                                tally.goal_for(key, sl.locality))
+
+    def test_목표에_닿는_시야까지_마지막_시야는_자리_순으로(self):
+        c = self.col("4")
+        # g0 완형 셋 + g1 의 첫 완형(원형) 하나. 파편은 g1 것까지 다
+        self.assertEqual((c["n_scope"], c["n_supp"], c["supp_vps"]), (2, 1, [3]))
+        self.assertTrue(c["reached"])
+        self.assertEqual(c["n_counted"], 4)
+        self.assertEqual(c["per_cls"].get("round"), 2)      # 글자 순이면 봉상이 둘
+        self.assertEqual(c["per_cls"].get("rod"), 1)
+        self.assertEqual(c["n_frag"], 4)
+        self.assertEqual(c["detected_groups"], 2)
+
+    def test_미검토_시야는_건너뛰고_마치면_경계가_당겨진다(self):
+        c = self.col("8")
+        self.assertEqual((c["n_scope"], c["supp_vps"], c["n_counted"]), (3, [], 8))
+        fx.review_done(self.w.viewpoints[2])
+        c = self.col("8")
+        self.assertEqual((c["n_scope"], c["supp_vps"], c["n_counted"]), (3, [3], 8))
+
+    def test_못_닿으면_전부_세고_미달(self):
+        c = self.col("100")
+        self.assertFalse(c["reached"])
+        self.assertEqual((c["n_scope"], c["n_supp"], c["n_counted"]), (3, 0, 9))
+        self.assertEqual(c["target_pct"], 9.0)
+
+    def test_전체는_목록의_셈과_같다(self):
+        sl = self.w.slide
+        old = tally.column(data._slide_summary(sl))
+        new = self.col("all")
+        for k in ("n_detected", "n_counted", "n_frag", "n_identified",
+                  "per_species", "per_cls", "detected_groups", "frag_pct"):
+            self.assertEqual(new[k], old[k], k)
+        self.assertIsNone(new["reached"])
+
+    def test_E_는_Eucampia_완형만_세고_파편은_수만(self):
+        from unittest import mock
+        with mock.patch.object(tally, "E_TARGET", 2):
+            c = self.col("E")
+        # g0·g1 에 Eucampia 하나씩 — g1 에서 닿는다. 다른 완형은 그 범위에서 다 센다
+        self.assertEqual((c["supp_vps"], c["goal_hit"], c["goal_n"]), ([3], 2, 2))
+        self.assertTrue(c["reached"])
+        self.assertEqual(c["n_counted"], 6)
+        self.assertEqual((c["e_n"], c["e_frag"]), (2, 1))
+
+    def test_지점의_해상도가_기본_목표다(self):
+        self.assertEqual(tally.goal_for("site", self.w.locality)["n"], 200)
+        self.w.locality.resolution = "high"
+        self.w.locality.save()
+        self.assertEqual(tally.goal_for("site", self.w.locality)["n"], 400)
+        t = tally.locality_table("RS23", "GC03")
+        self.assertEqual(t["cols"][0]["goal_n"], 400)
+        # 주소의 목표가 지점 설정을 이긴다
+        t = tally.locality_table("RS23", "GC03", goal_key="4")
+        self.assertEqual(t["cols"][0]["goal_n"], 4)
+
+    def test_슬라이드_산출표_화면에_보충_시야가_적힌다(self):
+        r = self.client.get(reverse("slide_tally", args=["s"]) + "?target=4")
+        html = r.content.decode()
+        self.assertIn("보충 시야: g3", html)
+        self.assertRegex(html, r"4<small> / 4 · 100\.0%</small>")
+        self.assertIn("보충 1", html)
+
+    def test_보충_시야_표지는_지점_설정으로_끊는다(self):
+        self.assertEqual(tally.supplement_vps(self.w.slide), set())   # 200 에 못 닿는다
+        with self.settings():
+            from unittest import mock
+            with mock.patch.dict(tally.RESOLUTION_TARGET, {"low": 4}):
+                self.assertEqual(tally.supplement_vps(self.w.slide), {3})
+
+
+class SupplementMarkTest(DiaRUGATestCase):
+    """보충 시야 표지 (P36) — 시야 목록과 검토 화면 바둑판. 지점 설정으로 끊는다."""
+
+    @classmethod
+    def setUpTestData(cls):
+        fx.make_classes()
+        cls.w = fx.make_world(slug="s", n_viewpoints=3, n_candidates=5)
+        for vp in cls.w.viewpoints:
+            fx.review_done(vp)
+
+    def test_목록과_바둑판에_보충이_뜬다(self):
+        from unittest import mock
+        with mock.patch.dict(tally.RESOLUTION_TARGET, {"low": 4}):
+            d = data.dataset_detail("s")
+            self.assertEqual([g["supp"] for g in d["groups"]], [False, False, True])
+            html = self.client.get(reverse("dataset", args=["s"])).content.decode()
+            self.assertEqual(html.count('class="badge supp"'), 1)
+            html = self.client.get(reverse("group", args=["s", 0])).content.decode()
+            self.assertEqual(len(re.findall(r'class="vt[^"]*\bsupp\b', html)), 1)
+
+    def test_목표에_못_닿으면_보충이_없다(self):
+        d = data.dataset_detail("s")
+        self.assertFalse(any(g["supp"] for g in d["groups"]))

@@ -335,8 +335,13 @@ def compare(request):
     **모르는 slug 는 거르고 알린다.** 404 로 세우면 링크 하나가 낡았을 때
     나머지도 못 본다.
     """
+    from . import tally
     slugs = [s for s in request.GET.getlist("s") if s]
-    ctx = data.compare_slides(slugs)
+    goal_key, goal_err = tally.parse_goal(request.GET.get("target"))
+    ctx = data.compare_slides(slugs, goal_key)
+    ctx["goal"] = tally.goal_for(goal_key, None)
+    ctx["goal_err"] = goal_err
+    ctx.update(_target_ctx(request, ctx))
     ctx["picker"] = data.compare_picker({c["slug"] for c in ctx["cols"]})
     ctx["review_batch"] = data.review_batch_label()
     return render(request, "viewer/compare.html", ctx)
@@ -440,11 +445,12 @@ def tally_page(request, site_code, core_code):
     from . import tally
     split = request.GET.get("obs") == "1"
     unit = "pct" if request.GET.get("unit") == "pct" else "n"
-    t = tally.locality_table(site_code, core_code, split_obs=split)
+    # 산출 범위의 목표 (260 → P36) — 표·CSV·그래프가 같은 값으로 끊는다
+    goal_key, goal_err = tally.parse_goal(request.GET.get("target"))
+    t = tally.locality_table(site_code, core_code, split_obs=split, goal_key=goal_key)
     if t is None:
         raise Http404(f"unknown locality: {site_code}/{core_code}")
-    # 해상도 목표 (260) — 표·CSV·그래프가 같은 값을 쓴다
-    tally.attach_target(t, tally.parse_target(request.GET.get("target")))
+    t["goal_err"] = goal_err
     if request.GET.get("view") == "plot":
         return _tally_plot(request, t)
     if request.GET.get("format") == "csv":
@@ -459,17 +465,37 @@ def tally_page(request, site_code, core_code):
 
 
 def _target_ctx(request, t):
-    """목표 고르기 단추 (260). 다른 인자는 그대로 두고 `target` 만 바꾼 주소를 만든다
-    — 고른 종·관찰 가르기가 목표를 바꿀 때 풀리면 안 된다."""
+    """목표 고르기 단추 (260 → P36). 다른 인자는 그대로 두고 `target` 만 바꾼 주소를
+    만든다 — 고른 종·관찰 가르기가 목표를 바꿀 때 풀리면 안 된다.
+
+    `지점 설정` · 200 · 300 · 400 · 전체 · E 와 직접 입력. **지점 설정이 기본**이라
+    그 단추는 `target` 을 지운 주소다 — 주소가 짧을수록 지점의 값을 따른다.
+    """
     from . import tally
     q = request.GET.copy()
     q.pop("msg", None)
     q.pop("format", None)
+    goal = t["goal"]
+    cur = goal["key"]
     links = []
-    for v in tally.TARGET_CHOICES:
-        q["target"] = str(v)
-        links.append({"v": v, "on": v == t["target"], "qs": q.urlencode()})
-    return {"target_links": links}
+    q.pop("target", None)
+    loc = t.get("loc")
+    # 지점이 여럿인 화면(산출 비교)은 수를 못 적는다 — 열마다 다를 수 있다
+    site_v = (f"지점 설정 {tally.goal_for('site', loc)['n']}" if loc is not None
+              else "지점 설정")
+    links.append({"v": site_v, "on": cur == "site",
+                  "qs": q.urlencode(), "title": "이 지점의 해상도 — 정보 편집에서 바꿉니다"})
+    for v in [*map(str, tally.GOAL_CHOICES), "all", "E"]:
+        q["target"] = v
+        links.append({"v": {"all": "전체", "E": f"E {tally.E_TARGET}"}.get(v, v),
+                      "on": cur == v, "qs": q.urlencode(),
+                      "title": {"all": "끊지 않는다 — 검토를 마친 시야 전부",
+                                "E": f"완형 Eucampia 만 {tally.E_TARGET} 개까지 센다"
+                                     " — 파편은 수만 보인다"}.get(v, "")})
+    q.pop("target", None)
+    custom = cur if cur.isdigit() and int(cur) not in tally.GOAL_CHOICES else ""
+    return {"target_links": links, "goal_hidden": list(q.lists()),
+            "goal_custom": custom, "goal_max": tally.GOAL_MAX}
 
 
 def slide_tally(request, slug):
@@ -486,7 +512,9 @@ def slide_tally(request, slug):
     if slide is None:
         raise Http404(f"unknown dataset: {slug}")
     sort = "name" if request.GET.get("sort") == "name" else "n"
-    st = tally.slide_table(slide, tally.parse_target(request.GET.get("target")), sort)
+    goal_key, goal_err = tally.parse_goal(request.GET.get("target"))
+    st = tally.slide_table(slide, goal_key, sort)
+    st["goal_err"] = goal_err
     if request.GET.get("format") == "csv":
         resp = HttpResponse("\ufeff" + tally.slide_csv(st),
                             content_type="text/csv; charset=utf-8")
@@ -545,6 +573,12 @@ def _tally_plot(request, t):
         "msg": request.GET.get("msg", ""),
         **_target_ctx(request, t),
     })
+
+
+def _resolutions() -> list[tuple]:
+    """정보 편집의 해상도 고르기 — `(값, 이름, 목표 수)` (P36)."""
+    from . import tally
+    return [(k, lab, tally.RESOLUTION_TARGET[k]) for k, lab in Locality.RESOLUTION]
 
 
 @require_POST
@@ -1044,6 +1078,11 @@ def dataset_edit(request, slug):
                 k = (p.get("locality_kind") or "").strip()
                 if k in dict(Locality.KIND):
                     loc.kind = k
+                # 모르는 값·빈 값이면 그대로 둔다 — 비었다고 저해상도로 되돌리면
+                # 고른 해상도가 조용히 바뀐다(P36)
+                r = (p.get("core_resolution") or "").strip()
+                if r in dict(Locality.RESOLUTION):
+                    loc.resolution = r
                 loc.collect_kind = (p.get("core_kind") or "").strip()
                 loc.lat = _num(p.get("core_lat"))
                 loc.lon = _num(p.get("core_lon"))
@@ -1131,6 +1170,7 @@ def dataset_edit(request, slug):
         "core": loc,
         "site": site,
         "locality_kinds": Locality.KIND,
+        "resolutions": _resolutions(),
         "sample_choices": sample_choices,
         "sibling": sibling,
         "sibling_sample_pk": sibling.sample_id if sibling else None,
@@ -1205,6 +1245,7 @@ def system_settings(request):
         **ctx,
         "site_areas": Site.AREA,
         "locality_kinds": Locality.KIND,
+        "resolutions": _resolutions(),
         "msg": msg, "err": err,
     })
 
