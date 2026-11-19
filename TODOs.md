@@ -126,6 +126,12 @@ DB 설계는 [devlog/20260730_P02_db-schema.md](devlog/20260730_P02_db-schema.md
 
 ## 지금 가장 급한 것
 
+- [ ] **`export_yolo.py` 가 `RS21-GC02` 를 빼게 한다 — 다음 회차 꾸러미를 뽑기 전에**
+      (사용자 2026-11-19 · CLAUDE.md "학습 자료에 안 넣는 지점"). 시료 주인이 원치 않을 수
+      있어 그 지점은 검출만 하고 학습 자료에 안 넣는다. 지금은 내보내기에 지점을 빼는 문이
+      없다 — 검토 완료 시야를 고르는 자리에서 거르고, `--dry-run` 에 뺀 시야 수를 낸다.
+      지난 꾸러미 셋(`v4`·`v4.1`·`v5`)에는 든 적이 없다
+
 - [ ] **YOLO 4차 학습 — 자료는 만들었다** ([P29](devlog/20261021_P29_yolo-4th-round.md)
       6절 3 · 2026-10-28). 3차 정답 사본(`DiaRUGA_20261028_151451_yolo3-final-inspected.db` · sha256 `5d620f22…` ·
       `backup/manual/` 원본 + `backup/answer/` 이 장비·NAS 두 벌 — P31 5.1.1)에서 `export_yolo.py --src-db … --seg` 로 구웠다(코드 `44d0f23` ·
