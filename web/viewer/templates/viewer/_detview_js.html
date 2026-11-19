@@ -2737,6 +2737,72 @@ window.initDetView = function (uid) {
     if (el && el !== document.activeElement) el.value = value;
   }
 
+  // --- 고른 것이 없을 때의 개체 목록 (사용자 2026-11-19) ---------------------
+  //
+  // 안내 한 줄만 있던 자리에 **이 판의 개체**를 줄로 정렬한다 — 순번 · 유형 ·
+  // 종명 · 등급 · 자세. 지운 것은 안 든다(사진에 없는 것이 목록에 있으면 안
+  // 된다). 순번은 말풍선의 `#번호` 와 같은 값이다 — 두 자리가 다른 수를 내면
+  // 어느 개체인지 못 짚는다.
+  //
+  // **줄을 누르면 그 개체가 골라진다** — 고르는 것은 읽기 전용에서도 되는
+  // 일이라 잠그지 않는다. 적는 칸은 카드 쪽에 있고 그쪽이 잠긴다.
+  var catListEl = document.getElementById('catlist-' + uid);
+
+  function catCell(row, cls, text, title) {
+    var e = document.createElement('span');
+    e.className = cls + (text ? '' : ' none');
+    e.textContent = text || '—';
+    if (title) e.title = title;
+    row.appendChild(e);
+    return e;
+  }
+
+  // 자세의 이름은 카드의 목록에서 읽는다 — 여기 한 번 더 적으면 두 벌이 된다.
+  function catPoseName(k) {
+    if (!k || !catPoseEl) return '';
+    for (var i = 0; i < catPoseEl.options.length; i++)
+      if (catPoseEl.options[i].value === k) return catPoseEl.options[i].textContent;
+    return k;
+  }
+
+  // 목록을 그렸으면 true. 개체가 하나도 없으면 안 그린다 — 안내가 대신 뜬다.
+  function catList() {
+    if (!catListEl) return false;
+    catListEl.textContent = '';
+    var rows = [];
+    cands.forEach(function (c, i) {
+      if (!removed.has(keyOf(c))) rows.push({ c: c, i: i });
+    });
+    rows.sort(function (a, b) { return (a.c.id - b.c.id) || (a.i - b.i); });
+    rows.forEach(function (r) {
+      var c = r.c, def = catDef(c.cls);
+      var row = document.createElement('button');
+      row.type = 'button';
+      row.className = 'crowl';
+      row.dataset.i = r.i;
+      row.title = '누르면 이 개체를 고릅니다';
+      catCell(row, 'no', '#' + c.id);
+      var cl = catCell(row, 'cls', c.cls ? (CLS_KO[c.cls] || c.cls) : '',
+                       c.cls ? (CLS_FULL[c.cls] || c.cls) : '유형 미지정');
+      // 유형의 색 — 사진의 상자·마스크와 같은 색이다(`ClassDef.color`).
+      if (def && def.color) cl.style.color = 'rgb(' + def.color + ')';
+      catCell(row, 'sp', c.species || '', c.species || '종명 없음');
+      // **등급·자세는 완형에만 매긴다** — 파편이면 빈칸이 아니라 칸이 없는
+      // 것이다. `—` 를 적으면 채울 일이 남은 것으로 읽힌다.
+      var whole = !(c.cls && def && !def.counted);
+      var g = catCell(row, 'gr', c.grade || '');
+      var p = catCell(row, 'po', catPoseName(c.pose));
+      if (!whole) { g.textContent = ''; p.textContent = ''; }
+      row.addEventListener('click', function () {
+        cycle = null;
+        sel.clear(); sel.add(r.i);
+        redraw();
+      });
+      catListEl.appendChild(row);
+    });
+    return rows.length > 0;
+  }
+
   function catFill() {
     if (!catBox) return;
     var c = catPick();
@@ -2745,8 +2811,12 @@ window.initDetView = function (uid) {
     catKey = key;
     if (!c) {
       catBox.hidden = true;
+      // 고른 것이 없으면 목록이, 여럿이면 안내가 뜬다. 여럿을 고른 채로 목록을
+      // 누르면 고른 것이 풀리므로 그때는 안 내보인다.
+      var listed = sel.size === 0 && catList();
+      if (catListEl) catListEl.hidden = !listed;
       if (catHintEl) {
-        catHintEl.hidden = false;
+        catHintEl.hidden = listed;
         catHintEl.textContent = sel.size > 1
           ? '개체를 하나만 골라야 카드가 뜹니다'
           : '개체를 하나 고르면 카드가 뜹니다';
@@ -2755,6 +2825,7 @@ window.initDetView = function (uid) {
     }
     catBox.hidden = false;
     if (catHintEl) catHintEl.hidden = true;
+    if (catListEl) catListEl.hidden = true;
 
     catPaintNo(c);
     catSet(catSpEl, c.species || '');
@@ -2830,6 +2901,7 @@ window.initDetView = function (uid) {
     // 캔버스가 이 안의 클릭·휠을 확대·선택으로 받으면 안 된다.
     ['wheel', 'mousedown', 'contextmenu'].forEach(function (ev) {
       catBox.addEventListener(ev, function (x) { x.stopPropagation(); });
+      if (catListEl) catListEl.addEventListener(ev, function (x) { x.stopPropagation(); });
     });
   }
 

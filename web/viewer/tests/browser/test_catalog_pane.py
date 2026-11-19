@@ -48,6 +48,63 @@ class CatalogPaneBrowserTest(BrowserTestCase):
         self.assertIn("아직 카드가 없습니다",
                       self.page.inner_text("#catno-stack"))
 
+    # --- 고른 것이 없을 때의 개체 목록 (2026-11-19) ---
+
+    def rows(self):
+        return self.page.query_selector_all("#catlist-stack .crowl")
+
+    def test_고르기_전에는_개체_목록이_뜬다(self):
+        """안내 한 줄만 있던 자리다 — 줄에 유형·종명이 실리고 유형은 제 색이다."""
+        fx.add_review(self.w.vp, self.key, species="Eucampia antarctica",
+                      label="rod")
+        self.open_review()
+        rows = self.rows()
+        self.assertEqual(len(rows), 2, "개체가 둘인데 줄 수가 다르다")
+        self.assertTrue(self.page.query_selector("#catsay-stack").is_hidden(),
+                        "목록이 떴는데 안내가 함께 남아 있다")
+        mine = [r for r in rows if "Eucampia antarctica" in r.inner_text()]
+        self.assertEqual(len(mine), 1, "종명이 줄에 안 실렸다")
+        want = self.page.evaluate(
+            "() => JSON.parse(document.getElementById('cls-stack').textContent)"
+            ".find(d => d.key === 'rod').color")
+        got = self.page.evaluate(
+            "e => getComputedStyle(e.querySelector('.cls')).color", mine[0])
+        self.assertEqual(got.replace(" ", ""), f"rgb({want})".replace(" ", ""),
+                         "유형 글자가 그 유형의 색이 아니다")
+
+    def test_목록의_줄을_누르면_그_개체의_카드가_뜬다(self):
+        self.open_review()
+        self.rows()[0].click()
+        self.page.wait_for_timeout(200)
+        self.assertTrue(self.box().is_visible(), "줄을 눌렀는데 카드가 없다")
+        self.assertTrue(self.page.query_selector("#catlist-stack").is_hidden(),
+                        "카드가 떴는데 목록이 남아 있다")
+        self.assertEqual(len(self.page.query_selector_all(".detview .box.sel")),
+                         1, "줄을 눌렀는데 사진에서 고른 표시가 없다")
+
+    def test_지운_개체는_목록에서_빠진다(self):
+        self.open_review()
+        self.pick_first()
+        self.page.keyboard.press("Space")          # 오검출로 지운다
+        self.page.wait_for_timeout(300)
+        self.assertTrue(self.page.query_selector("#catlist-stack").is_visible(),
+                        "지우고 나서 목록이 안 돌아왔다")
+        self.assertEqual(len(self.rows()), 1, "지운 개체가 목록에 남아 있다")
+
+    def test_칸이_좁으면_두_줄_넓으면_한_줄이다(self):
+        """칸 폭은 사람이 끌어 바꾼다 — 화면 폭이 아니라 **칸의 폭**을 본다."""
+        self.open_review()
+        tops = ("e => [e.querySelector('.no'), e.querySelector('.cls')]"
+                ".map(x => Math.round(x.getBoundingClientRect().top))")
+        no, cls = self.page.evaluate(tops, self.rows()[0])
+        self.assertGreater(cls, no, "좁은 칸인데 유형이 순번과 같은 줄에 있다")
+        self.page.evaluate(
+            "() => { var n = document.getElementById('notes-stack');"
+            " n.style.flex = '0 0 460px'; n.style.width = '460px'; }")
+        self.page.wait_for_timeout(200)
+        no, cls = self.page.evaluate(tops, self.rows()[0])
+        self.assertLess(abs(cls - no), 4, "넓은 칸인데 두 줄로 남아 있다")
+
     def test_종명을_적으면_개체에_저장된다(self):
         """**그 순간 개체가 생긴다** — 적기 전에는 카드가 없는 것이 맞다."""
         self.open_review()

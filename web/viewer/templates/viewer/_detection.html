@@ -576,6 +576,14 @@
   <div class="ghead">개체 카탈로그</div>
   <div class="catpane" id="catpane-{{ uid }}">
     <div class="catsay" id="catsay-{{ uid }}">개체를 하나 고르면 카드가 뜹니다</div>
+    {% comment %}
+      **고른 것이 없을 때의 개체 목록** (사용자 2026-11-19). 안내 한 줄만 있던
+      자리에 이 판의 개체를 줄로 정렬한다 — 순번 · 유형 · 종명 · 등급 · 자세.
+      칸이 좁으면 두 줄로 접힌다(`base.html` 의 `.catlist`). 줄은 JS 가 짠다
+      (`catList`) — 지우고 되살리고 유형을 바꾸는 것이 전부 화면의 상태다.
+      줄을 누르면 그 개체가 골라져 카드가 뜬다.
+    {% endcomment %}
+    <div class="catlist" id="catlist-{{ uid }}" hidden></div>
     <div class="catbox" id="catbox-{{ uid }}" hidden>
       <div class="catno" id="catno-{{ uid }}"></div>
       <div class="crow"><label for="catsp-{{ uid }}" class="sppick"

@@ -1495,6 +1495,46 @@
     display: flex; flex-direction: column; gap: 7px;
   }
   .notes .catsay { font-size: 11.5px; color: var(--dim); line-height: 1.6; }
+  .notes .catsay[hidden] { display: none; }
+  /* --- 고른 것이 없을 때의 개체 목록 (2026-11-19) ---
+     한 줄 = 순번 · 유형 · 종명 · 등급 · 자세. **칸이 좁으면 두 줄이다** —
+     순번 · 종명 / 유형 · 등급 · 자세. 칸 폭은 사람이 끌어서 바꾸므로 화면
+     폭(`@media`)이 아니라 **칸의 폭**(`@container`)을 본다.
+     줄마다 따로 격자를 잡으면 열이 줄마다 어긋난다 — 목록이 격자이고 줄은
+     그 열을 물려받는다(`subgrid`). */
+  .notes .catpane { container-type: inline-size; }
+  .notes .catlist {
+    display: grid; grid-template-columns: auto auto auto minmax(0, 1fr);
+    column-gap: 7px; align-content: start; font-size: 11.5px; line-height: 1.5;
+  }
+  .notes .catlist[hidden] { display: none; }
+  .notes .catlist .crowl {
+    display: grid; grid-template-columns: subgrid; grid-column: 1 / -1;
+    align-items: baseline; text-align: left; font: inherit; color: inherit;
+    background: transparent; border: 0; border-bottom: 1px solid var(--line);
+    border-radius: 0; padding: 3px 2px; cursor: pointer;
+  }
+  .notes .catlist .crowl:hover { background: var(--bg); }
+  .notes .catlist .crowl > span {
+    min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  }
+  .notes .catlist .no {
+    grid-column: 1; grid-row: 1; color: var(--dim); text-align: right;
+    font-variant-numeric: tabular-nums;
+  }
+  .notes .catlist .sp { grid-column: 2 / -1; grid-row: 1; font-style: italic; }
+  .notes .catlist .cls { grid-column: 2; grid-row: 2; font-weight: 600; }
+  .notes .catlist .gr { grid-column: 3; grid-row: 2; }
+  .notes .catlist .po { grid-column: 4; grid-row: 2; color: var(--dim); }
+  /* 안 적힌 칸 — 값처럼 안 보여야 한다 */
+  .notes .catlist .none { color: var(--dim); font-style: normal; font-weight: 400; }
+  @container (min-width: 340px) {
+    .notes .catlist { grid-template-columns: auto auto minmax(0, 1fr) auto auto; }
+    .notes .catlist .cls { grid-column: 2; grid-row: 1; }
+    .notes .catlist .sp { grid-column: 3; grid-row: 1; }
+    .notes .catlist .gr { grid-column: 4; grid-row: 1; }
+    .notes .catlist .po { grid-column: 5; grid-row: 1; }
+  }
   /* --- 도감 칸 (229) — 카탈로그 아래. 찾기와 도판 한 장. 카탈로그와 남는
      높이를 반씩 나누고 넘치면 저마다 구른다 */
   .notes .atlaspane {
