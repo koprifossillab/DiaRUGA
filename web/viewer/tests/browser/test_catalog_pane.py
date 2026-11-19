@@ -53,13 +53,28 @@ class CatalogPaneBrowserTest(BrowserTestCase):
     def rows(self):
         return self.page.query_selector_all("#catlist-stack .crowl")
 
-    def test_고르기_전에는_개체_목록이_뜬다(self):
-        """안내 한 줄만 있던 자리다 — 줄에 유형·종명이 실리고 유형은 제 색이다."""
+    def card(self):
+        """첫 개체에 카드를 세운다 — 목록은 카드가 있는 것만 든다."""
         fx.add_review(self.w.vp, self.key, species="Eucampia antarctica",
                       label="rod")
+
+    def test_카드가_하나도_없으면_안내가_뜬다(self):
+        self.open_review()
+        self.assertEqual(len(self.rows()), 0, "카드가 없는데 줄이 있다")
+        self.assertTrue(self.page.query_selector("#catsay-stack").is_visible(),
+                        "목록도 안내도 없다 — 칸이 비어 보인다")
+
+    def test_고르기_전에는_개체_목록이_뜬다(self):
+        """안내 한 줄만 있던 자리다 — 줄에 유형·종명이 실리고 유형은 제 색이다.
+
+        **카드가 있는 개체만 든다** — 후보는 둘인데 사람이 본 것은 하나다.
+        """
+        self.card()
         self.open_review()
         rows = self.rows()
-        self.assertEqual(len(rows), 2, "개체가 둘인데 줄 수가 다르다")
+        self.assertEqual(len(rows), 1, "카드가 없는 후보가 목록에 들었다")
+        # 순번은 목록 안에서 1부터다 — 개수를 읽는 수라 후보 번호와 무관하다
+        self.assertEqual(rows[0].query_selector(".no").inner_text().strip(), "1")
         self.assertTrue(self.page.query_selector("#catsay-stack").is_hidden(),
                         "목록이 떴는데 안내가 함께 남아 있다")
         mine = [r for r in rows if "Eucampia antarctica" in r.inner_text()]
@@ -72,7 +87,21 @@ class CatalogPaneBrowserTest(BrowserTestCase):
         self.assertEqual(got.replace(" ", ""), f"rgb({want})".replace(" ", ""),
                          "유형 글자가 그 유형의 색이 아니다")
 
+    def test_파편은_체크를_켜야_목록에_든다(self):
+        """기본은 꺼짐이다 — 켜면 들고, 파편 줄에는 등급·자세가 비어 있다."""
+        fx.add_review(self.w.vp, self.key, label="rod_frag")
+        self.open_review()
+        self.assertFalse(self.page.is_checked("#catfrag-stack"),
+                         "파편 보이기가 켜진 채로 시작한다")
+        self.assertEqual(len(self.rows()), 0, "꺼져 있는데 파편이 목록에 들었다")
+        self.page.check("#catfrag-stack")
+        self.page.wait_for_timeout(200)
+        rows = self.rows()
+        self.assertEqual(len(rows), 1, "켰는데 파편이 목록에 없다")
+        self.assertEqual(rows[0].query_selector(".gr").inner_text().strip(), "")
+
     def test_목록의_줄을_누르면_그_개체의_카드가_뜬다(self):
+        self.card()
         self.open_review()
         self.rows()[0].click()
         self.page.wait_for_timeout(200)
@@ -83,16 +112,19 @@ class CatalogPaneBrowserTest(BrowserTestCase):
                          1, "줄을 눌렀는데 사진에서 고른 표시가 없다")
 
     def test_지운_개체는_목록에서_빠진다(self):
+        self.card()
         self.open_review()
+        self.assertEqual(len(self.rows()), 1, "지우기 전인데 줄이 없다 — 시험이 헛돈다")
         self.pick_first()
         self.page.keyboard.press("Space")          # 오검출로 지운다
         self.page.wait_for_timeout(300)
-        self.assertTrue(self.page.query_selector("#catlist-stack").is_visible(),
-                        "지우고 나서 목록이 안 돌아왔다")
-        self.assertEqual(len(self.rows()), 1, "지운 개체가 목록에 남아 있다")
+        self.assertEqual(len(self.rows()), 0, "지운 개체가 목록에 남아 있다")
+        self.assertTrue(self.page.query_selector("#catsay-stack").is_visible(),
+                        "목록이 비었는데 안내가 안 돌아왔다")
 
     def test_칸이_좁으면_두_줄_넓으면_한_줄이다(self):
         """칸 폭은 사람이 끌어 바꾼다 — 화면 폭이 아니라 **칸의 폭**을 본다."""
+        self.card()
         self.open_review()
         tops = ("e => [e.querySelector('.no'), e.querySelector('.cls')]"
                 ".map(x => Math.round(x.getBoundingClientRect().top))")

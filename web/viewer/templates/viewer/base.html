@@ -1503,6 +1503,14 @@
      줄마다 따로 격자를 잡으면 열이 줄마다 어긋난다 — 목록이 격자이고 줄은
      그 열을 물려받는다(`subgrid`). */
   .notes .catpane { container-type: inline-size; }
+  /* 머리줄 오른쪽의 「파편 보이기」 — 제목보다 가볍게 */
+  .notes .cathead { display: flex; align-items: center; gap: 6px; }
+  .notes .cathead .catfrag {
+    margin-left: auto; display: inline-flex; align-items: center; gap: 4px;
+    font-size: 11px; font-weight: 400; color: var(--dim); cursor: pointer;
+    white-space: nowrap;
+  }
+  .notes .cathead .catfrag input { margin: 0; accent-color: var(--accent); }
   .notes .catlist {
     display: grid; grid-template-columns: auto auto auto minmax(0, 1fr);
     column-gap: 7px; align-content: start; font-size: 11.5px; line-height: 1.5;

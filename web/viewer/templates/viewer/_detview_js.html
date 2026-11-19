@@ -2739,14 +2739,35 @@ window.initDetView = function (uid) {
 
   // --- 고른 것이 없을 때의 개체 목록 (사용자 2026-11-19) ---------------------
   //
-  // 안내 한 줄만 있던 자리에 **이 판의 개체**를 줄로 정렬한다 — 순번 · 유형 ·
-  // 종명 · 등급 · 자세. 지운 것은 안 든다(사진에 없는 것이 목록에 있으면 안
-  // 된다). 순번은 말풍선의 `#번호` 와 같은 값이다 — 두 자리가 다른 수를 내면
-  // 어느 개체인지 못 짚는다.
+  // 안내 한 줄만 있던 자리에 **이 판의 검토된 개체**를 줄로 정렬한다 — 순번 ·
+  // 유형 · 종명 · 등급 · 자세. **카드가 있는 것만 든다** (`obj_id` · 사용자
+  // 2026-11-19) — 아무도 안 본 후보까지 실으면 엔진이 낸 것과 사람이 본 것이
+  // 한 목록에서 안 갈린다. 지운 것도 안 든다(사진에 없는 것이 목록에 있으면
+  // 안 된다). **순번은 목록 안에서 1부터 센다** — 개수를 읽으려고 두는 수이고
+  // 카탈로그 번호·말풍선의 `#번호` 와는 무관하다(사용자 2026-11-19). 그래서
+  // `#` 을 안 붙인다 — 붙이면 말풍선의 그 번호로 읽힌다.
   //
   // **줄을 누르면 그 개체가 골라진다** — 고르는 것은 읽기 전용에서도 되는
   // 일이라 잠그지 않는다. 적는 칸은 카드 쪽에 있고 그쪽이 잠긴다.
   var catListEl = document.getElementById('catlist-' + uid);
+  // **파편은 기본으로 안 든다** (사용자 2026-11-19). 머리줄 오른쪽의 체크로
+  // 켠다. 보는 방식이라 브라우저에만 둔다 — 시야를 옮겨도 그대로다.
+  var catFragEl = document.getElementById('catfrag-' + uid);
+  var CATFRAG_KEY = 'diaruga.catlist.frag';
+  if (catFragEl) {
+    try { catFragEl.checked = localStorage.getItem(CATFRAG_KEY) === '1'; }
+    catch (e3) { /* 사생활 모드 — 기억만 안 된다 */ }
+    catFragEl.addEventListener('change', function () {
+      try { localStorage.setItem(CATFRAG_KEY, catFragEl.checked ? '1' : '0'); }
+      catch (e4) { /* 위와 같다 */ }
+      catFill();
+    });
+  }
+  // 파편인가 — 등급·자세를 안 매기는 유형이다(`counted` 가 꺼진 것).
+  function catIsFrag(c) {
+    var d = catDef(c.cls);
+    return !!(c.cls && d && !d.counted);
+  }
 
   function catCell(row, cls, text, title) {
     var e = document.createElement('span');
@@ -2765,23 +2786,25 @@ window.initDetView = function (uid) {
     return k;
   }
 
-  // 목록을 그렸으면 true. 개체가 하나도 없으면 안 그린다 — 안내가 대신 뜬다.
+  // 목록을 그렸으면 true. 카드가 있는 개체가 없으면 안 그린다 — 안내가 대신 뜬다.
   function catList() {
     if (!catListEl) return false;
     catListEl.textContent = '';
     var rows = [];
     cands.forEach(function (c, i) {
-      if (!removed.has(keyOf(c))) rows.push({ c: c, i: i });
+      if (!c.obj_id || removed.has(keyOf(c))) return;
+      if (catIsFrag(c) && !(catFragEl && catFragEl.checked)) return;
+      rows.push({ c: c, i: i });
     });
     rows.sort(function (a, b) { return (a.c.id - b.c.id) || (a.i - b.i); });
-    rows.forEach(function (r) {
+    rows.forEach(function (r, n) {
       var c = r.c, def = catDef(c.cls);
       var row = document.createElement('button');
       row.type = 'button';
       row.className = 'crowl';
       row.dataset.i = r.i;
       row.title = '누르면 이 개체를 고릅니다';
-      catCell(row, 'no', '#' + c.id);
+      catCell(row, 'no', String(n + 1));
       var cl = catCell(row, 'cls', c.cls ? (CLS_KO[c.cls] || c.cls) : '',
                        c.cls ? (CLS_FULL[c.cls] || c.cls) : '유형 미지정');
       // 유형의 색 — 사진의 상자·마스크와 같은 색이다(`ClassDef.color`).
@@ -2789,7 +2812,7 @@ window.initDetView = function (uid) {
       catCell(row, 'sp', c.species || '', c.species || '종명 없음');
       // **등급·자세는 완형에만 매긴다** — 파편이면 빈칸이 아니라 칸이 없는
       // 것이다. `—` 를 적으면 채울 일이 남은 것으로 읽힌다.
-      var whole = !(c.cls && def && !def.counted);
+      var whole = !catIsFrag(c);
       var g = catCell(row, 'gr', c.grade || '');
       var p = catCell(row, 'po', catPoseName(c.pose));
       if (!whole) { g.textContent = ''; p.textContent = ''; }
