@@ -167,6 +167,36 @@
   }
   .catfilters .fmore > summary:hover { color: var(--accent); }
   .catfilters .fmore .frow { padding-left: calc(2.6em + 6px); }
+  /* 크기 범위 (265). range 둘을 한 줄에 포갠다 — 입력은 누름을 안 받고 손잡이만
+     받아야 아래에 깔린 쪽 손잡이가 잡힌다 */
+  .fsize .dual { position: relative; flex: none; width: 260px; max-width: 60vw; height: 18px; }
+  .fsize .dual::before, .fsize .dual .fill {
+    content: ""; position: absolute; top: 8px; height: 3px; border-radius: 2px;
+  }
+  .fsize .dual::before { left: 7px; right: 7px; background: var(--line); }
+  .fsize .dual .fill { background: var(--accent); }
+  .fsize .dual input {
+    position: absolute; left: 0; top: 0; width: 100%; height: 18px; margin: 0;
+    background: none; pointer-events: none;
+    -webkit-appearance: none; appearance: none;
+  }
+  .fsize .dual input::-webkit-slider-runnable-track { background: none; height: 18px; }
+  .fsize .dual input::-moz-range-track { background: none; height: 18px; }
+  .fsize .dual input::-webkit-slider-thumb {
+    -webkit-appearance: none; pointer-events: auto; cursor: pointer;
+    width: 14px; height: 14px; margin-top: 2px; border-radius: 50%;
+    background: var(--panel); border: 2px solid var(--accent); box-sizing: border-box;
+  }
+  .fsize .dual input::-moz-range-thumb {
+    pointer-events: auto; cursor: pointer;
+    width: 14px; height: 14px; border-radius: 50%;
+    background: var(--panel); border: 2px solid var(--accent); box-sizing: border-box;
+  }
+  .fsize .dual input:focus-visible { outline: none; }
+  .fsize .dual input:focus-visible::-webkit-slider-thumb { background: var(--accent); }
+  .fsize .dual input:focus-visible::-moz-range-thumb { background: var(--accent); }
+  .fsize .say { color: var(--dim); font-variant-numeric: tabular-nums; }
+  .fsize .say.on, .fsize .say.on b { color: var(--accent); }
   .catsearch { margin-left: auto; display: flex; gap: 6px; align-items: center; }
   .catsearch input {
     font: inherit; font-size: 12px; padding: 3px 9px; border-radius: 999px;
@@ -313,6 +343,9 @@
     {% if st %}<input type="hidden" name="st" value="{{ st }}">{% endif %}
     {% if frag_on %}<input type="hidden" name="frag" value="1">{% endif %}
     {% if show_gone %}<input type="hidden" name="gone" value="1">{% endif %}
+    {% if sort %}<input type="hidden" name="sort" value="{{ sort }}">{% endif %}
+    {% if size.lmin %}<input type="hidden" name="lmin" value="{{ size.lmin }}">{% endif %}
+    {% if size.lmax %}<input type="hidden" name="lmax" value="{{ size.lmax }}">{% endif %}
     <input type="search" name="q" value="{{ q }}" placeholder="번호 · 종명 · 코멘트">
     {% if q %}<a class="chip" href="{{ q_clear }}">지우기</a>{% endif %}
   </form>
@@ -414,8 +447,45 @@
     {% if f_any %}<a class="fclear" href="{{ f_clear }}">거르개 모두 풀기</a>{% endif %}
     <span class="fright dim">
       {% if show_gone %}지운 개체다 — 되살리면 동정하는 쪽으로 돌아간다
-      {% else %}번호 차례 · 그림이나 g번호를 누르면 그 시야로 간다{% endif %}
+      {% else %}그림이나 g번호를 누르면 그 시야로 간다{% endif %}
     </span>
+  </div>
+  {% comment %}
+    **크기 범위와 차례** (265 · 사용자 2026-11-20). 길이는 카드의 「크기」 줄에
+    적힌 장축이다 — 개체가 가장 크게 잡힌 판에서 잰 값(222).
+
+    - **크기** — 손잡이 둘로 아래·위 끝을 잡는다. **놓을 때 걸린다**(끄는 동안은
+      글자만 따라간다 — 카드는 서버가 쪽으로 잘라 내므로 그때마다 다시 받는다).
+      눈금의 양 끝은 이 카탈로그의 가장 짧은 것·긴 것이고, 손잡이가 끝에 있으면
+      그쪽은 안 건 것이다. **길이를 모르는 카드는 범위를 걸면 빠진다**
+    - **정렬** — 거르개가 아니라서 「모두 풀기」 가 안 건드린다
+  {% endcomment %}
+  {% if size.hi > size.lo %}
+  <div class="frow fsize" id="fsize" data-base="{{ size.base }}"
+       data-lo="{{ size.lo }}" data-hi="{{ size.hi }}">
+    <span class="fl" title="카드의 「크기」 줄에 적힌 장축 길이로 거릅니다">크기</span>
+    <span class="dual">
+      <span class="fill"></span>
+      <input type="range" class="a" min="{{ size.lo }}" max="{{ size.hi }}" step="1"
+             value="{{ size.a }}" aria-label="장축 범위의 아래 끝 (µm)">
+      <input type="range" class="b" min="{{ size.lo }}" max="{{ size.hi }}" step="1"
+             value="{{ size.b }}" aria-label="장축 범위의 위 끝 (µm)">
+    </span>
+    <span class="say{% if size.on %} on{% endif %}">장축
+      <b class="va">{{ size.lmin|default:size.lo }}</b>–<b class="vb">{{ size.lmax|default:size.hi }}</b> µm</span>
+    {% if size.on %}
+      <a class="fclear" href="{{ size.base }}">범위 풀기</a>
+      <span class="n" title="다른 거르개는 통과했는데 길이가 범위 밖이거나 길이를 모르는 카드입니다">범위 밖 {{ size.n_out }}</span>
+    {% else %}
+      <span class="n">손잡이를 끌어 범위를 잡는다</span>
+    {% endif %}
+  </div>
+  {% endif %}
+  <div class="frow">
+    <span class="fl">정렬</span>
+    {% for c in f_sorts %}
+      <a class="chip{% if c.on %} on{% endif %}" href="{{ c.href }}">{{ c.label }}</a>
+    {% endfor %}
   </div>
   <details class="fmore"{% if f_cleanup_open %} open{% endif %}>
     <summary title="검출 자료를 다듬을 때 쓰는 거르개입니다 — 동정에는 쓸 일이 드뭅니다">정제용 거르개</summary>
@@ -678,6 +748,44 @@
 </div>
 
 <script>
+/* 크기 범위 (265). 끄는 동안은 글자와 띠만 따라가고, **놓을 때** 주소로 건다 —
+   카드는 서버가 쪽으로 잘라 내므로 화면에서 감추는 것으로는 다른 쪽의 카드를
+   못 거른다. 손잡이가 눈금 끝에 있으면 그쪽은 안 건 것이라 주소에 안 싣는다. */
+(function () {
+  var box = document.getElementById("fsize");
+  if (!box) return;
+  var a = box.querySelector("input.a"), b = box.querySelector("input.b");
+  var fill = box.querySelector(".fill");
+  var va = box.querySelector(".va"), vb = box.querySelector(".vb");
+  var lo = +box.dataset.lo, hi = +box.dataset.hi;
+  function paint() {
+    var x = +a.value, y = +b.value;
+    var p = (x - lo) / (hi - lo), q = (y - lo) / (hi - lo);
+    fill.style.left = "calc(7px + (100% - 14px) * " + p + ")";
+    fill.style.width = "calc((100% - 14px) * " + (q - p) + ")";
+    /* 둘이 위쪽 끝에서 겹치면 아래 끝 손잡이를 위로 올린다 — 안 그러면 위에
+       덮인 쪽은 더 올릴 데가 없고 깔린 쪽은 안 잡혀 둘 다 못 움직인다 */
+    a.style.zIndex = (x === y && x > (lo + hi) / 2) ? 2 : "";
+  }
+  function moved(me, other, isLow) {
+    if (isLow ? +me.value > +other.value : +me.value < +other.value) {
+      me.value = other.value;
+    }
+    (isLow ? va : vb).textContent = me.value;
+    paint();
+  }
+  function go() {
+    var url = box.dataset.base;
+    if (+a.value > lo) url += "&lmin=" + a.value;
+    if (+b.value < hi) url += "&lmax=" + b.value;
+    location.href = url;
+  }
+  a.addEventListener("input", function () { moved(a, b, true); });
+  b.addEventListener("input", function () { moved(b, a, false); });
+  a.addEventListener("change", go);
+  b.addEventListener("change", go);
+  paint();
+})();
 (function () {
   // **읽기 전용이면 배선을 아예 안 건다** (051). 입력칸은 `disabled` 라 브라우저가
   // 막지만, 배선까지 걸어 두면 나중에 누가 `disabled` 를 떼는 순간 조용히 저장이

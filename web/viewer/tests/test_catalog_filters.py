@@ -18,6 +18,7 @@ from .base import DiaRUGATestCase
 from . import factories as fx
 from ..models import RunBatch
 from .. import data
+from ..views import catalog_len
 
 
 class CatalogFilterRowTest(DiaRUGATestCase):
@@ -116,3 +117,111 @@ class CatalogFilterRowTest(DiaRUGATestCase):
         for c in ctx["f_whole"] + ctx["f_frags"]:
             self.assertIn("st=unnamed", c["href"])
             self.assertIn("frag=1", c["href"])
+
+
+class CatalogSizeSortTest(DiaRUGATestCase):
+    """장축 길이로 정렬하고 범위로 거른다 (265).
+
+    여기서 보는 것은 **카드에 적힌 길이와 놓인 차례·걸린 범위가 같은 값에서
+    나오는가**, 그리고 차례·범위가 **쪽과 칩을 넘어 따라가는가**다.
+    """
+
+    @classmethod
+    def setUpTestData(cls):
+        fx.make_classes()
+        cls.w = fx.make_world(slug="rs23", n_viewpoints=2, n_candidates=4)
+        RunBatch.objects.filter(for_review=True).update(code="S1")
+        for _vp in cls.w.viewpoints:
+            fx.review_done(_vp)
+        rows = data.catalog_rows("rs23")
+        cls.lens = [catalog_len(r) for r in rows]
+        assert None not in cls.lens, "길이 없는 카드가 섞여 시험이 헛돈다"
+        assert len(set(cls.lens)) >= 3, f"길이가 안 갈려 시험이 헛돈다: {cls.lens}"
+        assert cls.lens != sorted(cls.lens) and \
+            cls.lens != sorted(cls.lens, reverse=True), \
+            "번호 차례가 이미 길이 차례라 정렬을 안 해도 통과한다"
+
+    def setUp(self):
+        self.url = reverse("catalog", args=["rs23"])
+
+    def ctx(self, **q):
+        # 픽스처의 절반이 파편이다 — 펴 놓고 본다(기본은 감춘다)
+        q.setdefault("frag", "1")
+        r = Client().get(self.url, q)
+        self.assertEqual(r.status_code, 200, r.content[:300])
+        return r.context, r.content.decode()
+
+    def got(self, ctx):
+        return [catalog_len(r) for r in ctx["rows"]]
+
+    def test_장축_긴_것부터_짧은_것부터(self):
+        ctx, _ = self.ctx(sort="len")
+        self.assertEqual(self.got(ctx), sorted(self.lens, reverse=True))
+        ctx, _ = self.ctx(sort="len_asc")
+        self.assertEqual(self.got(ctx), sorted(self.lens))
+
+    def test_모르는_정렬은_번호_차례다(self):
+        base, _ = self.ctx()
+        odd, _ = self.ctx(sort="nope")
+        self.assertEqual(self.got(odd), self.got(base))
+        self.assertEqual(odd["sort"], "")
+
+    def test_범위_안의_카드만_놓인다(self):
+        s = sorted(set(self.lens))
+        lo, hi = s[1], s[-2]
+        ctx, _ = self.ctx(lmin=lo, lmax=hi)
+        want = [v for v in self.lens if lo <= v <= hi]
+        self.assertEqual(sorted(self.got(ctx)), sorted(want))
+        self.assertLess(len(want), len(self.lens), "아무것도 안 걸러져 시험이 헛돈다")
+        self.assertEqual(ctx["size"]["n_out"], len(self.lens) - len(want))
+        # 한쪽만 걸 수 있다
+        ctx, _ = self.ctx(lmin=hi)
+        self.assertEqual(sorted(self.got(ctx)),
+                         sorted(v for v in self.lens if v >= hi))
+
+    def test_칩의_수가_범위를_건_채로_센다(self):
+        s = sorted(set(self.lens))
+        ctx, _ = self.ctx(lmax=s[0])
+        self.assertEqual(ctx["f_all"]["n"], ctx["total"])
+        self.assertEqual(ctx["total"], self.lens.count(s[0]))
+
+    def test_눈금의_양_끝은_거르기_전의_것이다(self):
+        s = sorted(set(self.lens))
+        base, _ = self.ctx()
+        ctx, _ = self.ctx(lmin=s[-1])
+        self.assertEqual((ctx["size"]["lo"], ctx["size"]["hi"]),
+                         (base["size"]["lo"], base["size"]["hi"]))
+        self.assertLessEqual(base["size"]["lo"], s[0])
+        self.assertGreaterEqual(base["size"]["hi"], s[-1])
+
+    def test_차례와_범위가_칩과_검색을_따라간다(self):
+        ctx, html = self.ctx(sort="len", lmin="1", frag="1")
+        for c in ctx["f_whole"] + ctx["f_status"]:
+            self.assertIn("sort=len", c["href"])
+            self.assertIn("lmin=1", c["href"])
+        self.assertIn('name="sort" value="len"', html)
+        self.assertIn('name="lmin" value="1"', html)
+        # 모두 풀기는 범위를 풀고 차례는 둔다
+        self.assertTrue(ctx["f_any"])
+        self.assertNotIn("lmin", ctx["f_clear"])
+        self.assertIn("sort=len", ctx["f_clear"])
+
+    def test_쪽을_넘겨도_차례와_범위가_남는다(self):
+        from unittest import mock
+        with mock.patch("viewer.views.CATALOG_PER_PAGE", 2):
+            ctx, _ = self.ctx(sort="len_asc", lmin="1", frag="1")
+            self.assertIn("sort=len_asc", ctx["next_url"])
+            self.assertIn("lmin=1", ctx["next_url"])
+            nxt = Client().get(self.url + ctx["next_url"]).context
+            self.assertIn("frag=1", ctx["next_url"])
+        self.assertEqual(self.got(ctx) + self.got(nxt),
+                         sorted(self.lens)[:4])
+
+    def test_엉뚱한_값은_안_건_것으로_읽는다(self):
+        ctx, _ = self.ctx(lmin="abc", lmax="-3")
+        self.assertFalse(ctx["size"]["on"])
+        self.assertEqual(len(ctx["rows"]), len(self.lens))
+        # 거꾸로 주면 바꿔 읽는다
+        s = sorted(set(self.lens))
+        ctx, _ = self.ctx(lmin=s[-1], lmax=s[0])
+        self.assertEqual(len(ctx["rows"]), len(self.lens))

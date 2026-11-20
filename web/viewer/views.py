@@ -1385,6 +1385,35 @@ def crops(request, slug):
 
 CATALOG_PER_PAGE = 120
 
+# 카드를 놓는 차례 (265). 기본은 번호 차례(시야 → 자리)이고, 장축 길이로 두
+# 방향이다. 길이를 모르는 카드는 어느 방향이든 끝에 놓는다
+CATALOG_SORTS = {
+    "len": ("장축 긴 것부터", True),
+    "len_asc": ("장축 짧은 것부터", False),
+}
+
+
+def catalog_len(r):
+    """카드의 장축 길이(µm). 모르면 `None` (265).
+
+    **카드가 「크기」 줄에 적는 값을 먼저 쓴다** — 개체가 가장 크게 잡힌 판에서
+    잰 것이다(222). 정렬·거르기가 다른 값을 보면 카드에 적힌 숫자와 놓인
+    차례가 어긋난다. 그 값이 없을 때만 고른 줄의 검출값으로 떨어진다.
+    """
+    v = (r.get("axes") or {}).get("major")
+    if v is None:
+        v = r.get("major_um")
+    return float(v) if v else None
+
+
+def _um_arg(request, name):
+    """`?lmin=`·`?lmax=` — 0 이상의 수가 아니면 안 건 것으로 읽는다."""
+    try:
+        v = float(request.GET.get(name) or "")
+    except ValueError:
+        return None
+    return v if v >= 0 and v == v and v != float("inf") else None
+
 # 카드에 얹는 거르개. 크롭 화면(`crops`)과 같은 것을 쓰되 **동정 진행률**을
 # 보는 둘을 더한다 — 이 화면에서 사람이 알고 싶은 것은 "어디까지 했나" 다.
 #
@@ -1555,6 +1584,33 @@ def catalog(request, slug):
     q = (request.GET.get("q") or "").strip()
     low = q.lower()
 
+    # **차례와 크기 범위** (265 · 사용자 2026-11-20). 범위는 거르개라 칩의 수에도
+    # 걸리고, 차례는 거르개가 아니라 「모두 풀기」 가 안 건드린다.
+    #
+    # **슬라이더의 양 끝은 거르기 전의 카드에서 잡는다** — 건 뒤의 것에서 잡으면
+    # 유형을 누를 때마다 눈금이 바뀌어 같은 자리의 손잡이가 다른 길이를 뜻한다.
+    sort = request.GET.get("sort") or ""
+    if sort not in CATALOG_SORTS:
+        sort = ""
+    lens = [v for v in (catalog_len(r) for r in rows) if v is not None]
+    size_lo = math.floor(min(lens)) if lens else 0
+    size_hi = math.ceil(max(lens)) if lens else 0
+    lmin, lmax = _um_arg(request, "lmin"), _um_arg(request, "lmax")
+    if lmin is not None and lmax is not None and lmin > lmax:
+        lmin, lmax = lmax, lmin
+
+    def size_ok(r):
+        """범위를 걸었으면 **길이를 모르는 카드는 뺀다** — 범위 안인지 말할 수
+        없는 것을 섞어 내면 "20~40 µm" 를 걸고 본 카드 중에 아닌 것이 낀다."""
+        if lmin is None and lmax is None:
+            return True
+        v = catalog_len(r)
+        return (v is not None and (lmin is None or v >= lmin)
+                and (lmax is None or v <= lmax))
+
+    def um_str(v):
+        return "" if v is None else f"{v:g}"
+
     def q_ok(r):
         return (not q
                 or low in r["catalog_no"].lower()
@@ -1587,8 +1643,8 @@ def catalog(request, slug):
     # 수가 0 인 유형은 칩을 안 놓는다(이 슬라이드에 없는 속까지 늘어놓던 것이
     # 줄을 길게 만들었다). 지금 골라 둔 것은 0 이어도 놓는다 — 안 놓으면 풀
     # 자리가 없다.
-    pool_t = [r for r in rows if q_ok(r) and st_ok(r)]
-    pool_s = [r for r in rows if q_ok(r) and cls_ok(r)]
+    pool_t = [r for r in rows if q_ok(r) and st_ok(r) and size_ok(r)]
+    pool_s = [r for r in rows if q_ok(r) and cls_ok(r) and size_ok(r)]
 
     def n_cls(key):
         return sum(1 for r in pool_t if cls_ok(r, key))
@@ -1603,7 +1659,8 @@ def catalog(request, slug):
     def href(**over):
         """지금 건 것에서 하나만 바꾼 주소. 쪽은 처음으로 돌아간다."""
         cur = {"cls": cls, "st": st, "q": q,
-               "frag": "1" if frag_req else "", "gone": "1" if show_gone else ""}
+               "frag": "1" if frag_req else "", "gone": "1" if show_gone else "",
+               "sort": sort, "lmin": um_str(lmin), "lmax": um_str(lmax)}
         cur.update(over)
         qd = {k: v for k, v in cur.items() if v}
         return "?" + urlencode(qd, safe=":")
@@ -1629,7 +1686,18 @@ def catalog(request, slug):
                "href": href(st="" if st == k else k)}
               for k, v in CATALOG_STATUS.items()]
 
-    rows = [r for r in rows if q_ok(r) and st_ok(r) and cls_ok(r)]
+    # 범위 밖이라 빠진 카드의 수 — "없다" 와 "걸렀다" 는 다르다
+    n_size_out = sum(1 for r in rows
+                     if q_ok(r) and st_ok(r) and cls_ok(r) and not size_ok(r))
+    rows = [r for r in rows
+            if q_ok(r) and st_ok(r) and cls_ok(r) and size_ok(r)]
+    if sort:
+        # 안정 정렬이라 길이가 같으면 번호 차례가 남는다. **모르는 것은 끝이다** —
+        # 0 으로 치면 「짧은 것부터」 에서 맨 앞을 차지한다
+        desc = CATALOG_SORTS[sort][1]
+        known = [r for r in rows if catalog_len(r) is not None]
+        known.sort(key=catalog_len, reverse=desc)
+        rows = known + [r for r in rows if catalog_len(r) is None]
 
     for r in rows:
         # 묶었으면 가장 큰 프레임을 그린다 — 번호는 그대로다 (`link_mains`).
@@ -1674,6 +1742,13 @@ def catalog(request, slug):
             qd["st"] = st
         if q:
             qd["q"] = q
+        # 쪽을 넘기면서 차례·범위가 풀리면 앞 쪽에서 본 카드가 다시 나온다
+        if sort:
+            qd["sort"] = sort
+        if lmin is not None:
+            qd["lmin"] = um_str(lmin)
+        if lmax is not None:
+            qd["lmax"] = um_str(lmax)
         # 다음 쪽으로 넘어가면서 파편이 도로 감춰지면 안 된다 — 사람은 켠 것이
         # 꺼진 줄 모르고 개체가 사라졌다고 읽는다.
         if show_frag:
@@ -1746,8 +1821,23 @@ def catalog(request, slug):
         "f_cleanup": cleanup,
         "f_cleanup_open": cls in CATALOG_FILTERS,
         "f_all": {"n": n_cls(""), "href": href(cls="")},
-        "f_any": bool(cls or st or q),
-        "f_clear": href(cls="", st="", q=""),
+        "f_any": bool(cls or st or q or lmin is not None or lmax is not None),
+        "f_clear": href(cls="", st="", q="", lmin="", lmax=""),
+        # 차례·크기 범위 (265)
+        "sort": sort,
+        "f_sorts": ([{"label": "번호 차례", "on": not sort, "href": href(sort="")}]
+                    + [{"label": v[0], "on": sort == k, "href": href(sort=k)}
+                       for k, v in CATALOG_SORTS.items()]),
+        "size": {
+            "lo": size_lo, "hi": size_hi,
+            # 손잡이의 자리 — 눈금 밖으로 건 값은 끝에 붙인다(주소의 값은 그대로)
+            "a": min(max(lmin if lmin is not None else size_lo, size_lo), size_hi),
+            "b": min(max(lmax if lmax is not None else size_hi, size_lo), size_hi),
+            "lmin": um_str(lmin), "lmax": um_str(lmax),
+            "on": lmin is not None or lmax is not None,
+            "base": href(lmin="", lmax=""),
+            "n_out": n_size_out,
+        },
         "frag_href": href(frag="" if frag_req else "1"),
         "frag_locked": show_gone or cls == "off_stack",
         "frag_on": frag_req,
